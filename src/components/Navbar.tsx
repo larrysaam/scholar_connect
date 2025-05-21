@@ -16,15 +16,16 @@ const Navbar = () => {
             alt="ScholarConnect Logo" 
             className="h-8"
           />
-          <span className="text-xl font-bold text-blue-600">ScholarConnect</span>
+          <span className="text-xl font-bold text-emerald-600">ScholarConnect</span>
         </Link>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-6">
-          <Link to="/" className="text-gray-700 hover:text-blue-600 transition-colors">Home</Link>
-          <Link to="/researchers" className="text-gray-700 hover:text-blue-600 transition-colors">Researchers</Link>
-          <Link to="/how-it-works" className="text-gray-700 hover:text-blue-600 transition-colors">How It Works</Link>
-          <Link to="/dashboard" className="text-gray-700 hover:text-blue-600 transition-colors">Dashboard</Link>
+          <Link to="/" className="text-gray-700 hover:text-emerald-600 transition-colors">Home</Link>
+          <Link to="/researchers" className="text-gray-700 hover:text-emerald-600 transition-colors">Researchers</Link>
+          <Link to="/how-it-works" className="text-gray-700 hover:text-emerald-600 transition-colors">How It Works</Link>
+          <Link to="/about-us" className="text-gray-700 hover:text-emerald-600 transition-colors">About Us</Link>
+          <Link to="/dashboard" className="text-gray-700 hover:text-emerald-600 transition-colors">Dashboard</Link>
         </div>
 
         <div className="hidden md:flex items-center space-x-4">
@@ -51,28 +52,35 @@ const Navbar = () => {
           <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
             <Link 
               to="/" 
-              className="text-gray-700 hover:text-blue-600 transition-colors py-2 text-lg"
+              className="text-gray-700 hover:text-emerald-600 transition-colors py-2 text-lg"
               onClick={() => setIsMenuOpen(false)}
             >
               Home
             </Link>
             <Link 
               to="/researchers" 
-              className="text-gray-700 hover:text-blue-600 transition-colors py-2 text-lg"
+              className="text-gray-700 hover:text-emerald-600 transition-colors py-2 text-lg"
               onClick={() => setIsMenuOpen(false)}
             >
               Researchers
             </Link>
             <Link 
               to="/how-it-works" 
-              className="text-gray-700 hover:text-blue-600 transition-colors py-2 text-lg"
+              className="text-gray-700 hover:text-emerald-600 transition-colors py-2 text-lg"
               onClick={() => setIsMenuOpen(false)}
             >
               How It Works
             </Link>
             <Link 
+              to="/about-us" 
+              className="text-gray-700 hover:text-emerald-600 transition-colors py-2 text-lg"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              About Us
+            </Link>
+            <Link 
               to="/dashboard" 
-              className="text-gray-700 hover:text-blue-600 transition-colors py-2 text-lg"
+              className="text-gray-700 hover:text-emerald-600 transition-colors py-2 text-lg"
               onClick={() => setIsMenuOpen(false)}
             >
               Dashboard

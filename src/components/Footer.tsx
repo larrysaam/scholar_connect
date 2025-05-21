@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -10,7 +11,7 @@ const Footer = () => {
               <img 
                 src="/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png" 
                 alt="ScholarConnect Logo" 
-                className="h-8 invert"
+                className="h-8 brightness-0 invert"
               />
               <span className="text-xl font-bold text-white">ScholarConnect</span>
             </div>
@@ -35,7 +36,7 @@ const Footer = () => {
               <li><Link to="/register" className="text-sm hover:text-white transition-colors">Sign Up</Link></li>
               <li><Link to="/login" className="text-sm hover:text-white transition-colors">Log In</Link></li>
               <li><Link to="/become-researcher" className="text-sm hover:text-white transition-colors">Become a Researcher</Link></li>
-              <li><Link to="/partner" className="text-sm hover:text-white transition-colors">Partner with Us</Link></li>
+              <li><Link to="/about-us" className="text-sm hover:text-white transition-colors">About Us</Link></li>
             </ul>
           </div>
           
