@@ -12,7 +12,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
           <img 
-            src="/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png" 
+            src="/lovable-uploads/0c2151ac-5e74-4b77-86a9-9b359241cfca.png" 
             alt="ScholarConnect Logo" 
             className="h-8"
           />

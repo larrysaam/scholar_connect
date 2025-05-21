@@ -9,7 +9,7 @@ const Footer = () => {
           <div className="md:col-span-1">
             <div className="flex items-center space-x-2 mb-3">
               <img 
-                src="/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png" 
+                src="/lovable-uploads/0c2151ac-5e74-4b77-86a9-9b359241cfca.png" 
                 alt="ScholarConnect Logo" 
                 className="h-8 brightness-0 invert"
               />

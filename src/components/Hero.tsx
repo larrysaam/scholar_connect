@@ -10,7 +10,7 @@ const Hero = () => {
           <div className="text-left">
             <div className="flex items-center mb-6">
               <img 
-                src="/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png" 
+                src="/lovable-uploads/0c2151ac-5e74-4b77-86a9-9b359241cfca.png" 
                 alt="ScholarConnect Logo" 
                 className="h-10 mr-2"
               />
