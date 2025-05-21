@@ -1,7 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Search, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from 'react';
 
 const Navbar = () => {
@@ -11,7 +11,12 @@ const Navbar = () => {
     <nav className="bg-white shadow-sm py-4">
       <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
-          <span className="text-xl font-bold text-blue-600">ResearchConnect</span>
+          <img 
+            src="/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png" 
+            alt="ScholarConnect Logo" 
+            className="h-8"
+          />
+          <span className="text-xl font-bold text-blue-600">ScholarConnect</span>
         </Link>
 
         {/* Desktop Navigation */}

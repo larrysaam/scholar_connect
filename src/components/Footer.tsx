@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -7,7 +6,14 @@ const Footer = () => {
       <div className="container mx-auto px-4 md:px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-1">
-            <Link to="/" className="text-xl font-bold text-white">ResearchConnect</Link>
+            <div className="flex items-center space-x-2 mb-3">
+              <img 
+                src="/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png" 
+                alt="ScholarConnect Logo" 
+                className="h-8 invert"
+              />
+              <span className="text-xl font-bold text-white">ScholarConnect</span>
+            </div>
             <p className="mt-3 text-sm">
               Connecting students with leading researchers for personalized academic consultations.
             </p>
@@ -45,7 +51,7 @@ const Footer = () => {
         </div>
         
         <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm">© {new Date().getFullYear()} ResearchConnect. All rights reserved.</p>
+          <p className="text-sm">© {new Date().getFullYear()} ScholarConnect. All rights reserved.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <a href="#" className="text-gray-400 hover:text-white">
               <span className="sr-only">Twitter</span>

@@ -6,21 +6,40 @@ const Hero = () => {
   return (
     <div className="hero-gradient text-white py-20 lg:py-32">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-            Connect with Leading Researchers
-          </h1>
-          <p className="text-lg md:text-xl mb-8 text-blue-100">
-            Book one-on-one consultations with academic experts across various fields.
-            Get personalized guidance for your research projects.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button asChild size="lg" className="bg-white text-blue-700 hover:bg-blue-50">
-              <Link to="/researchers">Find Researchers</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="text-white border-white hover:bg-blue-700">
-              <Link to="/register">Join as a Researcher</Link>
-            </Button>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <div className="text-left">
+            <div className="flex items-center mb-6">
+              <img 
+                src="/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png" 
+                alt="ScholarConnect Logo" 
+                className="h-10 mr-2"
+              />
+              <h1 className="text-3xl font-bold">ScholarConnect</h1>
+            </div>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+              Connect with Research Experts
+            </h2>
+            <p className="text-lg mb-8 text-blue-100">
+              Book one-on-one consultations with research experts across various fields.
+              Get personalized guidance for your research projects.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button asChild size="lg" className="bg-white text-blue-700 hover:bg-blue-50">
+                <Link to="/researchers">Find Researchers</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="text-white border-white hover:bg-blue-700">
+                <Link to="/register">Join as a Researcher</Link>
+              </Button>
+            </div>
+          </div>
+          <div className="mt-8 md:mt-0 flex justify-center md:justify-end">
+            <div className="relative rounded-lg overflow-hidden shadow-xl">
+              <img 
+                src="https://images.unsplash.com/photo-1531482615713-2afd69097998?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80" 
+                alt="Student consulting with researcher" 
+                className="w-full h-auto rounded-lg"
+              />
+            </div>
           </div>
         </div>
       </div>
