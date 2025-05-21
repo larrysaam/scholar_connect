@@ -38,7 +38,7 @@ const Hero = () => {
           <div className="mt-8 md:mt-0 flex justify-center md:justify-end">
             <div className="relative rounded-lg overflow-hidden shadow-xl">
               <img 
-                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1376&q=80" 
+                src="/lovable-uploads/327ccde5-c0c9-443a-acd7-4570799bb7f8.png" 
                 alt="Student consulting with researcher" 
                 className="w-full h-auto rounded-lg"
               />
