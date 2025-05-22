@@ -8,14 +8,6 @@ const Hero = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <div className="text-left">
-            <div className="flex items-center mb-6">
-              <img 
-                src="/lovable-uploads/83e0a07d-3527-4693-8172-d7d181156044.png" 
-                alt="ScholarConnect Logo" 
-                className="h-10 mr-2"
-              />
-              <h1 className="text-3xl font-bold">ScholarConnect</h1>
-            </div>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
               Connecting students with research experts
             </h2>
