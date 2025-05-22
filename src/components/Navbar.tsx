@@ -25,7 +25,8 @@ const Navbar = () => {
           <Link to="/researchers" className="text-gray-700 hover:text-emerald-600 transition-colors">Researchers</Link>
           <Link to="/how-it-works" className="text-gray-700 hover:text-emerald-600 transition-colors">How It Works</Link>
           <Link to="/about-us" className="text-gray-700 hover:text-emerald-600 transition-colors">About Us</Link>
-          <Link to="/dashboard" className="text-gray-700 hover:text-emerald-600 transition-colors">Dashboard</Link>
+          <Link to="/dashboard" className="text-gray-700 hover:text-emerald-600 transition-colors">Student Dashboard</Link>
+          <Link to="/researcher-dashboard" className="text-gray-700 hover:text-emerald-600 transition-colors">Researcher Dashboard</Link>
         </div>
 
         <div className="hidden md:flex items-center space-x-4">
@@ -83,7 +84,14 @@ const Navbar = () => {
               className="text-gray-700 hover:text-emerald-600 transition-colors py-2 text-lg"
               onClick={() => setIsMenuOpen(false)}
             >
-              Dashboard
+              Student Dashboard
+            </Link>
+            <Link 
+              to="/researcher-dashboard" 
+              className="text-gray-700 hover:text-emerald-600 transition-colors py-2 text-lg"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Researcher Dashboard
             </Link>
             <div className="flex flex-col space-y-2 pt-4 border-t">
               <Button 
