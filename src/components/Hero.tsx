@@ -10,7 +10,7 @@ const Hero = () => {
           <div className="text-left">
             <div className="flex items-center mb-6">
               <img 
-                src="/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png" 
+                src="/lovable-uploads/83e0a07d-3527-4693-8172-d7d181156044.png" 
                 alt="ScholarConnect Logo" 
                 className="h-10 mr-2"
               />
@@ -27,7 +27,7 @@ const Hero = () => {
               "Bridging the gap in research guidance to elevate research quality, mentorship, and academic excellence."
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild size="lg" className="bg-emerald-500 text-white hover:bg-emerald-600">
+              <Button asChild size="lg" className="bg-blue-500 text-white hover:bg-blue-600">
                 <Link to="/researchers">Find Researchers</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="text-white border-white hover:bg-indigo-800">
