@@ -1,0 +1,40 @@
+
+import { Badge } from "@/components/ui/badge";
+import { paymentHistory } from "../mockData";
+
+const PaymentsTab = () => {
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-sm">
+      <h2 className="text-xl font-semibold mb-4">Payment History</h2>
+      
+      <div className="overflow-x-auto">
+        <table className="w-full text-left">
+          <thead className="border-b">
+            <tr>
+              <th className="pb-3 font-medium">Date</th>
+              <th className="pb-3 font-medium">Researcher</th>
+              <th className="pb-3 font-medium">Amount</th>
+              <th className="pb-3 font-medium">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paymentHistory.map((payment) => (
+              <tr key={payment.id} className="border-b last:border-b-0">
+                <td className="py-4">{payment.date}</td>
+                <td className="py-4">{payment.researcher}</td>
+                <td className="py-4">${payment.amount}</td>
+                <td className="py-4">
+                  <Badge className="bg-green-100 text-green-800 border-green-200">
+                    {payment.status}
+                  </Badge>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default PaymentsTab;
