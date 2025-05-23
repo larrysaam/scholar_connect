@@ -2,6 +2,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Dialog,
   DialogContent,
@@ -22,9 +25,26 @@ interface BookingModalProps {
   };
 }
 
+const challenges = [
+  "Generate a research idea",
+  "Proposal writing",
+  "Literature review",
+  "Conceptual and theoretical frameworks",
+  "Methodology",
+  "Report writing",
+  "Live document review",
+  "General research guidance",
+  "Co-author an article",
+  "Expert knowledge",
+  "Interview a researcher",
+  "Media visibility"
+];
+
 const BookingModal = ({ researcher }: BookingModalProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedChallenge, setSelectedChallenge] = useState<string>("");
+  const [comment, setComment] = useState<string>("");
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
   // Function to check if a date has available slots
@@ -47,10 +67,11 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
 
   // Handle booking
   const handleBooking = () => {
-    // In a real app, this would handle the booking process
     console.log("Booking with", researcher.name);
     console.log("Date:", selectedDate);
     console.log("Time:", selectedTime);
+    console.log("Challenge:", selectedChallenge);
+    console.log("Comment:", comment);
     setIsBookingModalOpen(false);
   };
 
@@ -61,7 +82,7 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
           Book Consultation
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Book a Consultation</DialogTitle>
           <DialogDescription>
@@ -102,6 +123,34 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
               </div>
             </div>
           )}
+
+          <div>
+            <h3 className="mb-3 font-medium">What's your challenge?</h3>
+            <RadioGroup value={selectedChallenge} onValueChange={setSelectedChallenge}>
+              <div className="grid grid-cols-1 gap-3">
+                {challenges.map((challenge) => (
+                  <div key={challenge} className="flex items-center space-x-2">
+                    <RadioGroupItem value={challenge} id={challenge} />
+                    <Label htmlFor={challenge} className="cursor-pointer">
+                      {challenge}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </RadioGroup>
+          </div>
+
+          <div>
+            <Label htmlFor="comment" className="font-medium">Leave a comment:</Label>
+            <Textarea
+              id="comment"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Provide additional details about your consultation needs..."
+              rows={3}
+              className="mt-2"
+            />
+          </div>
           
           <div className="pt-4 border-t">
             <div className="flex justify-between items-center mb-4">
@@ -111,7 +160,7 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
             
             <Button 
               className="w-full" 
-              disabled={!selectedDate || !selectedTime}
+              disabled={!selectedDate || !selectedTime || !selectedChallenge}
               onClick={handleBooking}
             >
               Complete Booking
