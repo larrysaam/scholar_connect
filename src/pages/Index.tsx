@@ -4,6 +4,7 @@ import Hero from "@/components/Hero";
 import SearchBar from "@/components/SearchBar";
 import ResearcherCard from "@/components/ResearcherCard";
 import Footer from "@/components/Footer";
+import Testimonials from "@/components/Testimonials";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
@@ -144,6 +145,9 @@ const Index = () => {
             </div>
           </div>
         </section>
+        
+        {/* Testimonials section - added as requested */}
+        <Testimonials />
         
         <section className="py-16">
           <div className="container mx-auto px-4 md:px-6">
