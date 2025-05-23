@@ -1,12 +1,13 @@
-
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import SearchBar from "@/components/SearchBar";
 import ResearcherCard from "@/components/ResearcherCard";
 import Footer from "@/components/Footer";
 import Testimonials from "@/components/Testimonials";
+import LanguageToggle from "@/components/LanguageToggle";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Mock data for featured researchers
 const featuredResearchers = [
@@ -17,7 +18,7 @@ const featuredResearchers = [
     institution: "Stanford University",
     field: "Computer Science",
     specialties: ["Machine Learning", "AI Ethics", "Data Mining"],
-    hourlyRate: 120,
+    hourlyRate: 72000, // 120 USD * 600 XAF/USD
     rating: 4.9,
     reviews: 24,
     imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1376&q=80"
@@ -29,7 +30,7 @@ const featuredResearchers = [
     institution: "MIT",
     field: "Physics",
     specialties: ["Quantum Computing", "Theoretical Physics", "Astrophysics"],
-    hourlyRate: 150,
+    hourlyRate: 90000, // 150 USD * 600 XAF/USD
     rating: 4.8,
     reviews: 32,
     imageUrl: "https://images.unsplash.com/photo-1601582589907-f92af5ed9db8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1064&q=80"
@@ -41,7 +42,7 @@ const featuredResearchers = [
     institution: "Harvard University",
     field: "Biology",
     specialties: ["Genetics", "Molecular Biology", "Biotechnology"],
-    hourlyRate: 135,
+    hourlyRate: 81000, // 135 USD * 600 XAF/USD
     rating: 4.7,
     reviews: 19,
     imageUrl: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80"
@@ -59,8 +60,14 @@ const fields = [
 ];
 
 const Index = () => {
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-screen flex flex-col">
+      <div className="absolute top-4 right-4 z-50">
+        <LanguageToggle />
+      </div>
+      
       <Navbar />
       
       <main className="flex-grow">
@@ -157,7 +164,7 @@ const Index = () => {
                 Join our platform to share your expertise, connect with students, and earn additional income through consultations.
               </p>
               <Button asChild size="lg" className="bg-white text-blue-700 hover:bg-blue-50">
-                <Link to="/register">Join as a Researcher</Link>
+                <Link to="/register">{t('hero.joinAsResearcher')}</Link>
               </Button>
             </div>
           </div>

@@ -1,36 +1,59 @@
 
-// Mock data for a researcher
-export const researcherData = {
+export const mockResearcher = {
   id: "1",
   name: "Dr. Sarah Johnson",
   title: "Associate Professor",
-  institution: "Stanford University",
-  department: "Computer Science Department",
+  institution: "Stanford University", 
   field: "Computer Science",
-  specialties: ["Machine Learning", "AI Ethics", "Data Mining", "Neural Networks", "Computer Vision"],
-  bio: "Dr. Sarah Johnson is an Associate Professor at Stanford University with over 10 years of experience in machine learning research. She leads the AI Ethics Lab, focusing on responsible AI development and algorithmic fairness. Dr. Johnson has published over 50 papers in top journals and conferences, and has worked with leading tech companies on implementing ethical AI frameworks.",
-  education: [
-    { degree: "Ph.D. Computer Science", institution: "MIT", year: "2010" },
-    { degree: "M.S. Computer Science", institution: "Stanford University", year: "2006" },
-    { degree: "B.S. Mathematics", institution: "UC Berkeley", year: "2004" }
-  ],
-  publications: [
-    { title: "Ethical Considerations in Deep Learning Models", journal: "Nature Machine Intelligence", year: "2022" },
-    { title: "Advances in Fairness-aware Machine Learning", journal: "Journal of Artificial Intelligence Research", year: "2021" },
-    { title: "Interpretable AI for Healthcare Applications", journal: "IEEE Transactions on Medical Imaging", year: "2020" }
-  ],
+  specialties: ["Machine Learning", "AI Ethics", "Data Mining"],
   hourlyRate: 120,
   rating: 4.9,
-  reviews: [
-    { name: "Alex Smith", rating: 5, comment: "Dr. Johnson provided incredibly valuable insights for my research project. Her expertise in AI ethics helped me navigate complex issues I hadn't considered." },
-    { name: "Jamie Lee", rating: 5, comment: "Exceptional consultation! Dr. Johnson explained complex concepts clearly and provided practical guidance for implementing machine learning techniques in my project." },
-    { name: "Taylor Wong", rating: 4, comment: "Very knowledgeable and patient. Helped me understand the limitations of my research approach and suggested alternative methodologies." },
+  reviews: 24,
+  imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1376&q=80",
+  bio: "Dr. Sarah Johnson is a leading researcher in machine learning and AI ethics with over 15 years of experience in the field. She has published over 50 peer-reviewed papers and has been involved in groundbreaking research on responsible AI development.",
+  education: [
+    { degree: "Ph.D. in Computer Science", institution: "MIT", year: "2008" },
+    { degree: "M.S. in Computer Science", institution: "Stanford University", year: "2004" },
+    { degree: "B.S. in Mathematics", institution: "UC Berkeley", year: "2002" }
+  ],
+  experience: [
+    { position: "Associate Professor", institution: "Stanford University", period: "2018 - Present" },
+    { position: "Assistant Professor", institution: "Stanford University", period: "2012 - 2018" },
+    { position: "Research Scientist", institution: "Google DeepMind", period: "2008 - 2012" }
+  ],
+  publications: [
+    { title: "Ethics in Machine Learning: A Comprehensive Framework", journal: "Nature Machine Intelligence", year: "2023" },
+    { title: "Bias Detection in Neural Networks", journal: "Journal of AI Research", year: "2022" },
+    { title: "Responsible AI Development Practices", journal: "AI & Society", year: "2021" }
   ],
   availableTimes: [
-    { date: new Date(2025, 5, 22), slots: ["10:00 AM", "1:00 PM", "3:00 PM"] },
-    { date: new Date(2025, 5, 24), slots: ["9:00 AM", "11:00 AM", "2:00 PM"] },
-    { date: new Date(2025, 5, 25), slots: ["10:00 AM", "4:00 PM"] },
-    { date: new Date(2025, 5, 28), slots: ["1:00 PM", "3:00 PM", "5:00 PM"] }
-  ],
-  imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1376&q=80"
+    {
+      date: new Date(2025, 4, 26), // Monday
+      slots: ["9:00 AM", "10:00 AM", "2:00 PM", "3:00 PM"]
+    },
+    {
+      date: new Date(2025, 4, 27), // Tuesday
+      slots: ["11:00 AM", "1:00 PM", "4:00 PM"]
+    },
+    {
+      date: new Date(2025, 4, 28), // Wednesday
+      slots: ["9:00 AM", "10:00 AM", "3:00 PM"]
+    },
+    {
+      date: new Date(2025, 4, 29), // Thursday
+      slots: ["10:00 AM", "2:00 PM", "4:00 PM"]
+    },
+    {
+      date: new Date(2025, 4, 30), // Friday
+      slots: ["9:00 AM", "11:00 AM", "1:00 PM"]
+    },
+    {
+      date: new Date(2025, 4, 31), // Saturday
+      slots: ["10:00 AM", "11:00 AM", "2:00 PM"]
+    },
+    {
+      date: new Date(2025, 5, 1), // Sunday
+      slots: ["11:00 AM", "1:00 PM", "3:00 PM"]
+    }
+  ]
 };

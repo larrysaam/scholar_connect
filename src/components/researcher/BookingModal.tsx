@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -43,7 +43,7 @@ const challenges = [
 const BookingModal = ({ researcher }: BookingModalProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [selectedChallenge, setSelectedChallenge] = useState<string>("");
+  const [selectedChallenges, setSelectedChallenges] = useState<string[]>([]);
   const [comment, setComment] = useState<string>("");
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
@@ -65,12 +65,21 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
     return dateInfo ? dateInfo.slots : [];
   };
 
+  // Handle challenge selection (multi-select)
+  const handleChallengeToggle = (challenge: string) => {
+    setSelectedChallenges(prev => 
+      prev.includes(challenge) 
+        ? prev.filter(c => c !== challenge)
+        : [...prev, challenge]
+    );
+  };
+
   // Handle booking
   const handleBooking = () => {
     console.log("Booking with", researcher.name);
     console.log("Date:", selectedDate);
     console.log("Time:", selectedTime);
-    console.log("Challenge:", selectedChallenge);
+    console.log("Challenges:", selectedChallenges);
     console.log("Comment:", comment);
     setIsBookingModalOpen(false);
   };
@@ -125,19 +134,22 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
           )}
 
           <div>
-            <h3 className="mb-3 font-medium">What's your challenge?</h3>
-            <RadioGroup value={selectedChallenge} onValueChange={setSelectedChallenge}>
-              <div className="grid grid-cols-1 gap-3">
-                {challenges.map((challenge) => (
-                  <div key={challenge} className="flex items-center space-x-2">
-                    <RadioGroupItem value={challenge} id={challenge} />
-                    <Label htmlFor={challenge} className="cursor-pointer">
-                      {challenge}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </RadioGroup>
+            <h3 className="mb-3 font-medium">What's your challenge? (Select all that apply)</h3>
+            <div className="grid grid-cols-1 gap-3">
+              {challenges.map((challenge) => (
+                <div key={challenge} className="flex items-center space-x-3">
+                  <Checkbox
+                    id={challenge}
+                    checked={selectedChallenges.includes(challenge)}
+                    onCheckedChange={() => handleChallengeToggle(challenge)}
+                    className="h-5 w-5"
+                  />
+                  <Label htmlFor={challenge} className="cursor-pointer text-sm">
+                    {challenge}
+                  </Label>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div>
@@ -155,12 +167,12 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
           <div className="pt-4 border-t">
             <div className="flex justify-between items-center mb-4">
               <span>Consultation Fee:</span>
-              <span className="font-semibold">${researcher.hourlyRate}</span>
+              <span className="font-semibold">{researcher.hourlyRate * 600} XAF</span>
             </div>
             
             <Button 
               className="w-full" 
-              disabled={!selectedDate || !selectedTime || !selectedChallenge}
+              disabled={!selectedDate || !selectedTime || selectedChallenges.length === 0}
               onClick={handleBooking}
             >
               Complete Booking
