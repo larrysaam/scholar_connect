@@ -9,6 +9,7 @@ export const mockResearcher = {
   specialties: ["Machine Learning", "AI Ethics", "Data Mining"],
   hourlyRate: 120,
   rating: 4.9,
+  onlineStatus: "online" as "online" | "offline" | "in-session",
   reviews: [
     {
       name: "Alice Chen",
@@ -37,6 +38,29 @@ export const mockResearcher = {
     { position: "Associate Professor", institution: "Stanford University", period: "2018 - Present" },
     { position: "Assistant Professor", institution: "Stanford University", period: "2012 - 2018" },
     { position: "Research Scientist", institution: "Google DeepMind", period: "2008 - 2012" }
+  ],
+  awards: [
+    { title: "IEEE Outstanding Paper Award", year: "2023" },
+    { title: "AI Ethics Excellence Award", year: "2022" },
+    { title: "Rising Star in Machine Learning", year: "2019" }
+  ],
+  fellowships: [
+    { title: "Stanford AI Fellowship", period: "2020 - 2023" },
+    { title: "Google Research Fellowship", period: "2015 - 2018" }
+  ],
+  grants: [
+    { title: "NSF Machine Learning Ethics Grant", amount: "$500,000", period: "2022 - 2025" },
+    { title: "Stanford AI Research Initiative", amount: "$300,000", period: "2020 - 2023" }
+  ],
+  memberships: [
+    "IEEE Computer Society",
+    "Association for Computing Machinery (ACM)",
+    "AI Ethics Council"
+  ],
+  supervision: [
+    { type: "PhD Students", count: 8 },
+    { type: "Master's Students", count: 15 },
+    { type: "Postdocs", count: 3 }
   ],
   publications: [
     { title: "Ethics in Machine Learning: A Comprehensive Framework", journal: "Nature Machine Intelligence", year: "2023" },

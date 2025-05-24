@@ -2,6 +2,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AboutTab from "./tabs/AboutTab";
 import EducationTab from "./tabs/EducationTab";
+import ExperienceTab from "./tabs/ExperienceTab";
+import AwardsTab from "./tabs/AwardsTab";
 import PublicationsTab from "./tabs/PublicationsTab";
 import ReviewsTab from "./tabs/ReviewsTab";
 
@@ -13,6 +15,29 @@ interface ProfileTabsProps {
       degree: string;
       institution: string;
       year: string;
+    }[];
+    experience: {
+      position: string;
+      institution: string;
+      period: string;
+    }[];
+    awards: {
+      title: string;
+      year: string;
+    }[];
+    fellowships: {
+      title: string;
+      period: string;
+    }[];
+    grants: {
+      title: string;
+      amount: string;
+      period: string;
+    }[];
+    memberships: string[];
+    supervision: {
+      type: string;
+      count: number;
     }[];
     publications: {
       title: string;
@@ -31,9 +56,11 @@ interface ProfileTabsProps {
 const ProfileTabs = ({ researcher }: ProfileTabsProps) => {
   return (
     <Tabs defaultValue="about" className="w-full">
-      <TabsList className="mb-8 bg-gray-100">
+      <TabsList className="mb-8 bg-gray-100 grid grid-cols-3 md:grid-cols-6 w-full">
         <TabsTrigger value="about">About</TabsTrigger>
-        <TabsTrigger value="experience">Experience & Education</TabsTrigger>
+        <TabsTrigger value="education">Education</TabsTrigger>
+        <TabsTrigger value="experience">Experience</TabsTrigger>
+        <TabsTrigger value="achievements">Achievements</TabsTrigger>
         <TabsTrigger value="publications">Publications</TabsTrigger>
         <TabsTrigger value="reviews">Reviews</TabsTrigger>
       </TabsList>
@@ -42,8 +69,22 @@ const ProfileTabs = ({ researcher }: ProfileTabsProps) => {
         <AboutTab bio={researcher.bio} specialties={researcher.specialties} />
       </TabsContent>
       
-      <TabsContent value="experience" className="mt-0">
+      <TabsContent value="education" className="mt-0">
         <EducationTab education={researcher.education} />
+      </TabsContent>
+      
+      <TabsContent value="experience" className="mt-0">
+        <ExperienceTab experience={researcher.experience} />
+      </TabsContent>
+      
+      <TabsContent value="achievements" className="mt-0">
+        <AwardsTab 
+          awards={researcher.awards}
+          fellowships={researcher.fellowships}
+          grants={researcher.grants}
+          memberships={researcher.memberships}
+          supervision={researcher.supervision}
+        />
       </TabsContent>
       
       <TabsContent value="publications" className="mt-0">

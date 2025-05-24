@@ -1,6 +1,8 @@
 
 import { Badge } from "@/components/ui/badge";
 import BookingModal from "./BookingModal";
+import StatusIndicator from "./StatusIndicator";
+import CoAuthorModal from "./CoAuthorModal";
 
 interface ProfileHeaderProps {
   researcher: {
@@ -18,6 +20,7 @@ interface ProfileHeaderProps {
       slots: string[];
     }[];
     imageUrl: string;
+    onlineStatus: "online" | "offline" | "in-session";
   };
 }
 
@@ -33,6 +36,9 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
                 alt={researcher.name} 
                 className="w-full aspect-square object-cover rounded-lg mb-4"
               />
+              <div className="flex justify-center">
+                <StatusIndicator status={researcher.onlineStatus} />
+              </div>
             </div>
           </div>
           
@@ -53,7 +59,7 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
             <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-4">
               <div className="flex items-center bg-blue-700 px-4 py-2 rounded-lg">
                 <div className="mr-3">
-                  <div className="text-xl font-bold">${researcher.hourlyRate}</div>
+                  <div className="text-xl font-bold">{researcher.hourlyRate} XAF</div>
                   <div className="text-xs text-blue-200">per hour</div>
                 </div>
               </div>
@@ -74,7 +80,10 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
                 <span className="ml-1 text-sm">{researcher.rating} ({researcher.reviews.length} reviews)</span>
               </div>
               
-              <BookingModal researcher={researcher} />
+              <div className="flex gap-3">
+                <BookingModal researcher={researcher} />
+                <CoAuthorModal researcher={researcher} />
+              </div>
             </div>
           </div>
         </div>
