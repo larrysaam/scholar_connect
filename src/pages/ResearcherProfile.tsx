@@ -4,11 +4,11 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProfileHeader from "@/components/researcher/ProfileHeader";
 import ProfileTabs from "@/components/researcher/ProfileTabs";
-import { researcherData } from "@/components/researcher/mockData";
+import { mockResearcher } from "@/components/researcher/mockData";
 
 const ResearcherProfile = () => {
   const { id } = useParams<{ id: string }>();
-  const researcher = researcherData; // In a real app, this would be fetched based on the ID
+  const researcher = mockResearcher; // In a real app, this would be fetched based on the ID
 
   return (
     <div className="min-h-screen flex flex-col">

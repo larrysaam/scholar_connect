@@ -4,11 +4,28 @@ export const mockResearcher = {
   name: "Dr. Sarah Johnson",
   title: "Associate Professor",
   institution: "Stanford University", 
+  department: "Computer Science Department",
   field: "Computer Science",
   specialties: ["Machine Learning", "AI Ethics", "Data Mining"],
   hourlyRate: 120,
   rating: 4.9,
-  reviews: 24,
+  reviews: [
+    {
+      name: "Alice Chen",
+      rating: 5,
+      comment: "Dr. Johnson provided excellent guidance on my machine learning project. Her insights were invaluable!"
+    },
+    {
+      name: "John Smith", 
+      rating: 5,
+      comment: "Amazing session! Really helped me understand the ethical implications of AI in my research."
+    },
+    {
+      name: "Maria Garcia",
+      rating: 4,
+      comment: "Very knowledgeable and patient. Great help with data mining techniques."
+    }
+  ],
   imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1376&q=80",
   bio: "Dr. Sarah Johnson is a leading researcher in machine learning and AI ethics with over 15 years of experience in the field. She has published over 50 peer-reviewed papers and has been involved in groundbreaking research on responsible AI development.",
   education: [
