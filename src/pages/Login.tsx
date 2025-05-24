@@ -6,23 +6,112 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 const Login = () => {
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [otpCode, setOtpCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleFirstStep = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate login process
+    // Simulate authentication and OTP sending
     setTimeout(() => {
-      console.log("Logging in with:", email);
+      console.log("Authenticating user:", email);
+      console.log("Sending OTP to:", email);
+      setStep(2);
+      setIsLoading(false);
+    }, 1500);
+  };
+
+  const handleVerifyOTP = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    // Simulate OTP verification
+    setTimeout(() => {
+      console.log("Verifying OTP:", otpCode);
+      console.log("Logging in user:", email);
       setIsLoading(false);
       // In a real app, would redirect to dashboard or previous page
     }, 1500);
   };
+
+  const resendOTP = () => {
+    console.log("Resending OTP to:", email);
+  };
+
+  if (step === 2) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <Link to="/" className="text-2xl font-bold text-blue-600">
+              ResearchConnect
+            </Link>
+            <h2 className="mt-6 text-3xl font-bold text-gray-900">
+              Verify your identity
+            </h2>
+            <p className="mt-2 text-gray-600">
+              Enter the 6-digit code sent to {email}
+            </p>
+          </div>
+
+          <div className="bg-white p-8 shadow rounded-lg">
+            <form onSubmit={handleVerifyOTP} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="otp">Verification Code</Label>
+                <InputOTP
+                  maxLength={6}
+                  value={otpCode}
+                  onChange={setOtpCode}
+                  className="justify-center"
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+
+              <Button type="submit" className="w-full" disabled={isLoading || otpCode.length !== 6}>
+                {isLoading ? "Verifying..." : "Verify and Sign In"}
+              </Button>
+
+              <div className="text-center text-sm">
+                <span className="text-gray-600">Didn't receive the code? </span>
+                <button
+                  type="button"
+                  onClick={resendOTP}
+                  className="text-blue-600 hover:text-blue-500 font-medium"
+                >
+                  Resend
+                </button>
+              </div>
+
+              <div className="text-center text-sm">
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  ← Back to login
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -47,7 +136,7 @@ const Login = () => {
             </TabsList>
             
             <TabsContent value="email">
-              <form onSubmit={handleLogin} className="space-y-6">
+              <form onSubmit={handleFirstStep} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input 
@@ -84,7 +173,7 @@ const Login = () => {
                 </div>
                 
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Signing in..." : "Sign in"}
+                  {isLoading ? "Authenticating..." : "Continue"}
                 </Button>
                 
                 <div className="text-center text-sm">
