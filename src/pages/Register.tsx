@@ -9,12 +9,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Camera } from "lucide-react";
 
 const Register = () => {
   const [step, setStep] = useState(1);
   const [accountType, setAccountType] = useState("student");
   const [isLoading, setIsLoading] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+  const [profileImage, setProfileImage] = useState<string>("");
   const [formData, setFormData] = useState({
     title: "",
     firstName: "",
@@ -27,11 +30,23 @@ const Register = () => {
     faculty: "",
     department: "",
     country: "",
-    city: ""
+    city: "",
+    academicLevel: ""
   });
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProfileImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleFirstStep = (e: React.FormEvent) => {
@@ -162,6 +177,7 @@ const Register = () => {
                       defaultValue="student" 
                       className="flex space-x-4 mt-2"
                       onValueChange={setAccountType}
+                      required
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="student" id="student" />
@@ -174,10 +190,37 @@ const Register = () => {
                     </RadioGroup>
                   </div>
 
+                  {accountType === "student" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="profilePicture">Profile Picture</Label>
+                      <div className="flex items-center space-x-4">
+                        <Avatar className="h-20 w-20">
+                          <AvatarImage src={profileImage} />
+                          <AvatarFallback>
+                            <Camera className="h-8 w-8 text-gray-400" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <input
+                            type="file"
+                            id="profilePicture"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                            required
+                          />
+                          <Label htmlFor="profilePicture" className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            Upload Photo
+                          </Label>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="title">Title</Label>
-                      <Select onValueChange={(value) => handleInputChange("title", value)}>
+                      <Label htmlFor="title">Title *</Label>
+                      <Select onValueChange={(value) => handleInputChange("title", value)} required>
                         <SelectTrigger>
                           <SelectValue placeholder="Select title" />
                         </SelectTrigger>
@@ -187,11 +230,12 @@ const Register = () => {
                           <SelectItem value="mr">Mr</SelectItem>
                           <SelectItem value="mrs">Mrs</SelectItem>
                           <SelectItem value="miss">Miss</SelectItem>
+                          <SelectItem value="ms">Ms</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="firstName">First name</Label>
+                      <Label htmlFor="firstName">First name *</Label>
                       <Input 
                         id="firstName" 
                         value={formData.firstName}
@@ -200,7 +244,7 @@ const Register = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lastName">Last name</Label>
+                      <Label htmlFor="lastName">Last name *</Label>
                       <Input 
                         id="lastName" 
                         value={formData.lastName}
@@ -212,23 +256,21 @@ const Register = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Sex</Label>
-                      <RadioGroup 
-                        className="flex space-x-4 mt-2"
-                        onValueChange={(value) => handleInputChange("sex", value)}
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="male" id="male" />
-                          <Label htmlFor="male" className="cursor-pointer">Male</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="female" id="female" />
-                          <Label htmlFor="female" className="cursor-pointer">Female</Label>
-                        </div>
-                      </RadioGroup>
+                      <Label>Sex *</Label>
+                      <Select onValueChange={(value) => handleInputChange("sex", value)} required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select sex" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="male">Male</SelectItem>
+                          <SelectItem value="female">Female</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                          <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="contact">Contact (WhatsApp)</Label>
+                      <Label htmlFor="contact">Contact (WhatsApp) *</Label>
                       <Input 
                         id="contact" 
                         type="tel" 
@@ -239,10 +281,27 @@ const Register = () => {
                       />
                     </div>
                   </div>
+
+                  {accountType === "student" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="academicLevel">Academic Level *</Label>
+                      <Select onValueChange={(value) => handleInputChange("academicLevel", value)} required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select academic level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="hnd">Higher National Diploma (HND)</SelectItem>
+                          <SelectItem value="undergraduate">Undergraduate</SelectItem>
+                          <SelectItem value="postgraduate">Postgraduate</SelectItem>
+                          <SelectItem value="postdoc">Post Doctorate</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
+                      <Label htmlFor="email">Email *</Label>
                       <Input 
                         id="email" 
                         type="email" 
@@ -253,7 +312,7 @@ const Register = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="password">Password</Label>
+                      <Label htmlFor="password">Password *</Label>
                       <Input 
                         id="password" 
                         type="password" 
@@ -268,59 +327,123 @@ const Register = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="university">University</Label>
-                    <Input 
-                      id="university" 
-                      placeholder="e.g., University of Yaoundé I" 
-                      value={formData.university}
-                      onChange={(e) => handleInputChange("university", e.target.value)}
-                      required 
-                    />
+                    <Label htmlFor="university">University *</Label>
+                    <Select onValueChange={(value) => handleInputChange("university", value)} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select university" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="university-yaounde-1">University of Yaoundé I</SelectItem>
+                        <SelectItem value="university-yaounde-2">University of Yaoundé II</SelectItem>
+                        <SelectItem value="university-douala">University of Douala</SelectItem>
+                        <SelectItem value="university-buea">University of Buea</SelectItem>
+                        <SelectItem value="university-bamenda">University of Bamenda</SelectItem>
+                        <SelectItem value="university-dschang">University of Dschang</SelectItem>
+                        <SelectItem value="university-ngaoundere">University of Ngaoundéré</SelectItem>
+                        <SelectItem value="university-maroua">University of Maroua</SelectItem>
+                        <SelectItem value="catholic-university">Catholic University of Central Africa</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="faculty">Faculty</Label>
-                      <Input 
-                        id="faculty" 
-                        placeholder="e.g., Faculty of Science" 
-                        value={formData.faculty}
-                        onChange={(e) => handleInputChange("faculty", e.target.value)}
-                        required 
-                      />
+                      <Label htmlFor="faculty">Faculty *</Label>
+                      <Select onValueChange={(value) => handleInputChange("faculty", value)} required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select faculty" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="science">Faculty of Science</SelectItem>
+                          <SelectItem value="arts">Faculty of Arts</SelectItem>
+                          <SelectItem value="medicine">Faculty of Medicine</SelectItem>
+                          <SelectItem value="engineering">Faculty of Engineering</SelectItem>
+                          <SelectItem value="law">Faculty of Law</SelectItem>
+                          <SelectItem value="economics">Faculty of Economics</SelectItem>
+                          <SelectItem value="education">Faculty of Education</SelectItem>
+                          <SelectItem value="agriculture">Faculty of Agriculture</SelectItem>
+                          <SelectItem value="social-sciences">Faculty of Social Sciences</SelectItem>
+                          <SelectItem value="business">Faculty of Business</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="department">Department</Label>
-                      <Input 
-                        id="department" 
-                        placeholder="e.g., Computer Science" 
-                        value={formData.department}
-                        onChange={(e) => handleInputChange("department", e.target.value)}
-                        required 
-                      />
+                      <Label htmlFor="department">Department *</Label>
+                      <Select onValueChange={(value) => handleInputChange("department", value)} required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="computer-science">Computer Science</SelectItem>
+                          <SelectItem value="mathematics">Mathematics</SelectItem>
+                          <SelectItem value="physics">Physics</SelectItem>
+                          <SelectItem value="chemistry">Chemistry</SelectItem>
+                          <SelectItem value="biology">Biology</SelectItem>
+                          <SelectItem value="english">English Language</SelectItem>
+                          <SelectItem value="french">French Language</SelectItem>
+                          <SelectItem value="history">History</SelectItem>
+                          <SelectItem value="philosophy">Philosophy</SelectItem>
+                          <SelectItem value="psychology">Psychology</SelectItem>
+                          <SelectItem value="sociology">Sociology</SelectItem>
+                          <SelectItem value="economics">Economics</SelectItem>
+                          <SelectItem value="accounting">Accounting</SelectItem>
+                          <SelectItem value="management">Management</SelectItem>
+                          <SelectItem value="marketing">Marketing</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="country">Country</Label>
-                      <Input 
-                        id="country" 
-                        placeholder="e.g., Cameroon" 
-                        value={formData.country}
-                        onChange={(e) => handleInputChange("country", e.target.value)}
-                        required 
-                      />
+                      <Label htmlFor="country">Country *</Label>
+                      <Select onValueChange={(value) => handleInputChange("country", value)} required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cameroon">Cameroon</SelectItem>
+                          <SelectItem value="nigeria">Nigeria</SelectItem>
+                          <SelectItem value="ghana">Ghana</SelectItem>
+                          <SelectItem value="kenya">Kenya</SelectItem>
+                          <SelectItem value="south-africa">South Africa</SelectItem>
+                          <SelectItem value="senegal">Senegal</SelectItem>
+                          <SelectItem value="ivory-coast">Ivory Coast</SelectItem>
+                          <SelectItem value="burkina-faso">Burkina Faso</SelectItem>
+                          <SelectItem value="mali">Mali</SelectItem>
+                          <SelectItem value="chad">Chad</SelectItem>
+                          <SelectItem value="gabon">Gabon</SelectItem>
+                          <SelectItem value="equatorial-guinea">Equatorial Guinea</SelectItem>
+                          <SelectItem value="central-african-republic">Central African Republic</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="city">City</Label>
-                      <Input 
-                        id="city" 
-                        placeholder="e.g., Yaoundé" 
-                        value={formData.city}
-                        onChange={(e) => handleInputChange("city", e.target.value)}
-                        required 
-                      />
+                      <Label htmlFor="city">City *</Label>
+                      <Select onValueChange={(value) => handleInputChange("city", value)} required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select city" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yaounde">Yaoundé</SelectItem>
+                          <SelectItem value="douala">Douala</SelectItem>
+                          <SelectItem value="bamenda">Bamenda</SelectItem>
+                          <SelectItem value="bafoussam">Bafoussam</SelectItem>
+                          <SelectItem value="garoua">Garoua</SelectItem>
+                          <SelectItem value="maroua">Maroua</SelectItem>
+                          <SelectItem value="ngaoundere">Ngaoundéré</SelectItem>
+                          <SelectItem value="bertoua">Bertoua</SelectItem>
+                          <SelectItem value="ebolowa">Ebolowa</SelectItem>
+                          <SelectItem value="kumba">Kumba</SelectItem>
+                          <SelectItem value="limbe">Limbe</SelectItem>
+                          <SelectItem value="buea">Buea</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </div>
@@ -352,18 +475,21 @@ const Register = () => {
                 </p>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="institution">Institution</Label>
-                  <select 
-                    id="institution"
-                    className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-                  >
-                    <option value="" disabled selected>Select your institution</option>
-                    <option value="stanford">Stanford University</option>
-                    <option value="mit">Massachusetts Institute of Technology</option>
-                    <option value="harvard">Harvard University</option>
-                    <option value="berkeley">UC Berkeley</option>
-                    <option value="other">Other (specify)</option>
-                  </select>
+                  <Label htmlFor="institution">Institution *</Label>
+                  <Select required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your institution" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="stanford">Stanford University</SelectItem>
+                      <SelectItem value="mit">Massachusetts Institute of Technology</SelectItem>
+                      <SelectItem value="harvard">Harvard University</SelectItem>
+                      <SelectItem value="berkeley">UC Berkeley</SelectItem>
+                      <SelectItem value="oxford">University of Oxford</SelectItem>
+                      <SelectItem value="cambridge">University of Cambridge</SelectItem>
+                      <SelectItem value="other">Other (specify)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <Button className="w-full">
