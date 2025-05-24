@@ -14,6 +14,8 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import AboutUs from "./pages/AboutUs";
 import ResearcherDashboard from "./pages/ResearcherDashboard";
+import HowItWorks from "./pages/HowItWorks";
+import CoAuthorWorkspace from "./pages/CoAuthorWorkspace";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,8 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/researcher-dashboard" element={<ResearcherDashboard />} />
             <Route path="/about-us" element={<AboutUs />} />
+            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

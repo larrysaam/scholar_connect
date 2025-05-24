@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from 'react';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
   return (
     <nav className="bg-white shadow-sm py-4">
@@ -21,20 +23,20 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-6">
-          <Link to="/" className="text-gray-700 hover:text-blue-900 transition-colors">Home</Link>
-          <Link to="/researchers" className="text-gray-700 hover:text-blue-900 transition-colors">Researchers</Link>
+          <Link to="/" className="text-gray-700 hover:text-blue-900 transition-colors">{t('nav.home')}</Link>
+          <Link to="/researchers" className="text-gray-700 hover:text-blue-900 transition-colors">{t('nav.researchers')}</Link>
           <Link to="/how-it-works" className="text-gray-700 hover:text-blue-900 transition-colors">How It Works</Link>
-          <Link to="/about-us" className="text-gray-700 hover:text-blue-900 transition-colors">About Us</Link>
+          <Link to="/about-us" className="text-gray-700 hover:text-blue-900 transition-colors">{t('nav.about')}</Link>
           <Link to="/dashboard" className="text-gray-700 hover:text-blue-900 transition-colors">Student Dashboard</Link>
           <Link to="/researcher-dashboard" className="text-gray-700 hover:text-blue-900 transition-colors">Researcher Dashboard</Link>
         </div>
 
         <div className="hidden md:flex items-center space-x-4">
           <Button asChild variant="outline" size="sm" className="border-blue-900 text-blue-900 hover:bg-blue-50">
-            <Link to="/login">Log in</Link>
+            <Link to="/login">{t('nav.login')}</Link>
           </Button>
           <Button asChild size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
-            <Link to="/register">Sign up</Link>
+            <Link to="/register">{t('nav.register')}</Link>
           </Button>
         </div>
 
@@ -56,14 +58,14 @@ const Navbar = () => {
               className="text-gray-700 hover:text-blue-900 transition-colors py-2 text-lg"
               onClick={() => setIsMenuOpen(false)}
             >
-              Home
+              {t('nav.home')}
             </Link>
             <Link 
               to="/researchers" 
               className="text-gray-700 hover:text-blue-900 transition-colors py-2 text-lg"
               onClick={() => setIsMenuOpen(false)}
             >
-              Researchers
+              {t('nav.researchers')}
             </Link>
             <Link 
               to="/how-it-works" 
@@ -77,7 +79,7 @@ const Navbar = () => {
               className="text-gray-700 hover:text-blue-900 transition-colors py-2 text-lg"
               onClick={() => setIsMenuOpen(false)}
             >
-              About Us
+              {t('nav.about')}
             </Link>
             <Link 
               to="/dashboard" 
@@ -100,14 +102,14 @@ const Navbar = () => {
                 className="w-full border-blue-900 text-blue-900 hover:bg-blue-50"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <Link to="/login">Log in</Link>
+                <Link to="/login">{t('nav.login')}</Link>
               </Button>
               <Button 
                 asChild 
                 className="w-full bg-blue-500 hover:bg-blue-600 text-white"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <Link to="/register">Sign up</Link>
+                <Link to="/register">{t('nav.register')}</Link>
               </Button>
             </div>
           </div>
