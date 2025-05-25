@@ -80,11 +80,14 @@ const ResearcherCard = ({
           </Badge>
         </div>
 
-        {/* Verification Badges */}
-        <div className="flex flex-wrap gap-1 mb-4">
-          <VerificationBadge type="academic" status={verifications.academic} size="sm" />
-          <VerificationBadge type="publication" status={verifications.publication} size="sm" />
-          <VerificationBadge type="institutional" status={verifications.institutional} size="sm" />
+        {/* Single Verification Badge */}
+        <div className="flex items-center mb-4">
+          <VerificationBadge 
+            type="overall" 
+            status="verified" 
+            size="md" 
+            verifications={verifications}
+          />
         </div>
         
         <div className="mt-4">

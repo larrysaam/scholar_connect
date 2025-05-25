@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import VerificationBadge from "@/components/verification/VerificationBadge";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Award, FileText, Building, CheckCircle, Clock, Upload } from "lucide-react";
+import { Award, FileText, Building, CheckCircle, Clock, Upload, Shield } from "lucide-react";
 
 interface VerificationTabProps {
   verifications: {
@@ -22,32 +22,87 @@ const VerificationTab = ({ verifications }: VerificationTabProps) => {
       status: verifications.academic,
       icon: <Award className="h-5 w-5" />,
       documents: verifications.academic === "unverified" ? [] : ["PhD_Certificate.pdf", "Academic_Transcripts.pdf"],
-      description: "Verified academic credentials including degrees, certifications, and institutional affiliations."
+      description: "Academic credentials including degrees, certifications, and institutional affiliations verified through official transcripts and certificates."
     },
     {
       type: "publication" as const,
       status: verifications.publication,
       icon: <FileText className="h-5 w-5" />,
       documents: verifications.publication === "unverified" ? [] : ["Publication_List.pdf", "ORCID_Profile.pdf", "Citation_Report.pdf"],
-      description: "Verified publication history, research output, and academic contributions."
+      description: "Research output and academic contributions verified through publication databases, ORCID profiles, and citation metrics."
     },
     {
       type: "institutional" as const,
       status: verifications.institutional,
       icon: <Building className="h-5 w-5" />,
-      documents: verifications.institutional === "unverified" ? [] : ["Employment_Letter.pdf", "Institution_Verification.pdf"],
-      description: "Verified current institutional affiliation and employment status."
+      documents: verifications.institutional === "unverified" ? [] : ["Employment_Letter.pdf", "Institutional_Email_Verification.pdf"],
+      description: "Current institutional affiliation verified through institutional email confirmation and official appointment letters."
     }
   ];
+
+  // Calculate overall verification status
+  const getOverallStatus = () => {
+    const { academic, publication, institutional } = verifications;
+    
+    if (academic === "verified" && publication === "verified" && institutional === "verified") {
+      return "verified";
+    }
+    
+    if (academic === "pending" || publication === "pending" || institutional === "pending") {
+      return "pending";
+    }
+    
+    if (academic === "verified" || publication === "verified" || institutional === "verified") {
+      return "verified";
+    }
+    
+    return "unverified";
+  };
+
+  const overallStatus = getOverallStatus();
+  const verifiedCount = Object.values(verifications).filter(v => v === "verified").length;
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-semibold mb-2">Verification & Credentials</h2>
         <p className="text-gray-600">
-          This researcher's credentials have been verified through our comprehensive validation process.
+          This researcher's credentials are verified through our comprehensive three-tier validation process.
         </p>
       </div>
+
+      {/* Overall Verification Status */}
+      <Card className="bg-blue-50 border-blue-200">
+        <CardHeader>
+          <CardTitle className="text-blue-800 flex items-center justify-between">
+            <div className="flex items-center">
+              <Shield className="h-5 w-5 mr-2" />
+              Overall Verification Status
+            </div>
+            <VerificationBadge 
+              type="overall" 
+              status={overallStatus}
+              size="lg"
+              verifications={verifications}
+            />
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm text-blue-700">
+            <p className="mb-2">
+              <strong>Verification Score:</strong> {verifiedCount}/3 credentials verified
+            </p>
+            <p className="mb-2">
+              This researcher has been verified through our rigorous process that includes:
+            </p>
+            <ul className="list-disc list-inside space-y-1 ml-4">
+              <li>Academic credential verification through official transcripts</li>
+              <li>Publication history verification via academic databases</li>
+              <li>Institutional affiliation via institutional email and appointment letters</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {verificationItems.map((item) => (
@@ -114,42 +169,28 @@ const VerificationTab = ({ verifications }: VerificationTabProps) => {
         ))}
       </div>
 
-      {/* Trust Score Summary */}
-      <Card className="bg-blue-50 border-blue-200">
+      {/* Verification Process Info */}
+      <Card className="bg-gray-50 border-gray-200">
         <CardHeader>
-          <CardTitle className="text-blue-800 flex items-center">
+          <CardTitle className="text-gray-800 flex items-center">
             <CheckCircle className="h-5 w-5 mr-2" />
-            Trust Score
+            Our Verification Process
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-lg font-semibold text-blue-800">Verification Status</span>
-            <div className="flex space-x-2">
-              {Object.values(verifications).map((status, index) => (
-                <Badge 
-                  key={index}
-                  variant={status === "verified" ? "default" : status === "pending" ? "secondary" : "outline"}
-                  className={`text-xs ${
-                    status === "verified" ? "bg-green-100 text-green-800 border-green-200" : 
-                    status === "pending" ? "bg-yellow-100 text-yellow-800 border-yellow-200" : 
-                    "bg-gray-100 text-gray-600 border-gray-200"
-                  }`}
-                >
-                  {status}
-                </Badge>
-              ))}
+          <div className="text-sm text-gray-700 space-y-3">
+            <div>
+              <h4 className="font-semibold">Academic Verification</h4>
+              <p>We verify degrees and certifications through official transcripts and institutional confirmation.</p>
             </div>
-          </div>
-          
-          <div className="text-sm text-blue-700">
-            <p className="mb-2">
-              <strong>Verified researchers</strong> have gone through our comprehensive credential validation process.
-            </p>
-            <p>
-              This includes verification of academic credentials, publication history, and institutional affiliations 
-              to ensure you're connecting with qualified experts.
-            </p>
+            <div>
+              <h4 className="font-semibold">Publication Verification</h4>
+              <p>Research output is verified through academic databases, ORCID profiles, and citation analysis.</p>
+            </div>
+            <div>
+              <h4 className="font-semibold">Institutional Verification</h4>
+              <p>Current affiliation is confirmed through institutional email verification and official appointment letters.</p>
+            </div>
           </div>
         </CardContent>
       </Card>

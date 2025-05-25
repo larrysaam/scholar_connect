@@ -64,11 +64,14 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
               ))}
             </div>
 
-            {/* Verification Badges - prominently displayed */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              <VerificationBadge type="academic" status={verifications.academic} size="md" />
-              <VerificationBadge type="publication" status={verifications.publication} size="md" />
-              <VerificationBadge type="institutional" status={verifications.institutional} size="md" />
+            {/* Single Verification Badge */}
+            <div className="mb-4">
+              <VerificationBadge 
+                type="overall" 
+                status="verified" 
+                size="md" 
+                verifications={verifications}
+              />
             </div>
             
             <h1 className="text-3xl md:text-4xl font-bold">{researcher.name}</h1>
