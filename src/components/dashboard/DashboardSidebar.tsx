@@ -6,8 +6,7 @@ import {
   User,
   FileText,
   Settings,
-  Banknote,
-  Shield
+  Banknote
 } from "lucide-react";
 
 interface DashboardSidebarProps {
@@ -52,14 +51,6 @@ const DashboardSidebar = ({ activeTab, setActiveTab }: DashboardSidebarProps) =>
         >
           <Banknote className="mr-2 h-4 w-4" />
           Payments
-        </Button>
-        <Button 
-          variant={activeTab === "quality" ? "default" : "ghost"} 
-          className="w-full justify-start" 
-          onClick={() => setActiveTab("quality")}
-        >
-          <Shield className="mr-2 h-4 w-4" />
-          Quality
         </Button>
         <Button 
           variant={activeTab === "profile" ? "default" : "ghost"} 

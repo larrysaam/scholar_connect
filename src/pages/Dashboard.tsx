@@ -5,7 +5,6 @@ import Footer from "@/components/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardContent from "@/components/dashboard/DashboardContent";
 import UserOnboarding from "@/components/onboarding/UserOnboarding";
-import QualityAssurance from "@/components/quality/QualityAssurance";
 import { Card, CardContent } from "@/components/ui/card";
 
 const Dashboard = () => {
@@ -31,7 +30,7 @@ const Dashboard = () => {
       
       <main className="flex-grow bg-gray-50 py-12">
         <div className="container mx-auto px-4 md:px-6">
-          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+          <h1 className="text-3xl font-bold mb-2">Student Dashboard</h1>
           <p className="text-gray-600 mb-8">Manage your consultations and account</p>
           
           {/* Show onboarding for new users */}
@@ -57,11 +56,7 @@ const Dashboard = () => {
             
             {/* Main content */}
             <div className="md:col-span-3">
-              {activeTab === "quality" ? (
-                <QualityAssurance />
-              ) : (
-                <DashboardContent activeTab={activeTab} setActiveTab={setActiveTab} />
-              )}
+              <DashboardContent activeTab={activeTab} setActiveTab={setActiveTab} />
             </div>
           </div>
         </div>

@@ -1,7 +1,6 @@
 
 import { Button } from "@/components/ui/button";
 import ResearchSummaryForm from "../ResearchSummaryForm";
-import VerificationManager from "@/components/verification/VerificationManager";
 
 const ProfileTab = () => {
   return (
@@ -14,8 +13,6 @@ const ProfileTab = () => {
           <Button>Edit Profile</Button>
         </div>
       </div>
-
-      <VerificationManager />
 
       <ResearchSummaryForm />
     </div>

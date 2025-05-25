@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -19,6 +18,8 @@ import {
   Users,
   MessageSquare,
   BarChart,
+  Shield,
+  Award
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -30,6 +31,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import QualityAssurance from "@/components/quality/QualityAssurance";
+import VerificationManager from "@/components/verification/VerificationManager";
 
 // Mock data for upcoming consultations
 const upcomingConsultations = [
@@ -251,6 +254,14 @@ const ResearcherDashboard = () => {
                     <Wallet className="mr-2 h-4 w-4" />
                     Earnings
                   </Button>
+                  <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveTab("quality")}>
+                    <Shield className="mr-2 h-4 w-4" />
+                    Quality Assurance
+                  </Button>
+                  <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveTab("verification")}>
+                    <Award className="mr-2 h-4 w-4" />
+                    Verification
+                  </Button>
                   <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveTab("availability")}>
                     <Calendar className="mr-2 h-4 w-4" />
                     Availability
@@ -447,6 +458,14 @@ const ResearcherDashboard = () => {
                       </Table>
                     </div>
                   </div>
+                </TabsContent>
+                
+                <TabsContent value="quality" className="mt-0">
+                  <QualityAssurance />
+                </TabsContent>
+                
+                <TabsContent value="verification" className="mt-0">
+                  <VerificationManager />
                 </TabsContent>
                 
                 <TabsContent value="availability" className="mt-0">
