@@ -10,6 +10,38 @@ export const frTranslations = {
   hero: {
     joinAsResearcher: "Rejoindre en tant que Chercheur"
   },
+  researchAides: {
+    title: "Assistant de Recherche",
+    subtitle: "Trouvez une assistance spécialisée pour vos projets de recherche",
+    searchPlaceholder: "Rechercher des assistants de recherche...",
+    categories: {
+      all: "Toutes les Catégories",
+      gis: "Spécialiste SIG",
+      statistics: "Statistiques",
+      cartography: "Cartographie",
+      dataCollection: "Collecte de Données",
+      journalPublishing: "Publication de Journaux",
+      academicEditing: "Édition Académique"
+    },
+    results: {
+      title: "Assistants de Recherche Disponibles",
+      found: "Trouvé",
+      specialists: "spécialistes"
+    },
+    card: {
+      skills: "Compétences",
+      experience: "expérience",
+      available: "Disponible",
+      busy: "Occupé",
+      contact: "Contacter"
+    },
+    noResults: "Aucun assistant de recherche trouvé correspondant à vos critères.",
+    cta: {
+      title: "Devenir Assistant de Recherche",
+      description: "Partagez votre expertise et aidez les étudiants avec leurs projets de recherche",
+      joinButton: "Rejoindre comme Assistant de Recherche"
+    }
+  },
   contact: {
     title: "Contactez-nous",
     subtitle: "Entrez en contact avec notre équipe",

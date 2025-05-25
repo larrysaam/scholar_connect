@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ const ResearchAideSignup = () => {
   const { t } = useLanguage();
   const [skills, setSkills] = useState<string[]>([]);
   const [currentSkill, setCurrentSkill] = useState("");
+  const [languages, setLanguages] = useState<string[]>([]);
 
   const addSkill = () => {
     if (currentSkill.trim() && !skills.includes(currentSkill.trim())) {
@@ -28,6 +30,14 @@ const ResearchAideSignup = () => {
     setSkills(skills.filter(skill => skill !== skillToRemove));
   };
 
+  const toggleLanguage = (language: string) => {
+    setLanguages(prev => 
+      prev.includes(language) 
+        ? prev.filter(lang => lang !== language)
+        : [...prev, language]
+    );
+  };
+
   const specializations = [
     "GIS Specialist",
     "Statistician", 
@@ -37,6 +47,17 @@ const ResearchAideSignup = () => {
     "Academic Editor",
     "Research Methodology Consultant",
     "Literature Review Specialist"
+  ];
+
+  const availableLanguages = [
+    "English",
+    "French",
+    "Spanish",
+    "German",
+    "Portuguese",
+    "Arabic",
+    "Chinese",
+    "Other"
   ];
 
   return (
@@ -84,6 +105,11 @@ const ResearchAideSignup = () => {
                     <div>
                       <Label htmlFor="location">Location</Label>
                       <Input id="location" placeholder="City, Country" />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="company">Company Name</Label>
+                      <Input id="company" placeholder="Enter your company or organization" />
                     </div>
                   </div>
 
@@ -169,6 +195,34 @@ const ResearchAideSignup = () => {
                                 className="h-3 w-3 cursor-pointer" 
                                 onClick={() => removeSkill(skill)}
                               />
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label>Preferred Languages (you can click more than one)</Label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
+                        {availableLanguages.map((language) => (
+                          <div key={language} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={language}
+                              checked={languages.includes(language)}
+                              onCheckedChange={() => toggleLanguage(language)}
+                            />
+                            <Label htmlFor={language} className="text-sm">
+                              {language}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {languages.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {languages.map((language) => (
+                            <Badge key={language} variant="outline">
+                              {language}
                             </Badge>
                           ))}
                         </div>

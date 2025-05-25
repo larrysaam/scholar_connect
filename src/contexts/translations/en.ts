@@ -10,6 +10,38 @@ export const enTranslations = {
   hero: {
     joinAsResearcher: "Join as a Researcher"
   },
+  researchAides: {
+    title: "Research Aid",
+    subtitle: "Find specialized assistance for your research projects",
+    searchPlaceholder: "Search for research aides...",
+    categories: {
+      all: "All Categories",
+      gis: "GIS Specialist",
+      statistics: "Statistics",
+      cartography: "Cartography",
+      dataCollection: "Data Collection",
+      journalPublishing: "Journal Publishing",
+      academicEditing: "Academic Editing"
+    },
+    results: {
+      title: "Available Research Aides",
+      found: "Found",
+      specialists: "specialists"
+    },
+    card: {
+      skills: "Skills",
+      experience: "experience",
+      available: "Available",
+      busy: "Busy",
+      contact: "Contact"
+    },
+    noResults: "No research aides found matching your criteria.",
+    cta: {
+      title: "Become a Research Aid",
+      description: "Share your expertise and help students with their research projects",
+      joinButton: "Join as Research Aid"
+    }
+  },
   contact: {
     title: "Contact Us",
     subtitle: "Get in touch with our team",
