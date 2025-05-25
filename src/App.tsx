@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,38 +23,50 @@ import Partnerships from "./pages/Partnerships";
 import ResearchAideSignup from "./pages/ResearchAideSignup";
 import ResearchAideDashboard from "./pages/ResearchAideDashboard";
 
-const queryClient = new QueryClient();
+// Create a stable QueryClient instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/researchers" element={<Researchers />} />
-            <Route path="/researchers/:id" element={<ResearcherProfile />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/researcher-dashboard" element={<ResearcherDashboard />} />
-            <Route path="/about-us" element={<AboutUs />} />
-            <Route path="/how-it-works" element={<HowItWorks />} />
-            <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
-            <Route path="/research-aides" element={<ResearchAides />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/partnerships" element={<Partnerships />} />
-            <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
-            <Route path="/research-aide-dashboard" element={<ResearchAideDashboard />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </LanguageProvider>
-  </QueryClientProvider>
-);
+const App: React.FC = () => {
+  return (
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/researchers" element={<Researchers />} />
+                <Route path="/researchers/:id" element={<ResearcherProfile />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/researcher-dashboard" element={<ResearcherDashboard />} />
+                <Route path="/about-us" element={<AboutUs />} />
+                <Route path="/how-it-works" element={<HowItWorks />} />
+                <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
+                <Route path="/research-aides" element={<ResearchAides />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/partnerships" element={<Partnerships />} />
+                <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
+                <Route path="/research-aide-dashboard" element={<ResearchAideDashboard />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </LanguageProvider>
+      </QueryClientProvider>
+    </React.StrictMode>
+  );
+};
 
 export default App;

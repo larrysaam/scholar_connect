@@ -1,15 +1,20 @@
 
 import { useState } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Mail, Phone, MapPin, Clock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Mail, Phone, MapPin, Clock, ChevronDown, ChevronUp } from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const Contact = () => {
   const { t } = useLanguage();
@@ -20,11 +25,9 @@ const Contact = () => {
     subject: "",
     message: ""
   });
-  const [openFaqs, setOpenFaqs] = useState<number[]>([]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -33,197 +36,187 @@ const Contact = () => {
     // Handle form submission
   };
 
-  const toggleFaq = (index: number) => {
-    setOpenFaqs(prev => 
-      prev.includes(index) 
-        ? prev.filter(i => i !== index)
-        : [...prev, index]
-    );
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">{t('contact.title')}</h1>
-              <p className="text-xl text-blue-100">
-                {t('contact.subtitle')}
-              </p>
-            </div>
+      <main className="flex-grow py-16 bg-gray-50">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              {t.contact?.title || "Contact Us"}
+            </h1>
+            <p className="text-xl text-gray-600">
+              {t.contact?.subtitle || "Get in touch with our team"}
+            </p>
           </div>
-        </section>
 
-        {/* Contact Content */}
-        <section className="py-16">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-              {/* Contact Form */}
+          <div className="grid lg:grid-cols-2 gap-12 mb-16">
+            {/* Contact Form */}
+            <Card>
+              <CardHeader>
+                <CardTitle>{t.contact?.form?.title || "Send us a message"}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="firstName">{t.contact?.form?.firstName || "First Name"}</Label>
+                      <Input
+                        id="firstName"
+                        value={formData.firstName}
+                        onChange={(e) => handleInputChange("firstName", e.target.value)}
+                        placeholder={t.contact?.form?.firstNamePlaceholder || "Enter your first name"}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="lastName">{t.contact?.form?.lastName || "Last Name"}</Label>
+                      <Input
+                        id="lastName"
+                        value={formData.lastName}
+                        onChange={(e) => handleInputChange("lastName", e.target.value)}
+                        placeholder={t.contact?.form?.lastNamePlaceholder || "Enter your last name"}
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="email">{t.contact?.form?.email || "Email"}</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      placeholder={t.contact?.form?.emailPlaceholder || "Enter your email"}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="subject">{t.contact?.form?.subject || "Subject"}</Label>
+                    <Input
+                      id="subject"
+                      value={formData.subject}
+                      onChange={(e) => handleInputChange("subject", e.target.value)}
+                      placeholder={t.contact?.form?.subjectPlaceholder || "Enter subject"}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="message">{t.contact?.form?.message || "Message"}</Label>
+                    <Textarea
+                      id="message"
+                      value={formData.message}
+                      onChange={(e) => handleInputChange("message", e.target.value)}
+                      placeholder={t.contact?.form?.messagePlaceholder || "Enter your message"}
+                      className="min-h-[120px]"
+                      required
+                    />
+                  </div>
+                  
+                  <Button type="submit" className="w-full">
+                    {t.contact?.form?.send || "Send Message"}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            {/* Contact Information */}
+            <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('contact.form.title')}</CardTitle>
+                  <CardTitle>{t.contact?.info?.title || "Contact Information"}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName">{t('contact.form.firstName')}</Label>
-                        <Input
-                          id="firstName"
-                          name="firstName"
-                          type="text"
-                          placeholder={t('contact.form.firstNamePlaceholder')}
-                          value={formData.firstName}
-                          onChange={handleInputChange}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName">{t('contact.form.lastName')}</Label>
-                        <Input
-                          id="lastName"
-                          name="lastName"
-                          type="text"
-                          placeholder={t('contact.form.lastNamePlaceholder')}
-                          value={formData.lastName}
-                          onChange={handleInputChange}
-                          required
-                        />
-                      </div>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <Mail className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <h4 className="font-semibold">{t.contact?.info?.email?.title || "Email"}</h4>
+                      <p className="text-gray-600">{t.contact?.info?.email?.general || "info@scholarconnect.com"}</p>
+                      <p className="text-gray-600">{t.contact?.info?.email?.support || "support@scholarconnect.com"}</p>
                     </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="email">{t('contact.form.email')}</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder={t('contact.form.emailPlaceholder')}
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required
-                      />
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <Phone className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <h4 className="font-semibold">{t.contact?.info?.phone?.title || "Phone"}</h4>
+                      <p className="text-gray-600">{t.contact?.info?.phone?.main || "+237 123 456 789"}</p>
+                      <p className="text-gray-600">{t.contact?.info?.phone?.whatsapp || "WhatsApp: +237 987 654 321"}</p>
                     </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="subject">{t('contact.form.subject')}</Label>
-                      <Input
-                        id="subject"
-                        name="subject"
-                        type="text"
-                        placeholder={t('contact.form.subjectPlaceholder')}
-                        value={formData.subject}
-                        onChange={handleInputChange}
-                        required
-                      />
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <MapPin className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <h4 className="font-semibold">{t.contact?.info?.address?.title || "Address"}</h4>
+                      <p className="text-gray-600">{t.contact?.info?.address?.street || "123 University Avenue"}</p>
+                      <p className="text-gray-600">{t.contact?.info?.address?.city || "Yaoundé, Cameroon"}</p>
                     </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="message">{t('contact.form.message')}</Label>
-                      <Textarea
-                        id="message"
-                        name="message"
-                        placeholder={t('contact.form.messagePlaceholder')}
-                        value={formData.message}
-                        onChange={handleInputChange}
-                        rows={6}
-                        required
-                      />
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <Clock className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <h4 className="font-semibold">{t.contact?.info?.hours?.title || "Business Hours"}</h4>
+                      <p className="text-gray-600">{t.contact?.info?.hours?.weekdays || "Monday - Friday: 8:00 AM - 6:00 PM"}</p>
+                      <p className="text-gray-600">{t.contact?.info?.hours?.weekends || "Saturday - Sunday: 10:00 AM - 4:00 PM"}</p>
                     </div>
-                    
-                    <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-                      {t('contact.form.send')}
-                    </Button>
-                  </form>
+                  </div>
                 </CardContent>
               </Card>
-
-              {/* Contact Information */}
-              <div className="space-y-8">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t('contact.info.title')}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="flex items-start space-x-4">
-                      <Mail className="h-6 w-6 text-blue-600 mt-1" />
-                      <div>
-                        <h3 className="font-semibold text-lg">{t('contact.info.email.title')}</h3>
-                        <p className="text-gray-600">{t('contact.info.email.general')}</p>
-                        <p className="text-gray-600">{t('contact.info.email.support')}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start space-x-4">
-                      <Phone className="h-6 w-6 text-blue-600 mt-1" />
-                      <div>
-                        <h3 className="font-semibold text-lg">{t('contact.info.phone.title')}</h3>
-                        <p className="text-gray-600">{t('contact.info.phone.main')}</p>
-                        <p className="text-gray-600">{t('contact.info.phone.whatsapp')}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start space-x-4">
-                      <MapPin className="h-6 w-6 text-blue-600 mt-1" />
-                      <div>
-                        <h3 className="font-semibold text-lg">{t('contact.info.address.title')}</h3>
-                        <p className="text-gray-600">{t('contact.info.address.street')}</p>
-                        <p className="text-gray-600">{t('contact.info.address.city')}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start space-x-4">
-                      <Clock className="h-6 w-6 text-blue-600 mt-1" />
-                      <div>
-                        <h3 className="font-semibold text-lg">{t('contact.info.hours.title')}</h3>
-                        <p className="text-gray-600">{t('contact.info.hours.weekdays')}</p>
-                        <p className="text-gray-600">{t('contact.info.hours.weekends')}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
             </div>
           </div>
-        </section>
 
-        {/* FAQs Section */}
-        <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl font-bold text-center mb-12">{t('contact.faqs.title')}</h2>
-              
-              <div className="space-y-4">
-                {t('contact.faqs.questions').map((faq: any, index: number) => (
-                  <Card key={index}>
-                    <Collapsible>
-                      <CollapsibleTrigger 
-                        className="w-full p-6 text-left hover:bg-gray-50 transition-colors"
-                        onClick={() => toggleFaq(index)}
-                      >
-                        <div className="flex justify-between items-center">
-                          <h3 className="font-semibold text-lg">{faq.question}</h3>
-                          {openFaqs.includes(index) ? (
-                            <ChevronUp className="h-5 w-5 text-gray-500" />
-                          ) : (
-                            <ChevronDown className="h-5 w-5 text-gray-500" />
-                          )}
-                        </div>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="px-6 pb-6">
-                        <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </Card>
+          {/* FAQs Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-center text-2xl">{t.contact?.faqs?.title || "Frequently Asked Questions"}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Accordion type="single" collapsible className="w-full">
+                {(t.contact?.faqs?.questions || [
+                  {
+                    question: "How do I sign up as a researcher?",
+                    answer: "Click on 'Join as a Researcher' and fill out the registration form with your academic credentials and expertise."
+                  },
+                  {
+                    question: "What are the fees for using ScholarConnect?",
+                    answer: "Basic membership is free. Premium features and consultations have varying rates set by individual researchers and research aids."
+                  },
+                  {
+                    question: "How do I book a consultation?",
+                    answer: "Browse researcher profiles, select your preferred expert, and use the 'Book Consultation' button to schedule a session."
+                  },
+                  {
+                    question: "Can I collaborate on research projects?",
+                    answer: "Yes! You can send co-author invitations and collaborate on various types of publications through our platform."
+                  },
+                  {
+                    question: "What types of research support are available?",
+                    answer: "We offer various services including literature review, methodology guidance, data analysis, academic writing, and publication support."
+                  },
+                  {
+                    question: "Is my data secure on ScholarConnect?",
+                    answer: "Yes, we use industry-standard security measures to protect all user data and communications on our platform."
+                  }
+                ]).map((faq, index) => (
+                  <AccordionItem key={index} value={`item-${index}`}>
+                    <AccordionTrigger className="text-left">
+                      {faq.question}
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
                 ))}
-              </div>
-            </div>
-          </div>
-        </section>
+              </Accordion>
+            </CardContent>
+          </Card>
+        </div>
       </main>
       
       <Footer />
