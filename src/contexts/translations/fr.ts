@@ -10,7 +10,7 @@ export const frTranslations = {
   hero: {
     joinAsResearcher: "Rejoindre en tant que Chercheur"
   },
-  researchAides: {
+  researchAids: {
     title: "Assistant de Recherche",
     subtitle: "Trouvez une assistance spécialisée pour vos projets de recherche",
     searchPlaceholder: "Rechercher des assistants de recherche...",

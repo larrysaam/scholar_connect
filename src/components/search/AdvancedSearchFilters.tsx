@@ -23,7 +23,7 @@ interface FilterState {
 const AdvancedSearchFilters = () => {
   const [filters, setFilters] = useState<FilterState>({
     field: '',
-    priceRange: [50, 300],
+    priceRange: [35, 175],
     rating: 4.0,
     availability: '',
     experience: '',
@@ -44,7 +44,7 @@ const AdvancedSearchFilters = () => {
     'Software Engineering', 'Creative Writing'
   ];
 
-  const languages = ['English', 'French', 'Spanish', 'German', 'Mandarin'];
+  const languages = ['English', 'French', 'Spanish', 'German', 'Dutch', 'Russian', 'Mandarin'];
 
   const applyFilter = (filterName: string, value: any) => {
     setFilters(prev => ({ ...prev, [filterName]: value }));
@@ -60,7 +60,7 @@ const AdvancedSearchFilters = () => {
   const clearAllFilters = () => {
     setFilters({
       field: '',
-      priceRange: [50, 300],
+      priceRange: [35, 175],
       rating: 4.0,
       availability: '',
       experience: '',
@@ -122,9 +122,9 @@ const AdvancedSearchFilters = () => {
             <Slider
               value={filters.priceRange}
               onValueChange={(value) => applyFilter('priceRange', value)}
-              max={500}
-              min={50}
-              step={10}
+              max={200}
+              min={30}
+              step={5}
               className="w-full"
             />
             <div className="flex justify-between text-sm text-gray-500 mt-1">

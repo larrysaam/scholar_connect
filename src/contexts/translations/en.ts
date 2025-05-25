@@ -10,10 +10,10 @@ export const enTranslations = {
   hero: {
     joinAsResearcher: "Join as a Researcher"
   },
-  researchAides: {
+  researchAids: {
     title: "Research Aid",
     subtitle: "Find specialized assistance for your research projects",
-    searchPlaceholder: "Search for research aides...",
+    searchPlaceholder: "Search for research aids...",
     categories: {
       all: "All Categories",
       gis: "GIS Specialist",
@@ -24,7 +24,7 @@ export const enTranslations = {
       academicEditing: "Academic Editing"
     },
     results: {
-      title: "Available Research Aides",
+      title: "Available Research Aids",
       found: "Found",
       specialists: "specialists"
     },
@@ -35,7 +35,7 @@ export const enTranslations = {
       busy: "Busy",
       contact: "Contact"
     },
-    noResults: "No research aides found matching your criteria.",
+    noResults: "No research aids found matching your criteria.",
     cta: {
       title: "Become a Research Aid",
       description: "Share your expertise and help students with their research projects",

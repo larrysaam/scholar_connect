@@ -57,6 +57,8 @@ const ResearchAideSignup = () => {
     "Portuguese",
     "Arabic",
     "Chinese",
+    "Dutch",
+    "Russian",
     "Other"
   ];
 
@@ -69,10 +71,15 @@ const ResearchAideSignup = () => {
           <div className="max-w-2xl mx-auto">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl text-center">Join as a Research Aid</CardTitle>
-                <p className="text-gray-600 text-center">
-                  Share your expertise and help students with specialized research support
-                </p>
+                <div className="flex flex-col items-center mb-6">
+                  <div className="bg-blue-600 text-white px-6 py-3 rounded-lg mb-4">
+                    <h1 className="text-2xl font-bold">ScholarConnect</h1>
+                  </div>
+                  <CardTitle className="text-2xl text-center">Join as a Research Aid</CardTitle>
+                  <p className="text-gray-600 text-center">
+                    Share your expertise and help students with specialized research support
+                  </p>
+                </div>
               </CardHeader>
               
               <CardContent>
@@ -108,8 +115,8 @@ const ResearchAideSignup = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="company">Company Name</Label>
-                      <Input id="company" placeholder="Enter your company or organization" />
+                      <Label htmlFor="company">Company/Organisation</Label>
+                      <Input id="company" placeholder="Enter your company or organisation" />
                     </div>
                   </div>
 
