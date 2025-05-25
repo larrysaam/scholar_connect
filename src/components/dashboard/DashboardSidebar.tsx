@@ -6,7 +6,8 @@ import {
   User,
   FileText,
   Settings,
-  DollarSign
+  DollarSign,
+  Shield
 } from "lucide-react";
 
 interface DashboardSidebarProps {
@@ -28,27 +29,59 @@ const DashboardSidebar = ({ activeTab, setActiveTab }: DashboardSidebarProps) =>
       </div>
       
       <nav className="space-y-1">
-        <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveTab("upcoming")}>
+        <Button 
+          variant={activeTab === "upcoming" ? "default" : "ghost"} 
+          className="w-full justify-start" 
+          onClick={() => setActiveTab("upcoming")}
+        >
           <Calendar className="mr-2 h-4 w-4" />
           Upcoming
         </Button>
-        <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveTab("past")}>
+        <Button 
+          variant={activeTab === "past" ? "default" : "ghost"} 
+          className="w-full justify-start" 
+          onClick={() => setActiveTab("past")}
+        >
           <Clock className="mr-2 h-4 w-4" />
           Past Consultations
         </Button>
-        <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveTab("payments")}>
+        <Button 
+          variant={activeTab === "payments" ? "default" : "ghost"} 
+          className="w-full justify-start" 
+          onClick={() => setActiveTab("payments")}
+        >
           <DollarSign className="mr-2 h-4 w-4" />
           Payments
         </Button>
-        <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveTab("profile")}>
+        <Button 
+          variant={activeTab === "quality" ? "default" : "ghost"} 
+          className="w-full justify-start" 
+          onClick={() => setActiveTab("quality")}
+        >
+          <Shield className="mr-2 h-4 w-4" />
+          Quality
+        </Button>
+        <Button 
+          variant={activeTab === "profile" ? "default" : "ghost"} 
+          className="w-full justify-start" 
+          onClick={() => setActiveTab("profile")}
+        >
           <User className="mr-2 h-4 w-4" />
           Profile
         </Button>
-        <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveTab("documents")}>
+        <Button 
+          variant={activeTab === "documents" ? "default" : "ghost"} 
+          className="w-full justify-start" 
+          onClick={() => setActiveTab("documents")}
+        >
           <FileText className="mr-2 h-4 w-4" />
           Documents
         </Button>
-        <Button variant="ghost" className="w-full justify-start" onClick={() => setActiveTab("settings")}>
+        <Button 
+          variant={activeTab === "settings" ? "default" : "ghost"} 
+          className="w-full justify-start" 
+          onClick={() => setActiveTab("settings")}
+        >
           <Settings className="mr-2 h-4 w-4" />
           Settings
         </Button>

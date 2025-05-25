@@ -1,12 +1,29 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardContent from "@/components/dashboard/DashboardContent";
+import UserOnboarding from "@/components/onboarding/UserOnboarding";
+import QualityAssurance from "@/components/quality/QualityAssurance";
+import { Card, CardContent } from "@/components/ui/card";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Check if user needs onboarding (simulate with localStorage)
+  useEffect(() => {
+    const hasCompletedOnboarding = localStorage.getItem('onboarding_complete');
+    if (!hasCompletedOnboarding) {
+      setShowOnboarding(true);
+    }
+  }, []);
+
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('onboarding_complete', 'true');
+    setShowOnboarding(false);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -17,6 +34,21 @@ const Dashboard = () => {
           <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
           <p className="text-gray-600 mb-8">Manage your consultations and account</p>
           
+          {/* Show onboarding for new users */}
+          {showOnboarding && (
+            <div className="mb-8">
+              <UserOnboarding />
+              <div className="text-center mt-4">
+                <button 
+                  onClick={handleOnboardingComplete}
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  Skip onboarding
+                </button>
+              </div>
+            </div>
+          )}
+          
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Sidebar */}
             <div className="md:col-span-1">
@@ -25,7 +57,11 @@ const Dashboard = () => {
             
             {/* Main content */}
             <div className="md:col-span-3">
-              <DashboardContent activeTab={activeTab} setActiveTab={setActiveTab} />
+              {activeTab === "quality" ? (
+                <QualityAssurance />
+              ) : (
+                <DashboardContent activeTab={activeTab} setActiveTab={setActiveTab} />
+              )}
             </div>
           </div>
         </div>
