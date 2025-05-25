@@ -2,320 +2,178 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import SearchBar from "@/components/SearchBar";
+import ResearchAidCard from "@/components/ResearchAidCard";
+import AIMatchingEngine from "@/components/ai/AIMatchingEngine";
+import NotificationCenter from "@/components/notifications/NotificationCenter";
+import AdvancedSearchFilters from "@/components/search/AdvancedSearchFilters";
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { Search, MapPin, Star, Clock } from "lucide-react";
-import VerificationBadge from "@/components/verification/VerificationBadge";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Filter, Bell } from "lucide-react";
+
+// Mock data for research aids with verification status
+const researchAids = [
+  {
+    id: "1",
+    name: "Dr. Ngozi Amina",
+    title: "GIS Specialist",
+    specialization: "Geographic Information Systems",
+    skills: ["ArcGIS", "QGIS", "Remote Sensing", "Spatial Analysis"],
+    hourlyRate: 15000,
+    rating: 4.8,
+    reviews: 32,
+    imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1376&q=80",
+    languages: ["English", "French", "Fulfulde"],
+    company: "MapTech Solutions Cameroon",
+    verifications: {
+      academic: "verified" as const,
+      publication: "verified" as const,
+      institutional: "verified" as const
+    }
+  },
+  {
+    id: "2", 
+    name: "Emmanuel Talla",
+    title: "Statistician",
+    specialization: "Statistical Analysis",
+    skills: ["SPSS", "R", "Python", "Survey Design", "Data Visualization"],
+    hourlyRate: 12500,
+    rating: 4.9,
+    reviews: 28,
+    imageUrl: "https://images.unsplash.com/photo-1601582589907-f92af5ed9db8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1064&q=80",
+    languages: ["English", "French"],
+    company: "DataCrunch Analytics",
+    verifications: {
+      academic: "verified" as const,
+      publication: "pending" as const,
+      institutional: "verified" as const
+    }
+  },
+  {
+    id: "3",
+    name: "Marie Chantal Fokou",
+    title: "Academic Editor",
+    specialization: "Academic Publishing",
+    skills: ["Copy Editing", "Proofreading", "LaTeX", "Citation Management"],
+    hourlyRate: 10000,
+    rating: 4.7,
+    reviews: 45,
+    imageUrl: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80",
+    languages: ["English", "French", "German"],
+    company: "Academic Excellence Services",
+    verifications: {
+      academic: "verified" as const,
+      publication: "verified" as const,
+      institutional: "pending" as const
+    }
+  },
+  {
+    id: "4",
+    name: "Paul Biya Jr.",
+    title: "Research Methodology Consultant", 
+    specialization: "Research Design",
+    skills: ["Qualitative Research", "Mixed Methods", "Survey Design", "Interview Techniques"],
+    hourlyRate: 18000,
+    rating: 4.6,
+    reviews: 22,
+    imageUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80",
+    languages: ["English", "French"],
+    company: "Research Hub Cameroon",
+    verifications: {
+      academic: "pending" as const,
+      publication: "verified" as const,
+      institutional: "verified" as const
+    }
+  }
+];
 
 const ResearchAides = () => {
-  const { t } = useLanguage();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-
-  const categories = [
-    { value: "all", label: t('researchAids.categories.all') },
-    { value: "gis", label: t('researchAids.categories.gis') },
-    { value: "statistics", label: t('researchAids.categories.statistics') },
-    { value: "cartography", label: t('researchAids.categories.cartography') },
-    { value: "data-collection", label: t('researchAids.categories.dataCollection') },
-    { value: "journal-publishing", label: t('researchAids.categories.journalPublishing') },
-    { value: "academic-editing", label: t('researchAids.categories.academicEditing') }
-  ];
-
-  const researchAides = [
-    {
-      id: 1,
-      name: "Dr. Marie Ngono",
-      category: "gis",
-      title: "GIS Specialist & Remote Sensing Expert",
-      location: "Yaoundé, Cameroon",
-      rating: 4.9,
-      reviews: 127,
-      image: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
-      skills: ["ArcGIS", "QGIS", "Remote Sensing", "Spatial Analysis"],
-      experience: "8 years",
-      availability: "Available",
-      verification: {
-        academic: "verified",
-        publication: "verified",
-        institutional: "verified"
-      }
-    },
-    {
-      id: 2,
-      name: "Prof. James Asong",
-      category: "statistics",
-      title: "Statistical Analysis & Data Science Consultant",
-      location: "Buea, Cameroon",
-      rating: 4.8,
-      reviews: 89,
-      image: "/lovable-uploads/327ccde5-c0c9-443a-acd7-4570799bb7f8.png",
-      skills: ["SPSS", "R", "Python", "Machine Learning"],
-      experience: "12 years",
-      availability: "Busy",
-      verification: {
-        academic: "verified",
-        publication: "verified",
-        institutional: "pending"
-      }
-    },
-    {
-      id: 3,
-      name: "Dr. Fatima Bello",
-      category: "cartography",
-      title: "Cartographer & Map Design Specialist",
-      location: "Douala, Cameroon",
-      rating: 4.7,
-      reviews: 156,
-      image: "/lovable-uploads/0c2151ac-5e74-4b77-86a9-9b359241cfca.png",
-      skills: ["Map Design", "Cartographic Visualization", "Geographic Information Systems"],
-      experience: "6 years",
-      availability: "Available",
-      verification: {
-        academic: "verified",
-        publication: "pending",
-        institutional: "verified"
-      }
-    },
-    {
-      id: 4,
-      name: "Dr. Paul Mbarga",
-      category: "data-collection",
-      title: "Data Collection & Survey Design Expert",
-      location: "Bamenda, Cameroon",
-      rating: 4.6,
-      reviews: 78,
-      image: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
-      skills: ["Survey Design", "KoBo Toolbox", "Field Data Collection", "Interview Techniques"],
-      experience: "5 years",
-      availability: "Available",
-      verification: {
-        academic: "pending",
-        publication: "verified",
-        institutional: "unverified"
-      }
-    },
-    {
-      id: 5,
-      name: "Dr. Sarah Tankou",
-      category: "journal-publishing",
-      title: "Journal Publishing & Manuscript Preparation Aide",
-      location: "Yaoundé, Cameroon",
-      rating: 4.9,
-      reviews: 203,
-      image: "/lovable-uploads/327ccde5-c0c9-443a-acd7-4570799bb7f8.png",
-      skills: ["Manuscript Preparation", "Journal Selection", "Peer Review Process", "Citation Management"],
-      experience: "10 years",
-      availability: "Available",
-      verification: {
-        academic: "verified",
-        publication: "verified",
-        institutional: "verified"
-      }
-    },
-    {
-      id: 6,
-      name: "Dr. Michael Fru",
-      category: "academic-editing",
-      title: "Academic Editor & Writing Coach",
-      location: "Dschang, Cameroon",
-      rating: 4.8,
-      reviews: 145,
-      image: "/lovable-uploads/0c2151ac-5e74-4b77-86a9-9b359241cfca.png",
-      skills: ["Academic Writing", "Proofreading", "Language Editing", "Thesis Review"],
-      experience: "9 years",
-      availability: "Available",
-      verification: {
-        academic: "verified",
-        publication: "verified",
-        institutional: "pending"
-      }
-    }
-  ];
-
-  const filteredAides = researchAides.filter(aide => {
-    const matchesSearch = aide.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         aide.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         aide.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = selectedCategory === "all" || aide.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const [showFilters, setShowFilters] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">{t('researchAids.title')}</h1>
-              <p className="text-xl text-blue-100 mb-8">
-                {t('researchAids.subtitle')}
-              </p>
-              
-              {/* Search and Filter */}
-              <div className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                  <Input
-                    type="text"
-                    placeholder={t('researchAids.searchPlaceholder')}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-white text-gray-900"
-                  />
-                </div>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-full md:w-48 bg-white text-gray-900">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.value} value={category.value}>
-                        {category.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+      <main className="flex-grow bg-gray-50 py-12">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Find Research Aids</h1>
+            <p className="text-gray-600">Connect with specialized research support professionals</p>
+          </div>
+          
+          {/* Enhanced Search and Filter Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+            <div className="lg:col-span-3">
+              <SearchBar />
+              <div className="flex justify-between items-center mt-4">
+                <Dialog open={showFilters} onOpenChange={setShowFilters}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">
+                      <Filter className="h-4 w-4 mr-2" />
+                      Advanced Filters
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                    <AdvancedSearchFilters />
+                  </DialogContent>
+                </Dialog>
+                
+                <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">
+                      <Bell className="h-4 w-4 mr-2" />
+                      Notifications
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <NotificationCenter />
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* Results Section */}
-        <section className="py-16">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="mb-8">
-              <h2 className="text-2xl font-semibold mb-2">{t('researchAids.results.title')}</h2>
-              <p className="text-gray-600">
-                {t('researchAids.results.found')} {filteredAides.length} {t('researchAids.results.specialists')}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredAides.map((aide) => (
-                <Card key={aide.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-start space-x-4">
-                      <Avatar className="h-16 w-16">
-                        <AvatarImage src={aide.image} alt={aide.name} />
-                        <AvatarFallback>{aide.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CardTitle className="text-lg">{aide.name}</CardTitle>
-                          {aide.verification.academic === "verified" && aide.verification.publication === "verified" && (
-                            <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
-                              {t('researchAids.card.verified')}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-600 mb-2">{aide.title}</p>
-                        <div className="flex items-center text-sm text-gray-500 mb-2">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          {aide.location}
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <div className="flex items-center">
-                            <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                            <span className="text-sm font-medium ml-1">{aide.rating}</span>
-                          </div>
-                          <span className="text-sm text-gray-500">({aide.reviews} reviews)</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent>
-                    <div className="space-y-4">
-                      {/* Verification Status */}
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Verification Status</h4>
-                        <div className="flex flex-wrap gap-1">
-                          <VerificationBadge 
-                            type="academic" 
-                            status={aide.verification.academic as "verified" | "pending" | "unverified"} 
-                          />
-                          <VerificationBadge 
-                            type="publication" 
-                            status={aide.verification.publication as "verified" | "pending" | "unverified"} 
-                          />
-                          <VerificationBadge 
-                            type="institutional" 
-                            status={aide.verification.institutional as "verified" | "pending" | "unverified"} 
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">{t('researchAids.card.skills')}</h4>
-                        <div className="flex flex-wrap gap-1">
-                          {aide.skills.slice(0, 3).map((skill) => (
-                            <Badge key={skill} variant="secondary" className="text-xs">
-                              {skill}
-                            </Badge>
-                          ))}
-                          {aide.skills.length > 3 && (
-                            <Badge variant="secondary" className="text-xs">
-                              +{aide.skills.length - 3} more
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center text-sm">
-                        <div className="flex items-center text-gray-600">
-                          <Clock className="h-4 w-4 mr-1" />
-                          {aide.experience} {t('researchAids.card.experience')}
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <Badge 
-                          variant={aide.availability === "Available" ? "default" : "secondary"}
-                          className={aide.availability === "Available" ? "bg-green-100 text-green-800" : ""}
-                        >
-                          {aide.availability === "Available" ? t('researchAids.card.available') : t('researchAids.card.busy')}
-                        </Badge>
-                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                          {t('researchAids.card.contact')}
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {filteredAides.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">{t('researchAids.noResults')}</p>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-16 bg-blue-600 text-white">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-2xl md:text-3xl font-semibold mb-4">{t('researchAids.cta.title')}</h2>
-              <p className="text-xl text-blue-100 mb-8">
-                {t('researchAids.cta.description')}
-              </p>
-              <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
-                <a href="/register">{t('researchAids.cta.joinButton')}</a>
-              </Button>
+            
+            <div className="lg:col-span-1">
+              <AIMatchingEngine />
             </div>
           </div>
-        </section>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {researchAids.map((aid) => (
+              <ResearchAidCard key={aid.id} {...aid} />
+            ))}
+          </div>
+          
+          <div className="mt-12">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious href="#" />
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink href="#" isActive>1</PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink href="#">2</PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink href="#">3</PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext href="#" />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        </div>
       </main>
       
       <Footer />

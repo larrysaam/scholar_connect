@@ -12,17 +12,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import VerificationBadge from "@/components/verification/VerificationBadge";
 
-interface ResearcherCardProps {
+interface ResearchAidCardProps {
   id: string;
   name: string;
   title: string;
-  institution: string;
-  field: string;
-  specialties: string[];
+  specialization: string;
+  skills: string[];
   hourlyRate: number;
   rating: number;
   reviews: number;
   imageUrl: string;
+  languages: string[];
+  company: string;
   verifications?: {
     academic: "verified" | "pending" | "unverified";
     publication: "verified" | "pending" | "unverified";
@@ -30,27 +31,28 @@ interface ResearcherCardProps {
   };
 }
 
-const ResearcherCard = ({ 
+const ResearchAidCard = ({ 
   id,
   name,
   title,
-  institution,
-  field,
-  specialties,
+  specialization,
+  skills,
   hourlyRate,
   rating,
   reviews,
   imageUrl,
+  languages,
+  company,
   verifications = {
     academic: "unverified",
     publication: "unverified", 
     institutional: "unverified"
   }
-}: ResearcherCardProps) => {
+}: ResearchAidCardProps) => {
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">
       <CardHeader className="p-0">
-        <div className="relative h-48 w-full bg-blue-100">
+        <div className="relative h-48 w-full bg-green-100">
           <img 
             src={imageUrl} 
             alt={name} 
@@ -73,10 +75,10 @@ const ResearcherCard = ({
         <div className="flex justify-between items-start mb-3">
           <div>
             <CardTitle className="text-lg font-semibold">{name}</CardTitle>
-            <CardDescription className="text-sm">{title} at {institution}</CardDescription>
+            <CardDescription className="text-sm">{title} at {company}</CardDescription>
           </div>
-          <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">
-            {field}
+          <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200">
+            {specialization}
           </Badge>
         </div>
 
@@ -92,9 +94,22 @@ const ResearcherCard = ({
         
         <div className="mt-4">
           <div className="flex flex-wrap gap-2 mb-4">
-            {specialties.map((specialty, index) => (
+            {skills.slice(0, 3).map((skill, index) => (
               <Badge key={index} variant="secondary" className="text-xs">
-                {specialty}
+                {skill}
+              </Badge>
+            ))}
+            {skills.length > 3 && (
+              <Badge variant="outline" className="text-xs">
+                +{skills.length - 3} more
+              </Badge>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-1 mb-4">
+            {languages.map((language, index) => (
+              <Badge key={index} variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                {language}
               </Badge>
             ))}
           </div>
@@ -124,11 +139,11 @@ const ResearcherCard = ({
       </CardContent>
       <CardFooter className="border-t pt-4 bg-gray-50">
         <Button asChild className="w-full">
-          <Link to={`/researchers/${id}`}>View Profile</Link>
+          <Link to={`/research-aids/${id}`}>View Profile</Link>
         </Button>
       </CardFooter>
     </Card>
   );
 };
 
-export default ResearcherCard;
+export default ResearchAidCard;

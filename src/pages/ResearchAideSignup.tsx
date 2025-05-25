@@ -18,6 +18,7 @@ const ResearchAideSignup = () => {
   const [skills, setSkills] = useState<string[]>([]);
   const [currentSkill, setCurrentSkill] = useState("");
   const [languages, setLanguages] = useState<string[]>([]);
+  const [countryCode, setCountryCode] = useState("");
 
   const addSkill = () => {
     if (currentSkill.trim() && !skills.includes(currentSkill.trim())) {
@@ -62,6 +63,28 @@ const ResearchAideSignup = () => {
     "Other"
   ];
 
+  const countryCodes = [
+    { code: "+1", country: "US/Canada" },
+    { code: "+33", country: "France" },
+    { code: "+44", country: "UK" },
+    { code: "+49", country: "Germany" },
+    { code: "+86", country: "China" },
+    { code: "+91", country: "India" },
+    { code: "+234", country: "Nigeria" },
+    { code: "+237", country: "Cameroon" },
+    { code: "+233", country: "Ghana" },
+    { code: "+254", country: "Kenya" },
+    { code: "+27", country: "South Africa" },
+    { code: "+221", country: "Senegal" },
+    { code: "+225", country: "Ivory Coast" },
+    { code: "+226", country: "Burkina Faso" },
+    { code: "+223", country: "Mali" },
+    { code: "+235", country: "Chad" },
+    { code: "+241", country: "Gabon" },
+    { code: "+240", country: "Equatorial Guinea" },
+    { code: "+236", country: "Central African Republic" }
+  ];
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -72,8 +95,12 @@ const ResearchAideSignup = () => {
             <Card>
               <CardHeader>
                 <div className="flex flex-col items-center mb-6">
-                  <div className="bg-blue-600 text-white px-6 py-3 rounded-lg mb-4">
-                    <h1 className="text-2xl font-bold">ScholarConnect</h1>
+                  <div className="w-16 h-16 mb-4">
+                    <img 
+                      src="/lovable-uploads/3e478490-867e-47d2-9e44-aaef66cf715c.png" 
+                      alt="ScholarConnect" 
+                      className="w-full h-full object-contain" 
+                    />
                   </div>
                   <CardTitle className="text-2xl text-center">Join as a Research Aid</CardTitle>
                   <p className="text-gray-600 text-center">
@@ -106,7 +133,25 @@ const ResearchAideSignup = () => {
                     
                     <div>
                       <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" placeholder="+237 6XX XXX XXX" />
+                      <div className="flex">
+                        <Select onValueChange={setCountryCode} className="w-1/3">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Code" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-[200px] overflow-y-auto">
+                            {countryCodes.map((item) => (
+                              <SelectItem key={item.code} value={item.code}>
+                                {item.code} {item.country}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Input 
+                          id="phone" 
+                          placeholder="XXX XXX XXX" 
+                          className="ml-2 flex-1" 
+                        />
+                      </div>
                     </div>
                     
                     <div>
