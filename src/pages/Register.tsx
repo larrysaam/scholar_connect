@@ -9,7 +9,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera } from "lucide-react";
+import { Camera, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const Register = () => {
   const [step, setStep] = useState(1);
@@ -22,6 +23,7 @@ const Register = () => {
   const [showOtherDepartment, setShowOtherDepartment] = useState(false);
   const [showOtherCountry, setShowOtherCountry] = useState(false);
   const [showOtherCity, setShowOtherCity] = useState(false);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     title: "",
     firstName: "",
@@ -40,8 +42,35 @@ const Register = () => {
     customCountry: "",
     city: "",
     customCity: "",
-    academicLevel: ""
+    academicLevel: "",
+    preferredLanguages: [] as string[]
   });
+
+  const availableLanguages = [
+    "English",
+    "French", 
+    "Spanish",
+    "German",
+    "Mandarin",
+    "Dutch",
+    "Russian",
+    "Others"
+  ];
+
+  const handleLanguageToggle = (language: string) => {
+    const updatedLanguages = selectedLanguages.includes(language)
+      ? selectedLanguages.filter(lang => lang !== language)
+      : [...selectedLanguages, language];
+    
+    setSelectedLanguages(updatedLanguages);
+    setFormData(prev => ({ ...prev, preferredLanguages: updatedLanguages }));
+  };
+
+  const removeLanguage = (language: string) => {
+    const updatedLanguages = selectedLanguages.filter(lang => lang !== language);
+    setSelectedLanguages(updatedLanguages);
+    setFormData(prev => ({ ...prev, preferredLanguages: updatedLanguages }));
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -323,6 +352,39 @@ const Register = () => {
                         onChange={(e) => handleInputChange("contact", e.target.value)}
                         required 
                       />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Preferred Languages *</Label>
+                    <div className="border rounded-lg p-4 space-y-3">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        {availableLanguages.map((language) => (
+                          <div key={language} className="flex items-center space-x-2">
+                            <Checkbox 
+                              id={language}
+                              checked={selectedLanguages.includes(language)}
+                              onCheckedChange={() => handleLanguageToggle(language)}
+                            />
+                            <Label htmlFor={language} className="cursor-pointer text-sm">
+                              {language}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                      {selectedLanguages.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t">
+                          {selectedLanguages.map((language) => (
+                            <Badge key={language} variant="secondary" className="flex items-center gap-1">
+                              {language}
+                              <X 
+                                className="h-3 w-3 cursor-pointer" 
+                                onClick={() => removeLanguage(language)}
+                              />
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 

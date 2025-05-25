@@ -6,7 +6,7 @@ import {
   User,
   FileText,
   Settings,
-  DollarSign,
+  Banknote,
   Shield
 } from "lucide-react";
 
@@ -50,7 +50,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab }: DashboardSidebarProps) =>
           className="w-full justify-start" 
           onClick={() => setActiveTab("payments")}
         >
-          <DollarSign className="mr-2 h-4 w-4" />
+          <Banknote className="mr-2 h-4 w-4" />
           Payments
         </Button>
         <Button 
