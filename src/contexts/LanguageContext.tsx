@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from 'react';
 
 type Language = 'en' | 'fr';
@@ -166,15 +167,7 @@ const translations = {
     'contact.faq.q4.question': 'Can researchers from our institution join your platform?',
     'contact.faq.q4.answer': 'Yes! We welcome qualified researchers from all accredited institutions. They can apply through our researcher registration process.',
     
-    'nav.home': 'Home',
-    'nav.researchers': 'Researchers',
-    'nav.about': 'About Us',
-    'nav.login': 'Login',
-    'nav.register': 'Register',
-    'hero.title': 'Connecting students with research experts',
-    'hero.subtitle': 'Book one-on-one consultations with research experts across various fields. Get personalized guidance for your research projects.',
-    'hero.findResearchers': 'Find Researchers',
-    'hero.joinAsResearcher': 'Join as a Researcher',
+    // Booking translations
     'booking.title': 'Book a Consultation',
     'booking.selectDate': 'Select a Date:',
     'booking.selectTime': 'Select a Time:',
@@ -375,15 +368,7 @@ const translations = {
     'contact.faq.q4.question': 'Les chercheurs de notre institution peuvent-ils rejoindre votre plateforme?',
     'contact.faq.q4.answer': 'Oui! Nous accueillons les chercheurs qualifiés de toutes les institutions accréditées. Ils peuvent postuler à travers notre processus d\'inscription de chercheur.',
     
-    'nav.home': 'Accueil',
-    'nav.researchers': 'Chercheurs',
-    'nav.about': 'À propos',
-    'nav.login': 'Connexion',
-    'nav.register': "S'inscrire",
-    'hero.title': 'Connecter les étudiants avec des experts en recherche',
-    'hero.subtitle': 'Réservez des consultations individuelles avec des experts en recherche dans divers domaines. Obtenez des conseils personnalisés pour vos projets de recherche.',
-    'hero.findResearchers': 'Trouver des chercheurs',
-    'hero.joinAsResearcher': 'Rejoindre en tant que chercheur',
+    // Booking translations in French
     'booking.title': 'Réserver une consultation',
     'booking.selectDate': 'Sélectionnez une date :',
     'booking.selectTime': 'Sélectionnez une heure :',
