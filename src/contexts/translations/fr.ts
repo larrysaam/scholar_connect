@@ -1,4 +1,3 @@
-
 export const frTranslations = {
   nav: {
     home: "Accueil",
@@ -33,13 +32,25 @@ export const frTranslations = {
       experience: "expérience",
       available: "Disponible",
       busy: "Occupé",
-      contact: "Contacter"
+      contact: "Contacter",
+      verified: "Vérifié",
+      credentials: "Diplômes Vérifiés",
+      publications: "Publications Vérifiées",
+      institution: "Institution Vérifiée"
     },
     noResults: "Aucun assistant de recherche trouvé correspondant à vos critères.",
     cta: {
       title: "Devenir Assistant de Recherche",
       description: "Partagez votre expertise et aidez les étudiants avec leurs projets de recherche",
       joinButton: "Rejoindre comme Assistant de Recherche"
+    },
+    verification: {
+      academic: "Diplômes Académiques",
+      publication: "Historique des Publications",
+      institutional: "Partenariat Institutionnel",
+      verified: "Vérifié",
+      pending: "En Attente",
+      unverified: "Non Vérifié"
     }
   },
   researchAides: {
@@ -65,13 +76,25 @@ export const frTranslations = {
       experience: "expérience",
       available: "Disponible",
       busy: "Occupé",
-      contact: "Contacter"
+      contact: "Contacter",
+      verified: "Vérifié",
+      credentials: "Diplômes Vérifiés",
+      publications: "Publications Vérifiées",
+      institution: "Institution Vérifiée"
     },
     noResults: "Aucun assistant de recherche trouvé correspondant à vos critères.",
     cta: {
       title: "Rejoignez Notre Réseau d'Assistants de Recherche",
       description: "Devenez un assistant de recherche et aidez les chercheurs à atteindre leurs objectifs",
       joinButton: "Rejoindre comme Assistant de Recherche"
+    },
+    verification: {
+      academic: "Diplômes Académiques",
+      publication: "Historique des Publications",
+      institutional: "Partenariat Institutionnel",
+      verified: "Vérifié",
+      pending: "En Attente",
+      unverified: "Non Vérifié"
     }
   },
   contact: {

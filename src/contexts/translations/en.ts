@@ -1,4 +1,3 @@
-
 export const enTranslations = {
   nav: {
     home: "Home",
@@ -33,13 +32,25 @@ export const enTranslations = {
       experience: "experience",
       available: "Available",
       busy: "Busy",
-      contact: "Contact"
+      contact: "Contact",
+      verified: "Verified",
+      credentials: "Credentials Verified",
+      publications: "Publications Verified",
+      institution: "Institution Verified"
     },
     noResults: "No research aids found matching your criteria.",
     cta: {
       title: "Become a Research Aid",
       description: "Share your expertise and help students with their research projects",
       joinButton: "Join as Research Aid"
+    },
+    verification: {
+      academic: "Academic Credentials",
+      publication: "Publication History", 
+      institutional: "Institution Partnership",
+      verified: "Verified",
+      pending: "Pending",
+      unverified: "Unverified"
     }
   },
   researchAides: {
@@ -65,13 +76,25 @@ export const enTranslations = {
       experience: "experience",
       available: "Available",
       busy: "Busy",
-      contact: "Contact"
+      contact: "Contact",
+      verified: "Verified",
+      credentials: "Credentials Verified",
+      publications: "Publications Verified",
+      institution: "Institution Verified"
     },
     noResults: "No research aids found matching your criteria.",
     cta: {
       title: "Join Our Research Aid Network",
       description: "Become a research aid and help researchers achieve their goals",
       joinButton: "Join as Research Aid"
+    },
+    verification: {
+      academic: "Academic Credentials",
+      publication: "Publication History",
+      institutional: "Institution Partnership",
+      verified: "Verified",
+      pending: "Pending",
+      unverified: "Unverified"
     }
   },
   contact: {

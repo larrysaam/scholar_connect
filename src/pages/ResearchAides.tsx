@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Search, MapPin, Star, Clock } from "lucide-react";
+import VerificationBadge from "@/components/verification/VerificationBadge";
 
 const ResearchAides = () => {
   const { t } = useLanguage();
@@ -17,13 +18,13 @@ const ResearchAides = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
 
   const categories = [
-    { value: "all", label: t('researchAides.categories.all') },
-    { value: "gis", label: t('researchAides.categories.gis') },
-    { value: "statistics", label: t('researchAides.categories.statistics') },
-    { value: "cartography", label: t('researchAides.categories.cartography') },
-    { value: "data-collection", label: t('researchAides.categories.dataCollection') },
-    { value: "journal-publishing", label: t('researchAides.categories.journalPublishing') },
-    { value: "academic-editing", label: t('researchAides.categories.academicEditing') }
+    { value: "all", label: t('researchAids.categories.all') },
+    { value: "gis", label: t('researchAids.categories.gis') },
+    { value: "statistics", label: t('researchAids.categories.statistics') },
+    { value: "cartography", label: t('researchAids.categories.cartography') },
+    { value: "data-collection", label: t('researchAids.categories.dataCollection') },
+    { value: "journal-publishing", label: t('researchAids.categories.journalPublishing') },
+    { value: "academic-editing", label: t('researchAids.categories.academicEditing') }
   ];
 
   const researchAides = [
@@ -38,7 +39,12 @@ const ResearchAides = () => {
       image: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
       skills: ["ArcGIS", "QGIS", "Remote Sensing", "Spatial Analysis"],
       experience: "8 years",
-      availability: "Available"
+      availability: "Available",
+      verification: {
+        academic: "verified",
+        publication: "verified",
+        institutional: "verified"
+      }
     },
     {
       id: 2,
@@ -51,7 +57,12 @@ const ResearchAides = () => {
       image: "/lovable-uploads/327ccde5-c0c9-443a-acd7-4570799bb7f8.png",
       skills: ["SPSS", "R", "Python", "Machine Learning"],
       experience: "12 years",
-      availability: "Busy"
+      availability: "Busy",
+      verification: {
+        academic: "verified",
+        publication: "verified",
+        institutional: "pending"
+      }
     },
     {
       id: 3,
@@ -64,7 +75,12 @@ const ResearchAides = () => {
       image: "/lovable-uploads/0c2151ac-5e74-4b77-86a9-9b359241cfca.png",
       skills: ["Map Design", "Cartographic Visualization", "Geographic Information Systems"],
       experience: "6 years",
-      availability: "Available"
+      availability: "Available",
+      verification: {
+        academic: "verified",
+        publication: "pending",
+        institutional: "verified"
+      }
     },
     {
       id: 4,
@@ -77,7 +93,12 @@ const ResearchAides = () => {
       image: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
       skills: ["Survey Design", "KoBo Toolbox", "Field Data Collection", "Interview Techniques"],
       experience: "5 years",
-      availability: "Available"
+      availability: "Available",
+      verification: {
+        academic: "pending",
+        publication: "verified",
+        institutional: "unverified"
+      }
     },
     {
       id: 5,
@@ -90,7 +111,12 @@ const ResearchAides = () => {
       image: "/lovable-uploads/327ccde5-c0c9-443a-acd7-4570799bb7f8.png",
       skills: ["Manuscript Preparation", "Journal Selection", "Peer Review Process", "Citation Management"],
       experience: "10 years",
-      availability: "Available"
+      availability: "Available",
+      verification: {
+        academic: "verified",
+        publication: "verified",
+        institutional: "verified"
+      }
     },
     {
       id: 6,
@@ -103,7 +129,12 @@ const ResearchAides = () => {
       image: "/lovable-uploads/0c2151ac-5e74-4b77-86a9-9b359241cfca.png",
       skills: ["Academic Writing", "Proofreading", "Language Editing", "Thesis Review"],
       experience: "9 years",
-      availability: "Available"
+      availability: "Available",
+      verification: {
+        academic: "verified",
+        publication: "verified",
+        institutional: "pending"
+      }
     }
   ];
 
@@ -124,9 +155,9 @@ const ResearchAides = () => {
         <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">{t('researchAides.title')}</h1>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">{t('researchAids.title')}</h1>
               <p className="text-xl text-blue-100 mb-8">
-                {t('researchAides.subtitle')}
+                {t('researchAids.subtitle')}
               </p>
               
               {/* Search and Filter */}
@@ -135,7 +166,7 @@ const ResearchAides = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                   <Input
                     type="text"
-                    placeholder={t('researchAides.searchPlaceholder')}
+                    placeholder={t('researchAids.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 bg-white text-gray-900"
@@ -162,9 +193,9 @@ const ResearchAides = () => {
         <section className="py-16">
           <div className="container mx-auto px-4 md:px-6">
             <div className="mb-8">
-              <h2 className="text-2xl font-semibold mb-2">{t('researchAides.results.title')}</h2>
+              <h2 className="text-2xl font-semibold mb-2">{t('researchAids.results.title')}</h2>
               <p className="text-gray-600">
-                {t('researchAides.results.found')} {filteredAides.length} {t('researchAides.results.specialists')}
+                {t('researchAids.results.found')} {filteredAides.length} {t('researchAids.results.specialists')}
               </p>
             </div>
 
@@ -178,7 +209,14 @@ const ResearchAides = () => {
                         <AvatarFallback>{aide.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <CardTitle className="text-lg">{aide.name}</CardTitle>
+                        <div className="flex items-center gap-2 mb-2">
+                          <CardTitle className="text-lg">{aide.name}</CardTitle>
+                          {aide.verification.academic === "verified" && aide.verification.publication === "verified" && (
+                            <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
+                              {t('researchAids.card.verified')}
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-600 mb-2">{aide.title}</p>
                         <div className="flex items-center text-sm text-gray-500 mb-2">
                           <MapPin className="h-4 w-4 mr-1" />
@@ -197,8 +235,27 @@ const ResearchAides = () => {
                   
                   <CardContent>
                     <div className="space-y-4">
+                      {/* Verification Status */}
                       <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">{t('researchAides.card.skills')}</h4>
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">Verification Status</h4>
+                        <div className="flex flex-wrap gap-1">
+                          <VerificationBadge 
+                            type="academic" 
+                            status={aide.verification.academic as "verified" | "pending" | "unverified"} 
+                          />
+                          <VerificationBadge 
+                            type="publication" 
+                            status={aide.verification.publication as "verified" | "pending" | "unverified"} 
+                          />
+                          <VerificationBadge 
+                            type="institutional" 
+                            status={aide.verification.institutional as "verified" | "pending" | "unverified"} 
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">{t('researchAids.card.skills')}</h4>
                         <div className="flex flex-wrap gap-1">
                           {aide.skills.slice(0, 3).map((skill) => (
                             <Badge key={skill} variant="secondary" className="text-xs">
@@ -216,7 +273,7 @@ const ResearchAides = () => {
                       <div className="flex items-center text-sm">
                         <div className="flex items-center text-gray-600">
                           <Clock className="h-4 w-4 mr-1" />
-                          {aide.experience} {t('researchAides.card.experience')}
+                          {aide.experience} {t('researchAids.card.experience')}
                         </div>
                       </div>
                       
@@ -225,10 +282,10 @@ const ResearchAides = () => {
                           variant={aide.availability === "Available" ? "default" : "secondary"}
                           className={aide.availability === "Available" ? "bg-green-100 text-green-800" : ""}
                         >
-                          {aide.availability === "Available" ? t('researchAides.card.available') : t('researchAides.card.busy')}
+                          {aide.availability === "Available" ? t('researchAids.card.available') : t('researchAids.card.busy')}
                         </Badge>
                         <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                          {t('researchAides.card.contact')}
+                          {t('researchAids.card.contact')}
                         </Button>
                       </div>
                     </div>
@@ -239,7 +296,7 @@ const ResearchAides = () => {
 
             {filteredAides.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">{t('researchAides.noResults')}</p>
+                <p className="text-gray-500 text-lg">{t('researchAids.noResults')}</p>
               </div>
             )}
           </div>
@@ -249,12 +306,12 @@ const ResearchAides = () => {
         <section className="py-16 bg-blue-600 text-white">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-2xl md:text-3xl font-semibold mb-4">{t('researchAides.cta.title')}</h2>
+              <h2 className="text-2xl md:text-3xl font-semibold mb-4">{t('researchAids.cta.title')}</h2>
               <p className="text-xl text-blue-100 mb-8">
-                {t('researchAides.cta.description')}
+                {t('researchAids.cta.description')}
               </p>
               <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
-                <a href="/register">{t('researchAides.cta.joinButton')}</a>
+                <a href="/register">{t('researchAids.cta.joinButton')}</a>
               </Button>
             </div>
           </div>
