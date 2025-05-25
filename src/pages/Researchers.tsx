@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -18,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Filter, Bell } from "lucide-react";
 
-// Mock data for researchers
+// Mock data for researchers with verification status
 const researchers = [
   {
     id: "1",
@@ -30,7 +31,12 @@ const researchers = [
     hourlyRate: 120,
     rating: 4.9,
     reviews: 24,
-    imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1376&q=80"
+    imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1376&q=80",
+    verifications: {
+      academic: "verified" as const,
+      publication: "verified" as const,
+      institutional: "verified" as const
+    }
   },
   {
     id: "2",
@@ -42,7 +48,12 @@ const researchers = [
     hourlyRate: 150,
     rating: 4.8,
     reviews: 32,
-    imageUrl: "https://images.unsplash.com/photo-1601582589907-f92af5ed9db8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1064&q=80"
+    imageUrl: "https://images.unsplash.com/photo-1601582589907-f92af5ed9db8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1064&q=80",
+    verifications: {
+      academic: "verified" as const,
+      publication: "pending" as const,
+      institutional: "verified" as const
+    }
   },
   {
     id: "3",
@@ -54,7 +65,12 @@ const researchers = [
     hourlyRate: 135,
     rating: 4.7,
     reviews: 19,
-    imageUrl: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80"
+    imageUrl: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80",
+    verifications: {
+      academic: "verified" as const,
+      publication: "verified" as const,
+      institutional: "pending" as const
+    }
   },
   {
     id: "4",
@@ -66,7 +82,12 @@ const researchers = [
     hourlyRate: 160,
     rating: 4.9,
     reviews: 28,
-    imageUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80"
+    imageUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80",
+    verifications: {
+      academic: "pending" as const,
+      publication: "verified" as const,
+      institutional: "verified" as const
+    }
   },
   {
     id: "5",
@@ -78,7 +99,12 @@ const researchers = [
     hourlyRate: 125,
     rating: 4.6,
     reviews: 22,
-    imageUrl: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80"
+    imageUrl: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80",
+    verifications: {
+      academic: "unverified" as const,
+      publication: "pending" as const,
+      institutional: "unverified" as const
+    }
   },
   {
     id: "6",
@@ -90,7 +116,12 @@ const researchers = [
     hourlyRate: 175,
     rating: 4.8,
     reviews: 36,
-    imageUrl: "https://images.unsplash.com/photo-1622902046580-2b47f47f5471?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80"
+    imageUrl: "https://images.unsplash.com/photo-1622902046580-2b47f47f5471?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80",
+    verifications: {
+      academic: "verified" as const,
+      publication: "verified" as const,
+      institutional: "unverified" as const
+    }
   }
 ];
 

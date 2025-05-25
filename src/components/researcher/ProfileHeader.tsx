@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import BookingModal from "./BookingModal";
 import StatusIndicator from "./StatusIndicator";
 import CoAuthorModal from "./CoAuthorModal";
+import VerificationBadge from "@/components/verification/VerificationBadge";
 
 interface ProfileHeaderProps {
   researcher: {
@@ -21,10 +22,21 @@ interface ProfileHeaderProps {
     }[];
     imageUrl: string;
     onlineStatus: "online" | "offline" | "in-session";
+    verifications?: {
+      academic: "verified" | "pending" | "unverified";
+      publication: "verified" | "pending" | "unverified";
+      institutional: "verified" | "pending" | "unverified";
+    };
   };
 }
 
 const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
+  const verifications = researcher.verifications || {
+    academic: "unverified",
+    publication: "unverified",
+    institutional: "unverified"
+  };
+
   return (
     <div className="bg-blue-600 text-white py-12">
       <div className="container mx-auto px-4 md:px-6">
@@ -50,6 +62,13 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
                   {specialty}
                 </Badge>
               ))}
+            </div>
+
+            {/* Verification Badges - prominently displayed */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              <VerificationBadge type="academic" status={verifications.academic} size="md" />
+              <VerificationBadge type="publication" status={verifications.publication} size="md" />
+              <VerificationBadge type="institutional" status={verifications.institutional} size="md" />
             </div>
             
             <h1 className="text-3xl md:text-4xl font-bold">{researcher.name}</h1>

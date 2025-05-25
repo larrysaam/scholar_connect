@@ -10,6 +10,7 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import VerificationBadge from "@/components/verification/VerificationBadge";
 
 interface ResearcherCardProps {
   id: string;
@@ -22,6 +23,11 @@ interface ResearcherCardProps {
   rating: number;
   reviews: number;
   imageUrl: string;
+  verifications?: {
+    academic: "verified" | "pending" | "unverified";
+    publication: "verified" | "pending" | "unverified";
+    institutional: "verified" | "pending" | "unverified";
+  };
 }
 
 const ResearcherCard = ({ 
@@ -34,7 +40,12 @@ const ResearcherCard = ({
   hourlyRate,
   rating,
   reviews,
-  imageUrl
+  imageUrl,
+  verifications = {
+    academic: "unverified",
+    publication: "unverified", 
+    institutional: "unverified"
+  }
 }: ResearcherCardProps) => {
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">
@@ -59,7 +70,7 @@ const ResearcherCard = ({
         </div>
       </CardHeader>
       <CardContent className="pt-6">
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-start mb-3">
           <div>
             <CardTitle className="text-lg font-semibold">{name}</CardTitle>
             <CardDescription className="text-sm">{title} at {institution}</CardDescription>
@@ -67,6 +78,13 @@ const ResearcherCard = ({
           <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-200">
             {field}
           </Badge>
+        </div>
+
+        {/* Verification Badges */}
+        <div className="flex flex-wrap gap-1 mb-4">
+          <VerificationBadge type="academic" status={verifications.academic} size="sm" />
+          <VerificationBadge type="publication" status={verifications.publication} size="sm" />
+          <VerificationBadge type="institutional" status={verifications.institutional} size="sm" />
         </div>
         
         <div className="mt-4">

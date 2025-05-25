@@ -6,6 +6,7 @@ import ExperienceTab from "./tabs/ExperienceTab";
 import AwardsTab from "./tabs/AwardsTab";
 import PublicationsTab from "./tabs/PublicationsTab";
 import ReviewsTab from "./tabs/ReviewsTab";
+import VerificationTab from "./tabs/VerificationTab";
 
 interface ProfileTabsProps {
   researcher: {
@@ -50,14 +51,26 @@ interface ProfileTabsProps {
       rating: number;
       comment: string;
     }[];
+    verifications?: {
+      academic: "verified" | "pending" | "unverified";
+      publication: "verified" | "pending" | "unverified";
+      institutional: "verified" | "pending" | "unverified";
+    };
   };
 }
 
 const ProfileTabs = ({ researcher }: ProfileTabsProps) => {
+  const verifications = researcher.verifications || {
+    academic: "unverified",
+    publication: "unverified", 
+    institutional: "unverified"
+  };
+
   return (
     <Tabs defaultValue="about" className="w-full">
-      <TabsList className="mb-8 bg-gray-100 grid grid-cols-3 md:grid-cols-6 w-full">
+      <TabsList className="mb-8 bg-gray-100 grid grid-cols-4 md:grid-cols-7 w-full">
         <TabsTrigger value="about">About</TabsTrigger>
+        <TabsTrigger value="verification">Verification</TabsTrigger>
         <TabsTrigger value="education">Education</TabsTrigger>
         <TabsTrigger value="experience">Experience</TabsTrigger>
         <TabsTrigger value="achievements">Achievements</TabsTrigger>
@@ -67,6 +80,10 @@ const ProfileTabs = ({ researcher }: ProfileTabsProps) => {
       
       <TabsContent value="about" className="mt-0">
         <AboutTab bio={researcher.bio} specialties={researcher.specialties} />
+      </TabsContent>
+
+      <TabsContent value="verification" className="mt-0">
+        <VerificationTab verifications={verifications} />
       </TabsContent>
       
       <TabsContent value="education" className="mt-0">
