@@ -129,23 +129,6 @@ export const enTranslations = {
   'contact.info.hours.weekdays': 'Monday - Friday: 8:00 AM - 6:00 PM',
   'contact.info.hours.weekends': 'Saturday: 9:00 AM - 2:00 PM',
   
-  'contact.services.title': 'Special Services',
-  'contact.services.partnership.title': 'Institutional Partnership',
-  'contact.services.partnership.description': 'Partner with us to enhance your institution\'s research capabilities and student support services.',
-  'contact.services.partnership.benefit1': 'Bulk access to expert researchers for your students',
-  'contact.services.partnership.benefit2': 'Customized research mentorship programs',
-  'contact.services.partnership.benefit3': 'Integration with your existing academic systems',
-  'contact.services.partnership.benefit4': 'Discounted rates for institutional members',
-  'contact.services.partnership.contact': 'Contact Partnership Team',
-  
-  'contact.services.financialAid.title': 'Financial Aid for Students',
-  'contact.services.financialAid.description': 'We believe financial constraints shouldn\'t limit access to quality research guidance. Explore our aid programs.',
-  'contact.services.financialAid.program1': 'Merit-based consultation scholarships',
-  'contact.services.financialAid.program2': 'Need-based financial assistance',
-  'contact.services.financialAid.program3': 'Work-study program participation',
-  'contact.services.financialAid.program4': 'Partner institution discounts',
-  'contact.services.financialAid.apply': 'Apply for Financial Aid',
-  
   'contact.faq.title': 'Frequently Asked Questions',
   'contact.faq.q1.question': 'How quickly can I get a response to my inquiry?',
   'contact.faq.q1.answer': 'We typically respond to all inquiries within 24 hours during business days. For urgent matters, please call our direct line.',

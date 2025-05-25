@@ -25,10 +25,11 @@ const Navbar = () => {
         <div className="hidden md:flex items-center space-x-6">
           <Link to="/" className="text-gray-700 hover:text-blue-900 transition-colors">{t('nav.home')}</Link>
           <Link to="/researchers" className="text-gray-700 hover:text-blue-900 transition-colors">{t('nav.researchers')}</Link>
+          <Link to="/research-aides" className="text-gray-700 hover:text-blue-900 transition-colors">Research Aides</Link>
           <Link to="/how-it-works" className="text-gray-700 hover:text-blue-900 transition-colors">How It Works</Link>
+          <Link to="/partnerships" className="text-gray-700 hover:text-blue-900 transition-colors">Partnerships</Link>
           <Link to="/about-us" className="text-gray-700 hover:text-blue-900 transition-colors">{t('nav.about')}</Link>
-          <Link to="/dashboard" className="text-gray-700 hover:text-blue-900 transition-colors">Student Dashboard</Link>
-          <Link to="/researcher-dashboard" className="text-gray-700 hover:text-blue-900 transition-colors">Researcher Dashboard</Link>
+          <Link to="/contact" className="text-gray-700 hover:text-blue-900 transition-colors">Contact</Link>
         </div>
 
         <div className="hidden md:flex items-center space-x-4">
@@ -68,11 +69,25 @@ const Navbar = () => {
               {t('nav.researchers')}
             </Link>
             <Link 
+              to="/research-aides" 
+              className="text-gray-700 hover:text-blue-900 transition-colors py-2 text-lg"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Research Aides
+            </Link>
+            <Link 
               to="/how-it-works" 
               className="text-gray-700 hover:text-blue-900 transition-colors py-2 text-lg"
               onClick={() => setIsMenuOpen(false)}
             >
               How It Works
+            </Link>
+            <Link 
+              to="/partnerships" 
+              className="text-gray-700 hover:text-blue-900 transition-colors py-2 text-lg"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Partnerships
             </Link>
             <Link 
               to="/about-us" 
@@ -82,18 +97,11 @@ const Navbar = () => {
               {t('nav.about')}
             </Link>
             <Link 
-              to="/dashboard" 
+              to="/contact" 
               className="text-gray-700 hover:text-blue-900 transition-colors py-2 text-lg"
               onClick={() => setIsMenuOpen(false)}
             >
-              Student Dashboard
-            </Link>
-            <Link 
-              to="/researcher-dashboard" 
-              className="text-gray-700 hover:text-blue-900 transition-colors py-2 text-lg"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Researcher Dashboard
+              Contact
             </Link>
             <div className="flex flex-col space-y-2 pt-4 border-t">
               <Button 

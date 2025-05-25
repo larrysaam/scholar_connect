@@ -129,23 +129,6 @@ export const frTranslations = {
   'contact.info.hours.weekdays': 'Lundi - Vendredi: 8h00 - 18h00',
   'contact.info.hours.weekends': 'Samedi: 9h00 - 14h00',
   
-  'contact.services.title': 'Services spéciaux',
-  'contact.services.partnership.title': 'Partenariat institutionnel',
-  'contact.services.partnership.description': 'Partenariez avec nous pour améliorer les capacités de recherche de votre institution et les services de soutien aux étudiants.',
-  'contact.services.partnership.benefit1': 'Accès en masse aux chercheurs experts pour vos étudiants',
-  'contact.services.partnership.benefit2': 'Programmes de mentorat de recherche personnalisés',
-  'contact.services.partnership.benefit3': 'Intégration avec vos systèmes académiques existants',
-  'contact.services.partnership.benefit4': 'Tarifs réduits pour les membres institutionnels',
-  'contact.services.partnership.contact': 'Contacter l\'équipe partenariat',
-  
-  'contact.services.financialAid.title': 'Aide financière pour les étudiants',
-  'contact.services.financialAid.description': 'Nous croyons que les contraintes financières ne devraient pas limiter l\'accès à des conseils de recherche de qualité. Explorez nos programmes d\'aide.',
-  'contact.services.financialAid.program1': 'Bourses de consultation basées sur le mérite',
-  'contact.services.financialAid.program2': 'Assistance financière basée sur les besoins',
-  'contact.services.financialAid.program3': 'Participation au programme travail-études',
-  'contact.services.financialAid.program4': 'Remises pour les institutions partenaires',
-  'contact.services.financialAid.apply': 'Demander une aide financière',
-  
   'contact.faq.title': 'Questions fréquemment posées',
   'contact.faq.q1.question': 'À quelle vitesse puis-je obtenir une réponse à ma demande?',
   'contact.faq.q1.answer': 'Nous répondons généralement à toutes les demandes dans les 24 heures pendant les jours ouvrables. Pour les questions urgentes, veuillez appeler notre ligne directe.',
