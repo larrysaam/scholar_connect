@@ -1,7 +1,13 @@
 
 import React, { createContext, useContext, useState } from 'react';
 import { Language, LanguageContextType } from './types';
-import { translations } from './translations';
+import { enTranslations } from './translations/en';
+import { frTranslations } from './translations/fr';
+
+const translations = {
+  en: enTranslations,
+  fr: frTranslations
+};
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
