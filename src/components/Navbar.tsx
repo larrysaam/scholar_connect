@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
@@ -17,6 +17,21 @@ const Navbar = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
+  // Check if user is signed in (simulate with localStorage)
+  useEffect(() => {
+    const checkSignIn = () => {
+      const signedIn = localStorage.getItem('user_signed_in') === 'true';
+      setIsSignedIn(signedIn);
+    };
+    
+    checkSignIn();
+    // Listen for storage changes
+    window.addEventListener('storage', checkSignIn);
+    
+    return () => window.removeEventListener('storage', checkSignIn);
+  }, []);
 
   const menuItems = [
     { label: t("nav.home") || "Home", href: "/" },
@@ -26,6 +41,12 @@ const Navbar = () => {
     { label: t("nav.aboutUs") || "About Us", href: "/about-us" },
     { label: t("nav.contact") || "Contact", href: "/contact" },
   ];
+
+  const handleSignOut = () => {
+    localStorage.removeItem('user_signed_in');
+    setIsSignedIn(false);
+    navigate('/');
+  };
 
   return (
     <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
@@ -65,16 +86,26 @@ const Navbar = () => {
                   <ChevronDown className="h-4 w-4 ml-2" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => navigate("/login")}>
-                  {t("nav.signIn") || "Sign In"}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/register")}>
-                  {t("nav.signUp") || "Sign Up"}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-                  {t("nav.dashboard") || "Dashboard"}
-                </DropdownMenuItem>
+              <DropdownMenuContent align="end" className="bg-white">
+                {!isSignedIn ? (
+                  <>
+                    <DropdownMenuItem onClick={() => navigate("/login")}>
+                      {t("nav.signIn") || "Sign In"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/register")}>
+                      {t("nav.signUp") || "Sign Up"}
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <>
+                    <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                      {t("nav.dashboard") || "Dashboard"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      Sign Out
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -98,12 +129,25 @@ const Navbar = () => {
                     </Link>
                   ))}
                   <div className="border-t pt-4 space-y-2">
-                    <Button variant="outline" className="w-full" onClick={() => navigate("/login")}>
-                      {t("nav.signIn") || "Sign In"}
-                    </Button>
-                    <Button className="w-full" onClick={() => navigate("/register")}>
-                      {t("nav.signUp") || "Sign Up"}
-                    </Button>
+                    {!isSignedIn ? (
+                      <>
+                        <Button variant="outline" className="w-full" onClick={() => navigate("/login")}>
+                          {t("nav.signIn") || "Sign In"}
+                        </Button>
+                        <Button className="w-full" onClick={() => navigate("/register")}>
+                          {t("nav.signUp") || "Sign Up"}
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button variant="outline" className="w-full" onClick={() => navigate("/dashboard")}>
+                          {t("nav.dashboard") || "Dashboard"}
+                        </Button>
+                        <Button variant="outline" className="w-full" onClick={handleSignOut}>
+                          Sign Out
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               </SheetContent>

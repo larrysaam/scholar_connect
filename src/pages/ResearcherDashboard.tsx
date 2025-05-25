@@ -86,7 +86,7 @@ const pastConsultations = [
       id: "4",
       name: "Sam Lee",
       field: "Economics",
-      imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80"
+      imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80"
     },
     date: "May 5, 2025",
     time: "11:00 AM - 12:00 PM",
@@ -476,11 +476,11 @@ const ResearcherDashboard = () => {
                     <div className="bg-gray-50 p-4 rounded-md mb-6">
                       <h3 className="font-medium mb-3">Weekly Schedule</h3>
                       <div className="space-y-3">
-                        {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map((day) => (
+                        {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => (
                           <div key={day} className="flex items-center justify-between">
                             <span className="w-24">{day}</span>
                             <div className="bg-white border rounded-md px-3 py-2 w-full max-w-xs text-sm">
-                              9:00 AM - 5:00 PM
+                              {day === "Saturday" || day === "Sunday" ? "10:00 AM - 4:00 PM" : "9:00 AM - 5:00 PM"}
                             </div>
                             <Button size="sm" variant="outline" className="ml-2">Edit</Button>
                           </div>

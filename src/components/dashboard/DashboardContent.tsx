@@ -6,6 +6,7 @@ import PaymentsTab from "./tabs/PaymentsTab";
 import ProfileTab from "./tabs/ProfileTab";
 import DocumentsTab from "./tabs/DocumentsTab";
 import SettingsTab from "./tabs/SettingsTab";
+import QualityFeedbackTab from "./tabs/QualityFeedbackTab";
 
 interface DashboardContentProps {
   activeTab: string;
@@ -25,6 +26,10 @@ const DashboardContent = ({ activeTab, setActiveTab }: DashboardContentProps) =>
       
       <TabsContent value="payments" className="mt-0">
         <PaymentsTab />
+      </TabsContent>
+      
+      <TabsContent value="quality" className="mt-0">
+        <QualityFeedbackTab />
       </TabsContent>
       
       <TabsContent value="profile" className="mt-0">
