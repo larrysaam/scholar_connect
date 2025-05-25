@@ -18,9 +18,6 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [profileImage, setProfileImage] = useState<string>("");
-  const [showOtherUniversity, setShowOtherUniversity] = useState(false);
-  const [showOtherFaculty, setShowOtherFaculty] = useState(false);
-  const [showOtherDepartment, setShowOtherDepartment] = useState(false);
   const [showOtherCountry, setShowOtherCountry] = useState(false);
   const [showOtherCity, setShowOtherCity] = useState(false);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
@@ -33,11 +30,9 @@ const Register = () => {
     password: "",
     contact: "",
     university: "",
-    customUniversity: "",
     faculty: "",
-    customFaculty: "",
     department: "",
-    customDepartment: "",
+    company: "",
     country: "",
     customCountry: "",
     city: "",
@@ -75,25 +70,6 @@ const Register = () => {
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
-    // Handle "Other" selections
-    if (field === "university" && value === "other") {
-      setShowOtherUniversity(true);
-    } else if (field === "university" && value !== "other") {
-      setShowOtherUniversity(false);
-    }
-    
-    if (field === "faculty" && value === "other") {
-      setShowOtherFaculty(true);
-    } else if (field === "faculty" && value !== "other") {
-      setShowOtherFaculty(false);
-    }
-    
-    if (field === "department" && value === "other") {
-      setShowOtherDepartment(true);
-    } else if (field === "department" && value !== "other") {
-      setShowOtherDepartment(false);
-    }
-    
     if (field === "country" && value === "other") {
       setShowOtherCountry(true);
     } else if (field === "country" && value !== "other") {
@@ -122,7 +98,6 @@ const Register = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate sending OTP
     setTimeout(() => {
       console.log("Sending OTP to:", formData.email);
       setStep(2);
@@ -134,12 +109,10 @@ const Register = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate OTP verification
     setTimeout(() => {
       console.log("Verifying OTP:", otpCode);
       console.log("Registering user:", formData);
       setIsLoading(false);
-      // In a real app, would redirect to dashboard or login
     }, 1500);
   };
 
@@ -152,8 +125,11 @@ const Register = () => {
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <Link to="/" className="text-2xl font-bold text-blue-600">
-              ScholarConnect
+            <Link to="/" className="inline-flex items-center space-x-2">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">SC</span>
+              </div>
+              <span className="text-2xl font-bold text-blue-600">ScholarConnect</span>
             </Link>
             <h2 className="mt-6 text-3xl font-bold text-gray-900">
               Verify your email
@@ -219,8 +195,11 @@ const Register = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-2xl">
         <div className="text-center mb-8">
-          <Link to="/" className="text-2xl font-bold text-blue-600">
-            ScholarConnect
+          <Link to="/" className="inline-flex items-center space-x-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">SC</span>
+            </div>
+            <span className="text-2xl font-bold text-blue-600">ScholarConnect</span>
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
             Create an account
@@ -404,6 +383,19 @@ const Register = () => {
                       </Select>
                     </div>
                   )}
+
+                  {accountType === "research-aid" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="company">Company/Organization *</Label>
+                      <Input 
+                        id="company" 
+                        placeholder="Enter your company or organization"
+                        value={formData.company}
+                        onChange={(e) => handleInputChange("company", e.target.value)}
+                        required 
+                      />
+                    </div>
+                  )}
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -432,121 +424,101 @@ const Register = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="university">University *</Label>
-                    <Select onValueChange={(value) => handleInputChange("university", value)} required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select university" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="university-yaounde-1">University of Yaoundé I</SelectItem>
-                        <SelectItem value="university-yaounde-2">University of Yaoundé II</SelectItem>
-                        <SelectItem value="university-douala">University of Douala</SelectItem>
-                        <SelectItem value="university-buea">University of Buea</SelectItem>
-                        <SelectItem value="university-bamenda">University of Bamenda</SelectItem>
-                        <SelectItem value="university-dschang">University of Dschang</SelectItem>
-                        <SelectItem value="university-ngaoundere">University of Ngaoundéré</SelectItem>
-                        <SelectItem value="university-maroua">University of Maroua</SelectItem>
-                        <SelectItem value="catholic-university">Catholic University of Central Africa</SelectItem>
-                        <SelectItem value="university-institute-gulf-guinea">University Institute of the Gulf of Guinea</SelectItem>
-                        <SelectItem value="national-advanced-school-engineering">National Advanced School of Engineering</SelectItem>
-                        <SelectItem value="higher-institute-sahel">Higher Institute of the Sahel</SelectItem>
-                        <SelectItem value="protestant-university-central-africa">Protestant University of Central Africa</SelectItem>
-                        <SelectItem value="catholic-university-cameroon">Catholic University of Cameroon</SelectItem>
-                        <SelectItem value="university-mountains">University of the Mountains</SelectItem>
-                        <SelectItem value="adventist-university-cosendai">Adventist University of Cosendai</SelectItem>
-                        <SelectItem value="higher-institute-commerce-management">Higher Institute of Commerce and Management</SelectItem>
-                        <SelectItem value="international-university-central-africa">International University of Central Africa</SelectItem>
-                        <SelectItem value="panafricain-institute-development">Pan-African Institute for Development</SelectItem>
-                        <SelectItem value="fotso-victor-university-technology">Fotso Victor University of Technology</SelectItem>
-                        <SelectItem value="hims">Higher Institute of Management Sciences (HIMS)</SelectItem>
-                        <SelectItem value="hibmat">Higher Institute of Business Management and Technology (HIBMAT)</SelectItem>
-                        <SelectItem value="hibs">Higher Institute of Business Studies (HIBS)</SelectItem>
-                        <SelectItem value="rhims">Regional Higher Institute of Management Sciences (RHIMS)</SelectItem>
-                        <SelectItem value="iheps">Institute of Higher Education and Professional Studies (IHEPS)</SelectItem>
-                        <SelectItem value="isma">Institute of Management Sciences (ISMA)</SelectItem>
-                        <SelectItem value="iuct">International University of Central Africa Technology (IUCT)</SelectItem>
-                        <SelectItem value="ista">Institute of Applied Technology (ISTA)</SelectItem>
-                        <SelectItem value="isab">Institute of Business Administration (ISAB)</SelectItem>
-                        <SelectItem value="istag">Institute of Technology and Applied Management (ISTAG)</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {showOtherUniversity && (
-                      <Input 
-                        placeholder="Enter university name"
-                        value={formData.customUniversity}
-                        onChange={(e) => handleInputChange("customUniversity", e.target.value)}
-                        required
-                      />
-                    )}
-                  </div>
+                  {(accountType === "student" || accountType === "researcher") && (
+                    <div className="space-y-2">
+                      <Label htmlFor="university">University *</Label>
+                      <Select onValueChange={(value) => handleInputChange("university", value)} required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select university" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="university-yaounde-1">University of Yaoundé I</SelectItem>
+                          <SelectItem value="university-yaounde-2">University of Yaoundé II</SelectItem>
+                          <SelectItem value="university-douala">University of Douala</SelectItem>
+                          <SelectItem value="university-buea">University of Buea</SelectItem>
+                          <SelectItem value="university-bamenda">University of Bamenda</SelectItem>
+                          <SelectItem value="university-dschang">University of Dschang</SelectItem>
+                          <SelectItem value="university-ngaoundere">University of Ngaoundéré</SelectItem>
+                          <SelectItem value="university-maroua">University of Maroua</SelectItem>
+                          <SelectItem value="catholic-university">Catholic University of Central Africa</SelectItem>
+                          <SelectItem value="university-institute-gulf-guinea">University Institute of the Gulf of Guinea</SelectItem>
+                          <SelectItem value="national-advanced-school-engineering">National Advanced School of Engineering</SelectItem>
+                          <SelectItem value="higher-institute-sahel">Higher Institute of the Sahel</SelectItem>
+                          <SelectItem value="protestant-university-central-africa">Protestant University of Central Africa</SelectItem>
+                          <SelectItem value="catholic-university-cameroon">Catholic University of Cameroon</SelectItem>
+                          <SelectItem value="university-mountains">University of the Mountains</SelectItem>
+                          <SelectItem value="adventist-university-cosendai">Adventist University of Cosendai</SelectItem>
+                          <SelectItem value="higher-institute-commerce-management">Higher Institute of Commerce and Management</SelectItem>
+                          <SelectItem value="international-university-central-africa">International University of Central Africa</SelectItem>
+                          <SelectItem value="panafricain-institute-development">Pan-African Institute for Development</SelectItem>
+                          <SelectItem value="fotso-victor-university-technology">Fotso Victor University of Technology</SelectItem>
+                          <SelectItem value="hims">Higher Institute of Management Sciences (HIMS)</SelectItem>
+                          <SelectItem value="hibmat">Higher Institute of Business Management and Technology (HIBMAT)</SelectItem>
+                          <SelectItem value="hibs">Higher Institute of Business Studies (HIBS)</SelectItem>
+                          <SelectItem value="rhims">Regional Higher Institute of Management Sciences (RHIMS)</SelectItem>
+                          <SelectItem value="iheps">Institute of Higher Education and Professional Studies (IHEPS)</SelectItem>
+                          <SelectItem value="isma">Institute of Management Sciences (ISMA)</SelectItem>
+                          <SelectItem value="iuct">International University of Central Africa Technology (IUCT)</SelectItem>
+                          <SelectItem value="ista">Institute of Applied Technology (ISTA)</SelectItem>
+                          <SelectItem value="isab">Institute of Business Administration (ISAB)</SelectItem>
+                          <SelectItem value="istag">Institute of Technology and Applied Management (ISTAG)</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="faculty">Faculty *</Label>
-                      <Select onValueChange={(value) => handleInputChange("faculty", value)} required>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select faculty" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="science">Faculty of Science</SelectItem>
-                          <SelectItem value="arts">Faculty of Arts</SelectItem>
-                          <SelectItem value="medicine">Faculty of Medicine</SelectItem>
-                          <SelectItem value="engineering">Faculty of Engineering</SelectItem>
-                          <SelectItem value="law">Faculty of Law</SelectItem>
-                          <SelectItem value="economics">Faculty of Economics</SelectItem>
-                          <SelectItem value="education">Faculty of Education</SelectItem>
-                          <SelectItem value="agriculture">Faculty of Agriculture</SelectItem>
-                          <SelectItem value="social-sciences">Faculty of Social Sciences</SelectItem>
-                          <SelectItem value="business">Faculty of Business</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {showOtherFaculty && (
-                        <Input 
-                          placeholder="Enter faculty name"
-                          value={formData.customFaculty}
-                          onChange={(e) => handleInputChange("customFaculty", e.target.value)}
-                          required
-                        />
-                      )}
+                  {(accountType === "student" || accountType === "researcher") && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="faculty">Faculty *</Label>
+                        <Select onValueChange={(value) => handleInputChange("faculty", value)} required>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select faculty" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="science">Faculty of Science</SelectItem>
+                            <SelectItem value="arts">Faculty of Arts</SelectItem>
+                            <SelectItem value="medicine">Faculty of Medicine</SelectItem>
+                            <SelectItem value="engineering">Faculty of Engineering</SelectItem>
+                            <SelectItem value="law">Faculty of Law</SelectItem>
+                            <SelectItem value="economics">Faculty of Economics</SelectItem>
+                            <SelectItem value="education">Faculty of Education</SelectItem>
+                            <SelectItem value="agriculture">Faculty of Agriculture</SelectItem>
+                            <SelectItem value="social-sciences">Faculty of Social Sciences</SelectItem>
+                            <SelectItem value="business">Faculty of Business</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="department">Department *</Label>
+                        <Select onValueChange={(value) => handleInputChange("department", value)} required>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select department" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="computer-science">Computer Science</SelectItem>
+                            <SelectItem value="mathematics">Mathematics</SelectItem>
+                            <SelectItem value="physics">Physics</SelectItem>
+                            <SelectItem value="chemistry">Chemistry</SelectItem>
+                            <SelectItem value="biology">Biology</SelectItem>
+                            <SelectItem value="english">English Language</SelectItem>
+                            <SelectItem value="french">French Language</SelectItem>
+                            <SelectItem value="history">History</SelectItem>
+                            <SelectItem value="philosophy">Philosophy</SelectItem>
+                            <SelectItem value="psychology">Psychology</SelectItem>
+                            <SelectItem value="sociology">Sociology</SelectItem>
+                            <SelectItem value="economics">Economics</SelectItem>
+                            <SelectItem value="accounting">Accounting</SelectItem>
+                            <SelectItem value="management">Management</SelectItem>
+                            <SelectItem value="marketing">Marketing</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="department">Department *</Label>
-                      <Select onValueChange={(value) => handleInputChange("department", value)} required>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select department" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="computer-science">Computer Science</SelectItem>
-                          <SelectItem value="mathematics">Mathematics</SelectItem>
-                          <SelectItem value="physics">Physics</SelectItem>
-                          <SelectItem value="chemistry">Chemistry</SelectItem>
-                          <SelectItem value="biology">Biology</SelectItem>
-                          <SelectItem value="english">English Language</SelectItem>
-                          <SelectItem value="french">French Language</SelectItem>
-                          <SelectItem value="history">History</SelectItem>
-                          <SelectItem value="philosophy">Philosophy</SelectItem>
-                          <SelectItem value="psychology">Psychology</SelectItem>
-                          <SelectItem value="sociology">Sociology</SelectItem>
-                          <SelectItem value="economics">Economics</SelectItem>
-                          <SelectItem value="accounting">Accounting</SelectItem>
-                          <SelectItem value="management">Management</SelectItem>
-                          <SelectItem value="marketing">Marketing</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {showOtherDepartment && (
-                        <Input 
-                          placeholder="Enter department name"
-                          value={formData.customDepartment}
-                          onChange={(e) => handleInputChange("customDepartment", e.target.value)}
-                          required
-                        />
-                      )}
-                    </div>
-                  </div>
+                  )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">

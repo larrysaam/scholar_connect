@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Filter, X, Circle } from "lucide-react";
+import StatusIndicator from "@/components/researcher/StatusIndicator";
 
 interface FilterState {
   field: string;
@@ -18,6 +19,7 @@ interface FilterState {
   experience: string;
   languages: string[];
   specialties: string[];
+  onlineStatus: string[];
 }
 
 const AdvancedSearchFilters = () => {
@@ -28,7 +30,8 @@ const AdvancedSearchFilters = () => {
     availability: '',
     experience: '',
     languages: [],
-    specialties: []
+    specialties: [],
+    onlineStatus: []
   });
 
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
@@ -65,21 +68,17 @@ const AdvancedSearchFilters = () => {
       availability: '',
       experience: '',
       languages: [],
-      specialties: []
+      specialties: [],
+      onlineStatus: []
     });
     setActiveFilters([]);
   };
 
-  const getStatusIcon = (status: "online" | "offline" | "in-session") => {
-    switch (status) {
-      case "online":
-        return <Circle className="h-3 w-3 fill-green-500 text-green-500" />;
-      case "offline":
-        return <Circle className="h-3 w-3 fill-gray-500 text-gray-500" />;
-      case "in-session":
-        return <Circle className="h-3 w-3 fill-yellow-500 text-yellow-500" />;
-      default:
-        return <Circle className="h-3 w-3 fill-gray-500 text-gray-500" />;
+  const handleOnlineStatusChange = (status: string, checked: boolean) => {
+    if (checked) {
+      applyFilter('onlineStatus', [...filters.onlineStatus, status]);
+    } else {
+      applyFilter('onlineStatus', filters.onlineStatus.filter(s => s !== status));
     }
   };
 
@@ -168,24 +167,33 @@ const AdvancedSearchFilters = () => {
           <Label>Online Status</Label>
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <Checkbox id="online" />
+              <Checkbox 
+                id="online" 
+                checked={filters.onlineStatus.includes('online')}
+                onCheckedChange={(checked) => handleOnlineStatusChange('online', !!checked)}
+              />
               <Label htmlFor="online" className="flex items-center space-x-2 text-sm">
-                {getStatusIcon("online")}
-                <span>Online</span>
+                <StatusIndicator status="online" />
               </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox id="offline" />
+              <Checkbox 
+                id="offline" 
+                checked={filters.onlineStatus.includes('offline')}
+                onCheckedChange={(checked) => handleOnlineStatusChange('offline', !!checked)}
+              />
               <Label htmlFor="offline" className="flex items-center space-x-2 text-sm">
-                {getStatusIcon("offline")}
-                <span>Offline</span>
+                <StatusIndicator status="offline" />
               </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox id="in-session" />
+              <Checkbox 
+                id="in-session" 
+                checked={filters.onlineStatus.includes('in-session')}
+                onCheckedChange={(checked) => handleOnlineStatusChange('in-session', !!checked)}
+              />
               <Label htmlFor="in-session" className="flex items-center space-x-2 text-sm">
-                {getStatusIcon("in-session")}
-                <span>In Session</span>
+                <StatusIndicator status="in-session" />
               </Label>
             </div>
           </div>
