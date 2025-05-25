@@ -97,6 +97,33 @@ const ResearcherProfile = () => {
         period: "2018-2019"
       }
     ],
+    grants: [
+      {
+        title: "Research Excellence Grant",
+        amount: "50,000 XAF",
+        period: "2022-2024"
+      },
+      {
+        title: "Innovation Research Fund",
+        amount: "75,000 XAF", 
+        period: "2021-2023"
+      }
+    ],
+    memberships: [
+      "African Association of Remote Sensing",
+      "International Geographic Union",
+      "Cameroon Geographic Society"
+    ],
+    supervision: [
+      {
+        type: "PhD Students",
+        count: 3
+      },
+      {
+        type: "Master's Students", 
+        count: 8
+      }
+    ],
     imageUrl: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
     availableTimes: [
       {
@@ -110,9 +137,9 @@ const ResearcherProfile = () => {
     ],
     onlineStatus: "online" as const,
     verifications: {
-      academic: true,
-      publication: true,
-      institutional: true
+      academic: "verified" as const,
+      publication: "verified" as const,
+      institutional: "verified" as const
     }
   };
 
@@ -133,11 +160,7 @@ const ResearcherProfile = () => {
         </div>
       </main>
 
-      <BookingModal 
-        isOpen={isBookingOpen}
-        onClose={() => setIsBookingOpen(false)}
-        researcher={researcher}
-      />
+      <BookingModal researcher={researcher} />
       
       <Footer />
     </div>

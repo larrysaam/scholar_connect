@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -43,7 +44,7 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedChallenges, setSelectedChallenges] = useState<string[]>([]);
   const [comment, setComment] = useState<string>("");
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   // Function to check if a date has available slots
   const hasSlots = (date: Date) => {
@@ -79,11 +80,11 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
     console.log("Time:", selectedTime);
     console.log("Challenges:", selectedChallenges);
     console.log("Comment:", comment);
-    setIsBookingModalOpen(false);
+    setIsOpen(false);
   };
 
   return (
-    <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button className="bg-white text-blue-700 hover:bg-blue-50">
           Book Consultation
@@ -165,7 +166,7 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
           <div className="pt-4 border-t">
             <div className="flex justify-between items-center mb-4">
               <span>Consultation Fee:</span>
-              <span className="font-semibold">{researcher.hourlyRate * 600} XAF</span>
+              <span className="font-semibold">{researcher.hourlyRate} XAF</span>
             </div>
             
             <Button 
