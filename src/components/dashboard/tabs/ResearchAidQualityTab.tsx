@@ -2,16 +2,16 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, MessageSquare, ThumbsUp } from "lucide-react";
+import { Star, MessageSquare, ThumbsUp, UserPlus } from "lucide-react";
 import InviteModal from "@/components/researcher/InviteModal";
 
-const QualityFeedbackTab = () => {
+const ResearchAidQualityTab = () => {
   return (
     <div className="space-y-6">
       <div className="bg-white p-6 rounded-lg shadow-sm">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Quality Feedback</h2>
-          <InviteModal userType="student" triggerText="Invite a Student" />
+          <InviteModal userType="research-aid" triggerText="Invite a Research Aid" />
         </div>
         <p className="text-gray-600 mb-6">Help us improve ScholarConnect by sharing your feedback.</p>
         
@@ -51,7 +51,7 @@ const QualityFeedbackTab = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600">
-                "Great platform for connecting with researchers. The booking system is very intuitive."
+                "Great platform for providing research assistance. The project matching system works well."
               </p>
               <Badge className="mt-2 bg-green-100 text-green-800">Submitted</Badge>
             </CardContent>
@@ -67,16 +67,16 @@ const QualityFeedbackTab = () => {
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm">Total Sessions</span>
-                  <span className="text-sm font-medium">12</span>
+                  <span className="text-sm">Total Projects</span>
+                  <span className="text-sm font-medium">8</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm">Avg Rating Given</span>
-                  <span className="text-sm font-medium">4.8/5</span>
+                  <span className="text-sm font-medium">4.7/5</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm">Feedback Submitted</span>
-                  <span className="text-sm font-medium">3</span>
+                  <span className="text-sm font-medium">2</span>
                 </div>
               </div>
             </CardContent>
@@ -87,4 +87,4 @@ const QualityFeedbackTab = () => {
   );
 };
 
-export default QualityFeedbackTab;
+export default ResearchAidQualityTab;

@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/table";
 import QualityAssurance from "@/components/quality/QualityAssurance";
 import VerificationManager from "@/components/verification/VerificationManager";
+import InviteModal from "@/components/researcher/InviteModal";
 
 // Mock data for upcoming consultations
 const upcomingConsultations = [
@@ -86,7 +87,7 @@ const pastConsultations = [
       id: "4",
       name: "Sam Lee",
       field: "Economics",
-      imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80"
+      imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80"
     },
     date: "May 5, 2025",
     time: "11:00 AM - 12:00 PM",
@@ -153,7 +154,10 @@ const ResearcherDashboard = () => {
               <h1 className="text-3xl font-bold mb-2">Researcher Dashboard</h1>
               <p className="text-gray-600">Manage your consultations and track your earnings</p>
             </div>
-            <Badge className="bg-emerald-100 text-emerald-800 px-3 py-1 text-sm">Verified Expert</Badge>
+            <div className="flex items-center space-x-3">
+              <InviteModal userType="researcher" triggerText="Invite a Researcher" />
+              <Badge className="bg-emerald-100 text-emerald-800 px-3 py-1 text-sm">Verified Expert</Badge>
+            </div>
           </div>
           
           {/* Analytics Overview */}

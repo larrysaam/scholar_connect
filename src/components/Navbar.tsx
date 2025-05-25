@@ -54,9 +54,11 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">SC</span>
-            </div>
+            <img 
+              src="/lovable-uploads/a2f6a2f6-b795-4e93-914c-2b58648099ff.png" 
+              alt="ScholarConnect" 
+              className="w-8 h-8"
+            />
             <span className="text-xl font-bold text-blue-600">ScholarConnect</span>
           </Link>
 
