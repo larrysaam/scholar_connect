@@ -1,5 +1,12 @@
 
 export const frTranslations = {
+  nav: {
+    home: "Accueil",
+    researchers: "Chercheurs",
+    about: "À propos",
+    login: "Connexion",
+    register: "S'inscrire"
+  },
   hero: {
     joinAsResearcher: "Rejoindre en tant que Chercheur"
   },

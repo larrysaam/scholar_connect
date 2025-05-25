@@ -1,5 +1,12 @@
 
 export const enTranslations = {
+  nav: {
+    home: "Home",
+    researchers: "Researchers",
+    about: "About",
+    login: "Login",
+    register: "Register"
+  },
   hero: {
     joinAsResearcher: "Join as a Researcher"
   },
