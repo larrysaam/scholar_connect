@@ -7,15 +7,40 @@ import {
   FileText,
   Settings,
   Banknote,
-  MessageSquare
+  MessageSquare,
+  UserPlus
 } from "lucide-react";
+import InviteModal from "@/components/researcher/InviteModal";
 
 interface DashboardSidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  userType?: string;
 }
 
-const DashboardSidebar = ({ activeTab, setActiveTab }: DashboardSidebarProps) => {
+const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSidebarProps) => {
+  const getInviteText = () => {
+    switch (userType) {
+      case "researcher":
+        return "Invite Researcher";
+      case "research-aide":
+        return "Invite Research Aid";
+      default:
+        return "Invite Student";
+    }
+  };
+
+  const getInviteUserType = () => {
+    switch (userType) {
+      case "researcher":
+        return "researcher" as const;
+      case "research-aide":
+        return "research-aid" as const;
+      default:
+        return "student" as const;
+    }
+  };
+
   return (
     <div className="bg-white p-5 rounded-lg shadow-sm">
       <div className="flex items-center space-x-4 mb-6">
@@ -24,7 +49,9 @@ const DashboardSidebar = ({ activeTab, setActiveTab }: DashboardSidebarProps) =>
         </div>
         <div>
           <p className="font-medium">Alex Smith</p>
-          <p className="text-sm text-gray-500">Student</p>
+          <p className="text-sm text-gray-500">
+            {userType === "researcher" ? "Researcher" : userType === "research-aide" ? "Research Aid" : "Student"}
+          </p>
         </div>
       </div>
       
@@ -61,6 +88,26 @@ const DashboardSidebar = ({ activeTab, setActiveTab }: DashboardSidebarProps) =>
           <MessageSquare className="mr-2 h-4 w-4" />
           Quality Feedback
         </Button>
+        {userType === "researcher" && (
+          <>
+            <Button 
+              variant={activeTab === "quality-assurance" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("quality-assurance")}
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Quality Assurance
+            </Button>
+            <Button 
+              variant={activeTab === "verification" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("verification")}
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Verification
+            </Button>
+          </>
+        )}
         <Button 
           variant={activeTab === "profile" ? "default" : "ghost"} 
           className="w-full justify-start" 
@@ -85,6 +132,13 @@ const DashboardSidebar = ({ activeTab, setActiveTab }: DashboardSidebarProps) =>
           <Settings className="mr-2 h-4 w-4" />
           Settings
         </Button>
+        
+        <div className="pt-4 border-t">
+          <InviteModal 
+            userType={getInviteUserType()}
+            triggerText={getInviteText()}
+          />
+        </div>
       </nav>
     </div>
   );

@@ -12,8 +12,8 @@ import ProfileTab from "@/components/dashboard/tabs/ProfileTab";
 import DocumentsTab from "@/components/dashboard/tabs/DocumentsTab";
 import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
 import QualityFeedbackTab from "@/components/dashboard/tabs/QualityFeedbackTab";
-import { QualityAssurance } from "@/components/quality/QualityAssurance";
-import { VerificationManager } from "@/components/verification/VerificationManager";
+import QualityAssurance from "@/components/quality/QualityAssurance";
+import VerificationManager from "@/components/verification/VerificationManager";
 
 const ResearcherDashboard = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
