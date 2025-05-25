@@ -17,13 +17,13 @@ const ResearchAids = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
 
   const categories = [
-    { value: "all", label: t('researchAids.categories.all') },
-    { value: "gis", label: t('researchAids.categories.gis') },
-    { value: "statistics", label: t('researchAids.categories.statistics') },
-    { value: "cartography", label: t('researchAids.categories.cartography') },
-    { value: "data-collection", label: t('researchAids.categories.dataCollection') },
-    { value: "journal-publishing", label: t('researchAids.categories.journalPublishing') },
-    { value: "academic-editing", label: t('researchAids.categories.academicEditing') }
+    { value: "all", label: t('researchAids.categories.all') || "All Categories" },
+    { value: "gis", label: t('researchAids.categories.gis') || "GIS" },
+    { value: "statistics", label: t('researchAids.categories.statistics') || "Statistics" },
+    { value: "cartography", label: t('researchAids.categories.cartography') || "Cartography" },
+    { value: "data-collection", label: t('researchAids.categories.dataCollection') || "Data Collection" },
+    { value: "journal-publishing", label: t('researchAids.categories.journalPublishing') || "Journal Publishing" },
+    { value: "academic-editing", label: t('researchAids.categories.academicEditing') || "Academic Editing" }
   ];
 
   const getStatusIcon = (status: "online" | "offline" | "in-session") => {
@@ -143,9 +143,11 @@ const ResearchAids = () => {
         <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">{t('researchAids.title')}</h1>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+                {t('researchAids.title') || "Research Aids & Support Services"}
+              </h1>
               <p className="text-xl text-blue-100 mb-8">
-                {t('researchAids.subtitle')}
+                {t('researchAids.subtitle') || "Connect with qualified research assistants and academic support specialists"}
               </p>
               
               {/* Search and Filter */}
@@ -154,7 +156,7 @@ const ResearchAids = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                   <Input
                     type="text"
-                    placeholder={t('researchAids.searchPlaceholder')}
+                    placeholder={t('researchAids.searchPlaceholder') || "Search by name, expertise, or skills..."}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 bg-white text-gray-900"
@@ -181,9 +183,11 @@ const ResearchAids = () => {
         <section className="py-16">
           <div className="container mx-auto px-4 md:px-6">
             <div className="mb-8">
-              <h2 className="text-2xl font-semibold mb-2">{t('researchAids.results.title')}</h2>
+              <h2 className="text-2xl font-semibold mb-2">
+                {t('researchAids.results.title') || "Available Research Aids"}
+              </h2>
               <p className="text-gray-600">
-                {t('researchAids.results.found')} {filteredAids.length} {t('researchAids.results.specialists')}
+                {t('researchAids.results.found') || "Found"} {filteredAids.length} {t('researchAids.results.specialists') || "specialists"}
               </p>
             </div>
 
@@ -222,7 +226,9 @@ const ResearchAids = () => {
                   <CardContent>
                     <div className="space-y-4">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">{t('researchAids.card.skills')}</h4>
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">
+                          {t('researchAids.card.skills') || "Skills"}
+                        </h4>
                         <div className="flex flex-wrap gap-1">
                           {aid.skills.slice(0, 3).map((skill) => (
                             <Badge key={skill} variant="secondary" className="text-xs">
@@ -237,10 +243,10 @@ const ResearchAids = () => {
                         </div>
                       </div>
                       
-                      <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center text-sm">
                         <div className="flex items-center text-gray-600">
                           <Clock className="h-4 w-4 mr-1" />
-                          {aid.experience} {t('researchAids.card.experience')}
+                          {aid.experience} {t('researchAids.card.experience') || "experience"}
                         </div>
                       </div>
                       
@@ -249,10 +255,13 @@ const ResearchAids = () => {
                           variant={aid.availability === "Available" ? "default" : "secondary"}
                           className={aid.availability === "Available" ? "bg-green-100 text-green-800" : ""}
                         >
-                          {aid.availability === "Available" ? t('researchAids.card.available') : t('researchAids.card.busy')}
+                          {aid.availability === "Available" ? 
+                            (t('researchAids.card.available') || "Available") : 
+                            (t('researchAids.card.busy') || "Busy")
+                          }
                         </Badge>
                         <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                          {t('researchAids.card.contact')}
+                          {t('researchAids.card.contact') || "Contact"}
                         </Button>
                       </div>
                     </div>
@@ -263,7 +272,9 @@ const ResearchAids = () => {
 
             {filteredAids.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">{t('researchAids.noResults')}</p>
+                <p className="text-gray-500 text-lg">
+                  {t('researchAids.noResults') || "No research aids found matching your criteria."}
+                </p>
               </div>
             )}
           </div>
@@ -273,12 +284,14 @@ const ResearchAids = () => {
         <section className="py-16 bg-blue-600 text-white">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-2xl md:text-3xl font-semibold mb-4">{t('researchAids.cta.title')}</h2>
+              <h2 className="text-2xl md:text-3xl font-semibold mb-4">
+                {t('researchAids.cta.title') || "Join Our Research Aid Network"}
+              </h2>
               <p className="text-xl text-blue-100 mb-8">
-                {t('researchAids.cta.description')}
+                {t('researchAids.cta.description') || "Become a research aid and help researchers achieve their goals"}
               </p>
               <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
-                <a href="/register">{t('researchAids.cta.joinButton')}</a>
+                <a href="/register">{t('researchAids.cta.joinButton') || "Join as Research Aid"}</a>
               </Button>
             </div>
           </div>
