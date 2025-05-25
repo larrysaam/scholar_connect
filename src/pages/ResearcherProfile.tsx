@@ -9,117 +9,137 @@ import BookingModal from "@/components/researcher/BookingModal";
 
 const ResearcherProfile = () => {
   const { id } = useParams();
-  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   // Mock data - in a real app, this would come from an API
   const researcher = {
     id: id || "1",
-    name: "Dr. Amina Foukou",
-    title: "Senior Research Scientist",
+    name: "Dr. Marie Ngono Abega",
+    title: "Senior Research Fellow in Geographic Information Systems",
     institution: "University of Yaoundé I",
-    department: "Computer Science",
-    field: "Artificial Intelligence",
-    specialties: ["Machine Learning", "Natural Language Processing", "Computer Vision"],
+    department: "Department of Geography",
+    field: "Geographic Information Systems",
+    specialties: ["Remote Sensing", "Spatial Analysis", "Environmental Modeling", "Cartography"],
     hourlyRate: 15000,
-    rating: 4.8,
+    rating: 4.9,
     reviews: [
       {
         id: "1",
-        name: "Jean Baptiste Nga",
+        name: "Dr. Paul Mbarga",
         rating: 5,
         date: "2024-01-15",
-        comment: "Excellent guidance on my thesis. Very knowledgeable and patient."
+        comment: "Excellent expertise in GIS analysis. Very professional and delivered quality work on time."
+      },
+      {
+        id: "2",
+        name: "Prof. Sarah Tankou",
+        rating: 5,
+        date: "2024-01-10",
+        comment: "Outstanding knowledge in remote sensing. Helped me greatly with my research project."
       }
     ],
-    imageUrl: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
-    isOnline: true,
-    responseTime: "within 2 hours",
-    completedProjects: 45,
-    languages: ["English", "French"],
-    bio: "Passionate researcher with over 8 years of experience in AI and machine learning...",
+    bio: "Dr. Marie Ngono Abega is a distinguished researcher with over 10 years of experience in Geographic Information Systems and Remote Sensing. She has published extensively in international journals and has worked on numerous projects involving spatial analysis and environmental modeling.",
     education: [
       {
-        degree: "PhD in Computer Science",
+        degree: "PhD in Geography",
         institution: "University of Yaoundé I",
         year: "2018"
+      },
+      {
+        degree: "MSc in Geographic Information Systems",
+        institution: "University of Buea",
+        year: "2014"
       }
     ],
     experience: [
       {
-        position: "Senior Research Scientist",
+        position: "Senior Research Fellow",
         institution: "University of Yaoundé I",
-        period: "2019 - Present"
-      }
-    ],
-    awards: [
+        period: "2020-Present"
+      },
       {
-        title: "Best Research Paper Award",
-        year: "2023"
+        position: "Research Associate",
+        institution: "Institute of Geological Sciences",
+        period: "2018-2020"
       }
     ],
     publications: [
       {
-        title: "Advanced Machine Learning Techniques in NLP",
-        journal: "Journal of AI Research",
+        title: "Spatial Analysis of Urban Growth in Cameroon Cities",
+        journal: "African Journal of Geography",
         year: "2023",
-        url: "#"
+        citations: 45
+      },
+      {
+        title: "Remote Sensing Applications in Environmental Monitoring",
+        journal: "International Journal of Remote Sensing",
+        year: "2022",
+        citations: 62
+      }
+    ],
+    awards: [
+      {
+        title: "Best Young Researcher Award",
+        year: "2021"
+      },
+      {
+        title: "Excellence in Research Grant",
+        year: "2020"
       }
     ],
     fellowships: [
       {
-        title: "UNESCO Fellowship in AI Research",
-        year: "2022"
-      }
-    ],
-    grants: [
+        title: "African Union Research Fellowship",
+        period: "2019-2020"
+      },
       {
-        title: "National Research Grant for AI Development",
-        amount: "5,000,000 XAF",
-        year: "2023"
+        title: "UNESCO Young Scientists Programme",
+        period: "2018-2019"
       }
     ],
-    memberships: [
+    imageUrl: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
+    availableTimes: [
       {
-        organization: "Cameroon Association of Computer Scientists",
-        position: "Senior Member",
-        year: "2020"
-      }
-    ],
-    supervision: [
+        date: new Date("2024-01-20"),
+        slots: ["09:00", "10:00", "14:00", "15:00"]
+      },
       {
-        studentName: "Marie Ngono",
-        degree: "PhD",
-        topic: "Deep Learning for Medical Diagnosis",
-        status: "Ongoing"
+        date: new Date("2024-01-21"),
+        slots: ["09:00", "11:00", "13:00", "16:00"]
       }
     ],
+    onlineStatus: "online" as const,
     verifications: {
-      academic: "verified" as const,
-      publication: "verified" as const,
-      institutional: "verified" as const
+      academic: true,
+      publication: true,
+      institutional: true
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
-      <main className="pt-8 pb-16">
-        <div className="container mx-auto px-4 md:px-6">
+      
+      <main className="flex-grow">
+        <div className="container mx-auto px-4 py-8">
           <ProfileHeader 
-            researcher={researcher} 
-            onBookSession={() => setShowBookingModal(true)}
+            researcher={researcher}
+            onBookingClick={() => setIsBookingOpen(true)}
           />
-          <ProfileTabs researcher={researcher} />
+          
+          <div className="mt-8">
+            <ProfileTabs researcher={researcher} />
+          </div>
         </div>
       </main>
-      <Footer />
+
+      <BookingModal 
+        isOpen={isBookingOpen}
+        onClose={() => setIsBookingOpen(false)}
+        researcher={researcher}
+      />
       
-      {showBookingModal && (
-        <BookingModal 
-          researcher={researcher}
-          onClose={() => setShowBookingModal(false)}
-        />
-      )}
+      <Footer />
     </div>
   );
 };
