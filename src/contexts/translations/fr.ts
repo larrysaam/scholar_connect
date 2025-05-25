@@ -2,6 +2,14 @@ export const frTranslations = {
   nav: {
     home: "Accueil",
     researchers: "Chercheurs",
+    researchAids: "Assistants de Recherche",
+    howItWorks: "Comment ça marche",
+    aboutUs: "À propos",
+    contact: "Contact",
+    account: "Compte",
+    signIn: "Se connecter",
+    signUp: "S'inscrire",
+    dashboard: "Tableau de bord",
     about: "À propos",
     login: "Connexion",
     register: "S'inscrire"

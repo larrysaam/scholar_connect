@@ -2,6 +2,14 @@ export const enTranslations = {
   nav: {
     home: "Home",
     researchers: "Researchers",
+    researchAids: "Research Aids",
+    howItWorks: "How It Works",
+    aboutUs: "About Us",
+    contact: "Contact",
+    account: "Account",
+    signIn: "Sign In",
+    signUp: "Sign Up",
+    dashboard: "Dashboard",
     about: "About",
     login: "Login",
     register: "Register"
