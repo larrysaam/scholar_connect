@@ -9,6 +9,10 @@ interface AcademicFieldsProps {
   onInputChange: (field: string, value: string) => void;
   cameroonUniversities: string[];
   showOtherDepartment: boolean;
+  showOtherAcademicLevel: boolean;
+  setShowOtherAcademicLevel: (show: boolean) => void;
+  showOtherUniversity: boolean;
+  setShowOtherUniversity: (show: boolean) => void;
 }
 
 const AcademicFields = ({ 
@@ -16,7 +20,11 @@ const AcademicFields = ({
   formData, 
   onInputChange, 
   cameroonUniversities, 
-  showOtherDepartment 
+  showOtherDepartment,
+  showOtherAcademicLevel,
+  setShowOtherAcademicLevel,
+  showOtherUniversity,
+  setShowOtherUniversity
 }: AcademicFieldsProps) => {
   if (accountType === "research-aid") {
     return (
@@ -39,7 +47,10 @@ const AcademicFields = ({
         {accountType === "student" && (
           <div className="space-y-2">
             <Label htmlFor="academicLevel">Academic Level *</Label>
-            <Select onValueChange={(value) => onInputChange("academicLevel", value)} required>
+            <Select onValueChange={(value) => {
+              onInputChange("academicLevel", value);
+              setShowOtherAcademicLevel(value === "other");
+            }} required>
               <SelectTrigger>
                 <SelectValue placeholder="Select academic level" />
               </SelectTrigger>
@@ -48,14 +59,27 @@ const AcademicFields = ({
                 <SelectItem value="undergraduate">Undergraduate</SelectItem>
                 <SelectItem value="postgraduate">Postgraduate</SelectItem>
                 <SelectItem value="postdoc">Post Doctorate</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
+            {showOtherAcademicLevel && (
+              <Input 
+                placeholder="Specify your academic level"
+                value={formData.customAcademicLevel}
+                onChange={(e) => onInputChange("customAcademicLevel", e.target.value)}
+                className="mt-2"
+                required
+              />
+            )}
           </div>
         )}
 
         <div className="space-y-2">
           <Label htmlFor="university">University *</Label>
-          <Select onValueChange={(value) => onInputChange("university", value)} required>
+          <Select onValueChange={(value) => {
+            onInputChange("university", value);
+            setShowOtherUniversity(value === "other");
+          }} required>
             <SelectTrigger>
               <SelectValue placeholder="Select university" />
             </SelectTrigger>
@@ -63,8 +87,18 @@ const AcademicFields = ({
               {cameroonUniversities.map((university) => (
                 <SelectItem key={university} value={university}>{university}</SelectItem>
               ))}
+              <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
+          {showOtherUniversity && (
+            <Input 
+              placeholder="Enter your university name"
+              value={formData.customUniversity}
+              onChange={(e) => onInputChange("customUniversity", e.target.value)}
+              className="mt-2"
+              required
+            />
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

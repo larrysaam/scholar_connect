@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -31,9 +30,14 @@ const Register = () => {
   const [showOtherCountry, setShowOtherCountry] = useState(false);
   const [showOtherCity, setShowOtherCity] = useState(false);
   const [showOtherDepartment, setShowOtherDepartment] = useState(false);
+  const [showOtherTitle, setShowOtherTitle] = useState(false);
+  const [showOtherAcademicLevel, setShowOtherAcademicLevel] = useState(false);
+  const [showOtherUniversity, setShowOtherUniversity] = useState(false);
+  const [showOtherLanguage, setShowOtherLanguage] = useState(false);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     title: "",
+    customTitle: "",
     firstName: "",
     lastName: "",
     sex: "",
@@ -42,6 +46,7 @@ const Register = () => {
     countryCode: "",
     contact: "",
     university: "",
+    customUniversity: "",
     faculty: "",
     department: "",
     customDepartment: "",
@@ -51,6 +56,8 @@ const Register = () => {
     city: "",
     customCity: "",
     academicLevel: "",
+    customAcademicLevel: "",
+    customLanguage: "",
     preferredLanguages: [] as string[]
   });
 
@@ -67,6 +74,10 @@ const Register = () => {
     const updatedLanguages = selectedLanguages.filter(lang => lang !== language);
     setSelectedLanguages(updatedLanguages);
     setFormData(prev => ({ ...prev, preferredLanguages: updatedLanguages }));
+    
+    if (language === "Other") {
+      setShowOtherLanguage(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -186,6 +197,8 @@ const Register = () => {
                     formData={formData}
                     onInputChange={handleInputChange}
                     countryCodes={countryCodes}
+                    showOtherTitle={showOtherTitle}
+                    setShowOtherTitle={setShowOtherTitle}
                   />
 
                   <LanguageSelector 
@@ -193,6 +206,10 @@ const Register = () => {
                     selectedLanguages={selectedLanguages}
                     onLanguageToggle={handleLanguageToggle}
                     onRemoveLanguage={removeLanguage}
+                    showOtherLanguage={showOtherLanguage}
+                    setShowOtherLanguage={setShowOtherLanguage}
+                    formData={formData}
+                    onInputChange={handleInputChange}
                   />
 
                   <AcademicFields 
@@ -201,6 +218,10 @@ const Register = () => {
                     onInputChange={handleInputChange}
                     cameroonUniversities={cameroonUniversities}
                     showOtherDepartment={showOtherDepartment}
+                    showOtherAcademicLevel={showOtherAcademicLevel}
+                    setShowOtherAcademicLevel={setShowOtherAcademicLevel}
+                    showOtherUniversity={showOtherUniversity}
+                    setShowOtherUniversity={setShowOtherUniversity}
                   />
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

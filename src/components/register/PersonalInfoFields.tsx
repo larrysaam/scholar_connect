@@ -7,27 +7,49 @@ interface PersonalInfoFieldsProps {
   formData: any;
   onInputChange: (field: string, value: string) => void;
   countryCodes: Array<{ code: string; country: string }>;
+  showOtherTitle: boolean;
+  setShowOtherTitle: (show: boolean) => void;
 }
 
-const PersonalInfoFields = ({ formData, onInputChange, countryCodes }: PersonalInfoFieldsProps) => {
+const PersonalInfoFields = ({ 
+  formData, 
+  onInputChange, 
+  countryCodes, 
+  showOtherTitle, 
+  setShowOtherTitle 
+}: PersonalInfoFieldsProps) => {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label htmlFor="title">Title *</Label>
-          <Select onValueChange={(value) => onInputChange("title", value)} required>
+          <Select onValueChange={(value) => {
+            onInputChange("title", value);
+            setShowOtherTitle(value === "other");
+          }} required>
             <SelectTrigger>
               <SelectValue placeholder="Select title" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="dr">Dr</SelectItem>
               <SelectItem value="prof">Prof</SelectItem>
+              <SelectItem value="eng">Eng</SelectItem>
               <SelectItem value="mr">Mr</SelectItem>
               <SelectItem value="mrs">Mrs</SelectItem>
               <SelectItem value="miss">Miss</SelectItem>
               <SelectItem value="ms">Ms</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
+          {showOtherTitle && (
+            <Input 
+              placeholder="Enter your title"
+              value={formData.customTitle}
+              onChange={(e) => onInputChange("customTitle", e.target.value)}
+              className="mt-2"
+              required
+            />
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="firstName">First name *</Label>
@@ -65,18 +87,13 @@ const PersonalInfoFields = ({ formData, onInputChange, countryCodes }: PersonalI
         <div className="space-y-2">
           <Label htmlFor="contact">Contact *</Label>
           <div className="flex">
-            <Select onValueChange={(value) => onInputChange("countryCode", value)} required>
-              <SelectTrigger className="w-1/3">
-                <SelectValue placeholder="Code" />
-              </SelectTrigger>
-              <SelectContent className="max-h-[200px] overflow-y-auto">
-                {countryCodes.map((item) => (
-                  <SelectItem key={item.code} value={item.code}>
-                    {item.code} {item.country}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Input 
+              placeholder="Country code (e.g., +237)"
+              value={formData.countryCode}
+              onChange={(e) => onInputChange("countryCode", e.target.value)}
+              className="w-1/3"
+              required 
+            />
             <Input 
               id="contact" 
               type="tel" 
