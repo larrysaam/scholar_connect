@@ -17,7 +17,7 @@ import AboutUs from "./pages/AboutUs";
 import ResearcherDashboard from "./pages/ResearcherDashboard";
 import HowItWorks from "./pages/HowItWorks";
 import CoAuthorWorkspace from "./pages/CoAuthorWorkspace";
-import ResearchAides from "./pages/ResearchAides";
+import ResearchAids from "./pages/ResearchAids";
 import Contact from "./pages/Contact";
 import Partnerships from "./pages/Partnerships";
 import ResearchAideSignup from "./pages/ResearchAideSignup";
@@ -53,11 +53,11 @@ const App: React.FC = () => {
                 <Route path="/about-us" element={<AboutUs />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
                 <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
-                <Route path="/research-aides" element={<ResearchAides />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/partnerships" element={<Partnerships />} />
+                <Route path="/research-aids" element={<ResearchAids />} />
                 <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
                 <Route path="/research-aide-dashboard" element={<ResearchAideDashboard />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/partnerships" element={<Partnerships />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -8,7 +9,6 @@ import BookingModal from "@/components/researcher/BookingModal";
 
 const ResearcherProfile = () => {
   const { id } = useParams();
-  const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   // Mock data - in a real app, this would come from an API
   const researcher = {
@@ -150,7 +150,6 @@ const ResearcherProfile = () => {
         <div className="container mx-auto px-4 py-8">
           <ProfileHeader 
             researcher={researcher}
-            onBookingClick={() => setIsBookingOpen(true)}
           />
           
           <div className="mt-8">

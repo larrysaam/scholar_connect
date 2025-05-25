@@ -23,7 +23,7 @@ const Navbar = () => {
     { label: t("nav.researchers") || "Researchers", href: "/researchers" },
     { label: t("nav.researchAids") || "Research Aids", href: "/research-aids" },
     { label: t("nav.howItWorks") || "How It Works", href: "/how-it-works" },
-    { label: t("nav.aboutUs") || "About Us", href: "/about" },
+    { label: t("nav.aboutUs") || "About Us", href: "/about-us" },
     { label: t("nav.contact") || "Contact", href: "/contact" },
   ];
 
