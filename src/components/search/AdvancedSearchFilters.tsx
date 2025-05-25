@@ -25,7 +25,7 @@ interface FilterState {
 const AdvancedSearchFilters = () => {
   const [filters, setFilters] = useState<FilterState>({
     field: '',
-    priceRange: [15000, 60000],
+    priceRange: [35000, 55000],
     rating: 4.0,
     availability: '',
     experience: '',
@@ -63,7 +63,7 @@ const AdvancedSearchFilters = () => {
   const clearAllFilters = () => {
     setFilters({
       field: '',
-      priceRange: [15000, 60000],
+      priceRange: [35000, 55000],
       rating: 4.0,
       availability: '',
       experience: '',
@@ -134,8 +134,8 @@ const AdvancedSearchFilters = () => {
             <Slider
               value={filters.priceRange}
               onValueChange={(value) => applyFilter('priceRange', value)}
-              max={100000}
-              min={10000}
+              max={60000}
+              min={30000}
               step={5000}
               className="w-full"
             />

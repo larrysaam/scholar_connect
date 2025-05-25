@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -34,7 +33,6 @@ const challenges = [
   "Report writing",
   "Live document review",
   "General research guidance",
-  "Co-author an article",
   "Expert knowledge",
   "Interview a researcher",
   "Media visibility"

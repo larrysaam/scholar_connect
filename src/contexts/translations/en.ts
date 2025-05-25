@@ -11,7 +11,7 @@ export const enTranslations = {
     joinAsResearcher: "Join as a Researcher"
   },
   researchAids: {
-    title: "Research Aid",
+    title: "Research Aids",
     subtitle: "Find specialized assistance for your research projects",
     searchPlaceholder: "Search for research aids...",
     categories: {
@@ -81,6 +81,35 @@ export const enTranslations = {
         weekdays: "Monday - Friday: 8:00 AM - 6:00 PM",
         weekends: "Saturday - Sunday: 10:00 AM - 4:00 PM"
       }
+    },
+    faqs: {
+      title: "Frequently Asked Questions",
+      questions: [
+        {
+          question: "How do I sign up as a researcher?",
+          answer: "Click on 'Join as a Researcher' and fill out the registration form with your academic credentials and expertise."
+        },
+        {
+          question: "What are the fees for using ScholarConnect?",
+          answer: "Basic membership is free. Premium features and consultations have varying rates set by individual researchers and research aids."
+        },
+        {
+          question: "How do I book a consultation?",
+          answer: "Browse researcher profiles, select your preferred expert, and use the 'Book Consultation' button to schedule a session."
+        },
+        {
+          question: "Can I collaborate on research projects?",
+          answer: "Yes! You can send co-author invitations and collaborate on various types of publications through our platform."
+        },
+        {
+          question: "What types of research support are available?",
+          answer: "We offer various services including literature review, methodology guidance, data analysis, academic writing, and publication support."
+        },
+        {
+          question: "Is my data secure on ScholarConnect?",
+          answer: "Yes, we use industry-standard security measures to protect all user data and communications on our platform."
+        }
+      ]
     }
   }
 };

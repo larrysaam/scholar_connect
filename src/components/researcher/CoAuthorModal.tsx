@@ -23,7 +23,7 @@ const CoAuthorModal = ({ researcher }: CoAuthorModalProps) => {
     nextSteps: ""
   });
 
-  const publicationTypes = ["Article", "Conference Paper", "Policy Paper", "Book"];
+  const publicationTypes = ["Article", "Conference Paper", "Policy Paper", "Book", "Book Chapter"];
 
   const handleSubmit = () => {
     console.log("Co-author invitation submitted:", { selectedType, formData });
