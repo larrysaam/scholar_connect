@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Search, MapPin, Star, Clock, DollarSign } from "lucide-react";
+import { Search, MapPin, Star, Clock } from "lucide-react";
 
 const ResearchAides = () => {
   const { t } = useLanguage();
@@ -35,7 +35,6 @@ const ResearchAides = () => {
       location: "Yaoundé, Cameroon",
       rating: 4.9,
       reviews: 127,
-      hourlyRate: "$45",
       image: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
       skills: ["ArcGIS", "QGIS", "Remote Sensing", "Spatial Analysis"],
       experience: "8 years",
@@ -49,7 +48,6 @@ const ResearchAides = () => {
       location: "Buea, Cameroon",
       rating: 4.8,
       reviews: 89,
-      hourlyRate: "$55",
       image: "/lovable-uploads/327ccde5-c0c9-443a-acd7-4570799bb7f8.png",
       skills: ["SPSS", "R", "Python", "Machine Learning"],
       experience: "12 years",
@@ -63,7 +61,6 @@ const ResearchAides = () => {
       location: "Douala, Cameroon",
       rating: 4.7,
       reviews: 156,
-      hourlyRate: "$40",
       image: "/lovable-uploads/0c2151ac-5e74-4b77-86a9-9b359241cfca.png",
       skills: ["Map Design", "Cartographic Visualization", "Geographic Information Systems"],
       experience: "6 years",
@@ -77,7 +74,6 @@ const ResearchAides = () => {
       location: "Bamenda, Cameroon",
       rating: 4.6,
       reviews: 78,
-      hourlyRate: "$35",
       image: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
       skills: ["Survey Design", "KoBo Toolbox", "Field Data Collection", "Interview Techniques"],
       experience: "5 years",
@@ -91,7 +87,6 @@ const ResearchAides = () => {
       location: "Yaoundé, Cameroon",
       rating: 4.9,
       reviews: 203,
-      hourlyRate: "$50",
       image: "/lovable-uploads/327ccde5-c0c9-443a-acd7-4570799bb7f8.png",
       skills: ["Manuscript Preparation", "Journal Selection", "Peer Review Process", "Citation Management"],
       experience: "10 years",
@@ -105,7 +100,6 @@ const ResearchAides = () => {
       location: "Dschang, Cameroon",
       rating: 4.8,
       reviews: 145,
-      hourlyRate: "$42",
       image: "/lovable-uploads/0c2151ac-5e74-4b77-86a9-9b359241cfca.png",
       skills: ["Academic Writing", "Proofreading", "Language Editing", "Thesis Review"],
       experience: "9 years",
@@ -219,14 +213,10 @@ const ResearchAides = () => {
                         </div>
                       </div>
                       
-                      <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center text-sm">
                         <div className="flex items-center text-gray-600">
                           <Clock className="h-4 w-4 mr-1" />
                           {aide.experience} {t('researchAides.card.experience')}
-                        </div>
-                        <div className="flex items-center font-medium">
-                          <DollarSign className="h-4 w-4 mr-1" />
-                          {aide.hourlyRate}/hr
                         </div>
                       </div>
                       

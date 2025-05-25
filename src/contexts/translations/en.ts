@@ -42,6 +42,38 @@ export const enTranslations = {
       joinButton: "Join as Research Aid"
     }
   },
+  researchAides: {
+    title: "Research Aids & Support Services",
+    subtitle: "Connect with qualified research assistants and academic support specialists",
+    searchPlaceholder: "Search by name, expertise, or skills...",
+    categories: {
+      all: "All Categories",
+      gis: "GIS",
+      statistics: "Statistics",
+      cartography: "Cartography",
+      dataCollection: "Data Collection",
+      journalPublishing: "Journal Publishing",
+      academicEditing: "Academic Editing"
+    },
+    results: {
+      title: "Available Research Aids",
+      found: "Found",
+      specialists: "specialists"
+    },
+    card: {
+      skills: "Skills",
+      experience: "experience",
+      available: "Available",
+      busy: "Busy",
+      contact: "Contact"
+    },
+    noResults: "No research aids found matching your criteria.",
+    cta: {
+      title: "Join Our Research Aid Network",
+      description: "Become a research aid and help researchers achieve their goals",
+      joinButton: "Join as Research Aid"
+    }
+  },
   contact: {
     title: "Contact Us",
     subtitle: "Get in touch with our team",

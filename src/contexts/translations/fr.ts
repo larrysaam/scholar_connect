@@ -42,6 +42,38 @@ export const frTranslations = {
       joinButton: "Rejoindre comme Assistant de Recherche"
     }
   },
+  researchAides: {
+    title: "Assistants de Recherche et Services de Support",
+    subtitle: "Connectez-vous avec des assistants de recherche qualifiés et des spécialistes du support académique",
+    searchPlaceholder: "Rechercher par nom, expertise ou compétences...",
+    categories: {
+      all: "Toutes les Catégories",
+      gis: "SIG",
+      statistics: "Statistiques",
+      cartography: "Cartographie",
+      dataCollection: "Collecte de Données",
+      journalPublishing: "Publication de Journaux",
+      academicEditing: "Édition Académique"
+    },
+    results: {
+      title: "Assistants de Recherche Disponibles",
+      found: "Trouvé",
+      specialists: "spécialistes"
+    },
+    card: {
+      skills: "Compétences",
+      experience: "expérience",
+      available: "Disponible",
+      busy: "Occupé",
+      contact: "Contacter"
+    },
+    noResults: "Aucun assistant de recherche trouvé correspondant à vos critères.",
+    cta: {
+      title: "Rejoignez Notre Réseau d'Assistants de Recherche",
+      description: "Devenez un assistant de recherche et aidez les chercheurs à atteindre leurs objectifs",
+      joinButton: "Rejoindre comme Assistant de Recherche"
+    }
+  },
   contact: {
     title: "Contactez-nous",
     subtitle: "Entrez en contact avec notre équipe",
