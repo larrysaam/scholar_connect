@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +33,7 @@ const ResearchAideSignup = () => {
     "Statistician", 
     "Cartographer",
     "Data Collector",
-    "Journal Publishing Aide",
+    "Journal Publishing Aid",
     "Academic Editor",
     "Research Methodology Consultant",
     "Literature Review Specialist"
@@ -49,7 +48,7 @@ const ResearchAideSignup = () => {
           <div className="max-w-2xl mx-auto">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl text-center">Join as a Research Aide</CardTitle>
+                <CardTitle className="text-2xl text-center">Join as a Research Aid</CardTitle>
                 <p className="text-gray-600 text-center">
                   Share your expertise and help students with specialized research support
                 </p>
@@ -139,8 +138,8 @@ const ResearchAideSignup = () => {
                     </div>
                     
                     <div>
-                      <Label htmlFor="hourlyRate">Hourly Rate (USD)</Label>
-                      <Input id="hourlyRate" type="number" placeholder="35" />
+                      <Label htmlFor="hourlyRate">Hourly Rate (XAF)</Label>
+                      <Input id="hourlyRate" type="number" placeholder="17500" />
                     </div>
                   </div>
 

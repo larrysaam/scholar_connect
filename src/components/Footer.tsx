@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -8,11 +7,11 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-1">
             <div className="flex items-center space-x-2 mb-3">
-              <div className="bg-black p-1 rounded">
+              <div className="bg-white p-2 rounded-lg">
                 <img 
                   src="/lovable-uploads/83e0a07d-3527-4693-8172-d7d181156044.png" 
                   alt="ScholarConnect Logo" 
-                  className="h-8 brightness-0 invert"
+                  className="h-8 w-8"
                 />
               </div>
               <span className="text-xl font-bold text-white">ScholarConnect</span>
@@ -26,7 +25,7 @@ const Footer = () => {
             <h3 className="text-lg font-semibold text-white mb-4">Explore</h3>
             <ul className="space-y-2">
               <li><Link to="/researchers" className="text-sm hover:text-blue-400 transition-colors">Find Researchers</Link></li>
-              <li><Link to="/research-aides" className="text-sm hover:text-blue-400 transition-colors">Research Aides</Link></li>
+              <li><Link to="/research-aides" className="text-sm hover:text-blue-400 transition-colors">Research Aids</Link></li>
               <li><Link to="/how-it-works" className="text-sm hover:text-blue-400 transition-colors">How It Works</Link></li>
               <li><Link to="/pricing" className="text-sm hover:text-blue-400 transition-colors">Pricing</Link></li>
             </ul>
@@ -46,7 +45,6 @@ const Footer = () => {
             <h3 className="text-lg font-semibold text-white mb-4">Support</h3>
             <ul className="space-y-2">
               <li><Link to="/contact" className="text-sm hover:text-blue-400 transition-colors">Contact Us</Link></li>
-              <li><Link to="/faq" className="text-sm hover:text-blue-400 transition-colors">FAQs</Link></li>
               <li><Link to="/terms" className="text-sm hover:text-blue-400 transition-colors">Terms of Service</Link></li>
               <li><Link to="/privacy" className="text-sm hover:text-blue-400 transition-colors">Privacy Policy</Link></li>
             </ul>
@@ -54,12 +52,12 @@ const Footer = () => {
         </div>
         
         <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <div className="bg-black p-1 rounded">
+          <div className="flex items-center space-x-3">
+            <div className="bg-white p-2 rounded-lg">
               <img 
                 src="/lovable-uploads/83e0a07d-3527-4693-8172-d7d181156044.png" 
                 alt="ScholarConnect Logo" 
-                className="h-6 brightness-0 invert"
+                className="h-6 w-6"
               />
             </div>
             <p className="text-sm">© {new Date().getFullYear()} ScholarConnect. All rights reserved.</p>
@@ -82,7 +80,7 @@ const Footer = () => {
             </a>
             <a href="#" className="text-gray-400 hover:text-blue-400" aria-label="Instagram">
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path fillRule="evenodd" d="M12.017 0C8.396 0 7.989.013 7.041.048 6.094.082 5.52.204 5.02.43a5.49 5.49 0 00-1.99 1.295A5.49 5.49 0 00.735 3.717c-.226.5-.348 1.074-.382 2.021C.013 6.686 0 7.093 0 12.017s.013 5.331.048 6.279c.034.947.156 1.521.382 2.021a5.49 5.49 0 001.295 1.99 5.49 5.49 0 001.992 1.295c.5.226 1.074.348 2.021.382.948.035 1.355.048 6.279.048s5.331-.013 6.279-.048c.947-.034 1.521-.156 2.021-.382a5.49 5.49 0 001.99-1.295 5.49 5.49 0 001.295-1.99c.226-.5.348-1.074.382-2.021.035-.948.048-1.355.048-6.279s-.013-5.331-.048-6.279c-.034-.947-.156-1.521-.382-2.021a5.49 5.49 0 00-1.295-1.99A5.49 5.49 0 0018.997.43c-.5-.226-1.074-.348-2.021-.382C16.028.013 15.621 0 12.017 0zM12.017 2.163c3.204 0 3.584.012 4.85.07.847.038 1.17.16 1.446.272.524.204.898.449 1.292.843.394.394.639.768.843 1.292.112.276.234.599.272 1.446.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.038.847-.16 1.17-.272 1.446a3.331 3.331 0 01-.843 1.292 3.331 3.331 0 01-1.292.843c-.276.112-.599.234-1.446.272-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-.847-.038-1.17-.16-1.446-.272a3.331 3.331 0 01-1.292-.843 3.331 3.331 0 01-.843-1.292c-.112-.276-.234-.599-.272-1.446-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.038-.847.16-1.17.272-1.446.204-.524.449-.898.843-1.292a3.331 3.331 0 011.292-.843c.276-.112.599-.234 1.446-.272 1.266-.058 1.646-.07 4.85-.07z" clipRule="evenodd" />
+                <path fillRule="evenodd" d="M12.017 0C8.396 0 7.989.013 7.041.048 6.094.082 5.52.204 5.02.43a5.49 5.49 0 00-1.99 1.295A5.49 5.49 0 00.735 3.717c-.226.5-.348 1.074-.382 2.021C.013 6.686 0 7.093 0 12.017s.013 5.331.048 6.279c.034.947.156 1.521.382 2.021a5.49 5.49 0 001.295 1.99 5.49 5.49 0 001.992 1.295c.5.226 1.074.348 2.021.382.948.035 1.355.048 6.279.048s5.331-.013 6.279-.048c.947-.034 1.521-.156 2.021-.382a5.49 5.49 0 001.99-1.295 5.49 5.49 0 001.295-1.99c.226-.5.348-1.074.382-2.021.035-.948.048-1.355.048-6.279s-.013-5.331-.048-6.279c-.034-.947-.156-1.521-.382-2.021a5.49 5.49 0 00-1.295-1.99A5.49 5.49 0 0018.997.43c-.5-.226-1.074-.348-2.021-.382C16.028.013 15.621 0 12.017 0zM12.017 2.163c3.204 0 3.584.012 4.85.07.847.038 1.17.16 1.446.272.524.204.898.449 1.292.843.394.394.639.768.843 1.292.112.276.234.599.272 1.446.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.038.847-.16 1.17-.272 1.446a3.331 3.331 0 01-.843 1.292 3.331 3.331 0 01-1.292.843c-.276.112-.599.234-1.446.272-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-.847-.038-1.17-.16-1.446-.272a3.331 3.331 0 01-.843-1.292 3.331 3.331 0 01-.843-1.292c-.112-.276-.234-.599-.272-1.446-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.038-.847.16-1.17.272-1.446.204-.524.449-.898.843-1.292a3.331 3.331 0 011.292-.843c.276-.112.599-.234 1.446-.272 1.266-.058 1.646-.07 4.85-.07z" clipRule="evenodd" />
                 <path fillRule="evenodd" d="M12.017 5.838a6.179 6.179 0 100 12.358 6.179 6.179 0 000-12.358zM12.017 16a4 4 0 110-8 4 4 0 010 8z" clipRule="evenodd" />
                 <path d="M18.206 5.594a1.444 1.444 0 11-2.889 0 1.444 1.444 0 012.889 0z" />
               </svg>

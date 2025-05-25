@@ -1,11 +1,15 @@
 
 import { Badge } from "@/components/ui/badge";
+import { DollarSign } from "lucide-react";
 import { paymentHistory } from "../mockData";
 
 const PaymentsTab = () => {
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
-      <h2 className="text-xl font-semibold mb-4">Payment History</h2>
+      <div className="flex items-center space-x-3 mb-4">
+        <DollarSign className="h-6 w-6 text-green-600" />
+        <h2 className="text-xl font-semibold">Payment History</h2>
+      </div>
       
       <div className="overflow-x-auto">
         <table className="w-full text-left">
@@ -22,7 +26,7 @@ const PaymentsTab = () => {
               <tr key={payment.id} className="border-b last:border-b-0">
                 <td className="py-4">{payment.date}</td>
                 <td className="py-4">{payment.researcher}</td>
-                <td className="py-4">${payment.amount}</td>
+                <td className="py-4">{payment.amount} XAF</td>
                 <td className="py-4">
                   <Badge className="bg-green-100 text-green-800 border-green-200">
                     {payment.status}

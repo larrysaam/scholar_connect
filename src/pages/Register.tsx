@@ -124,7 +124,7 @@ const Register = () => {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <Link to="/" className="text-2xl font-bold text-blue-600">
-              ResearchConnect
+              ScholarConnect
             </Link>
             <h2 className="mt-6 text-3xl font-bold text-gray-900">
               Verify your email
@@ -191,7 +191,7 @@ const Register = () => {
       <div className="w-full max-w-2xl">
         <div className="text-center mb-8">
           <Link to="/" className="text-2xl font-bold text-blue-600">
-            ResearchConnect
+            ScholarConnect
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
             Create an account
@@ -226,6 +226,10 @@ const Register = () => {
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="researcher" id="researcher" />
                         <Label htmlFor="researcher" className="cursor-pointer">Researcher</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="research-aid" id="research-aid" />
+                        <Label htmlFor="research-aid" className="cursor-pointer">Research Aid</Label>
                       </div>
                     </RadioGroup>
                   </div>
@@ -393,6 +397,16 @@ const Register = () => {
                         <SelectItem value="international-university-central-africa">International University of Central Africa</SelectItem>
                         <SelectItem value="panafricain-institute-development">Pan-African Institute for Development</SelectItem>
                         <SelectItem value="fotso-victor-university-technology">Fotso Victor University of Technology</SelectItem>
+                        <SelectItem value="hims">Higher Institute of Management Sciences (HIMS)</SelectItem>
+                        <SelectItem value="hibmat">Higher Institute of Business Management and Technology (HIBMAT)</SelectItem>
+                        <SelectItem value="hibs">Higher Institute of Business Studies (HIBS)</SelectItem>
+                        <SelectItem value="rhims">Regional Higher Institute of Management Sciences (RHIMS)</SelectItem>
+                        <SelectItem value="iheps">Institute of Higher Education and Professional Studies (IHEPS)</SelectItem>
+                        <SelectItem value="isma">Institute of Management Sciences (ISMA)</SelectItem>
+                        <SelectItem value="iuct">International University of Central Africa Technology (IUCT)</SelectItem>
+                        <SelectItem value="ista">Institute of Applied Technology (ISTA)</SelectItem>
+                        <SelectItem value="isab">Institute of Business Administration (ISAB)</SelectItem>
+                        <SelectItem value="istag">Institute of Technology and Applied Management (ISTAG)</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
@@ -578,7 +592,6 @@ const Register = () => {
                       <SelectItem value="berkeley">UC Berkeley</SelectItem>
                       <SelectItem value="oxford">University of Oxford</SelectItem>
                       <SelectItem value="cambridge">University of Cambridge</SelectItem>
-                      <SelectItem value="other">Other (specify)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
