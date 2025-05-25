@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Filter, X } from "lucide-react";
+import { Search, Filter, X, Circle } from "lucide-react";
 
 interface FilterState {
   field: string;
@@ -23,7 +23,7 @@ interface FilterState {
 const AdvancedSearchFilters = () => {
   const [filters, setFilters] = useState<FilterState>({
     field: '',
-    priceRange: [35, 175],
+    priceRange: [15000, 60000],
     rating: 4.0,
     availability: '',
     experience: '',
@@ -60,7 +60,7 @@ const AdvancedSearchFilters = () => {
   const clearAllFilters = () => {
     setFilters({
       field: '',
-      priceRange: [35, 175],
+      priceRange: [15000, 60000],
       rating: 4.0,
       availability: '',
       experience: '',
@@ -68,6 +68,19 @@ const AdvancedSearchFilters = () => {
       specialties: []
     });
     setActiveFilters([]);
+  };
+
+  const getStatusIcon = (status: "online" | "offline" | "in-session") => {
+    switch (status) {
+      case "online":
+        return <Circle className="h-3 w-3 fill-green-500 text-green-500" />;
+      case "offline":
+        return <Circle className="h-3 w-3 fill-gray-500 text-gray-500" />;
+      case "in-session":
+        return <Circle className="h-3 w-3 fill-yellow-500 text-yellow-500" />;
+      default:
+        return <Circle className="h-3 w-3 fill-gray-500 text-gray-500" />;
+    }
   };
 
   return (
@@ -122,14 +135,14 @@ const AdvancedSearchFilters = () => {
             <Slider
               value={filters.priceRange}
               onValueChange={(value) => applyFilter('priceRange', value)}
-              max={200}
-              min={30}
-              step={5}
+              max={100000}
+              min={10000}
+              step={5000}
               className="w-full"
             />
             <div className="flex justify-between text-sm text-gray-500 mt-1">
-              <span>{filters.priceRange[0]} XAF</span>
-              <span>{filters.priceRange[1]} XAF</span>
+              <span>{filters.priceRange[0].toLocaleString()} XAF</span>
+              <span>{filters.priceRange[1].toLocaleString()} XAF</span>
             </div>
           </div>
         </div>
@@ -148,6 +161,34 @@ const AdvancedSearchFilters = () => {
               <SelectItem value="3.0">3.0+ Stars</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Online Status */}
+        <div className="space-y-2">
+          <Label>Online Status</Label>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox id="online" />
+              <Label htmlFor="online" className="flex items-center space-x-2 text-sm">
+                {getStatusIcon("online")}
+                <span>Online</span>
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox id="offline" />
+              <Label htmlFor="offline" className="flex items-center space-x-2 text-sm">
+                {getStatusIcon("offline")}
+                <span>Offline</span>
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox id="in-session" />
+              <Label htmlFor="in-session" className="flex items-center space-x-2 text-sm">
+                {getStatusIcon("in-session")}
+                <span>In Session</span>
+              </Label>
+            </div>
+          </div>
         </div>
 
         {/* Availability */}

@@ -9,8 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Search, MapPin, Star, Clock, DollarSign } from "lucide-react";
-import StatusIndicator from "@/components/researcher/StatusIndicator";
+import { Search, MapPin, Star, Clock, DollarSign, Circle } from "lucide-react";
 
 const ResearchAids = () => {
   const { t } = useLanguage();
@@ -27,6 +26,19 @@ const ResearchAids = () => {
     { value: "academic-editing", label: t('researchAids.categories.academicEditing') }
   ];
 
+  const getStatusIcon = (status: "online" | "offline" | "in-session") => {
+    switch (status) {
+      case "online":
+        return <Circle className="h-3 w-3 fill-green-500 text-green-500" />;
+      case "offline":
+        return <Circle className="h-3 w-3 fill-gray-500 text-gray-500" />;
+      case "in-session":
+        return <Circle className="h-3 w-3 fill-yellow-500 text-yellow-500" />;
+      default:
+        return <Circle className="h-3 w-3 fill-gray-500 text-gray-500" />;
+    }
+  };
+
   const researchAids = [
     {
       id: 1,
@@ -36,12 +48,12 @@ const ResearchAids = () => {
       location: "Yaoundé, Cameroon",
       rating: 4.9,
       reviews: 127,
-      hourlyRate: "45",
+      hourlyRate: "45,000",
       image: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
       skills: ["ArcGIS", "QGIS", "Remote Sensing", "Spatial Analysis"],
       experience: "8 years",
       availability: "Available",
-      status: "online" as const
+      onlineStatus: "online" as const
     },
     {
       id: 2,
@@ -51,12 +63,12 @@ const ResearchAids = () => {
       location: "Buea, Cameroon",
       rating: 4.8,
       reviews: 89,
-      hourlyRate: "55",
+      hourlyRate: "55,000",
       image: "/lovable-uploads/327ccde5-c0c9-443a-acd7-4570799bb7f8.png",
       skills: ["SPSS", "R", "Python", "Machine Learning"],
       experience: "12 years",
       availability: "Busy",
-      status: "in-session" as const
+      onlineStatus: "in-session" as const
     },
     {
       id: 3,
@@ -66,12 +78,12 @@ const ResearchAids = () => {
       location: "Douala, Cameroon",
       rating: 4.7,
       reviews: 156,
-      hourlyRate: "40",
+      hourlyRate: "40,000",
       image: "/lovable-uploads/0c2151ac-5e74-4b77-86a9-9b359241cfca.png",
       skills: ["Map Design", "Cartographic Visualization", "Geographic Information Systems"],
       experience: "6 years",
       availability: "Available",
-      status: "online" as const
+      onlineStatus: "online" as const
     },
     {
       id: 4,
@@ -81,12 +93,12 @@ const ResearchAids = () => {
       location: "Bamenda, Cameroon",
       rating: 4.6,
       reviews: 78,
-      hourlyRate: "35",
+      hourlyRate: "35,000",
       image: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
       skills: ["Survey Design", "KoBo Toolbox", "Field Data Collection", "Interview Techniques"],
       experience: "5 years",
       availability: "Available",
-      status: "offline" as const
+      onlineStatus: "offline" as const
     },
     {
       id: 5,
@@ -96,12 +108,12 @@ const ResearchAids = () => {
       location: "Yaoundé, Cameroon",
       rating: 4.9,
       reviews: 203,
-      hourlyRate: "50",
+      hourlyRate: "50,000",
       image: "/lovable-uploads/327ccde5-c0c9-443a-acd7-4570799bb7f8.png",
       skills: ["Manuscript Preparation", "Journal Selection", "Peer Review Process", "Citation Management"],
       experience: "10 years",
       availability: "Available",
-      status: "online" as const
+      onlineStatus: "online" as const
     },
     {
       id: 6,
@@ -111,20 +123,20 @@ const ResearchAids = () => {
       location: "Dschang, Cameroon",
       rating: 4.8,
       reviews: 145,
-      hourlyRate: "42",
+      hourlyRate: "42,000",
       image: "/lovable-uploads/0c2151ac-5e74-4b77-86a9-9b359241cfca.png",
       skills: ["Academic Writing", "Proofreading", "Language Editing", "Thesis Review"],
       experience: "9 years",
       availability: "Available",
-      status: "online" as const
+      onlineStatus: "online" as const
     }
   ];
 
-  const filteredAids = researchAids.filter(aid => {
-    const matchesSearch = aid.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         aid.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         aid.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = selectedCategory === "all" || aid.category === selectedCategory;
+  const filteredAids = researchAids.filter(aide => {
+    const matchesSearch = aide.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         aide.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         aide.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesCategory = selectedCategory === "all" || aide.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -137,9 +149,6 @@ const ResearchAids = () => {
         <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-4xl mx-auto text-center">
-              <div className="bg-white/10 backdrop-blur-sm px-6 py-3 rounded-lg mb-6 inline-block">
-                <h1 className="text-2xl font-bold text-white">ScholarConnect</h1>
-              </div>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">{t('researchAids.title')}</h1>
               <p className="text-xl text-blue-100 mb-8">
                 {t('researchAids.subtitle')}
@@ -185,30 +194,32 @@ const ResearchAids = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredAids.map((aid) => (
-                <Card key={aid.id} className="hover:shadow-lg transition-shadow">
+              {filteredAids.map((aide) => (
+                <Card key={aide.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader className="pb-4">
                     <div className="flex items-start space-x-4">
-                      <Avatar className="h-16 w-16">
-                        <AvatarImage src={aid.image} alt={aid.name} />
-                        <AvatarFallback>{aid.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                      </Avatar>
+                      <div className="relative">
+                        <Avatar className="h-16 w-16">
+                          <AvatarImage src={aide.image} alt={aide.name} />
+                          <AvatarFallback>{aide.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -bottom-1 -right-1">
+                          {getStatusIcon(aide.onlineStatus)}
+                        </div>
+                      </div>
                       <div className="flex-1">
-                        <CardTitle className="text-lg">{aid.name}</CardTitle>
-                        <p className="text-sm text-gray-600 mb-2">{aid.title}</p>
+                        <CardTitle className="text-lg">{aide.name}</CardTitle>
+                        <p className="text-sm text-gray-600 mb-2">{aide.title}</p>
                         <div className="flex items-center text-sm text-gray-500 mb-2">
                           <MapPin className="h-4 w-4 mr-1" />
-                          {aid.location}
+                          {aide.location}
                         </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <div className="flex items-center">
-                              <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                              <span className="text-sm font-medium ml-1">{aid.rating}</span>
-                            </div>
-                            <span className="text-sm text-gray-500">({aid.reviews} reviews)</span>
+                        <div className="flex items-center space-x-2">
+                          <div className="flex items-center">
+                            <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                            <span className="text-sm font-medium ml-1">{aide.rating}</span>
                           </div>
-                          <StatusIndicator status={aid.status} />
+                          <span className="text-sm text-gray-500">({aide.reviews} reviews)</span>
                         </div>
                       </div>
                     </div>
@@ -219,14 +230,14 @@ const ResearchAids = () => {
                       <div>
                         <h4 className="text-sm font-medium text-gray-700 mb-2">{t('researchAids.card.skills')}</h4>
                         <div className="flex flex-wrap gap-1">
-                          {aid.skills.slice(0, 3).map((skill) => (
+                          {aide.skills.slice(0, 3).map((skill) => (
                             <Badge key={skill} variant="secondary" className="text-xs">
                               {skill}
                             </Badge>
                           ))}
-                          {aid.skills.length > 3 && (
+                          {aide.skills.length > 3 && (
                             <Badge variant="secondary" className="text-xs">
-                              +{aid.skills.length - 3} more
+                              +{aide.skills.length - 3} more
                             </Badge>
                           )}
                         </div>
@@ -235,20 +246,20 @@ const ResearchAids = () => {
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center text-gray-600">
                           <Clock className="h-4 w-4 mr-1" />
-                          {aid.experience} {t('researchAids.card.experience')}
+                          {aide.experience} {t('researchAids.card.experience')}
                         </div>
                         <div className="flex items-center font-medium">
                           <DollarSign className="h-4 w-4 mr-1" />
-                          {aid.hourlyRate} XAF/hr
+                          {aide.hourlyRate} XAF/hr
                         </div>
                       </div>
                       
                       <div className="flex items-center justify-between">
                         <Badge 
-                          variant={aid.availability === "Available" ? "default" : "secondary"}
-                          className={aid.availability === "Available" ? "bg-green-100 text-green-800" : ""}
+                          variant={aide.availability === "Available" ? "default" : "secondary"}
+                          className={aide.availability === "Available" ? "bg-green-100 text-green-800" : ""}
                         >
-                          {aid.availability === "Available" ? t('researchAids.card.available') : t('researchAids.card.busy')}
+                          {aide.availability === "Available" ? t('researchAids.card.available') : t('researchAids.card.busy')}
                         </Badge>
                         <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
                           {t('researchAids.card.contact')}
