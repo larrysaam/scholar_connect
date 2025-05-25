@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -18,6 +17,11 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [profileImage, setProfileImage] = useState<string>("");
+  const [showOtherUniversity, setShowOtherUniversity] = useState(false);
+  const [showOtherFaculty, setShowOtherFaculty] = useState(false);
+  const [showOtherDepartment, setShowOtherDepartment] = useState(false);
+  const [showOtherCountry, setShowOtherCountry] = useState(false);
+  const [showOtherCity, setShowOtherCity] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     firstName: "",
@@ -27,15 +31,51 @@ const Register = () => {
     password: "",
     contact: "",
     university: "",
+    customUniversity: "",
     faculty: "",
+    customFaculty: "",
     department: "",
+    customDepartment: "",
     country: "",
+    customCountry: "",
     city: "",
+    customCity: "",
     academicLevel: ""
   });
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Handle "Other" selections
+    if (field === "university" && value === "other") {
+      setShowOtherUniversity(true);
+    } else if (field === "university" && value !== "other") {
+      setShowOtherUniversity(false);
+    }
+    
+    if (field === "faculty" && value === "other") {
+      setShowOtherFaculty(true);
+    } else if (field === "faculty" && value !== "other") {
+      setShowOtherFaculty(false);
+    }
+    
+    if (field === "department" && value === "other") {
+      setShowOtherDepartment(true);
+    } else if (field === "department" && value !== "other") {
+      setShowOtherDepartment(false);
+    }
+    
+    if (field === "country" && value === "other") {
+      setShowOtherCountry(true);
+    } else if (field === "country" && value !== "other") {
+      setShowOtherCountry(false);
+    }
+    
+    if (field === "city" && value === "other") {
+      setShowOtherCity(true);
+    } else if (field === "city" && value !== "other") {
+      setShowOtherCity(false);
+    }
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -192,7 +232,7 @@ const Register = () => {
 
                   {accountType === "student" && (
                     <div className="space-y-2">
-                      <Label htmlFor="profilePicture">Profile Picture</Label>
+                      <Label htmlFor="profilePicture">Profile Picture *</Label>
                       <div className="flex items-center space-x-4">
                         <Avatar className="h-20 w-20">
                           <AvatarImage src={profileImage} />
@@ -342,9 +382,28 @@ const Register = () => {
                         <SelectItem value="university-ngaoundere">University of Ngaoundéré</SelectItem>
                         <SelectItem value="university-maroua">University of Maroua</SelectItem>
                         <SelectItem value="catholic-university">Catholic University of Central Africa</SelectItem>
+                        <SelectItem value="university-institute-gulf-guinea">University Institute of the Gulf of Guinea</SelectItem>
+                        <SelectItem value="national-advanced-school-engineering">National Advanced School of Engineering</SelectItem>
+                        <SelectItem value="higher-institute-sahel">Higher Institute of the Sahel</SelectItem>
+                        <SelectItem value="protestant-university-central-africa">Protestant University of Central Africa</SelectItem>
+                        <SelectItem value="catholic-university-cameroon">Catholic University of Cameroon</SelectItem>
+                        <SelectItem value="university-mountains">University of the Mountains</SelectItem>
+                        <SelectItem value="adventist-university-cosendai">Adventist University of Cosendai</SelectItem>
+                        <SelectItem value="higher-institute-commerce-management">Higher Institute of Commerce and Management</SelectItem>
+                        <SelectItem value="international-university-central-africa">International University of Central Africa</SelectItem>
+                        <SelectItem value="panafricain-institute-development">Pan-African Institute for Development</SelectItem>
+                        <SelectItem value="fotso-victor-university-technology">Fotso Victor University of Technology</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
+                    {showOtherUniversity && (
+                      <Input 
+                        placeholder="Enter university name"
+                        value={formData.customUniversity}
+                        onChange={(e) => handleInputChange("customUniversity", e.target.value)}
+                        required
+                      />
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -368,6 +427,14 @@ const Register = () => {
                           <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
+                      {showOtherFaculty && (
+                        <Input 
+                          placeholder="Enter faculty name"
+                          value={formData.customFaculty}
+                          onChange={(e) => handleInputChange("customFaculty", e.target.value)}
+                          required
+                        />
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="department">Department *</Label>
@@ -394,6 +461,14 @@ const Register = () => {
                           <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
+                      {showOtherDepartment && (
+                        <Input 
+                          placeholder="Enter department name"
+                          value={formData.customDepartment}
+                          onChange={(e) => handleInputChange("customDepartment", e.target.value)}
+                          required
+                        />
+                      )}
                     </div>
                   </div>
 
@@ -421,6 +496,14 @@ const Register = () => {
                           <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
+                      {showOtherCountry && (
+                        <Input 
+                          placeholder="Enter country name"
+                          value={formData.customCountry}
+                          onChange={(e) => handleInputChange("customCountry", e.target.value)}
+                          required
+                        />
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="city">City *</Label>
@@ -444,6 +527,14 @@ const Register = () => {
                           <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
+                      {showOtherCity && (
+                        <Input 
+                          placeholder="Enter city name"
+                          value={formData.customCity}
+                          onChange={(e) => handleInputChange("customCity", e.target.value)}
+                          required
+                        />
+                      )}
                     </div>
                   </div>
                 </div>

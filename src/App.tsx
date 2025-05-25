@@ -16,6 +16,8 @@ import AboutUs from "./pages/AboutUs";
 import ResearcherDashboard from "./pages/ResearcherDashboard";
 import HowItWorks from "./pages/HowItWorks";
 import CoAuthorWorkspace from "./pages/CoAuthorWorkspace";
+import ResearchAides from "./pages/ResearchAides";
+import Contact from "./pages/Contact";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +39,8 @@ const App = () => (
             <Route path="/about-us" element={<AboutUs />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
+            <Route path="/research-aides" element={<ResearchAides />} />
+            <Route path="/contact" element={<Contact />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
