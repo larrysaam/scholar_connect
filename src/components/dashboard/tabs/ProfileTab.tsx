@@ -62,13 +62,20 @@ const ProfileTab = () => {
   });
 
   const handleInputChange = (section: keyof ProfileData, field: string, value: string | number) => {
-    setProfileData(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: value
-      }
-    }));
+    if (section === 'otherInformation') {
+      setProfileData(prev => ({
+        ...prev,
+        otherInformation: value as string
+      }));
+    } else {
+      setProfileData(prev => ({
+        ...prev,
+        [section]: {
+          ...prev[section],
+          [field]: value
+        }
+      }));
+    }
   };
 
   const handleAddExpertise = () => {

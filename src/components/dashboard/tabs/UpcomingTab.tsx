@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -94,14 +93,14 @@ const UpcomingTab = () => {
                   <div className="flex items-center space-x-4">
                     <div className="h-10 w-10 rounded-full overflow-hidden">
                       <img 
-                        src={consultation.student.imageUrl} 
-                        alt={consultation.student.name}
+                        src={consultation.researcher.imageUrl} 
+                        alt={consultation.researcher.name}
                         className="h-full w-full object-cover" 
                       />
                     </div>
                     <div>
-                      <CardTitle className="text-lg">{consultation.student.name}</CardTitle>
-                      <CardDescription>{consultation.student.field}</CardDescription>
+                      <CardTitle className="text-lg">{consultation.researcher.name}</CardTitle>
+                      <CardDescription>{consultation.researcher.field}</CardDescription>
                     </div>
                   </div>
                   <Badge className={consultation.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
