@@ -16,6 +16,7 @@ import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
 import QualityFeedbackTab from "@/components/dashboard/tabs/QualityFeedbackTab";
 import NotificationsTab from "@/components/dashboard/tabs/NotificationsTab";
 import ResearchSummaryTab from "@/components/dashboard/tabs/ResearchSummaryTab";
+import DiscussionTab from "@/components/dashboard/tabs/DiscussionTab";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -44,6 +45,8 @@ const Dashboard = () => {
         return <PaymentsTab />;
       case "quality":
         return <QualityFeedbackTab />;
+      case "discussion":
+        return <DiscussionTab />;
       case "notifications":
         return <NotificationsTab />;
       case "research-summary":

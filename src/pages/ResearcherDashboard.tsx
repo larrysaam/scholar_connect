@@ -16,6 +16,7 @@ import QualityAssuranceAndFeedbackTab from "@/components/dashboard/tabs/QualityA
 import CoAuthorInvitationsTab from "@/components/dashboard/tabs/CoAuthorInvitationsTab";
 import VerificationTab from "@/components/dashboard/tabs/VerificationTab";
 import NotificationsTab from "@/components/dashboard/tabs/NotificationsTab";
+import DiscussionTab from "@/components/dashboard/tabs/DiscussionTab";
 import MisconductReportModal from "@/components/dashboard/MisconductReportModal";
 
 const ResearcherDashboard = () => {
@@ -45,6 +46,8 @@ const ResearcherDashboard = () => {
         return <PaymentsTab />;
       case "quality":
         return <QualityAssuranceAndFeedbackTab />;
+      case "discussion":
+        return <DiscussionTab />;
       case "verification":
         return <VerificationTab />;
       case "notifications":

@@ -141,7 +141,7 @@ const Researchers = () => {
           </div>
           
           {/* Enhanced Search and Filter Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-4">
             <div className="lg:col-span-3">
               <SearchBar />
               <div className="flex justify-between items-center mt-4">

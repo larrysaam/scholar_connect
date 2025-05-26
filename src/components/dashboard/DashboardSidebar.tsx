@@ -11,7 +11,8 @@ import {
   UserPlus,
   Shield,
   Bell,
-  BookOpen
+  BookOpen,
+  MessageCircle
 } from "lucide-react";
 import InviteModal from "@/components/researcher/InviteModal";
 import MisconductReportModal from "./MisconductReportModal";
@@ -69,6 +70,16 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
         >
           <MessageSquare className="mr-2 h-4 w-4" />
           Quality Feedback
+        </Button>
+        
+        {/* Discussion tab for all user types */}
+        <Button 
+          variant={activeTab === "discussion" ? "default" : "ghost"} 
+          className="w-full justify-start" 
+          onClick={() => setActiveTab("discussion")}
+        >
+          <MessageCircle className="mr-2 h-4 w-4" />
+          Discussion
         </Button>
         
         {/* Show notifications for all user types */}

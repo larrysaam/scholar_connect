@@ -23,6 +23,7 @@ import Contact from "./pages/Contact";
 import Partnerships from "./pages/Partnerships";
 import ResearchAideSignup from "./pages/ResearchAideSignup";
 import ResearchAideDashboard from "./pages/ResearchAideDashboard";
+import Blogs from "./pages/Blogs";
 
 // Create a stable QueryClient instance
 const queryClient = new QueryClient({
@@ -60,6 +61,7 @@ const App: React.FC = () => {
                 <Route path="/research-aide-dashboard" element={<ResearchAideDashboard />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/partnerships" element={<Partnerships />} />
+                <Route path="/blogs" element={<Blogs />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

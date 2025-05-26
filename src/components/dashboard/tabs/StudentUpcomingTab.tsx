@@ -1,68 +1,78 @@
 
-import { useState } from "react";
-import { upcomingConsultations } from "../mockData";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import ConsultationCard from "../consultation/ConsultationCard";
+import { mockStudentConsultations } from "../mockData";
 
 const StudentUpcomingTab = () => {
-  const [uploadedDocuments, setUploadedDocuments] = useState<{[key: string]: string[]}>({});
+  const { toast } = useToast();
 
-  const handleJoinWithGoogleMeet = (consultationId: string) => {
-    console.log("Joining with Google Meet for consultation:", consultationId);
-    const meetLink = `https://meet.google.com/abc-defg-hij`;
-    window.open(meetLink, '_blank');
+  const handleJoinMeet = (consultationId: string) => {
+    toast({
+      title: "Joining Meeting",
+      description: "Opening Google Meet...",
+    });
+    // In a real app, this would open the Google Meet link
+    console.log(`Joining meet for consultation ${consultationId}`);
   };
 
   const handleUploadDocument = (consultationId: string) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.multiple = true;
-    input.accept = '.pdf,.doc,.docx,.ppt,.pptx,.txt';
-    input.onchange = (e) => {
-      const files = (e.target as HTMLInputElement).files;
-      if (files && files.length > 0) {
-        const fileNames = Array.from(files).map(f => f.name);
-        setUploadedDocuments(prev => ({
-          ...prev,
-          [consultationId]: [...(prev[consultationId] || []), ...fileNames]
-        }));
-        console.log("Documents uploaded for consultation:", consultationId, fileNames);
-        alert(`${files.length} document(s) uploaded successfully. Researcher will receive preview access only.`);
-      }
-    };
-    input.click();
+    toast({
+      title: "Upload Document",
+      description: "Document upload feature would open here",
+    });
+    console.log(`Uploading document for consultation ${consultationId}`);
   };
 
   const handleSubmitDocumentLink = (consultationId: string, documentLink: string) => {
-    console.log("Document link shared for consultation:", consultationId, documentLink);
-    alert(`Google Docs link shared with researcher: ${documentLink}`);
+    toast({
+      title: "Document Link Shared",
+      description: "Your Google Docs link has been shared with the researcher.",
+    });
+    console.log(`Sharing document link for consultation ${consultationId}:`, documentLink);
   };
 
   const handleContactResearcher = (researcherId: string, consultationId: string) => {
-    console.log("Opening messaging with researcher:", researcherId);
-    alert(`Opening messaging interface with researcher for consultation ${consultationId}...`);
+    toast({
+      title: "Contact Researcher",
+      description: "Opening contact dialog...",
+    });
+    console.log(`Contacting researcher ${researcherId} for consultation ${consultationId}`);
   };
 
+  const handleAccessDocument = (documentLink: string) => {
+    window.open(documentLink, '_blank');
+  };
+
+  const upcomingConsultations = mockStudentConsultations.filter(c => c.status === 'confirmed' || c.status === 'pending');
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm">
-      <h2 className="text-xl font-semibold mb-4">Upcoming Consultations</h2>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Upcoming Consultations</h2>
+      </div>
       
-      {upcomingConsultations.length > 0 ? (
-        <div className="space-y-6">
+      {upcomingConsultations.length === 0 ? (
+        <Card>
+          <CardContent className="text-center py-8">
+            <p className="text-gray-500">No upcoming consultations scheduled.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
           {upcomingConsultations.map((consultation) => (
             <ConsultationCard
               key={consultation.id}
               consultation={consultation}
-              uploadedDocuments={uploadedDocuments[consultation.id] || []}
-              onJoinMeet={handleJoinWithGoogleMeet}
+              uploadedDocuments={["research_draft.pdf", "data_analysis.xlsx"]}
+              userType="student"
+              onJoinMeet={handleJoinMeet}
               onUploadDocument={handleUploadDocument}
               onSubmitDocumentLink={handleSubmitDocumentLink}
               onContactResearcher={handleContactResearcher}
+              onAccessDocument={handleAccessDocument}
             />
           ))}
-        </div>
-      ) : (
-        <div className="text-center py-8">
-          <p className="text-gray-500">No upcoming consultations scheduled.</p>
         </div>
       )}
     </div>
