@@ -1,12 +1,21 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { pastConsultations } from "../mockData";
-import RatingReviewModal from "../RatingReviewModal";
 
 const PastTab = () => {
+  const handleViewRecording = (consultationId: string) => {
+    console.log("Viewing recording for consultation:", consultationId);
+    // In a real app, this would open the recording
+  };
+
+  const handleViewNotes = (consultationId: string) => {
+    console.log("Viewing notes for consultation:", consultationId);
+    // In a real app, this would open the consultation notes
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
       <h2 className="text-xl font-semibold mb-4">Past Consultations</h2>
@@ -52,8 +61,21 @@ const PastTab = () => {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between border-t pt-4">
-                <Button variant="outline" size="sm">View Recording</Button>
-                <RatingReviewModal consultation={consultation} />
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => handleViewRecording(consultation.id)}
+                >
+                  View Recording
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => handleViewNotes(consultation.id)}
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  View Notes
+                </Button>
               </CardFooter>
             </Card>
           ))}

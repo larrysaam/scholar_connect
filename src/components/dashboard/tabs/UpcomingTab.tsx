@@ -1,11 +1,23 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, Video } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { upcomingConsultations } from "../mockData";
 
 const UpcomingTab = () => {
+  const handleReschedule = (consultationId: string) => {
+    console.log("Rescheduling consultation:", consultationId);
+    // In a real app, this would open a rescheduling modal
+    alert("Rescheduling functionality will be implemented soon.");
+  };
+
+  const handleJoinMeeting = (consultationId: string) => {
+    console.log("Joining meeting for consultation:", consultationId);
+    // In a real app, this would open the video call interface
+    window.open("https://meet.google.com", "_blank");
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
       <h2 className="text-xl font-semibold mb-4">Upcoming Consultations</h2>
@@ -57,8 +69,22 @@ const UpcomingTab = () => {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between border-t pt-4">
-                <Button variant="outline" size="sm">Reschedule</Button>
-                <Button size="sm">Join Meeting</Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => handleReschedule(consultation.id)}
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Reschedule
+                </Button>
+                <Button 
+                  size="sm"
+                  onClick={() => handleJoinMeeting(consultation.id)}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Video className="h-4 w-4 mr-2" />
+                  Join Meeting
+                </Button>
               </CardFooter>
             </Card>
           ))}

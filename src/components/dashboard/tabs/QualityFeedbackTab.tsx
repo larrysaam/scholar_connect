@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, MessageSquare, ThumbsUp } from "lucide-react";
-import InviteModal from "@/components/researcher/InviteModal";
 
 const QualityFeedbackTab = () => {
   return (
@@ -11,7 +10,6 @@ const QualityFeedbackTab = () => {
       <div className="bg-white p-6 rounded-lg shadow-sm">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Quality Feedback</h2>
-          <InviteModal userType="student" triggerText="Invite a Student" />
         </div>
         <p className="text-gray-600 mb-6">Help us improve ScholarConnect by sharing your feedback.</p>
         
