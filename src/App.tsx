@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import ErrorBoundary from "./components/ErrorBoundary";
 import Index from "./pages/Index";
 import About from "./pages/AboutUs";
 import Contact from "./pages/Contact";
@@ -29,44 +30,54 @@ import NotFound from "./pages/NotFound";
 import StudentPayments from "./pages/StudentPayments";
 import ProviderEarnings from "./pages/ProviderEarnings";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <LanguageProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/how-it-works" element={<HowItWorks />} />
-            <Route path="/researchers" element={<Researchers />} />
-            <Route path="/researcher/:id" element={<ResearcherProfile />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/researcher-dashboard" element={<ResearcherDashboard />} />
-            <Route path="/research-aids-dashboard" element={<ResearchAidsDashboard />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
-            <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
-            <Route path="/research-aides" element={<ResearchAides />} />
-            <Route path="/research-aids" element={<ResearchAids />} />
-            <Route path="/blogs" element={<Blogs />} />
-            <Route path="/partnerships" element={<Partnerships />} />
-            <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
-            <Route path="/workspace/:projectId" element={<WorkspaceDetails />} />
-            <Route path="/admin-dashboard" element={<AdminDashboard />} />
-            <Route path="/student-payments" element={<StudentPayments />} />
-            <Route path="/provider-earnings" element={<ProviderEarnings />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </LanguageProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <LanguageProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/how-it-works" element={<HowItWorks />} />
+              <Route path="/researchers" element={<Researchers />} />
+              <Route path="/researcher/:id" element={<ResearcherProfile />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/researcher-dashboard" element={<ResearcherDashboard />} />
+              <Route path="/research-aids-dashboard" element={<ResearchAidsDashboard />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
+              <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
+              <Route path="/research-aides" element={<ResearchAides />} />
+              <Route path="/research-aids" element={<ResearchAids />} />
+              <Route path="/blogs" element={<Blogs />} />
+              <Route path="/partnerships" element={<Partnerships />} />
+              <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
+              <Route path="/workspace/:projectId" element={<WorkspaceDetails />} />
+              <Route path="/admin-dashboard" element={<AdminDashboard />} />
+              <Route path="/student-payments" element={<StudentPayments />} />
+              <Route path="/provider-earnings" element={<ProviderEarnings />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </LanguageProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

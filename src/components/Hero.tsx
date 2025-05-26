@@ -13,11 +13,11 @@ const Hero = () => {
             className="h-full w-full object-cover object-center"
             loading="eager"
             style={{
-              filter: 'brightness(0.9) contrast(1.1)',
-              objectPosition: '30% center'
+              filter: 'brightness(0.85) contrast(1.15) saturate(1.1)',
+              objectPosition: '25% center'
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-l from-blue-600/20 via-blue-600/40 to-blue-600/80"></div>
+          <div className="absolute inset-0 bg-gradient-to-l from-blue-600/10 via-blue-600/30 to-blue-600/70"></div>
         </div>
       </div>
       
@@ -32,10 +32,10 @@ const Hero = () => {
               Get personalized guidance for your research projects and accelerate your academic success.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild size="lg" className="bg-white text-blue-700 hover:bg-blue-50 shadow-lg">
+              <Button asChild size="lg" className="bg-white text-blue-700 hover:bg-blue-50 shadow-lg transition-all duration-300 hover:shadow-xl">
                 <Link to="/researchers">Find Researchers</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-700">
+              <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-700 transition-all duration-300">
                 <Link to="/register">Join as a Researcher</Link>
               </Button>
             </div>
