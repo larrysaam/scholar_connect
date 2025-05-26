@@ -1,37 +1,39 @@
+
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { QueryClient } from "react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Home from "./pages/Home";
-import About from "./pages/About";
+import Index from "./pages/Index";
+import About from "./pages/AboutUs";
 import Contact from "./pages/Contact";
-import Services from "./pages/Services";
+import HowItWorks from "./pages/HowItWorks";
 import Register from "./pages/Register";
-import Auth from "./pages/Auth";
 import ResearcherDashboard from "./pages/ResearcherDashboard";
 import ResearchAidsDashboard from "./pages/ResearchAidsDashboard";
 import ResearchAidSignup from "./pages/ResearchAidSignup";
-import ExpertSignup from "./pages/ExpertSignup";
+import ResearchAideSignup from "./pages/ResearchAideSignup";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import { AuthProvider } from "./hooks/useAuth";
 import SecureAuth from "@/pages/SecureAuth";
 
+const queryClient = new QueryClient();
+
 function App() {
   return (
-    <QueryClient>
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
           <Toaster />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<Index />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/services" element={<Services />} />
+              <Route path="/services" element={<HowItWorks />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/research-aide-signup" element={<ExpertSignup />} />
+              <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
               <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/researcher-dashboard" element={<ResearcherDashboard />} />
@@ -46,7 +48,7 @@ function App() {
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
-    </QueryClient>
+    </QueryClientProvider>
   );
 }
 
