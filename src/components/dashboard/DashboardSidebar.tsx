@@ -13,7 +13,12 @@ import {
   Bell,
   BookOpen,
   MessageCircle,
-  CheckSquare
+  CheckSquare,
+  BarChart3,
+  Briefcase,
+  Mail,
+  Upload,
+  Star
 } from "lucide-react";
 import InviteModal from "@/components/researcher/InviteModal";
 import MisconductReportModal from "./MisconductReportModal";
@@ -40,7 +45,69 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
       </div>
       
       <nav className="space-y-1">
-        {/* Show tasks tab for research aids */}
+        {/* Research Aid specific navigation */}
+        {userType === "research-aide" && (
+          <>
+            <Button 
+              variant={activeTab === "overview" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("overview")}
+            >
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Dashboard Overview
+            </Button>
+            <Button 
+              variant={activeTab === "job-requests" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("job-requests")}
+            >
+              <Briefcase className="mr-2 h-4 w-4" />
+              Job Requests
+            </Button>
+            <Button 
+              variant={activeTab === "messages" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("messages")}
+            >
+              <Mail className="mr-2 h-4 w-4" />
+              Messages
+            </Button>
+            <Button 
+              variant={activeTab === "appointments" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("appointments")}
+            >
+              <Calendar className="mr-2 h-4 w-4" />
+              Appointments
+            </Button>
+            <Button 
+              variant={activeTab === "files-deliverables" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("files-deliverables")}
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              Files & Deliverables
+            </Button>
+            <Button 
+              variant={activeTab === "payments-earnings" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("payments-earnings")}
+            >
+              <Banknote className="mr-2 h-4 w-4" />
+              Payments & Earnings
+            </Button>
+            <Button 
+              variant={activeTab === "profile-ratings" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("profile-ratings")}
+            >
+              <Star className="mr-2 h-4 w-4" />
+              My Profile & Ratings
+            </Button>
+          </>
+        )}
+        
+        {/* Show tasks tab for research aids (legacy support) */}
         {userType === "research-aide" && (
           <Button 
             variant={activeTab === "tasks" ? "default" : "ghost"} 
@@ -48,42 +115,47 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
             onClick={() => setActiveTab("tasks")}
           >
             <CheckSquare className="mr-2 h-4 w-4" />
-            Tasks
+            Tasks (Legacy)
           </Button>
         )}
         
-        <Button 
-          variant={activeTab === "upcoming" ? "default" : "ghost"} 
-          className="w-full justify-start" 
-          onClick={() => setActiveTab("upcoming")}
-        >
-          <Calendar className="mr-2 h-4 w-4" />
-          Upcoming
-        </Button>
-        <Button 
-          variant={activeTab === "past" ? "default" : "ghost"} 
-          className="w-full justify-start" 
-          onClick={() => setActiveTab("past")}
-        >
-          <Clock className="mr-2 h-4 w-4" />
-          Past Consultations
-        </Button>
-        <Button 
-          variant={activeTab === "payments" ? "default" : "ghost"} 
-          className="w-full justify-start" 
-          onClick={() => setActiveTab("payments")}
-        >
-          <Banknote className="mr-2 h-4 w-4" />
-          Payments
-        </Button>
-        <Button 
-          variant={activeTab === "quality" ? "default" : "ghost"} 
-          className="w-full justify-start" 
-          onClick={() => setActiveTab("quality")}
-        >
-          <MessageSquare className="mr-2 h-4 w-4" />
-          Quality Feedback
-        </Button>
+        {/* Standard navigation for other user types */}
+        {userType !== "research-aide" && (
+          <>
+            <Button 
+              variant={activeTab === "upcoming" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("upcoming")}
+            >
+              <Calendar className="mr-2 h-4 w-4" />
+              Upcoming
+            </Button>
+            <Button 
+              variant={activeTab === "past" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("past")}
+            >
+              <Clock className="mr-2 h-4 w-4" />
+              Past Consultations
+            </Button>
+            <Button 
+              variant={activeTab === "payments" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("payments")}
+            >
+              <Banknote className="mr-2 h-4 w-4" />
+              Payments
+            </Button>
+            <Button 
+              variant={activeTab === "quality" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("quality")}
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Quality Feedback
+            </Button>
+          </>
+        )}
         
         {/* Discussion tab for all user types */}
         <Button 
@@ -137,22 +209,29 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
             </Button>
           </>
         )}
-        <Button 
-          variant={activeTab === "profile" ? "default" : "ghost"} 
-          className="w-full justify-start" 
-          onClick={() => setActiveTab("profile")}
-        >
-          <User className="mr-2 h-4 w-4" />
-          Profile
-        </Button>
-        <Button 
-          variant={activeTab === "documents" ? "default" : "ghost"} 
-          className="w-full justify-start" 
-          onClick={() => setActiveTab("documents")}
-        >
-          <FileText className="mr-2 h-4 w-4" />
-          Documents
-        </Button>
+        
+        {/* Standard navigation for all users */}
+        {userType !== "research-aide" && (
+          <>
+            <Button 
+              variant={activeTab === "profile" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("profile")}
+            >
+              <User className="mr-2 h-4 w-4" />
+              Profile
+            </Button>
+            <Button 
+              variant={activeTab === "documents" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("documents")}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Documents
+            </Button>
+          </>
+        )}
+        
         <Button 
           variant={activeTab === "settings" ? "default" : "ghost"} 
           className="w-full justify-start" 

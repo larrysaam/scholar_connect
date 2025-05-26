@@ -15,9 +15,12 @@ import ResearchAidQualityTab from "@/components/dashboard/tabs/ResearchAidQualit
 import ResearchAidsTasksTab from "@/components/dashboard/tabs/ResearchAidsTasksTab";
 import DiscussionTab from "@/components/dashboard/tabs/DiscussionTab";
 import NotificationsTab from "@/components/dashboard/tabs/NotificationsTab";
+import ResearchAidOverviewTab from "@/components/dashboard/tabs/ResearchAidOverviewTab";
+import ResearchAidJobRequestsTab from "@/components/dashboard/tabs/ResearchAidJobRequestsTab";
+import ResearchAidPaymentsTab from "@/components/dashboard/tabs/ResearchAidPaymentsTab";
 
 const ResearchAideDashboard = () => {
-  const [activeTab, setActiveTab] = useState("tasks");
+  const [activeTab, setActiveTab] = useState("overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
@@ -34,6 +37,20 @@ const ResearchAideDashboard = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case "overview":
+        return <ResearchAidOverviewTab />;
+      case "job-requests":
+        return <ResearchAidJobRequestsTab />;
+      case "messages":
+        return <DiscussionTab />;
+      case "appointments":
+        return <UpcomingTab />;
+      case "files-deliverables":
+        return <DocumentsTab />;
+      case "payments-earnings":
+        return <ResearchAidPaymentsTab />;
+      case "profile-ratings":
+        return <ProfileTab />;
       case "tasks":
         return <ResearchAidsTasksTab />;
       case "upcoming":
@@ -55,7 +72,7 @@ const ResearchAideDashboard = () => {
       case "settings":
         return <SettingsTab />;
       default:
-        return <ResearchAidsTasksTab />;
+        return <ResearchAidOverviewTab />;
     }
   };
 
@@ -66,7 +83,7 @@ const ResearchAideDashboard = () => {
       <main className="flex-grow bg-gray-50 py-12">
         <div className="container mx-auto px-4 md:px-6">
           <h1 className="text-3xl font-bold mb-2">Research Aid Dashboard</h1>
-          <p className="text-gray-600 mb-8">Manage your tasks, clients, and earnings</p>
+          <p className="text-gray-600 mb-8">Manage your jobs, clients, and earnings</p>
           
           {showOnboarding && (
             <div className="mb-8">
