@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MessageCircle, Calendar, Star } from "lucide-react";
-import { VerificationBadge } from "@/components/verification/VerificationBadge";
+import VerificationBadge from "@/components/verification/VerificationBadge";
 import ServiceBookingModal from "@/components/payment/ServiceBookingModal";
 
 interface ResearcherCardProps {

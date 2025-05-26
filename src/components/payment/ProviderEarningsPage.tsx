@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,8 +51,7 @@ const ProviderEarningsPage = () => {
           status,
           created_at,
           payment_type,
-          jobs (title),
-          consultations (title)
+          student_id
         `)
         .eq("provider_id", user.id)
         .order("created_at", { ascending: false });
@@ -63,11 +61,11 @@ const ProviderEarningsPage = () => {
       const formattedEarnings = data.map(payment => ({
         payment_id: payment.payment_id,
         student_name: "Student Name", // Would need to join with users table
-        service_title: payment.jobs?.title || payment.consultations?.title || "Service",
+        service_title: "Service", // Default title since we can't join with jobs/consultations tables yet
         amount: payment.amount,
-        status: payment.status,
+        status: payment.status as "paid" | "released" | "pending",
         created_at: payment.created_at,
-        payment_type: payment.payment_type
+        payment_type: payment.payment_type as "consultation" | "service"
       }));
 
       setEarnings(formattedEarnings);
