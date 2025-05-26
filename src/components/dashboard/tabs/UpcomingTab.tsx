@@ -31,11 +31,12 @@ const UpcomingTab = () => {
     setActionType(null);
   };
 
-  const handleRescheduleWithCalendly = (consultationId: string) => {
-    console.log("Opening Calendly for rescheduling consultation:", consultationId);
-    // Open Calendly widget or redirect to Calendly page
-    const calendlyUrl = "https://calendly.com/your-calendly-username";
-    window.open(calendlyUrl, '_blank', 'width=800,height=600');
+  const handleRescheduleWithGoogleMeet = (consultationId: string) => {
+    console.log("Rescheduling consultation with Google Meet:", consultationId);
+    // Create a new Google Meet link for rescheduling
+    const meetLink = `https://meet.google.com/new`;
+    window.open(meetLink, '_blank');
+    alert("New Google Meet session created for rescheduling. Please share the new link with the student.");
   };
 
   const handleMoreInfo = (consultationId: string) => {
@@ -277,10 +278,10 @@ const UpcomingTab = () => {
                   
                   <Button 
                     variant="outline" 
-                    onClick={() => handleRescheduleWithCalendly(consultation.id)}
+                    onClick={() => handleRescheduleWithGoogleMeet(consultation.id)}
                   >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Reschedule
+                    <Video className="h-4 w-4 mr-2" />
+                    Reschedule with Google Meet
                   </Button>
                   <Button 
                     variant="outline" 
