@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -58,6 +57,11 @@ const WorkspaceDetails = () => {
     canAssignTasks: true,
     canInvite: false,
     canExport: true,
+    canUpload: true,
+    canDelete: true,
+    canRestore: true,
+    canChangeRoles: false,
+    canRemove: false,
     role: "Co-Author"
   };
 
@@ -233,14 +237,20 @@ const WorkspaceDetails = () => {
             <TabsContent value="files">
               <FileManager 
                 projectId={projectId || ""}
-                permissions={userPermissions}
+                permissions={{
+                  canUpload: userPermissions.canUpload,
+                  canDelete: userPermissions.canDelete
+                }}
               />
             </TabsContent>
             
             <TabsContent value="history">
               <VersionHistory 
                 projectId={projectId || ""}
-                permissions={userPermissions}
+                permissions={{
+                  canRestore: userPermissions.canRestore,
+                  canExport: userPermissions.canExport
+                }}
               />
             </TabsContent>
             
@@ -248,7 +258,11 @@ const WorkspaceDetails = () => {
               <TeamManagement 
                 projectId={projectId || ""}
                 teamMembers={teamMembers}
-                permissions={userPermissions}
+                permissions={{
+                  canInvite: userPermissions.canInvite,
+                  canRemove: userPermissions.canRemove,
+                  canChangeRoles: userPermissions.canChangeRoles
+                }}
               />
             </TabsContent>
           </Tabs>
