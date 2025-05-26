@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,6 +23,7 @@ import ResearchAids from "./pages/ResearchAids";
 import Blogs from "./pages/Blogs";
 import Partnerships from "./pages/Partnerships";
 import CoAuthorWorkspace from "./pages/CoAuthorWorkspace";
+import WorkspaceDetails from "./pages/WorkspaceDetails";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import StudentPayments from "./pages/StudentPayments";
@@ -55,6 +57,7 @@ const App = () => (
             <Route path="/blogs" element={<Blogs />} />
             <Route path="/partnerships" element={<Partnerships />} />
             <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
+            <Route path="/workspace/:projectId" element={<WorkspaceDetails />} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/student-payments" element={<StudentPayments />} />
             <Route path="/provider-earnings" element={<ProviderEarnings />} />

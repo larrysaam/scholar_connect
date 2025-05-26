@@ -1,54 +1,101 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Users, MessageSquare, Download, Save } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Plus, Users, Clock, FileText, Search, Mail } from "lucide-react";
+import StartNewProjectModal from "@/components/coauthor/StartNewProjectModal";
+import JoinProjectModal from "@/components/coauthor/JoinProjectModal";
 
 const CoAuthorWorkspace = () => {
-  const [document, setDocument] = useState({
-    title: "Impact of AI on Educational Research Methodologies",
-    abstract: "This research explores how artificial intelligence is transforming traditional research methodologies in education...",
-    content: "# Introduction\n\nArtificial Intelligence (AI) has emerged as a transformative force across various sectors, with education being no exception...",
-    references: "1. Smith, J. (2023). AI in Education: A Comprehensive Review. Journal of Educational Technology.\n2. Brown, A. et al. (2022). Machine Learning Applications in Academic Research. Academic Press."
-  });
-
-  const [comments, setComments] = useState([
+  const [projects, setProjects] = useState([
     {
-      id: 1,
-      author: "Dr. Sarah Johnson",
-      content: "Great introduction! Consider adding more recent statistics on AI adoption in education.",
-      timestamp: "2024-01-15 10:30",
-      section: "Introduction"
+      id: "proj_1",
+      title: "Impact of AI on Educational Research Methodologies",
+      type: "Journal Article",
+      status: "In Progress",
+      lastModified: "2024-01-15T10:30:00Z",
+      role: "Primary Author",
+      collaborators: 3,
+      visibility: "Private"
     },
     {
-      id: 2,
-      author: "Prof. Michael Chen",
-      content: "The methodology section needs more detail on data collection procedures.",
-      timestamp: "2024-01-15 14:20",
-      section: "Methodology"
+      id: "proj_2", 
+      title: "Climate Change Adaptation Strategies in West Africa",
+      type: "Policy Brief",
+      status: "Review",
+      lastModified: "2024-01-14T16:20:00Z",
+      role: "Co-Author",
+      collaborators: 5,
+      visibility: "Public"
+    },
+    {
+      id: "proj_3",
+      title: "Machine Learning Applications in Healthcare",
+      type: "Thesis",
+      status: "Archived",
+      lastModified: "2024-01-10T09:15:00Z",
+      role: "Commenter",
+      collaborators: 2,
+      visibility: "Private"
     }
   ]);
 
-  const coAuthors = [
-    { name: "Dr. Sarah Johnson", role: "Lead Author", status: "online", contributions: "Introduction, Literature Review" },
-    { name: "Prof. Michael Chen", role: "Co-Author", status: "offline", contributions: "Methodology, Data Analysis" },
-    { name: "Dr. Emily Rodriguez", role: "Contributing Author", status: "in-session", contributions: "Results, Discussion" }
-  ];
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  const [showNewProjectModal, setShowNewProjectModal] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
+
+  // Mock user role - in real app this would come from auth
+  const userRole = "researcher"; // "student", "researcher", "admin"
+
+  const filteredProjects = projects.filter(project => {
+    const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    switch (activeTab) {
+      case "primary":
+        return matchesSearch && project.role === "Primary Author";
+      case "archived":
+        return matchesSearch && project.status === "Archived";
+      default:
+        return matchesSearch && project.status !== "Archived";
+    }
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'bg-green-500';
-      case 'offline': return 'bg-gray-400';
-      case 'in-session': return 'bg-yellow-500';
-      default: return 'bg-gray-400';
+      case "In Progress": return "bg-blue-500";
+      case "Review": return "bg-yellow-500";
+      case "Completed": return "bg-green-500";
+      case "Archived": return "bg-gray-500";
+      default: return "bg-gray-500";
     }
+  };
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case "Primary Author": return "bg-purple-100 text-purple-800";
+      case "Co-Author": return "bg-blue-100 text-blue-800";
+      case "Commenter": return "bg-green-100 text-green-800";
+      case "Viewer": return "bg-gray-100 text-gray-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const formatLastModified = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return date.toLocaleDateString();
   };
 
   return (
@@ -58,201 +105,143 @@ const CoAuthorWorkspace = () => {
       <main className="flex-grow bg-gray-50">
         <div className="container mx-auto px-4 md:px-6 py-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Co-Authoring Workspace</h1>
-            <p className="text-gray-600">Collaborate on your research publication in real-time</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Co-Author Workspace</h1>
+            <p className="text-gray-600">Collaborate on research publications in real-time</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Main Document Area */}
-            <div className="lg:col-span-3">
-              <Card>
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
-                      {document.title}
-                    </CardTitle>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Save className="h-4 w-4 mr-2" />
-                        Save
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Download className="h-4 w-4 mr-2" />
-                        Export
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                
-                <CardContent>
-                  <Tabs defaultValue="content" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4">
-                      <TabsTrigger value="content">Content</TabsTrigger>
-                      <TabsTrigger value="abstract">Abstract</TabsTrigger>
-                      <TabsTrigger value="references">References</TabsTrigger>
-                      <TabsTrigger value="settings">Settings</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="content" className="mt-4">
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="title">Title</Label>
-                          <Input
-                            id="title"
-                            value={document.title}
-                            onChange={(e) => setDocument({...document, title: e.target.value})}
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="content">Content</Label>
-                          <Textarea
-                            id="content"
-                            value={document.content}
-                            onChange={(e) => setDocument({...document, content: e.target.value})}
-                            className="mt-1 min-h-[400px]"
-                            placeholder="Write your research content here..."
-                          />
-                        </div>
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="abstract" className="mt-4">
-                      <div>
-                        <Label htmlFor="abstract">Abstract</Label>
-                        <Textarea
-                          id="abstract"
-                          value={document.abstract}
-                          onChange={(e) => setDocument({...document, abstract: e.target.value})}
-                          className="mt-1 min-h-[200px]"
-                          placeholder="Write your abstract here..."
-                        />
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="references" className="mt-4">
-                      <div>
-                        <Label htmlFor="references">References</Label>
-                        <Textarea
-                          id="references"
-                          value={document.references}
-                          onChange={(e) => setDocument({...document, references: e.target.value})}
-                          className="mt-1 min-h-[300px]"
-                          placeholder="Add your references here..."
-                        />
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="settings" className="mt-4">
-                      <div className="space-y-4">
-                        <div>
-                          <Label>Publication Type</Label>
-                          <select className="w-full mt-1 p-2 border rounded-md">
-                            <option>Journal Article</option>
-                            <option>Conference Paper</option>
-                            <option>Book Chapter</option>
-                            <option>Policy Paper</option>
-                          </select>
-                        </div>
-                        <div>
-                          <Label>Target Journal</Label>
-                          <Input placeholder="Enter target journal name" className="mt-1" />
-                        </div>
-                        <div>
-                          <Label>Submission Deadline</Label>
-                          <Input type="date" className="mt-1" />
-                        </div>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
+          {/* Action Bar */}
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Search projects..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
+            
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setShowJoinModal(true)}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Mail className="h-4 w-4" />
+                Join Project
+              </Button>
+              
+              {(userRole === "researcher" || userRole === "student") && (
+                <Button 
+                  onClick={() => setShowNewProjectModal(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  New Project
+                </Button>
+              )}
+            </div>
+          </div>
 
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Co-Authors */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Co-Authors
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {coAuthors.map((author, index) => (
-                    <div key={index} className="flex items-center gap-3 p-2 rounded-lg border">
-                      <div className={`w-3 h-3 rounded-full ${getStatusColor(author.status)}`}></div>
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{author.name}</p>
-                        <p className="text-xs text-gray-600">{author.role}</p>
-                        <p className="text-xs text-gray-500">{author.contributions}</p>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
+          {/* Filter Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+            <TabsList>
+              <TabsTrigger value="all">All Projects</TabsTrigger>
+              <TabsTrigger value="primary">I'm Primary Author</TabsTrigger>
+              <TabsTrigger value="archived">Archived</TabsTrigger>
+            </TabsList>
 
-              {/* Comments */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5" />
-                    Comments
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {comments.map((comment) => (
-                    <div key={comment.id} className="p-3 border rounded-lg">
+            <TabsContent value={activeTab} className="mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredProjects.map((project) => (
+                  <Card key={project.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardHeader className="pb-3">
                       <div className="flex justify-between items-start mb-2">
-                        <p className="font-medium text-sm">{comment.author}</p>
-                        <Badge variant="outline" className="text-xs">{comment.section}</Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {project.type}
+                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${getStatusColor(project.status)}`}></div>
+                          <span className="text-xs text-gray-500">{project.status}</span>
+                        </div>
                       </div>
-                      <p className="text-sm text-gray-700 mb-2">{comment.content}</p>
-                      <p className="text-xs text-gray-500">{comment.timestamp}</p>
-                    </div>
-                  ))}
-                  
-                  <div className="mt-4">
-                    <Textarea 
-                      placeholder="Add a comment..." 
-                      className="mb-2"
-                      rows={3}
-                    />
-                    <Button size="sm" className="w-full">Add Comment</Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Version History */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Version History</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>v1.3</span>
-                      <span className="text-gray-500">2 hours ago</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>v1.2</span>
-                      <span className="text-gray-500">1 day ago</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>v1.1</span>
-                      <span className="text-gray-500">3 days ago</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+                      
+                      <CardTitle className="text-lg line-clamp-2">
+                        {project.title}
+                      </CardTitle>
+                    </CardHeader>
+                    
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <Badge className={getRoleColor(project.role)}>
+                            {project.role}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            {project.visibility}
+                          </Badge>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Users className="h-4 w-4" />
+                          <span>{project.collaborators} collaborators</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <Clock className="h-4 w-4" />
+                          <span>Updated {formatLastModified(project.lastModified)}</span>
+                        </div>
+                        
+                        <div className="pt-3 border-t">
+                          <Button 
+                            className="w-full"
+                            onClick={() => window.location.href = `/workspace/${project.id}`}
+                          >
+                            <FileText className="h-4 w-4 mr-2" />
+                            Open Project
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              
+              {filteredProjects.length === 0 && (
+                <div className="text-center py-12">
+                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No projects found</h3>
+                  <p className="text-gray-600 mb-4">
+                    {searchTerm ? "Try adjusting your search terms" : "Start your first collaborative project"}
+                  </p>
+                  {!searchTerm && (userRole === "researcher" || userRole === "student") && (
+                    <Button onClick={() => setShowNewProjectModal(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create New Project
+                    </Button>
+                  )}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
-      
+
       <Footer />
+      
+      {/* Modals */}
+      <StartNewProjectModal 
+        open={showNewProjectModal}
+        onOpenChange={setShowNewProjectModal}
+        userRole={userRole}
+      />
+      
+      <JoinProjectModal 
+        open={showJoinModal}
+        onOpenChange={setShowJoinModal}
+      />
     </div>
   );
 };
