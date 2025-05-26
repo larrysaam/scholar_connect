@@ -51,7 +51,11 @@ const ResearcherCard = ({
               className="w-20 h-20 rounded-full object-cover absolute bottom-4 left-4 border-4 border-white shadow-lg"
             />
             <div className="absolute top-4 right-4">
-              <VerificationBadge verifications={verifications} />
+              <VerificationBadge 
+                type="overall" 
+                status="verified" 
+                verifications={verifications} 
+              />
             </div>
           </div>
           
