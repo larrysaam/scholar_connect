@@ -1,8 +1,7 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Bell, Calendar, MessageSquare, UserCheck, BookOpen, AlertTriangle } from "lucide-react";
+import { Bell, Calendar, MessageSquare, UserCheck, AlertTriangle } from "lucide-react";
 
 const NotificationsTab = () => {
   const notifications = [
@@ -25,24 +24,6 @@ const NotificationsTab = () => {
       icon: UserCheck
     },
     {
-      id: "3",
-      type: "quality_feedback",
-      title: "Quality Feedback Received", 
-      message: "New feedback from your consultation with Alex Wilson",
-      time: "1 day ago",
-      isNew: false,
-      icon: MessageSquare
-    },
-    {
-      id: "4",
-      type: "verification",
-      title: "Verification Update",
-      message: "Your publication verification has been approved",
-      time: "2 days ago", 
-      isNew: false,
-      icon: BookOpen
-    },
-    {
       id: "5",
       type: "system",
       title: "System Maintenance",
@@ -59,10 +40,6 @@ const NotificationsTab = () => {
         return "bg-blue-100 text-blue-800";
       case "co_author_invitation":
         return "bg-green-100 text-green-800";
-      case "quality_feedback":
-        return "bg-purple-100 text-purple-800";
-      case "verification":
-        return "bg-yellow-100 text-yellow-800";
       case "system":
         return "bg-red-100 text-red-800";
       default:

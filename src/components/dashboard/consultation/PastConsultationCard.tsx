@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, Play, FileText, Upload } from "lucide-react";
+import { Calendar, Clock, Play, FileText, Upload, CalendarPlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import StarRating from "./StarRating";
 import ContactDialog from "./ContactDialog";
@@ -38,6 +38,7 @@ interface PastConsultationCardProps {
   onUploadResources: (consultationId: string) => void;
   onSendMessage: (consultationId: string, message: string) => void;
   onOpenChat: (personId: string, consultationId: string) => void;
+  onFollowUpSession?: (consultationId: string) => void;
 }
 
 const PastConsultationCard = ({
@@ -48,7 +49,8 @@ const PastConsultationCard = ({
   onViewAINotes,
   onUploadResources,
   onSendMessage,
-  onOpenChat
+  onOpenChat,
+  onFollowUpSession
 }: PastConsultationCardProps) => {
   const person = userType === "student" ? consultation.researcher : consultation.student;
   const resourceLabel = userType === "student" ? "Resources Shared" : "Additional Resources Shared";
@@ -148,6 +150,16 @@ const PastConsultationCard = ({
             <Upload className="h-4 w-4 mr-2" />
             {uploadButtonLabel}
           </Button>
+
+          {userType === "student" && onFollowUpSession && (
+            <Button 
+              variant="outline" 
+              onClick={() => onFollowUpSession(consultation.id)}
+            >
+              <CalendarPlus className="h-4 w-4 mr-2" />
+              Follow-up Session
+            </Button>
+          )}
         </div>
       </CardFooter>
     </Card>

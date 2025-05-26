@@ -24,8 +24,7 @@ interface ConsultationCardProps {
   uploadedDocuments: string[];
   onJoinMeet: (consultationId: string) => void;
   onUploadDocument: (consultationId: string) => void;
-  onLiveDocumentReview: (consultationId: string) => void;
-  onFollowUpSession: (consultationId: string) => void;
+  onSubmitDocumentLink: (consultationId: string, documentLink: string) => void;
   onContactResearcher: (researcherId: string, consultationId: string) => void;
 }
 
@@ -34,8 +33,7 @@ const ConsultationCard = ({
   uploadedDocuments,
   onJoinMeet,
   onUploadDocument,
-  onLiveDocumentReview,
-  onFollowUpSession,
+  onSubmitDocumentLink,
   onContactResearcher
 }: ConsultationCardProps) => {
   return (
@@ -83,8 +81,7 @@ const ConsultationCard = ({
           consultation={consultation}
           onJoinMeet={onJoinMeet}
           onUploadDocument={onUploadDocument}
-          onLiveDocumentReview={onLiveDocumentReview}
-          onFollowUpSession={onFollowUpSession}
+          onSubmitDocumentLink={onSubmitDocumentLink}
           onContactResearcher={onContactResearcher}
         />
       </CardFooter>

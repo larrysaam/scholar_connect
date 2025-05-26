@@ -32,16 +32,9 @@ const StudentUpcomingTab = () => {
     input.click();
   };
 
-  const handleLiveDocumentReview = (consultationId: string) => {
-    console.log("Starting live document review for consultation:", consultationId);
-    const docUrl = `https://docs.google.com/document/create?usp=sharing`;
-    window.open(docUrl, '_blank');
-    alert("Google Doc created for live review. Please share with view-only access to the researcher.");
-  };
-
-  const handleFollowUpSession = (consultationId: string) => {
-    console.log("Booking follow-up session for consultation:", consultationId);
-    alert("Opening booking form for follow-up consultation session...");
+  const handleSubmitDocumentLink = (consultationId: string, documentLink: string) => {
+    console.log("Document link shared for consultation:", consultationId, documentLink);
+    alert(`Google Docs link shared with researcher: ${documentLink}`);
   };
 
   const handleContactResearcher = (researcherId: string, consultationId: string) => {
@@ -62,8 +55,7 @@ const StudentUpcomingTab = () => {
               uploadedDocuments={uploadedDocuments[consultation.id] || []}
               onJoinMeet={handleJoinWithGoogleMeet}
               onUploadDocument={handleUploadDocument}
-              onLiveDocumentReview={handleLiveDocumentReview}
-              onFollowUpSession={handleFollowUpSession}
+              onSubmitDocumentLink={handleSubmitDocumentLink}
               onContactResearcher={handleContactResearcher}
             />
           ))}

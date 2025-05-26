@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import PastConsultationCard from "../consultation/PastConsultationCard";
 
@@ -81,6 +80,11 @@ const StudentPastTab = () => {
     alert(`Opening messaging interface with researcher for consultation ${consultationId}...`);
   };
 
+  const handleFollowUpSession = (consultationId: string) => {
+    console.log("Booking follow-up session for consultation:", consultationId);
+    alert("Opening booking form for follow-up consultation session...");
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
       <h2 className="text-xl font-semibold mb-4">Past Consultations</h2>
@@ -98,6 +102,7 @@ const StudentPastTab = () => {
               onUploadResources={handleUploadResources}
               onSendMessage={handleSendMessage}
               onOpenChat={handleOpenChat}
+              onFollowUpSession={handleFollowUpSession}
             />
           ))}
         </div>

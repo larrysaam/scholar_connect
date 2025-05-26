@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,7 +32,6 @@ const UpcomingTab = () => {
 
   const handleRescheduleWithGoogleCalendar = (consultationId: string) => {
     console.log("Rescheduling consultation with Google Calendar:", consultationId);
-    // Create a Google Calendar event for rescheduling
     const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Consultation+Reschedule&details=Reschedule+consultation+session&location=Google+Meet`;
     window.open(calendarUrl, '_blank');
     alert("Google Calendar opened for rescheduling. Please create a new event and share it with the student.");
@@ -46,21 +44,18 @@ const UpcomingTab = () => {
 
   const handleJoinWithGoogleMeet = (consultationId: string) => {
     console.log("Joining with Google Meet for consultation:", consultationId);
-    // Generate or use pre-created Google Meet link
     const meetLink = `https://meet.google.com/abc-defg-hij`;
     window.open(meetLink, '_blank');
   };
 
   const handleViewRecording = (consultationId: string) => {
     console.log("Viewing Google Meet recording for consultation:", consultationId);
-    // Link to Google Meet recording stored in Google Drive
     const recordingUrl = `https://drive.google.com/file/d/recording-${consultationId}`;
     window.open(recordingUrl, '_blank');
   };
 
   const handleViewAINotes = (consultationId: string) => {
     console.log("Viewing AI-generated notes for consultation:", consultationId);
-    // Open AI notes that were generated from Google Meet transcript
     alert(`Opening AI-generated notes for consultation ${consultationId}...`);
   };
 
@@ -82,6 +77,11 @@ const UpcomingTab = () => {
       }
     };
     input.click();
+  };
+
+  const handleLiveDocumentReview = (consultationId: string) => {
+    console.log("Accessing live document review for consultation:", consultationId);
+    alert("Opening shared Google Docs document from student...");
   };
 
   const handleResponseAction = (type: 'accept' | 'decline', consultationId: string) => {
@@ -143,7 +143,6 @@ const UpcomingTab = () => {
                   <p className="text-gray-700">{consultation.topic}</p>
                 </div>
                 
-                {/* Display uploaded documents */}
                 {uploadedDocuments[consultation.id] && uploadedDocuments[consultation.id].length > 0 && (
                   <div className="mt-4">
                     <p className="font-medium text-sm text-green-700">Uploaded Documents:</p>
@@ -167,6 +166,13 @@ const UpcomingTab = () => {
                       >
                         <Video className="h-4 w-4 mr-2" />
                         Join with Google Meet
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => handleLiveDocumentReview(consultation.id)}
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Live Document Review
                       </Button>
                       <Button 
                         variant="outline" 
@@ -282,12 +288,6 @@ const UpcomingTab = () => {
                   >
                     <Calendar className="h-4 w-4 mr-2" />
                     Reschedule with Google Calendar
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => handleMoreInfo(consultation.id)}
-                  >
-                    More Info
                   </Button>
                   <Button 
                     variant="outline" 

@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
-import { Video, Upload, FileText, CalendarPlus, MessageSquare } from "lucide-react";
+import { Video, Upload, CalendarPlus, MessageSquare } from "lucide-react";
+import LiveDocumentReviewDialog from "./LiveDocumentReviewDialog";
 
 interface Consultation {
   id: string;
@@ -20,8 +21,7 @@ interface ConsultationActionsProps {
   consultation: Consultation;
   onJoinMeet: (consultationId: string) => void;
   onUploadDocument: (consultationId: string) => void;
-  onLiveDocumentReview: (consultationId: string) => void;
-  onFollowUpSession: (consultationId: string) => void;
+  onSubmitDocumentLink: (consultationId: string, documentLink: string) => void;
   onContactResearcher: (researcherId: string, consultationId: string) => void;
 }
 
@@ -29,8 +29,7 @@ const ConsultationActions = ({
   consultation,
   onJoinMeet,
   onUploadDocument,
-  onLiveDocumentReview,
-  onFollowUpSession,
+  onSubmitDocumentLink,
   onContactResearcher
 }: ConsultationActionsProps) => {
   return (
@@ -53,21 +52,10 @@ const ConsultationActions = ({
         Upload Document
       </Button>
       
-      <Button 
-        variant="outline" 
-        onClick={() => onLiveDocumentReview(consultation.id)}
-      >
-        <FileText className="h-4 w-4 mr-2" />
-        Live Document Review
-      </Button>
-      
-      <Button 
-        variant="outline" 
-        onClick={() => onFollowUpSession(consultation.id)}
-      >
-        <CalendarPlus className="h-4 w-4 mr-2" />
-        Follow-up Session
-      </Button>
+      <LiveDocumentReviewDialog
+        consultationId={consultation.id}
+        onSubmitDocumentLink={onSubmitDocumentLink}
+      />
       
       <Button 
         variant="outline" 
