@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
@@ -29,7 +28,7 @@ const ProfileTab = () => {
       { position: "Senior Research Scientist", institution: "University of Technology", period: "2020-Present" }
     ],
     publications: [
-      { title: "AI in Modern Computing", journal: "Tech Journal", year: "2023" }
+      { title: "AI in Modern Computing", journal: "Tech Journal", year: "2023" , link: ""}
     ],
     awards: [
       { title: "Best Researcher Award", year: "2022" }
@@ -89,7 +88,7 @@ const ProfileTab = () => {
   const handlePublicationAdd = () => {
     setProfileData(prev => ({
       ...prev,
-      publications: [...prev.publications, { title: '', journal: '', year: '' }]
+      publications: [...prev.publications, { title: '', journal: '', year: '', link: '' }]
     }));
   };
 
@@ -100,7 +99,7 @@ const ProfileTab = () => {
     }));
   };
 
-  const handlePublicationUpdate = (index: number, field: 'title' | 'journal' | 'year', value: string) => {
+  const handlePublicationUpdate = (index: number, field: 'title' | 'journal' | 'year' | 'link', value: string) => {
     setProfileData(prev => ({
       ...prev,
       publications: prev.publications.map((item, i) => 

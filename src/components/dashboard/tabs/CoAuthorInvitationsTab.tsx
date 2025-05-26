@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CoAuthorInvitation from "@/components/researcher/CoAuthorInvitation";
@@ -81,22 +80,22 @@ const mockInvitations: CoAuthorInvitationData[] = [
 const CoAuthorInvitationsTab = () => {
   const [invitations, setInvitations] = useState<CoAuthorInvitationData[]>(mockInvitations);
 
-  const handleAccept = (id: string) => {
+  const handleAccept = (id: string, comment: string) => {
     setInvitations(prev => 
       prev.map(inv => 
         inv.id === id ? { ...inv, status: "accepted" as const } : inv
       )
     );
-    console.log("Accepted invitation:", id);
+    console.log("Accepted invitation:", id, "with comment:", comment);
   };
 
-  const handleDecline = (id: string) => {
+  const handleDecline = (id: string, comment: string) => {
     setInvitations(prev => 
       prev.map(inv => 
         inv.id === id ? { ...inv, status: "declined" as const } : inv
       )
     );
-    console.log("Declined invitation:", id);
+    console.log("Declined invitation:", id, "with comment:", comment);
   };
 
   return (

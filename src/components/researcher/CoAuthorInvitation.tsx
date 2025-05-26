@@ -1,8 +1,11 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, User, Mail, BookOpen, Award } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Calendar, User, Mail, BookOpen, Award, MessageSquare, Phone, Video } from "lucide-react";
 
 interface CoAuthorInvitationProps {
   invitation: {
@@ -28,11 +31,15 @@ interface CoAuthorInvitationProps {
     dateSent: string;
     status: 'pending' | 'accepted' | 'declined';
   };
-  onAccept: (id: string) => void;
-  onDecline: (id: string) => void;
+  onAccept: (id: string, comment: string) => void;
+  onDecline: (id: string, comment: string) => void;
 }
 
 const CoAuthorInvitation = ({ invitation, onAccept, onDecline }: CoAuthorInvitationProps) => {
+  const [comment, setComment] = useState("");
+  const [showCommentBox, setShowCommentBox] = useState(false);
+  const [actionType, setActionType] = useState<'accept' | 'decline' | null>(null);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
@@ -44,6 +51,32 @@ const CoAuthorInvitation = ({ invitation, onAccept, onDecline }: CoAuthorInvitat
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const handleAction = (type: 'accept' | 'decline') => {
+    setActionType(type);
+    setShowCommentBox(true);
+  };
+
+  const handleSubmit = () => {
+    if (actionType === 'accept') {
+      onAccept(invitation.id, comment);
+    } else if (actionType === 'decline') {
+      onDecline(invitation.id, comment);
+    }
+    setComment("");
+    setShowCommentBox(false);
+    setActionType(null);
+  };
+
+  const handleScheduleCall = () => {
+    console.log("Scheduling call for invitation:", invitation.id);
+    alert("Opening calendar to schedule a call...");
+  };
+
+  const handleStartChat = () => {
+    console.log("Starting chat for invitation:", invitation.id);
+    alert("Opening chat interface...");
   };
 
   return (
@@ -165,20 +198,67 @@ const CoAuthorInvitation = ({ invitation, onAccept, onDecline }: CoAuthorInvitat
           <p className="text-sm text-gray-700">{invitation.nextSteps}</p>
         </div>
         
-        {invitation.status === 'pending' && (
+        {/* Comment Section */}
+        {showCommentBox && (
+          <div className="border-t pt-4">
+            <Label htmlFor="comment">
+              {actionType === 'accept' ? 'Acceptance Comment' : 'Decline Reason'}
+            </Label>
+            <Textarea
+              id="comment"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder={actionType === 'accept' 
+                ? "Please share your thoughts on this collaboration..." 
+                : "Please provide a reason for declining..."}
+              className="mt-2"
+            />
+            <div className="flex gap-2 mt-3">
+              <Button onClick={handleSubmit} disabled={!comment.trim()}>
+                {actionType === 'accept' ? 'Accept with Comment' : 'Decline with Comment'}
+              </Button>
+              <Button variant="outline" onClick={() => {
+                setShowCommentBox(false);
+                setComment("");
+                setActionType(null);
+              }}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+        
+        {/* Action Buttons */}
+        {invitation.status === 'pending' && !showCommentBox && (
           <div className="flex gap-3 pt-4">
             <Button 
-              onClick={() => onAccept(invitation.id)}
+              onClick={() => handleAction('accept')}
               className="bg-green-600 hover:bg-green-700"
             >
+              <MessageSquare className="h-4 w-4 mr-2" />
               Accept Invitation
             </Button>
             <Button 
               variant="outline" 
-              onClick={() => onDecline(invitation.id)}
+              onClick={() => handleAction('decline')}
               className="border-red-600 text-red-600 hover:bg-red-50"
             >
+              <MessageSquare className="h-4 w-4 mr-2" />
               Decline
+            </Button>
+          </div>
+        )}
+
+        {/* Post-Acceptance Actions */}
+        {invitation.status === 'accepted' && (
+          <div className="flex gap-3 pt-4 border-t">
+            <Button onClick={handleScheduleCall} className="bg-blue-600 hover:bg-blue-700">
+              <Video className="h-4 w-4 mr-2" />
+              Schedule Call
+            </Button>
+            <Button variant="outline" onClick={handleStartChat}>
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Start Chat
             </Button>
           </div>
         )}
