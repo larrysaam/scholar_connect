@@ -8,13 +8,21 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Search, MapPin, Star, Clock, Circle, CheckCircle, Users, Shield, MessageSquare, FileText, BarChart, Globe, Edit, Mic, BookOpen, Palette, Languages } from "lucide-react";
+import { Search, MapPin, Star, Clock, Circle, Shield, MessageSquare, FileText, BarChart, Globe, Edit, Mic, BookOpen, Palette, Languages, Users } from "lucide-react";
+import TaskPostingModal from "@/components/research-aids/TaskPostingModal";
+import ChatSystem from "@/components/research-aids/ChatSystem";
+import PaymentEscrow from "@/components/research-aids/PaymentEscrow";
+import PortfolioShowcase from "@/components/research-aids/PortfolioShowcase";
+import AIMatchingEngine from "@/components/research-aids/AIMatchingEngine";
+import VerificationBadge from "@/components/verification/VerificationBadge";
 
 const ResearchAids = () => {
   const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedExpert, setSelectedExpert] = useState<any>(null);
 
   const categories = [
     { value: "all", label: "All Services" },
@@ -112,7 +120,23 @@ const ResearchAids = () => {
       skills: ["SPSS", "R", "STATA", "Data Analysis"],
       hourlyRate: "15,000 FCFA/hour",
       availability: "Available",
-      onlineStatus: "online" as const
+      onlineStatus: "online" as const,
+      verifications: {
+        academic: "verified" as const,
+        publication: "verified" as const,
+        institutional: "verified" as const
+      },
+      portfolioItems: [
+        {
+          id: "p1",
+          title: "University Survey Analysis",
+          description: "Complete statistical analysis of 500+ student responses using SPSS",
+          category: "Statistics",
+          rating: 5,
+          clientFeedback: "Excellent work, very detailed analysis and clear explanations",
+          completedDate: "2024-01-15"
+        }
+      ]
     },
     {
       id: 2,
@@ -126,7 +150,13 @@ const ResearchAids = () => {
       skills: ["ArcGIS", "QGIS", "Remote Sensing", "Spatial Analysis"],
       hourlyRate: "18,000 FCFA/hour",
       availability: "Busy",
-      onlineStatus: "in-session" as const
+      onlineStatus: "in-session" as const,
+      verifications: {
+        academic: "verified" as const,
+        publication: "pending" as const,
+        institutional: "verified" as const
+      },
+      portfolioItems: []
     },
     {
       id: 3,
@@ -140,7 +170,13 @@ const ResearchAids = () => {
       skills: ["Proofreading", "Academic Writing", "Language Editing", "Formatting"],
       hourlyRate: "12,000 FCFA/hour",
       availability: "Available",
-      onlineStatus: "online" as const
+      onlineStatus: "online" as const,
+      verifications: {
+        academic: "verified" as const,
+        publication: "verified" as const,
+        institutional: "pending" as const
+      },
+      portfolioItems: []
     }
   ];
 
@@ -152,6 +188,23 @@ const ResearchAids = () => {
     return matchesSearch && matchesCategory;
   });
 
+  const mockMilestones = [
+    {
+      id: "1",
+      title: "Initial Analysis",
+      amount: 10000,
+      status: "completed" as const,
+      description: "Complete initial data cleaning and exploratory analysis"
+    },
+    {
+      id: "2",
+      title: "Final Report",
+      amount: 15000,
+      status: "in-progress" as const,
+      description: "Detailed statistical report with interpretations"
+    }
+  ];
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -162,19 +215,21 @@ const ResearchAids = () => {
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-                Find Specialized Assistance For Your Research Projects, When You Need It Most
+                Get Expert Research Help When You Need It Most
               </h1>
               <p className="text-xl text-blue-100 mb-8">
                 Find and hire verified research professionals to help you with data analysis, GIS mapping, transcription, publishing, editing, and more — all in one platform built for serious students and researchers.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
+                <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50" onClick={() => document.getElementById('browse-section')?.scrollIntoView()}>
                   Browse Research Aids
                 </Button>
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
-                  Post a Task
-                </Button>
+                <TaskPostingModal>
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
+                    Post a Task
+                  </Button>
+                </TaskPostingModal>
               </div>
             </div>
           </div>
@@ -254,7 +309,7 @@ const ResearchAids = () => {
               {researchAidServices.map((service, index) => {
                 const IconComponent = service.icon;
                 return (
-                  <Card key={index} className="hover:shadow-lg transition-shadow">
+                  <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setSelectedCategory(service.category)}>
                     <CardHeader className="pb-4">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -274,111 +329,186 @@ const ResearchAids = () => {
         </section>
 
         {/* Search and Browse Section */}
-        <section className="py-16">
+        <section id="browse-section" className="py-16">
           <div className="container mx-auto px-4 md:px-6">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold mb-4">Browse Available Research Aids</h2>
               <p className="text-gray-600">Find the perfect expert for your project</p>
             </div>
 
-            {/* Search and Filter */}
-            <div className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto mb-8">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <Input
-                  type="text"
-                  placeholder="Search by name, expertise, or skills..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-full md:w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.value} value={category.value}>
-                      {category.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+              <div className="lg:col-span-3">
+                {/* Search and Filter */}
+                <div className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto mb-8">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <Input
+                      type="text"
+                      placeholder="Search by name, expertise, or skills..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-full md:w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.value} value={category.value}>
+                          {category.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredAids.map((aid) => (
-                <Card key={aid.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-start space-x-4">
-                      <div className="relative">
-                        <Avatar className="h-16 w-16">
-                          <AvatarImage src={aid.image} alt={aid.name} />
-                          <AvatarFallback>{aid.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                        </Avatar>
-                        <div className="absolute -bottom-1 -right-1">
-                          {getStatusIcon(aid.onlineStatus)}
-                        </div>
-                      </div>
-                      <div className="flex-1">
-                        <CardTitle className="text-lg">{aid.name}</CardTitle>
-                        <p className="text-sm text-gray-600 mb-2">{aid.title}</p>
-                        <div className="flex items-center text-sm text-gray-500 mb-2">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          {aid.location}
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <div className="flex items-center">
-                            <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                            <span className="text-sm font-medium ml-1">{aid.rating}</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {filteredAids.map((aid) => (
+                    <Card key={aid.id} className="hover:shadow-lg transition-shadow">
+                      <CardHeader className="pb-4">
+                        <div className="flex items-start space-x-4">
+                          <div className="relative">
+                            <Avatar className="h-16 w-16">
+                              <AvatarImage src={aid.image} alt={aid.name} />
+                              <AvatarFallback>{aid.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                            </Avatar>
+                            <div className="absolute -bottom-1 -right-1">
+                              {getStatusIcon(aid.onlineStatus)}
+                            </div>
                           </div>
-                          <span className="text-sm text-gray-500">({aid.reviews} reviews)</span>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                              <CardTitle className="text-lg">{aid.name}</CardTitle>
+                              <VerificationBadge
+                                type="overall"
+                                status="verified"
+                                verifications={aid.verifications}
+                                size="sm"
+                              />
+                            </div>
+                            <p className="text-sm text-gray-600 mb-2">{aid.title}</p>
+                            <div className="flex items-center text-sm text-gray-500 mb-2">
+                              <MapPin className="h-4 w-4 mr-1" />
+                              {aid.location}
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <div className="flex items-center">
+                                <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                                <span className="text-sm font-medium ml-1">{aid.rating}</span>
+                              </div>
+                              <span className="text-sm text-gray-500">({aid.reviews} reviews)</span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Skills</h4>
-                        <div className="flex flex-wrap gap-1">
-                          {aid.skills.slice(0, 3).map((skill) => (
-                            <Badge key={skill} variant="secondary" className="text-xs">
-                              {skill}
-                            </Badge>
-                          ))}
-                          {aid.skills.length > 3 && (
-                            <Badge variant="secondary" className="text-xs">
-                              +{aid.skills.length - 3} more
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
+                      </CardHeader>
                       
-                      <div className="flex items-center text-sm">
-                        <div className="flex items-center text-gray-600">
-                          <Clock className="h-4 w-4 mr-1" />
-                          {aid.hourlyRate}
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-700 mb-2">Skills</h4>
+                            <div className="flex flex-wrap gap-1">
+                              {aid.skills.slice(0, 3).map((skill) => (
+                                <Badge key={skill} variant="secondary" className="text-xs">
+                                  {skill}
+                                </Badge>
+                              ))}
+                              {aid.skills.length > 3 && (
+                                <Badge variant="secondary" className="text-xs">
+                                  +{aid.skills.length - 3} more
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center text-sm">
+                            <div className="flex items-center text-gray-600">
+                              <Clock className="h-4 w-4 mr-1" />
+                              {aid.hourlyRate}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <Badge 
+                              variant={aid.availability === "Available" ? "default" : "secondary"}
+                              className={aid.availability === "Available" ? "bg-green-100 text-green-800" : ""}
+                            >
+                              {aid.availability}
+                            </Badge>
+                            <div className="flex space-x-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" variant="outline" onClick={() => setSelectedExpert(aid)}>
+                                    View Profile
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                                  {selectedExpert && (
+                                    <div className="space-y-6">
+                                      <div className="flex items-center space-x-4">
+                                        <Avatar className="h-20 w-20">
+                                          <AvatarImage src={selectedExpert.image} alt={selectedExpert.name} />
+                                          <AvatarFallback>{selectedExpert.name.split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                          <h2 className="text-2xl font-bold">{selectedExpert.name}</h2>
+                                          <p className="text-gray-600">{selectedExpert.title}</p>
+                                          <div className="flex items-center space-x-2 mt-2">
+                                            <VerificationBadge
+                                              type="overall"
+                                              status="verified"
+                                              verifications={selectedExpert.verifications}
+                                              size="md"
+                                            />
+                                            <div className="flex items-center">
+                                              <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                                              <span className="text-sm font-medium ml-1">{selectedExpert.rating}</span>
+                                              <span className="text-sm text-gray-500 ml-1">({selectedExpert.reviews} reviews)</span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <div>
+                                          <ChatSystem
+                                            researchAidId={selectedExpert.id.toString()}
+                                            researchAidName={selectedExpert.name}
+                                            researchAidImage={selectedExpert.image}
+                                          />
+                                        </div>
+                                        <div>
+                                          <PaymentEscrow
+                                            taskId="sample-task"
+                                            totalAmount={25000}
+                                            milestones={mockMilestones}
+                                          />
+                                        </div>
+                                      </div>
+                                      
+                                      {selectedExpert.portfolioItems && selectedExpert.portfolioItems.length > 0 && (
+                                        <PortfolioShowcase portfolioItems={selectedExpert.portfolioItems} />
+                                      )}
+                                    </div>
+                                  )}
+                                </DialogContent>
+                              </Dialog>
+                              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                                Contact
+                              </Button>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <Badge 
-                          variant={aid.availability === "Available" ? "default" : "secondary"}
-                          className={aid.availability === "Available" ? "bg-green-100 text-green-800" : ""}
-                        >
-                          {aid.availability}
-                        </Badge>
-                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                          Contact
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="lg:col-span-1">
+                <AIMatchingEngine />
+              </div>
             </div>
           </div>
         </section>
@@ -432,7 +562,7 @@ const ResearchAids = () => {
             </div>
             
             <div className="max-w-3xl mx-auto space-y-6">
-              <Card>
+              <Card className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardHeader>
                   <CardTitle className="text-lg">Are these services allowed by my university?</CardTitle>
                 </CardHeader>
@@ -441,7 +571,7 @@ const ResearchAids = () => {
                 </CardContent>
               </Card>
               
-              <Card>
+              <Card className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardHeader>
                   <CardTitle className="text-lg">What if I'm not satisfied with the work?</CardTitle>
                 </CardHeader>
@@ -450,7 +580,7 @@ const ResearchAids = () => {
                 </CardContent>
               </Card>
               
-              <Card>
+              <Card className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardHeader>
                   <CardTitle className="text-lg">How secure are my documents and data?</CardTitle>
                 </CardHeader>
@@ -472,8 +602,8 @@ const ResearchAids = () => {
               <p className="text-xl text-blue-100 mb-8">
                 Join our network of verified experts and help researchers achieve their goals while earning income
               </p>
-              <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
-                <a href="/research-aid-signup">Apply Now</a>
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50" onClick={() => window.open('/research-aid-signup', '_blank')}>
+                Apply Now
               </Button>
             </div>
           </div>

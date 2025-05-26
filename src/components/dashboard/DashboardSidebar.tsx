@@ -12,7 +12,8 @@ import {
   Shield,
   Bell,
   BookOpen,
-  MessageCircle
+  MessageCircle,
+  CheckSquare
 } from "lucide-react";
 import InviteModal from "@/components/researcher/InviteModal";
 import MisconductReportModal from "./MisconductReportModal";
@@ -39,6 +40,18 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
       </div>
       
       <nav className="space-y-1">
+        {/* Show tasks tab for research aids */}
+        {userType === "research-aide" && (
+          <Button 
+            variant={activeTab === "tasks" ? "default" : "ghost"} 
+            className="w-full justify-start" 
+            onClick={() => setActiveTab("tasks")}
+          >
+            <CheckSquare className="mr-2 h-4 w-4" />
+            Tasks
+          </Button>
+        )}
+        
         <Button 
           variant={activeTab === "upcoming" ? "default" : "ghost"} 
           className="w-full justify-start" 

@@ -12,9 +12,12 @@ import ProfileTab from "@/components/dashboard/tabs/ProfileTab";
 import DocumentsTab from "@/components/dashboard/tabs/DocumentsTab";
 import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
 import ResearchAidQualityTab from "@/components/dashboard/tabs/ResearchAidQualityTab";
+import ResearchAidsTasksTab from "@/components/dashboard/tabs/ResearchAidsTasksTab";
+import DiscussionTab from "@/components/dashboard/tabs/DiscussionTab";
+import NotificationsTab from "@/components/dashboard/tabs/NotificationsTab";
 
 const ResearchAideDashboard = () => {
-  const [activeTab, setActiveTab] = useState("upcoming");
+  const [activeTab, setActiveTab] = useState("tasks");
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
@@ -31,6 +34,8 @@ const ResearchAideDashboard = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case "tasks":
+        return <ResearchAidsTasksTab />;
       case "upcoming":
         return <UpcomingTab />;
       case "past":
@@ -39,6 +44,10 @@ const ResearchAideDashboard = () => {
         return <PaymentsTab />;
       case "quality":
         return <ResearchAidQualityTab />;
+      case "discussion":
+        return <DiscussionTab />;
+      case "notifications":
+        return <NotificationsTab />;
       case "profile":
         return <ProfileTab />;
       case "documents":
@@ -46,7 +55,7 @@ const ResearchAideDashboard = () => {
       case "settings":
         return <SettingsTab />;
       default:
-        return <UpcomingTab />;
+        return <ResearchAidsTasksTab />;
     }
   };
 
@@ -56,15 +65,15 @@ const ResearchAideDashboard = () => {
       
       <main className="flex-grow bg-gray-50 py-12">
         <div className="container mx-auto px-4 md:px-6">
-          <h1 className="text-3xl font-bold mb-2">Research Aide Dashboard</h1>
-          <p className="text-gray-600 mb-8">Manage your projects and account</p>
+          <h1 className="text-3xl font-bold mb-2">Research Aid Dashboard</h1>
+          <p className="text-gray-600 mb-8">Manage your tasks, clients, and earnings</p>
           
           {showOnboarding && (
             <div className="mb-8">
               <Card>
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold mb-2">Welcome to ScholarConnect!</h3>
-                  <p className="text-gray-600 mb-4">Complete your profile to start assisting with research projects.</p>
+                  <p className="text-gray-600 mb-4">Complete your profile to start receiving research assistance requests.</p>
                   <button 
                     onClick={handleOnboardingComplete}
                     className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
