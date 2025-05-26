@@ -5,7 +5,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { AuthProvider } from "./hooks/useAuth";
 import ErrorBoundary from "./components/ErrorBoundary";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import About from "./pages/AboutUs";
 import Contact from "./pages/Contact";
@@ -15,7 +17,7 @@ import ResearcherProfile from "./pages/ResearcherProfile";
 import Dashboard from "./pages/Dashboard";
 import ResearcherDashboard from "./pages/ResearcherDashboard";
 import ResearchAidsDashboard from "./pages/ResearchAidsDashboard";
-import Login from "./pages/Login";
+import Auth from "./pages/Auth";
 import Register from "./pages/Register";
 import ResearchAideSignup from "./pages/ResearchAideSignup";
 import ResearchAidSignup from "./pages/ResearchAidSignup";
@@ -45,35 +47,72 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <LanguageProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/how-it-works" element={<HowItWorks />} />
-              <Route path="/researchers" element={<Researchers />} />
-              <Route path="/researcher/:id" element={<ResearcherProfile />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/researcher-dashboard" element={<ResearcherDashboard />} />
-              <Route path="/research-aids-dashboard" element={<ResearchAidsDashboard />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
-              <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
-              <Route path="/research-aides" element={<ResearchAides />} />
-              <Route path="/research-aids" element={<ResearchAids />} />
-              <Route path="/blogs" element={<Blogs />} />
-              <Route path="/partnerships" element={<Partnerships />} />
-              <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
-              <Route path="/workspace/:projectId" element={<WorkspaceDetails />} />
-              <Route path="/admin-dashboard" element={<AdminDashboard />} />
-              <Route path="/student-payments" element={<StudentPayments />} />
-              <Route path="/provider-earnings" element={<ProviderEarnings />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
+          <AuthProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/how-it-works" element={<HowItWorks />} />
+                <Route path="/researchers" element={<Researchers />} />
+                <Route path="/researcher/:id" element={<ResearcherProfile />} />
+                <Route path="/research-aides" element={<ResearchAides />} />
+                <Route path="/research-aids" element={<ResearchAids />} />
+                <Route path="/blogs" element={<Blogs />} />
+                <Route path="/partnerships" element={<Partnerships />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/login" element={<Auth />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
+                <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
+                
+                {/* Protected Routes */}
+                <Route path="/dashboard" element={
+                  <ProtectedRoute requiredRole="student">
+                    <Dashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/researcher-dashboard" element={
+                  <ProtectedRoute requiredRole="expert">
+                    <ResearcherDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/research-aids-dashboard" element={
+                  <ProtectedRoute requiredRole="aid">
+                    <ResearchAidsDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/co-author-workspace" element={
+                  <ProtectedRoute>
+                    <CoAuthorWorkspace />
+                  </ProtectedRoute>
+                } />
+                <Route path="/workspace/:projectId" element={
+                  <ProtectedRoute>
+                    <WorkspaceDetails />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin-dashboard" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/student-payments" element={
+                  <ProtectedRoute>
+                    <StudentPayments />
+                  </ProtectedRoute>
+                } />
+                <Route path="/provider-earnings" element={
+                  <ProtectedRoute>
+                    <ProviderEarnings />
+                  </ProtectedRoute>
+                } />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </AuthProvider>
         </LanguageProvider>
       </TooltipProvider>
     </QueryClientProvider>

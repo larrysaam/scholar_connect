@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
@@ -12,26 +12,13 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, ChevronDown, User } from "lucide-react";
 import LanguageToggle from "./LanguageToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navbar = () => {
   const { t } = useLanguage();
+  const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const [isSignedIn, setIsSignedIn] = useState(false);
-
-  // Check if user is signed in (simulate with localStorage)
-  useEffect(() => {
-    const checkSignIn = () => {
-      const signedIn = localStorage.getItem('user_signed_in') === 'true';
-      setIsSignedIn(signedIn);
-    };
-    
-    checkSignIn();
-    // Listen for storage changes
-    window.addEventListener('storage', checkSignIn);
-    
-    return () => window.removeEventListener('storage', checkSignIn);
-  }, []);
 
   const menuItems = [
     { label: t("nav.home") || "Home", href: "/" },
@@ -41,10 +28,22 @@ const Navbar = () => {
     { label: "Partnerships", href: "/partnerships" }
   ];
 
-  const handleSignOut = () => {
-    localStorage.removeItem('user_signed_in');
-    setIsSignedIn(false);
+  const handleSignOut = async () => {
+    await signOut();
     navigate('/');
+  };
+
+  const getDashboardLink = () => {
+    if (!profile) return "/dashboard";
+    
+    switch (profile.role) {
+      case 'expert':
+        return "/researcher-dashboard";
+      case 'aid':
+        return "/research-aids-dashboard";
+      default:
+        return "/dashboard";
+    }
   };
 
   return (
@@ -83,23 +82,23 @@ const Navbar = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="hidden md:flex">
                   <User className="h-4 w-4 mr-2" />
-                  {t("nav.account") || "Account"}
+                  {user ? profile?.name || "Account" : t("nav.account") || "Account"}
                   <ChevronDown className="h-4 w-4 ml-2" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-white">
-                {!isSignedIn ? (
+                {!user ? (
                   <>
-                    <DropdownMenuItem onClick={() => navigate("/login")}>
+                    <DropdownMenuItem onClick={() => navigate("/auth")}>
                       {t("nav.signIn") || "Sign In"}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/register")}>
+                    <DropdownMenuItem onClick={() => navigate("/auth")}>
                       {t("nav.signUp") || "Sign Up"}
                     </DropdownMenuItem>
                   </>
                 ) : (
                   <>
-                    <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                    <DropdownMenuItem onClick={() => navigate(getDashboardLink())}>
                       {t("nav.dashboard") || "Dashboard"}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleSignOut}>
@@ -130,18 +129,18 @@ const Navbar = () => {
                     </Link>
                   ))}
                   <div className="border-t pt-4 space-y-2">
-                    {!isSignedIn ? (
+                    {!user ? (
                       <>
-                        <Button variant="outline" className="w-full" onClick={() => navigate("/login")}>
+                        <Button variant="outline" className="w-full" onClick={() => navigate("/auth")}>
                           {t("nav.signIn") || "Sign In"}
                         </Button>
-                        <Button className="w-full" onClick={() => navigate("/register")}>
+                        <Button className="w-full" onClick={() => navigate("/auth")}>
                           {t("nav.signUp") || "Sign Up"}
                         </Button>
                       </>
                     ) : (
                       <>
-                        <Button variant="outline" className="w-full" onClick={() => navigate("/dashboard")}>
+                        <Button variant="outline" className="w-full" onClick={() => navigate(getDashboardLink())}>
                           {t("nav.dashboard") || "Dashboard"}
                         </Button>
                         <Button variant="outline" className="w-full" onClick={handleSignOut}>
