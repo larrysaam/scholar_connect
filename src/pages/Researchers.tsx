@@ -3,7 +3,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SearchBar from "@/components/SearchBar";
 import ResearcherCard from "@/components/ResearcherCard";
-import AIMatchingEngine from "@/components/ai/AIMatchingEngine";
 import NotificationCenter from "@/components/notifications/NotificationCenter";
 import AdvancedSearchFilters from "@/components/search/AdvancedSearchFilters";
 import { 
@@ -167,11 +166,6 @@ const Researchers = () => {
                 </DialogContent>
               </Dialog>
             </div>
-          </div>
-          
-          {/* AI Matching Engine - Now Horizontal */}
-          <div className="mb-6">
-            <AIMatchingEngine />
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
