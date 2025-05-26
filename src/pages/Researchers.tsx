@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -140,40 +139,39 @@ const Researchers = () => {
             <p className="text-gray-600">Connect with leading academic experts for personalized consultations</p>
           </div>
           
-          {/* Enhanced Search and Filter Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-4">
-            <div className="lg:col-span-3">
-              <SearchBar />
-              <div className="flex justify-between items-center mt-4">
-                <Dialog open={showFilters} onOpenChange={setShowFilters}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline">
-                      <Filter className="h-4 w-4 mr-2" />
-                      Advanced Filters
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                    <AdvancedSearchFilters />
-                  </DialogContent>
-                </Dialog>
-                
-                <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline">
-                      <Bell className="h-4 w-4 mr-2" />
-                      Notifications
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <NotificationCenter />
-                  </DialogContent>
-                </Dialog>
-              </div>
+          {/* Search Section */}
+          <div className="mb-6">
+            <SearchBar />
+            <div className="flex justify-between items-center mt-4">
+              <Dialog open={showFilters} onOpenChange={setShowFilters}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <Filter className="h-4 w-4 mr-2" />
+                    Advanced Filters
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                  <AdvancedSearchFilters />
+                </DialogContent>
+              </Dialog>
+              
+              <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <Bell className="h-4 w-4 mr-2" />
+                    Notifications
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <NotificationCenter />
+                </DialogContent>
+              </Dialog>
             </div>
-            
-            <div className="lg:col-span-1">
-              <AIMatchingEngine />
-            </div>
+          </div>
+          
+          {/* AI Matching Engine - Now Horizontal */}
+          <div className="mb-6">
+            <AIMatchingEngine />
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -157,13 +157,11 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
             triggerText="Invite a Researcher"
           />
           
-          {/* Show "Invite a Student" only for researchers */}
-          {userType === "researcher" && (
-            <InviteModal 
-              userType="student"
-              triggerText="Invite a Student"
-            />
-          )}
+          {/* Always show "Invite a Student" for all user types */}
+          <InviteModal 
+            userType="student"
+            triggerText="Invite a Student"
+          />
           
           {/* Misconduct Reporting */}
           <MisconductReportModal />
