@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import ConsultationCard from "../consultation/ConsultationCard";
-import { mockStudentConsultations } from "../mockData";
+import { upcomingConsultations } from "../mockData";
 
 const StudentUpcomingTab = () => {
   const { toast } = useToast();
@@ -44,7 +44,7 @@ const StudentUpcomingTab = () => {
     window.open(documentLink, '_blank');
   };
 
-  const upcomingConsultations = mockStudentConsultations.filter(c => c.status === 'confirmed' || c.status === 'pending');
+  const upcomingStudentConsultations = upcomingConsultations.filter(c => c.status === 'confirmed' || c.status === 'pending');
 
   return (
     <div className="space-y-6">
@@ -52,7 +52,7 @@ const StudentUpcomingTab = () => {
         <h2 className="text-2xl font-bold">Upcoming Consultations</h2>
       </div>
       
-      {upcomingConsultations.length === 0 ? (
+      {upcomingStudentConsultations.length === 0 ? (
         <Card>
           <CardContent className="text-center py-8">
             <p className="text-gray-500">No upcoming consultations scheduled.</p>
@@ -60,7 +60,7 @@ const StudentUpcomingTab = () => {
         </Card>
       ) : (
         <div className="space-y-4">
-          {upcomingConsultations.map((consultation) => (
+          {upcomingStudentConsultations.map((consultation) => (
             <ConsultationCard
               key={consultation.id}
               consultation={consultation}
