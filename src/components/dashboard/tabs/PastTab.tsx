@@ -1,17 +1,9 @@
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, User, Play, FileText, MessageSquare, Upload, Star } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import PastConsultationCard from "../consultation/PastConsultationCard";
 
 const PastTab = () => {
   const [uploadedResources, setUploadedResources] = useState<{[key: string]: string[]}>({});
-  const [messageContent, setMessageContent] = useState("");
-  const [selectedConsultation, setSelectedConsultation] = useState<string | null>(null);
 
   const pastConsultations = [
     {
@@ -66,21 +58,13 @@ const PastTab = () => {
 
   const handleViewRecording = (consultationId: string) => {
     console.log("Viewing Google Meet recording for consultation:", consultationId);
-    // Link to Google Meet recording stored in Google Drive
     const recordingUrl = `https://drive.google.com/file/d/recording-${consultationId}`;
     window.open(recordingUrl, '_blank');
   };
 
   const handleViewAINotes = (consultationId: string) => {
     console.log("Viewing AI-generated notes for consultation:", consultationId);
-    // Open AI notes that were generated from Google Meet transcript
     alert(`Opening AI-generated notes for consultation ${consultationId}...`);
-  };
-
-  const handleContactStudent = (studentId: string, consultationId: string) => {
-    console.log("Opening in-platform messaging with student:", studentId);
-    // This would navigate to the messaging system with the student
-    alert(`Opening messaging interface with student for consultation ${consultationId}...`);
   };
 
   const handleUploadResources = (consultationId: string) => {
@@ -103,24 +87,14 @@ const PastTab = () => {
     input.click();
   };
 
-  const handleSendMessage = (consultationId: string) => {
-    if (!messageContent.trim()) return;
-    
-    console.log("Sending message to student for consultation:", consultationId, messageContent);
-    alert(`Message sent to student: "${messageContent}"`);
-    setMessageContent("");
-    setSelectedConsultation(null);
+  const handleSendMessage = (consultationId: string, message: string) => {
+    console.log("Sending message to student for consultation:", consultationId, message);
+    alert(`Message sent to student: "${message}"`);
   };
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`h-4 w-4 ${
-          i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-        }`}
-      />
-    ));
+  const handleOpenChat = (studentId: string, consultationId: string) => {
+    console.log("Opening in-platform messaging with student:", studentId);
+    alert(`Opening messaging interface with student for consultation ${consultationId}...`);
   };
 
   return (
@@ -130,141 +104,17 @@ const PastTab = () => {
       {pastConsultations.length > 0 ? (
         <div className="space-y-6">
           {pastConsultations.map((consultation) => (
-            <Card key={consultation.id}>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center space-x-4">
-                    <div className="h-10 w-10 rounded-full overflow-hidden">
-                      <img 
-                        src={consultation.student.imageUrl} 
-                        alt={consultation.student.name}
-                        className="h-full w-full object-cover" 
-                      />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">{consultation.student.name}</CardTitle>
-                      <CardDescription>{consultation.student.field}</CardDescription>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex">{renderStars(consultation.rating)}</div>
-                    <Badge className="bg-green-100 text-green-800">
-                      {consultation.status}
-                    </Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center text-gray-700">
-                    <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>{consultation.date}</span>
-                  </div>
-                  <div className="flex items-center text-gray-700">
-                    <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>{consultation.time}</span>
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <p className="font-medium">Topic:</p>
-                  <p className="text-gray-700">{consultation.topic}</p>
-                </div>
-                
-                {/* Display uploaded additional resources */}
-                {uploadedResources[consultation.id] && uploadedResources[consultation.id].length > 0 && (
-                  <div className="mt-4">
-                    <p className="font-medium text-sm text-blue-700">Additional Resources Shared:</p>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {uploadedResources[consultation.id].map((resource, index) => (
-                        <Badge key={index} variant="outline" className="bg-blue-50 text-blue-700">
-                          {resource}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-              <CardFooter className="flex justify-between border-t pt-4">
-                <div className="flex gap-2 flex-wrap">
-                  {consultation.hasRecording && (
-                    <Button 
-                      variant="outline" 
-                      onClick={() => handleViewRecording(consultation.id)}
-                    >
-                      <Play className="h-4 w-4 mr-2" />
-                      View Recording
-                    </Button>
-                  )}
-                  
-                  {consultation.hasAINotes && (
-                    <Button 
-                      variant="outline" 
-                      onClick={() => handleViewAINotes(consultation.id)}
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      View AI Notes
-                    </Button>
-                  )}
-                  
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="outline"
-                        onClick={() => setSelectedConsultation(consultation.id)}
-                      >
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Contact Student
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Send Message to {consultation.student.name}</DialogTitle>
-                        <DialogDescription>
-                          Send a follow-up message to the student through the platform messaging system.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="message">Message</Label>
-                          <Textarea
-                            id="message"
-                            value={messageContent}
-                            onChange={(e) => setMessageContent(e.target.value)}
-                            placeholder="Type your message here..."
-                            rows={4}
-                          />
-                        </div>
-                        <div className="flex gap-2">
-                          <Button onClick={() => handleSendMessage(consultation.id)}>
-                            Send Message
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            onClick={() => handleContactStudent(consultation.student.id, consultation.id)}
-                          >
-                            Open Chat
-                          </Button>
-                          <Button variant="outline" onClick={() => {
-                            setMessageContent("");
-                            setSelectedConsultation(null);
-                          }}>
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                  
-                  <Button 
-                    variant="outline" 
-                    onClick={() => handleUploadResources(consultation.id)}
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload Resources
-                  </Button>
-                </div>
-              </CardFooter>
-            </Card>
+            <PastConsultationCard
+              key={consultation.id}
+              consultation={consultation}
+              uploadedResources={uploadedResources[consultation.id] || []}
+              userType="researcher"
+              onViewRecording={handleViewRecording}
+              onViewAINotes={handleViewAINotes}
+              onUploadResources={handleUploadResources}
+              onSendMessage={handleSendMessage}
+              onOpenChat={handleOpenChat}
+            />
           ))}
         </div>
       ) : (
