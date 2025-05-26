@@ -1,8 +1,8 @@
 
-import { useState } from "react";
+import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, Video, Upload, Check, X, FileText, Play } from "lucide-react";
+import { Calendar, Clock, Video, Upload, Check, X, FileText, Play, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import StudentResearchSummaryModal from "./StudentResearchSummaryModal";
 import ConsultationResponseDialog from "./ConsultationResponseDialog";
@@ -24,6 +24,8 @@ interface Consultation {
 interface UpcomingConsultationCardProps {
   consultation: Consultation;
   uploadedDocuments: string[];
+  isUploading?: boolean;
+  actionLoading?: {[key: string]: boolean};
   onJoinWithGoogleMeet: (consultationId: string) => void;
   onLiveDocumentReview: (consultationId: string) => void;
   onViewRecording: (consultationId: string) => void;
@@ -34,9 +36,11 @@ interface UpcomingConsultationCardProps {
   onUploadDocument: (consultationId: string) => void;
 }
 
-const UpcomingConsultationCard = ({
+const UpcomingConsultationCard = memo(({
   consultation,
   uploadedDocuments,
+  isUploading = false,
+  actionLoading = {},
   onJoinWithGoogleMeet,
   onLiveDocumentReview,
   onViewRecording,
@@ -46,6 +50,10 @@ const UpcomingConsultationCard = ({
   onRescheduleWithGoogleCalendar,
   onUploadDocument,
 }: UpcomingConsultationCardProps) => {
+  const isJoinLoading = actionLoading[`join-${consultation.id}`];
+  const isRescheduleLoading = actionLoading[`reschedule-${consultation.id}`];
+  const isRecordingLoading = actionLoading[`recording-${consultation.id}`];
+
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -103,9 +111,14 @@ const UpcomingConsultationCard = ({
             <>
               <Button 
                 onClick={() => onJoinWithGoogleMeet(consultation.id)}
+                disabled={isJoinLoading}
                 className="bg-green-600 hover:bg-green-700"
               >
-                <Video className="h-4 w-4 mr-2" />
+                {isJoinLoading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Video className="h-4 w-4 mr-2" />
+                )}
                 Join with Google Meet
               </Button>
               <Button 
@@ -118,8 +131,13 @@ const UpcomingConsultationCard = ({
               <Button 
                 variant="outline" 
                 onClick={() => onViewRecording(consultation.id)}
+                disabled={isRecordingLoading}
               >
-                <Play className="h-4 w-4 mr-2" />
+                {isRecordingLoading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Play className="h-4 w-4 mr-2" />
+                )}
                 View Recording
               </Button>
               <Button 
@@ -163,15 +181,25 @@ const UpcomingConsultationCard = ({
           <Button 
             variant="outline" 
             onClick={() => onRescheduleWithGoogleCalendar(consultation.id)}
+            disabled={isRescheduleLoading}
           >
-            <Calendar className="h-4 w-4 mr-2" />
+            {isRescheduleLoading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Calendar className="h-4 w-4 mr-2" />
+            )}
             Reschedule with Google Calendar
           </Button>
           <Button 
             variant="outline" 
             onClick={() => onUploadDocument(consultation.id)}
+            disabled={isUploading}
           >
-            <Upload className="h-4 w-4 mr-2" />
+            {isUploading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Upload className="h-4 w-4 mr-2" />
+            )}
             Upload Document
           </Button>
           
@@ -183,6 +211,8 @@ const UpcomingConsultationCard = ({
       </CardFooter>
     </Card>
   );
-};
+});
+
+UpcomingConsultationCard.displayName = 'UpcomingConsultationCard';
 
 export default UpcomingConsultationCard;
