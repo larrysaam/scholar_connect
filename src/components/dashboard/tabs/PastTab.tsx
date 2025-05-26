@@ -1,31 +1,75 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, FileText, Mail, ExternalLink } from "lucide-react";
+import { Calendar, Clock, FileText, MessageSquare, ExternalLink, Video, Upload, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { pastConsultations } from "../mockData";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 const PastTab = () => {
+  const [messageText, setMessageText] = useState("");
+  const [selectedConsultation, setSelectedConsultation] = useState<string | null>(null);
+
   const handleViewRecording = (consultationId: string) => {
-    console.log("Viewing recording for consultation:", consultationId);
-    // In a real app, this would open the recording
+    console.log("Opening video recording for consultation:", consultationId);
+    // In a real app, this would open a video player modal or new window
+    alert("Opening consultation recording...");
   };
 
   const handleViewNotes = (consultationId: string) => {
-    console.log("Viewing notes for consultation:", consultationId);
-    // In a real app, this would open the consultation notes
+    console.log("Viewing AI-generated notes for consultation:", consultationId);
+    // In a real app, this would open a modal with AI-generated consultation notes
+    const mockNotes = `
+AI-Generated Consultation Notes:
+
+Topic: ${pastConsultations.find(c => c.id === consultationId)?.topic}
+
+Key Discussion Points:
+- Discussed research methodology approaches
+- Reviewed data collection strategies
+- Addressed statistical analysis concerns
+- Provided guidance on literature review
+
+Student Understanding Level: High
+Recommended Next Steps:
+- Begin data collection phase
+- Schedule follow-up in 2 weeks
+- Review recommended readings
+
+Overall Session Rating: Productive
+    `;
+    alert(mockNotes);
   };
 
-  const handleContactStudent = (consultationId: string) => {
-    console.log("Contacting student for consultation:", consultationId);
-    // In a real app, this would open email or messaging interface
-    alert("Opening email client to contact student...");
+  const handleSendMessage = (consultationId: string) => {
+    if (!messageText.trim()) return;
+    
+    console.log("Sending message to student:", { consultationId, message: messageText });
+    // In a real app, this would send the message through the platform's messaging system
+    alert(`Message sent to student: "${messageText}"`);
+    setMessageText("");
+    setSelectedConsultation(null);
   };
 
-  const handleAdditionalResources = (consultationId: string) => {
-    console.log("Sharing additional resources for consultation:", consultationId);
-    // In a real app, this would open resource sharing interface
-    alert("Opening resource sharing interface...");
+  const handleUploadResources = (consultationId: string) => {
+    console.log("Uploading additional resources for consultation:", consultationId);
+    // Create file input for resource upload
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    input.accept = '.pdf,.doc,.docx,.ppt,.pptx,.xlsx,.txt';
+    input.onchange = (e) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (files && files.length > 0) {
+        const fileNames = Array.from(files).map(f => f.name).join(', ');
+        console.log("Files selected for upload:", fileNames);
+        alert(`Resources uploaded: ${fileNames}\nThese will be available in the student's dashboard.`);
+      }
+    };
+    input.click();
   };
 
   return (
@@ -51,7 +95,7 @@ const PastTab = () => {
                       <CardDescription>{consultation.researcher.field}</CardDescription>
                     </div>
                   </div>
-                  <Badge className="bg-gray-100 text-gray-800 border-gray-200">
+                  <Badge className="bg-green-100 text-green-800 border-green-200">
                     Completed
                   </Badge>
                 </div>
@@ -79,6 +123,7 @@ const PastTab = () => {
                     size="sm"
                     onClick={() => handleViewRecording(consultation.id)}
                   >
+                    <Video className="h-4 w-4 mr-2" />
                     View Recording
                   </Button>
                   <Button 
@@ -86,24 +131,61 @@ const PastTab = () => {
                     size="sm"
                     onClick={() => handleViewNotes(consultation.id)}
                   >
-                    <FileText className="h-4 w-4 mr-2" />
-                    View Notes
+                    <Eye className="h-4 w-4 mr-2" />
+                    View AI Notes
                   </Button>
+                  
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setSelectedConsultation(consultation.id)}
+                      >
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Message Student
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Send Message to Student</DialogTitle>
+                        <DialogDescription>
+                          Send a follow-up message to {consultation.researcher.name}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="message">Message</Label>
+                          <Textarea
+                            id="message"
+                            value={messageText}
+                            onChange={(e) => setMessageText(e.target.value)}
+                            placeholder="Type your follow-up message here..."
+                            rows={4}
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <Button onClick={() => handleSendMessage(consultation.id)}>
+                            Send Message
+                          </Button>
+                          <Button variant="outline" onClick={() => {
+                            setMessageText("");
+                            setSelectedConsultation(null);
+                          }}>
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => handleContactStudent(consultation.id)}
+                    onClick={() => handleUploadResources(consultation.id)}
                   >
-                    <Mail className="h-4 w-4 mr-2" />
-                    Contact Student
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleAdditionalResources(consultation.id)}
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Additional Resources
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Resources
                   </Button>
                 </div>
               </CardFooter>

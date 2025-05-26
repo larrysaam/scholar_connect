@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Shield, CheckCircle, AlertTriangle, Upload, FileText, User, GraduationCap, Award } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Shield, CheckCircle, AlertTriangle, Upload, FileText, User, GraduationCap, Award, Building } from "lucide-react";
 
 const VerificationTab = () => {
   const [verificationStatus] = useState({
@@ -14,6 +16,9 @@ const VerificationTab = () => {
     publications: "verified"
   });
 
+  const [otherEmployment, setOtherEmployment] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState<{[key: string]: string[]}>({});
+
   const verificationProgress = 75; // 3 out of 4 verified
 
   const verificationItems = [
@@ -22,21 +27,22 @@ const VerificationTab = () => {
       description: "Government-issued ID verification",
       status: verificationStatus.identity,
       icon: User,
-      documents: ["Passport", "Driver's License"]
+      documents: ["Passport", "Driver's License", "National ID Card"]
     },
     {
       title: "Educational Background",
       description: "Academic credentials and degrees",
       status: verificationStatus.education,
       icon: GraduationCap,
-      documents: ["PhD Certificate", "Transcripts"]
+      documents: ["PhD Certificate", "Academic Credentials"]
     },
     {
       title: "Employment Verification",
       description: "Current institutional affiliation",
       status: verificationStatus.employment,
-      icon: Shield,
-      documents: ["Employment Letter", "Faculty ID"]
+      icon: Building,
+      documents: ["Employment Letter", "Faculty ID"],
+      hasOtherField: true
     },
     {
       title: "Research Publications",
@@ -71,9 +77,25 @@ const VerificationTab = () => {
     }
   };
 
-  const handleFileUpload = (category: string) => {
-    console.log("Uploading file for:", category);
-    alert(`File upload interface would open for ${category}`);
+  const handleFileUpload = (category: string, documentType: string) => {
+    console.log("Uploading file for:", category, documentType);
+    
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const key = `${category}-${documentType}`;
+        setUploadedFiles(prev => ({
+          ...prev,
+          [key]: [...(prev[key] || []), file.name]
+        }));
+        console.log("File uploaded:", file.name);
+        alert(`File "${file.name}" uploaded successfully for ${documentType}!`);
+      }
+    };
+    input.click();
   };
 
   return (
@@ -142,29 +164,50 @@ const VerificationTab = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                {item.hasOtherField && (
+                  <div className="space-y-2">
+                    <Label htmlFor="other-employment">Other Employment Details</Label>
+                    <Input
+                      id="other-employment"
+                      value={otherEmployment}
+                      onChange={(e) => setOtherEmployment(e.target.value)}
+                      placeholder="Enter other employment information..."
+                    />
+                  </div>
+                )}
+                
                 <div>
                   <h4 className="font-medium text-sm mb-2">Required Documents:</h4>
                   <div className="space-y-2">
-                    {item.documents.map((doc, docIndex) => (
-                      <div key={docIndex} className="flex items-center justify-between p-2 border rounded">
-                        <span className="text-sm flex items-center space-x-2">
-                          <FileText className="h-4 w-4" />
-                          <span>{doc}</span>
-                        </span>
-                        {item.status === 'verified' ? (
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                        ) : (
+                    {item.documents.map((doc, docIndex) => {
+                      const fileKey = `${item.title}-${doc}`;
+                      const uploadedForDoc = uploadedFiles[fileKey] || [];
+                      
+                      return (
+                        <div key={docIndex} className="flex items-center justify-between p-2 border rounded">
+                          <div className="flex-1">
+                            <span className="text-sm flex items-center space-x-2">
+                              <FileText className="h-4 w-4" />
+                              <span>{doc}</span>
+                            </span>
+                            {uploadedForDoc.length > 0 && (
+                              <div className="mt-1 text-xs text-green-600">
+                                {uploadedForDoc.length} file(s) uploaded: {uploadedForDoc[uploadedForDoc.length - 1]}
+                              </div>
+                            )}
+                          </div>
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => handleFileUpload(doc)}
+                            onClick={() => handleFileUpload(item.title, doc)}
+                            className="ml-2"
                           >
                             <Upload className="h-4 w-4 mr-1" />
-                            Upload
+                            {uploadedForDoc.length > 0 ? 'Replace' : 'Upload'}
                           </Button>
-                        )}
-                      </div>
-                    ))}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
                 

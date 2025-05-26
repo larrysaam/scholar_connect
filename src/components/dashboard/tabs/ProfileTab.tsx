@@ -1,307 +1,345 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Save } from "lucide-react";
-import ProfileImage from "@/components/dashboard/profile/ProfileImage";
-import BasicInformation from "@/components/dashboard/profile/BasicInformation";
-import ExperienceSection from "@/components/dashboard/profile/ExperienceSection";
-import PublicationsSection from "@/components/dashboard/profile/PublicationsSection";
-import AwardsSection from "@/components/dashboard/profile/AwardsSection";
-import FellowshipsSection from "@/components/dashboard/profile/FellowshipsSection";
-import GrantsSection from "@/components/dashboard/profile/GrantsSection";
-import MembershipsSection from "@/components/dashboard/profile/MembershipsSection";
-import SupervisionSection from "@/components/dashboard/profile/SupervisionSection";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Camera, Plus, X, Save } from "lucide-react";
+
+interface ProfileData {
+  personalInfo: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    location: string;
+  };
+  academicInfo: {
+    currentPosition: string;
+    institution: string;
+    department: string;
+    researchField: string;
+    expertise: string[];
+    bio: string;
+  };
+  supervision: {
+    phd: number;
+    masters: number;
+    undergrad: number;
+    postdoc: number;
+  };
+  otherInformation: string;
+}
 
 const ProfileTab = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState({
-    name: "Dr. Alex Smith",
-    title: "Senior Research Scientist",
-    institution: "University of Technology",
-    department: "Computer Science Department",
-    email: "alex.smith@university.edu",
-    phone: "+237 650 123 456",
-    bio: "Experienced researcher with over 10 years in artificial intelligence and machine learning. Passionate about advancing the field of computer vision and natural language processing.",
-    specialties: ["Artificial Intelligence", "Machine Learning", "Computer Vision"],
-    hourlyRate: "15000",
-    languages: ["English", "French"],
-    experience: [
-      { position: "Senior Research Scientist", institution: "University of Technology", period: "2020-Present" }
-    ],
-    publications: [
-      { title: "AI in Modern Computing", journal: "Tech Journal", year: "2023" , link: ""}
-    ],
-    awards: [
-      { title: "Best Researcher Award", year: "2022" }
-    ],
-    fellowships: [
-      { title: "AI Research Fellowship", period: "2021-2022" }
-    ],
-    grants: [
-      { title: "Research Innovation Grant", amount: "500,000 XAF", period: "2022-2024" }
-    ],
-    memberships: ["International AI Association", "Computer Science Society"],
+  const [newExpertise, setNewExpertise] = useState("");
+  
+  const [profileData, setProfileData] = useState<ProfileData>({
+    personalInfo: {
+      firstName: "Dr. Alex",
+      lastName: "Smith",
+      email: "alex.smith@university.edu",
+      phone: "+1 (555) 123-4567",
+      location: "Boston, MA, USA"
+    },
+    academicInfo: {
+      currentPosition: "Associate Professor",
+      institution: "Harvard University",
+      department: "Computer Science",
+      researchField: "Artificial Intelligence",
+      expertise: ["Machine Learning", "Natural Language Processing", "Computer Vision", "Data Science"],
+      bio: "Dr. Alex Smith is an Associate Professor of Computer Science at Harvard University with over 10 years of experience in artificial intelligence research. Their work focuses on developing innovative machine learning algorithms for real-world applications."
+    },
     supervision: {
-      hnd: "2",
-      undergraduate: "5",
-      masters: "3",
-      phd: "1",
-      postdoc: "0"
-    }
+      phd: 8,
+      masters: 15,
+      undergrad: 25,
+      postdoc: 3
+    },
+    otherInformation: "Available for weekend consultations. Specializes in industry-academia collaborations. Fluent in English, Spanish, and French."
   });
+
+  const handleInputChange = (section: keyof ProfileData, field: string, value: string | number) => {
+    setProfileData(prev => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [field]: value
+      }
+    }));
+  };
+
+  const handleAddExpertise = () => {
+    if (newExpertise.trim() && !profileData.academicInfo.expertise.includes(newExpertise.trim())) {
+      setProfileData(prev => ({
+        ...prev,
+        academicInfo: {
+          ...prev.academicInfo,
+          expertise: [...prev.academicInfo.expertise, newExpertise.trim()]
+        }
+      }));
+      setNewExpertise("");
+    }
+  };
+
+  const handleRemoveExpertise = (expertiseToRemove: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      academicInfo: {
+        ...prev.academicInfo,
+        expertise: prev.academicInfo.expertise.filter(exp => exp !== expertiseToRemove)
+      }
+    }));
+  };
 
   const handleSave = () => {
     console.log("Saving profile data:", profileData);
     setIsEditing(false);
-  };
-
-  const handleImageUpload = () => {
-    console.log("Opening image upload dialog");
-  };
-
-  const handleBasicInfoUpdate = (field: string, value: string) => {
-    setProfileData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleExperienceAdd = () => {
-    setProfileData(prev => ({
-      ...prev,
-      experience: [...prev.experience, { position: '', institution: '', period: '' }]
-    }));
-  };
-
-  const handleExperienceRemove = (index: number) => {
-    setProfileData(prev => ({
-      ...prev,
-      experience: prev.experience.filter((_, i) => i !== index)
-    }));
-  };
-
-  const handleExperienceUpdate = (index: number, field: 'position' | 'institution' | 'period', value: string) => {
-    setProfileData(prev => ({
-      ...prev,
-      experience: prev.experience.map((item, i) => 
-        i === index ? { ...item, [field]: value } : item
-      )
-    }));
-  };
-
-  const handlePublicationAdd = () => {
-    setProfileData(prev => ({
-      ...prev,
-      publications: [...prev.publications, { title: '', journal: '', year: '', link: '' }]
-    }));
-  };
-
-  const handlePublicationRemove = (index: number) => {
-    setProfileData(prev => ({
-      ...prev,
-      publications: prev.publications.filter((_, i) => i !== index)
-    }));
-  };
-
-  const handlePublicationUpdate = (index: number, field: 'title' | 'journal' | 'year' | 'link', value: string) => {
-    setProfileData(prev => ({
-      ...prev,
-      publications: prev.publications.map((item, i) => 
-        i === index ? { ...item, [field]: value } : item
-      )
-    }));
-  };
-
-  const handleAwardAdd = () => {
-    setProfileData(prev => ({
-      ...prev,
-      awards: [...prev.awards, { title: '', year: '' }]
-    }));
-  };
-
-  const handleAwardRemove = (index: number) => {
-    setProfileData(prev => ({
-      ...prev,
-      awards: prev.awards.filter((_, i) => i !== index)
-    }));
-  };
-
-  const handleAwardUpdate = (index: number, field: 'title' | 'year', value: string) => {
-    setProfileData(prev => ({
-      ...prev,
-      awards: prev.awards.map((item, i) => 
-        i === index ? { ...item, [field]: value } : item
-      )
-    }));
-  };
-
-  const handleFellowshipAdd = () => {
-    setProfileData(prev => ({
-      ...prev,
-      fellowships: [...prev.fellowships, { title: '', period: '' }]
-    }));
-  };
-
-  const handleFellowshipRemove = (index: number) => {
-    setProfileData(prev => ({
-      ...prev,
-      fellowships: prev.fellowships.filter((_, i) => i !== index)
-    }));
-  };
-
-  const handleFellowshipUpdate = (index: number, field: 'title' | 'period', value: string) => {
-    setProfileData(prev => ({
-      ...prev,
-      fellowships: prev.fellowships.map((item, i) => 
-        i === index ? { ...item, [field]: value } : item
-      )
-    }));
-  };
-
-  const handleGrantAdd = () => {
-    setProfileData(prev => ({
-      ...prev,
-      grants: [...prev.grants, { title: '', amount: '', period: '' }]
-    }));
-  };
-
-  const handleGrantRemove = (index: number) => {
-    setProfileData(prev => ({
-      ...prev,
-      grants: prev.grants.filter((_, i) => i !== index)
-    }));
-  };
-
-  const handleGrantUpdate = (index: number, field: 'title' | 'amount' | 'period', value: string) => {
-    setProfileData(prev => ({
-      ...prev,
-      grants: prev.grants.map((item, i) => 
-        i === index ? { ...item, [field]: value } : item
-      )
-    }));
-  };
-
-  const handleMembershipAdd = () => {
-    setProfileData(prev => ({
-      ...prev,
-      memberships: [...prev.memberships, '']
-    }));
-  };
-
-  const handleMembershipRemove = (index: number) => {
-    setProfileData(prev => ({
-      ...prev,
-      memberships: prev.memberships.filter((_, i) => i !== index)
-    }));
-  };
-
-  const handleMembershipUpdate = (index: number, value: string) => {
-    setProfileData(prev => ({
-      ...prev,
-      memberships: prev.memberships.map((item, i) => 
-        i === index ? value : item
-      )
-    }));
-  };
-
-  const handleSupervisionUpdate = (field: 'hnd' | 'undergraduate' | 'masters' | 'phd' | 'postdoc', value: string) => {
-    setProfileData(prev => ({
-      ...prev,
-      supervision: { ...prev.supervision, [field]: value }
-    }));
+    // In a real app, this would save to the backend
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Profile Information</h2>
-        <Button
-          onClick={() => setIsEditing(!isEditing)}
-          variant={isEditing ? "outline" : "default"}
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-semibold">Profile Information</h2>
+        <Button 
+          onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+          className={isEditing ? "bg-green-600 hover:bg-green-700" : ""}
         >
-          {isEditing ? "Cancel" : "Edit Profile"}
+          {isEditing ? (
+            <>
+              <Save className="h-4 w-4 mr-2" />
+              Save Changes
+            </>
+          ) : (
+            "Edit Profile"
+          )}
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Profile Image */}
-        <div className="md:col-span-1">
-          <ProfileImage
-            name={profileData.name}
-            title={profileData.title}
-            isEditing={isEditing}
-            onImageUpload={handleImageUpload}
-          />
-        </div>
-
-        {/* Profile Details */}
-        <div className="md:col-span-2 space-y-6">
-          <BasicInformation
-            profileData={profileData}
-            isEditing={isEditing}
-            onUpdate={handleBasicInfoUpdate}
-          />
-
-          <ExperienceSection
-            experience={profileData.experience}
-            isEditing={isEditing}
-            onAdd={handleExperienceAdd}
-            onRemove={handleExperienceRemove}
-            onUpdate={handleExperienceUpdate}
-          />
-
-          <PublicationsSection
-            publications={profileData.publications}
-            isEditing={isEditing}
-            onAdd={handlePublicationAdd}
-            onRemove={handlePublicationRemove}
-            onUpdate={handlePublicationUpdate}
-          />
-
-          <AwardsSection
-            awards={profileData.awards}
-            isEditing={isEditing}
-            onAdd={handleAwardAdd}
-            onRemove={handleAwardRemove}
-            onUpdate={handleAwardUpdate}
-          />
-
-          <FellowshipsSection
-            fellowships={profileData.fellowships}
-            isEditing={isEditing}
-            onAdd={handleFellowshipAdd}
-            onRemove={handleFellowshipRemove}
-            onUpdate={handleFellowshipUpdate}
-          />
-
-          <GrantsSection
-            grants={profileData.grants}
-            isEditing={isEditing}
-            onAdd={handleGrantAdd}
-            onRemove={handleGrantRemove}
-            onUpdate={handleGrantUpdate}
-          />
-
-          <MembershipsSection
-            memberships={profileData.memberships}
-            isEditing={isEditing}
-            onAdd={handleMembershipAdd}
-            onRemove={handleMembershipRemove}
-            onUpdate={handleMembershipUpdate}
-          />
-
-          <SupervisionSection
-            supervision={profileData.supervision}
-            isEditing={isEditing}
-            onUpdate={handleSupervisionUpdate}
-          />
-
-          {isEditing && (
-            <div className="flex justify-end">
-              <Button onClick={handleSave} className="flex items-center">
-                <Save className="h-4 w-4 mr-2" />
-                Save Changes
-              </Button>
+      {/* Profile Picture */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Profile Picture</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center space-x-4">
+            <div className="h-24 w-24 rounded-full bg-blue-100 flex items-center justify-center">
+              <Camera className="h-8 w-8 text-blue-600" />
             </div>
-          )}
-        </div>
-      </div>
+            <div>
+              <Button variant="outline" disabled={!isEditing}>
+                <Camera className="h-4 w-4 mr-2" />
+                Upload Photo
+              </Button>
+              <p className="text-sm text-gray-500 mt-2">Recommended: 400x400px, max 5MB</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Personal Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Personal Information</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="firstName">First Name</Label>
+              <Input
+                id="firstName"
+                value={profileData.personalInfo.firstName}
+                onChange={(e) => handleInputChange('personalInfo', 'firstName', e.target.value)}
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                value={profileData.personalInfo.lastName}
+                onChange={(e) => handleInputChange('personalInfo', 'lastName', e.target.value)}
+                disabled={!isEditing}
+              />
+            </div>
+          </div>
+          
+          <div>
+            <Label htmlFor="location">Location</Label>
+            <Input
+              id="location"
+              value={profileData.personalInfo.location}
+              onChange={(e) => handleInputChange('personalInfo', 'location', e.target.value)}
+              disabled={!isEditing}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Academic Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Academic Information</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="position">Current Position</Label>
+              <Input
+                id="position"
+                value={profileData.academicInfo.currentPosition}
+                onChange={(e) => handleInputChange('academicInfo', 'currentPosition', e.target.value)}
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <Label htmlFor="institution">Institution</Label>
+              <Input
+                id="institution"
+                value={profileData.academicInfo.institution}
+                onChange={(e) => handleInputChange('academicInfo', 'institution', e.target.value)}
+                disabled={!isEditing}
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="department">Department</Label>
+              <Input
+                id="department"
+                value={profileData.academicInfo.department}
+                onChange={(e) => handleInputChange('academicInfo', 'department', e.target.value)}
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <Label htmlFor="researchField">Research Field</Label>
+              <Input
+                id="researchField"
+                value={profileData.academicInfo.researchField}
+                onChange={(e) => handleInputChange('academicInfo', 'researchField', e.target.value)}
+                disabled={!isEditing}
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label>Areas of Expertise</Label>
+            <div className="flex flex-wrap gap-2 mt-2 mb-3">
+              {profileData.academicInfo.expertise.map((exp, index) => (
+                <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                  {exp}
+                  {isEditing && (
+                    <button
+                      onClick={() => handleRemoveExpertise(exp)}
+                      className="ml-1 hover:bg-red-100 rounded-full p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </Badge>
+              ))}
+            </div>
+            {isEditing && (
+              <div className="flex gap-2">
+                <Input
+                  value={newExpertise}
+                  onChange={(e) => setNewExpertise(e.target.value)}
+                  placeholder="Add new expertise area"
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddExpertise()}
+                />
+                <Button onClick={handleAddExpertise} variant="outline">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="bio">Bio</Label>
+            <Textarea
+              id="bio"
+              value={profileData.academicInfo.bio}
+              onChange={(e) => handleInputChange('academicInfo', 'bio', e.target.value)}
+              disabled={!isEditing}
+              rows={4}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Supervision */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Student Supervision</CardTitle>
+          <CardDescription>Number of students you have supervised</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <Label htmlFor="phd">PhD Students</Label>
+              <Input
+                id="phd"
+                type="number"
+                value={profileData.supervision.phd}
+                onChange={(e) => handleInputChange('supervision', 'phd', parseInt(e.target.value) || 0)}
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <Label htmlFor="masters">Master's Students</Label>
+              <Input
+                id="masters"
+                type="number"
+                value={profileData.supervision.masters}
+                onChange={(e) => handleInputChange('supervision', 'masters', parseInt(e.target.value) || 0)}
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <Label htmlFor="undergrad">Undergraduate Students</Label>
+              <Input
+                id="undergrad"
+                type="number"
+                value={profileData.supervision.undergrad}
+                onChange={(e) => handleInputChange('supervision', 'undergrad', parseInt(e.target.value) || 0)}
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <Label htmlFor="postdoc">Postdoctoral Fellows</Label>
+              <Input
+                id="postdoc"
+                type="number"
+                value={profileData.supervision.postdoc}
+                onChange={(e) => handleInputChange('supervision', 'postdoc', parseInt(e.target.value) || 0)}
+                disabled={!isEditing}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Other Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Other Information</CardTitle>
+          <CardDescription>Additional information about your availability, specializations, or preferences</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            value={profileData.otherInformation}
+            onChange={(e) => handleInputChange('otherInformation', '', e.target.value)}
+            disabled={!isEditing}
+            rows={4}
+            placeholder="Enter any additional information about yourself, your availability, special services, or preferences..."
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import NotificationsBanner from "@/components/dashboard/NotificationsBanner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import UpcomingTab from "@/components/dashboard/tabs/UpcomingTab";
@@ -100,6 +101,9 @@ const ResearcherDashboard = () => {
             
             {/* Main content */}
             <div className="md:col-span-3">
+              {/* Notifications Banner - appears on all tabs */}
+              <NotificationsBanner />
+              
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsContent value={activeTab} className="mt-0">
                   {renderTabContent()}

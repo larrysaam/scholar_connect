@@ -32,13 +32,6 @@ const QualityAssuranceAndFeedbackTab = () => {
     }
   ];
 
-  const qualityMetrics = [
-    { label: "Average Rating", value: "4.8/5.0", trend: "+0.2" },
-    { label: "Total Consultations", value: "45", trend: "+12" },
-    { label: "Response Rate", value: "98%", trend: "+2%" },
-    { label: "Completion Rate", value: "96%", trend: "+1%" }
-  ];
-
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -54,23 +47,6 @@ const QualityAssuranceAndFeedbackTab = () => {
     <div className="bg-white p-6 rounded-lg shadow-sm">
       <h2 className="text-xl font-semibold mb-6">Quality Assurance & Feedback</h2>
       
-      {/* Quality Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        {qualityMetrics.map((metric, index) => (
-          <Card key={index}>
-            <CardContent className="p-4">
-              <div className="flex flex-col items-center text-center">
-                <div className="text-2xl font-bold text-blue-600">{metric.value}</div>
-                <div className="text-sm text-gray-600 mb-1">{metric.label}</div>
-                <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
-                  {metric.trend}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
       {/* Recent Feedback */}
       <Card>
         <CardHeader>

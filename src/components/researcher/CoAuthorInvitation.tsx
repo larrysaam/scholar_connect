@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Calendar, User, Mail, BookOpen, Award, MessageSquare, Phone, Video, Download } from "lucide-react";
+import { Calendar, User, BookOpen, Award, MessageSquare, Phone, Video, Download } from "lucide-react";
 
 interface CoAuthorInvitationProps {
   invitation: {
@@ -14,7 +14,6 @@ interface CoAuthorInvitationProps {
       name: string;
       title: string;
       institution: string;
-      email: string;
       profileImage?: string;
       department?: string;
       researchInterests?: string[];
@@ -85,17 +84,16 @@ const CoAuthorInvitation = ({ invitation, onAccept, onDecline }: CoAuthorInvitat
   };
 
   return (
-    <Card className="mb-6">
-      <CardHeader>
+    <Card className="mb-6 border-l-4 border-l-blue-500 shadow-lg">
+      <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-xl text-blue-900">
+              <User className="h-6 w-6" />
               Co-authorship Invitation
             </CardTitle>
-            <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-              <span className="flex items-center gap-1">
-                <Mail className="h-4 w-4" />
+            <div className="flex items-center gap-4 mt-3 text-sm text-gray-700">
+              <span className="flex items-center gap-1 font-medium">
                 From: {invitation.fromUser.name} ({invitation.fromUser.title})
               </span>
               <span className="flex items-center gap-1">
@@ -108,42 +106,42 @@ const CoAuthorInvitation = ({ invitation, onAccept, onDecline }: CoAuthorInvitat
             <Badge className={getStatusColor(invitation.status)}>
               {invitation.status.toUpperCase()}
             </Badge>
-            <Badge variant="outline">{invitation.publicationType}</Badge>
+            <Badge variant="outline" className="bg-white">{invitation.publicationType}</Badge>
           </div>
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6 p-6">
         {/* Requester Profile Section */}
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h4 className="font-semibold text-blue-700 mb-3 flex items-center gap-2">
-            <User className="h-4 w-4" />
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-lg border border-blue-200">
+          <h4 className="font-semibold text-blue-700 mb-4 flex items-center gap-2">
+            <User className="h-5 w-5" />
             Requester Profile
           </h4>
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-6">
             {invitation.fromUser.profileImage && (
               <img 
                 src={invitation.fromUser.profileImage} 
                 alt={invitation.fromUser.name}
-                className="w-16 h-16 rounded-full object-cover"
+                className="w-20 h-20 rounded-full object-cover border-3 border-white shadow-md"
               />
             )}
-            <div className="flex-1 space-y-2">
+            <div className="flex-1 space-y-3">
               <div>
-                <p className="font-medium text-gray-900">{invitation.fromUser.name}</p>
-                <p className="text-sm text-gray-600">{invitation.fromUser.title}</p>
-                <p className="text-sm text-gray-600">{invitation.fromUser.institution}</p>
+                <p className="font-semibold text-gray-900 text-lg">{invitation.fromUser.name}</p>
+                <p className="text-blue-700 font-medium">{invitation.fromUser.title}</p>
+                <p className="text-gray-600">{invitation.fromUser.institution}</p>
                 {invitation.fromUser.department && (
-                  <p className="text-sm text-gray-600">{invitation.fromUser.department}</p>
+                  <p className="text-gray-600">{invitation.fromUser.department}</p>
                 )}
               </div>
               
               {invitation.fromUser.researchInterests && (
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Research Interests:</p>
-                  <div className="flex flex-wrap gap-1 mt-1">
+                  <p className="text-sm font-semibold text-gray-700 mb-2">Research Interests:</p>
+                  <div className="flex flex-wrap gap-2">
                     {invitation.fromUser.researchInterests.map((interest, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
+                      <Badge key={index} variant="secondary" className="text-xs bg-blue-100 text-blue-800">
                         {interest}
                       </Badge>
                     ))}
@@ -151,62 +149,61 @@ const CoAuthorInvitation = ({ invitation, onAccept, onDecline }: CoAuthorInvitat
                 </div>
               )}
               
-              <div className="flex gap-4 text-sm">
+              <div className="flex gap-6 text-sm">
                 {invitation.fromUser.publications && (
-                  <span className="flex items-center gap-1">
-                    <BookOpen className="h-3 w-3" />
-                    {invitation.fromUser.publications} Publications
+                  <span className="flex items-center gap-2 bg-white px-3 py-1 rounded-full">
+                    <BookOpen className="h-4 w-4 text-blue-600" />
+                    <span className="font-medium">{invitation.fromUser.publications} Publications</span>
                   </span>
                 )}
                 {invitation.fromUser.hIndex && (
-                  <span className="flex items-center gap-1">
-                    <Award className="h-3 w-3" />
-                    h-index: {invitation.fromUser.hIndex}
+                  <span className="flex items-center gap-2 bg-white px-3 py-1 rounded-full">
+                    <Award className="h-4 w-4 text-yellow-600" />
+                    <span className="font-medium">h-index: {invitation.fromUser.hIndex}</span>
                   </span>
                 )}
               </div>
-              
-              <p className="text-sm text-blue-600">{invitation.fromUser.email}</p>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <h4 className="font-semibold text-blue-700 mb-2">Research Topic</h4>
-            <p className="text-sm text-gray-700">{invitation.researchTopic}</p>
+        {/* Research Details */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-blue-700 mb-3">Research Topic</h4>
+            <p className="text-gray-700">{invitation.researchTopic}</p>
           </div>
           
-          <div>
-            <h4 className="font-semibold text-blue-700 mb-2">Research Problem / Gap</h4>
-            <p className="text-sm text-gray-700">{invitation.researchProblem}</p>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-blue-700 mb-3">Research Problem / Gap</h4>
+            <p className="text-gray-700">{invitation.researchProblem}</p>
           </div>
           
-          <div>
-            <h4 className="font-semibold text-blue-700 mb-2">Objectives</h4>
-            <p className="text-sm text-gray-700">{invitation.objectives}</p>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-blue-700 mb-3">Objectives</h4>
+            <p className="text-gray-700">{invitation.objectives}</p>
           </div>
           
-          <div>
-            <h4 className="font-semibold text-blue-700 mb-2">Methodology</h4>
-            <p className="text-sm text-gray-700">{invitation.methodology}</p>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-blue-700 mb-3">Methodology</h4>
+            <p className="text-gray-700">{invitation.methodology}</p>
           </div>
         </div>
         
-        <div>
-          <h4 className="font-semibold text-blue-700 mb-2">Proposed Roles</h4>
-          <p className="text-sm text-gray-700">{invitation.roles}</p>
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h4 className="font-semibold text-blue-700 mb-3">Proposed Roles</h4>
+          <p className="text-gray-700">{invitation.roles}</p>
         </div>
         
-        <div>
-          <h4 className="font-semibold text-blue-700 mb-2">Next Steps</h4>
-          <p className="text-sm text-gray-700">{invitation.nextSteps}</p>
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h4 className="font-semibold text-blue-700 mb-3">Next Steps</h4>
+          <p className="text-gray-700">{invitation.nextSteps}</p>
         </div>
         
         {/* Comment Section */}
         {showCommentBox && (
-          <div className="border-t pt-4">
-            <Label htmlFor="comment">
+          <div className="border-t pt-6 bg-blue-50 p-4 rounded-lg">
+            <Label htmlFor="comment" className="text-lg font-medium">
               {actionType === 'accept' ? 'Acceptance Comment' : 'Decline Reason'}
             </Label>
             <Textarea
@@ -216,10 +213,10 @@ const CoAuthorInvitation = ({ invitation, onAccept, onDecline }: CoAuthorInvitat
               placeholder={actionType === 'accept' 
                 ? "Please share your thoughts on this collaboration..." 
                 : "Please provide a reason for declining..."}
-              className="mt-2"
+              className="mt-3 min-h-24"
             />
-            <div className="flex gap-2 mt-3">
-              <Button onClick={handleSubmit} disabled={!comment.trim()}>
+            <div className="flex gap-3 mt-4">
+              <Button onClick={handleSubmit} disabled={!comment.trim()} className="bg-blue-600 hover:bg-blue-700">
                 {actionType === 'accept' ? 'Accept with Comment' : 'Decline with Comment'}
               </Button>
               <Button variant="outline" onClick={() => {
@@ -235,7 +232,7 @@ const CoAuthorInvitation = ({ invitation, onAccept, onDecline }: CoAuthorInvitat
         
         {/* Action Buttons */}
         {invitation.status === 'pending' && !showCommentBox && (
-          <div className="flex gap-3 pt-4 border-t">
+          <div className="flex gap-3 pt-6 border-t">
             <Button 
               onClick={() => handleAction('accept')}
               className="bg-green-600 hover:bg-green-700"
@@ -258,7 +255,7 @@ const CoAuthorInvitation = ({ invitation, onAccept, onDecline }: CoAuthorInvitat
 
         {/* Post-Acceptance Actions */}
         {invitation.status === 'accepted' && (
-          <div className="flex gap-3 pt-4 border-t">
+          <div className="flex gap-3 pt-6 border-t bg-green-50 p-4 rounded-lg">
             <Button onClick={handleScheduleCall} className="bg-blue-600 hover:bg-blue-700">
               <Video className="h-4 w-4 mr-2" />
               Schedule Call
@@ -276,7 +273,7 @@ const CoAuthorInvitation = ({ invitation, onAccept, onDecline }: CoAuthorInvitat
 
         {/* Post-Decline Actions */}
         {invitation.status === 'declined' && (
-          <div className="flex gap-3 pt-4 border-t">
+          <div className="flex gap-3 pt-6 border-t">
             <Button variant="outline" onClick={handleDownloadDocument}>
               <Download className="h-4 w-4 mr-2" />
               Download Document
