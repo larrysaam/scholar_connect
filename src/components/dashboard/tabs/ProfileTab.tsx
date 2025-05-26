@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import { Camera, Plus, X, Save } from "lucide-react";
 
 interface ProfileData {
   personalInfo: {
+    title: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -38,7 +40,8 @@ const ProfileTab = () => {
   
   const [profileData, setProfileData] = useState<ProfileData>({
     personalInfo: {
-      firstName: "Dr. Alex",
+      title: "Dr.",
+      firstName: "Alex",
       lastName: "Smith",
       email: "alex.smith@university.edu",
       phone: "+1 (555) 123-4567",
@@ -153,7 +156,17 @@ const ProfileTab = () => {
           <CardTitle className="text-lg">Personal Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={profileData.personalInfo.title}
+                onChange={(e) => handleInputChange('personalInfo', 'title', e.target.value)}
+                disabled={!isEditing}
+                placeholder="Dr., Prof., Mr., Ms., etc."
+              />
+            </div>
             <div>
               <Label htmlFor="firstName">First Name</Label>
               <Input

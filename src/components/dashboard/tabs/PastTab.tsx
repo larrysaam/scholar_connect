@@ -2,74 +2,125 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, FileText, MessageSquare, ExternalLink, Video, Upload, Eye } from "lucide-react";
+import { Calendar, Clock, User, Play, FileText, MessageSquare, Upload, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { pastConsultations } from "../mockData";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
 const PastTab = () => {
-  const [messageText, setMessageText] = useState("");
+  const [uploadedResources, setUploadedResources] = useState<{[key: string]: string[]}>({});
+  const [messageContent, setMessageContent] = useState("");
   const [selectedConsultation, setSelectedConsultation] = useState<string | null>(null);
 
+  const pastConsultations = [
+    {
+      id: "past-1",
+      student: {
+        id: "student-1",
+        name: "Sarah Johnson",
+        field: "Computer Science",
+        imageUrl: "/lovable-uploads/83e0a07d-3527-4693-8172-d7d181156044.png"
+      },
+      date: "2024-01-15",
+      time: "2:00 PM - 3:00 PM",
+      topic: "Machine Learning Algorithm Optimization",
+      status: "completed" as const,
+      rating: 5,
+      hasRecording: true,
+      hasAINotes: true
+    },
+    {
+      id: "past-2",
+      student: {
+        id: "student-2",
+        name: "Michael Chen",
+        field: "Data Science",
+        imageUrl: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png"
+      },
+      date: "2024-01-12",
+      time: "10:00 AM - 11:00 AM",
+      topic: "Statistical Analysis Methods",
+      status: "completed" as const,
+      rating: 4,
+      hasRecording: true,
+      hasAINotes: true
+    },
+    {
+      id: "past-3",
+      student: {
+        id: "student-3",
+        name: "Emily Davis",
+        field: "Artificial Intelligence",
+        imageUrl: "/lovable-uploads/a2f6a2f6-b795-4e93-914c-2b58648099ff.png"
+      },
+      date: "2024-01-10",
+      time: "3:00 PM - 4:00 PM",
+      topic: "Neural Network Architecture Design",
+      status: "completed" as const,
+      rating: 5,
+      hasRecording: false,
+      hasAINotes: true
+    }
+  ];
+
   const handleViewRecording = (consultationId: string) => {
-    console.log("Opening video recording for consultation:", consultationId);
-    // In a real app, this would open a video player modal or new window
-    alert("Opening consultation recording...");
+    console.log("Viewing Google Meet recording for consultation:", consultationId);
+    // Link to Google Meet recording stored in Google Drive
+    const recordingUrl = `https://drive.google.com/file/d/recording-${consultationId}`;
+    window.open(recordingUrl, '_blank');
   };
 
-  const handleViewNotes = (consultationId: string) => {
+  const handleViewAINotes = (consultationId: string) => {
     console.log("Viewing AI-generated notes for consultation:", consultationId);
-    // In a real app, this would open a modal with AI-generated consultation notes
-    const mockNotes = `
-AI-Generated Consultation Notes:
-
-Topic: ${pastConsultations.find(c => c.id === consultationId)?.topic}
-
-Key Discussion Points:
-- Discussed research methodology approaches
-- Reviewed data collection strategies
-- Addressed statistical analysis concerns
-- Provided guidance on literature review
-
-Student Understanding Level: High
-Recommended Next Steps:
-- Begin data collection phase
-- Schedule follow-up in 2 weeks
-- Review recommended readings
-
-Overall Session Rating: Productive
-    `;
-    alert(mockNotes);
+    // Open AI notes that were generated from Google Meet transcript
+    alert(`Opening AI-generated notes for consultation ${consultationId}...`);
   };
 
-  const handleSendMessage = (consultationId: string) => {
-    if (!messageText.trim()) return;
-    
-    console.log("Sending message to student:", { consultationId, message: messageText });
-    // In a real app, this would send the message through the platform's messaging system
-    alert(`Message sent to student: "${messageText}"`);
-    setMessageText("");
-    setSelectedConsultation(null);
+  const handleContactStudent = (studentId: string, consultationId: string) => {
+    console.log("Opening in-platform messaging with student:", studentId);
+    // This would navigate to the messaging system with the student
+    alert(`Opening messaging interface with student for consultation ${consultationId}...`);
   };
 
   const handleUploadResources = (consultationId: string) => {
-    console.log("Uploading additional resources for consultation:", consultationId);
-    // Create file input for resource upload
     const input = document.createElement('input');
     input.type = 'file';
     input.multiple = true;
-    input.accept = '.pdf,.doc,.docx,.ppt,.pptx,.xlsx,.txt';
+    input.accept = '.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip';
     input.onchange = (e) => {
       const files = (e.target as HTMLInputElement).files;
       if (files && files.length > 0) {
-        const fileNames = Array.from(files).map(f => f.name).join(', ');
-        console.log("Files selected for upload:", fileNames);
-        alert(`Resources uploaded: ${fileNames}\nThese will be available in the student's dashboard.`);
+        const fileNames = Array.from(files).map(f => f.name);
+        setUploadedResources(prev => ({
+          ...prev,
+          [consultationId]: [...(prev[consultationId] || []), ...fileNames]
+        }));
+        console.log("Additional resources uploaded for consultation:", consultationId, fileNames);
+        alert(`${files.length} resource(s) uploaded successfully. Student will be notified.`);
       }
     };
     input.click();
+  };
+
+  const handleSendMessage = (consultationId: string) => {
+    if (!messageContent.trim()) return;
+    
+    console.log("Sending message to student for consultation:", consultationId, messageContent);
+    alert(`Message sent to student: "${messageContent}"`);
+    setMessageContent("");
+    setSelectedConsultation(null);
+  };
+
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star
+        key={i}
+        className={`h-4 w-4 ${
+          i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+        }`}
+      />
+    ));
   };
 
   return (
@@ -85,19 +136,22 @@ Overall Session Rating: Productive
                   <div className="flex items-center space-x-4">
                     <div className="h-10 w-10 rounded-full overflow-hidden">
                       <img 
-                        src={consultation.researcher.imageUrl} 
-                        alt={consultation.researcher.name}
+                        src={consultation.student.imageUrl} 
+                        alt={consultation.student.name}
                         className="h-full w-full object-cover" 
                       />
                     </div>
                     <div>
-                      <CardTitle className="text-lg">{consultation.researcher.name}</CardTitle>
-                      <CardDescription>{consultation.researcher.field}</CardDescription>
+                      <CardTitle className="text-lg">{consultation.student.name}</CardTitle>
+                      <CardDescription>{consultation.student.field}</CardDescription>
                     </div>
                   </div>
-                  <Badge className="bg-green-100 text-green-800 border-green-200">
-                    Completed
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <div className="flex">{renderStars(consultation.rating)}</div>
+                    <Badge className="bg-green-100 text-green-800">
+                      {consultation.status}
+                    </Badge>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -115,42 +169,58 @@ Overall Session Rating: Productive
                   <p className="font-medium">Topic:</p>
                   <p className="text-gray-700">{consultation.topic}</p>
                 </div>
+                
+                {/* Display uploaded additional resources */}
+                {uploadedResources[consultation.id] && uploadedResources[consultation.id].length > 0 && (
+                  <div className="mt-4">
+                    <p className="font-medium text-sm text-blue-700">Additional Resources Shared:</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {uploadedResources[consultation.id].map((resource, index) => (
+                        <Badge key={index} variant="outline" className="bg-blue-50 text-blue-700">
+                          {resource}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
               <CardFooter className="flex justify-between border-t pt-4">
                 <div className="flex gap-2 flex-wrap">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleViewRecording(consultation.id)}
-                  >
-                    <Video className="h-4 w-4 mr-2" />
-                    View Recording
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleViewNotes(consultation.id)}
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    View AI Notes
-                  </Button>
+                  {consultation.hasRecording && (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleViewRecording(consultation.id)}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      View Recording
+                    </Button>
+                  )}
+                  
+                  {consultation.hasAINotes && (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleViewAINotes(consultation.id)}
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      View AI Notes
+                    </Button>
+                  )}
                   
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button 
-                        variant="outline" 
-                        size="sm"
+                        variant="outline"
                         onClick={() => setSelectedConsultation(consultation.id)}
                       >
                         <MessageSquare className="h-4 w-4 mr-2" />
-                        Message Student
+                        Contact Student
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Send Message to Student</DialogTitle>
+                        <DialogTitle>Send Message to {consultation.student.name}</DialogTitle>
                         <DialogDescription>
-                          Send a follow-up message to {consultation.researcher.name}
+                          Send a follow-up message to the student through the platform messaging system.
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4">
@@ -158,9 +228,9 @@ Overall Session Rating: Productive
                           <Label htmlFor="message">Message</Label>
                           <Textarea
                             id="message"
-                            value={messageText}
-                            onChange={(e) => setMessageText(e.target.value)}
-                            placeholder="Type your follow-up message here..."
+                            value={messageContent}
+                            onChange={(e) => setMessageContent(e.target.value)}
+                            placeholder="Type your message here..."
                             rows={4}
                           />
                         </div>
@@ -168,8 +238,14 @@ Overall Session Rating: Productive
                           <Button onClick={() => handleSendMessage(consultation.id)}>
                             Send Message
                           </Button>
+                          <Button 
+                            variant="outline" 
+                            onClick={() => handleContactStudent(consultation.student.id, consultation.id)}
+                          >
+                            Open Chat
+                          </Button>
                           <Button variant="outline" onClick={() => {
-                            setMessageText("");
+                            setMessageContent("");
                             setSelectedConsultation(null);
                           }}>
                             Cancel
@@ -178,10 +254,9 @@ Overall Session Rating: Productive
                       </div>
                     </DialogContent>
                   </Dialog>
-
+                  
                   <Button 
                     variant="outline" 
-                    size="sm"
                     onClick={() => handleUploadResources(consultation.id)}
                   >
                     <Upload className="h-4 w-4 mr-2" />
@@ -194,7 +269,7 @@ Overall Session Rating: Productive
         </div>
       ) : (
         <div className="text-center py-8">
-          <p className="text-gray-500">No past consultations yet.</p>
+          <p className="text-gray-500">No past consultations available.</p>
         </div>
       )}
     </div>

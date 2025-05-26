@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, User, Video, MessageSquare, Upload, Check, X } from "lucide-react";
+import { Calendar, Clock, User, Video, MessageSquare, Upload, Check, X, ExternalLink, Play, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,9 +31,11 @@ const UpcomingTab = () => {
     setActionType(null);
   };
 
-  const handleReschedule = (consultationId: string) => {
-    console.log("Rescheduling consultation:", consultationId);
-    alert("Opening calendar to reschedule consultation...");
+  const handleRescheduleWithCalendly = (consultationId: string) => {
+    console.log("Opening Calendly for rescheduling consultation:", consultationId);
+    // Open Calendly widget or redirect to Calendly page
+    const calendlyUrl = "https://calendly.com/your-calendly-username";
+    window.open(calendlyUrl, '_blank', 'width=800,height=600');
   };
 
   const handleMoreInfo = (consultationId: string) => {
@@ -40,9 +43,24 @@ const UpcomingTab = () => {
     alert("Opening form to request additional information from student...");
   };
 
-  const handleJoinCall = (consultationId: string) => {
-    console.log("Joining consultation call:", consultationId);
-    alert("Joining video consultation...");
+  const handleJoinGoogleMeet = (consultationId: string) => {
+    console.log("Joining Google Meet for consultation:", consultationId);
+    // Generate or use pre-created Google Meet link
+    const meetLink = `https://meet.google.com/abc-defg-hij`;
+    window.open(meetLink, '_blank');
+  };
+
+  const handleViewRecording = (consultationId: string) => {
+    console.log("Viewing Google Meet recording for consultation:", consultationId);
+    // Link to Google Meet recording stored in Google Drive
+    const recordingUrl = `https://drive.google.com/file/d/recording-${consultationId}`;
+    window.open(recordingUrl, '_blank');
+  };
+
+  const handleViewAINotes = (consultationId: string) => {
+    console.log("Viewing AI-generated notes for consultation:", consultationId);
+    // Open AI notes that were generated from Google Meet transcript
+    alert(`Opening AI-generated notes for consultation ${consultationId}...`);
   };
 
   const handleUploadDocument = (consultationId: string) => {
@@ -141,13 +159,29 @@ const UpcomingTab = () => {
               <CardFooter className="flex justify-between border-t pt-4">
                 <div className="flex gap-2 flex-wrap">
                   {consultation.status === 'confirmed' ? (
-                    <Button 
-                      onClick={() => handleJoinCall(consultation.id)}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      <Video className="h-4 w-4 mr-2" />
-                      Join Call
-                    </Button>
+                    <>
+                      <Button 
+                        onClick={() => handleJoinGoogleMeet(consultation.id)}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <Video className="h-4 w-4 mr-2" />
+                        Join Google Meet
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => handleViewRecording(consultation.id)}
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        View Recording
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => handleViewAINotes(consultation.id)}
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        View AI Notes
+                      </Button>
+                    </>
                   ) : (
                     <>
                       <Dialog>
@@ -243,8 +277,9 @@ const UpcomingTab = () => {
                   
                   <Button 
                     variant="outline" 
-                    onClick={() => handleReschedule(consultation.id)}
+                    onClick={() => handleRescheduleWithCalendly(consultation.id)}
                   >
+                    <ExternalLink className="h-4 w-4 mr-2" />
                     Reschedule
                   </Button>
                   <Button 
