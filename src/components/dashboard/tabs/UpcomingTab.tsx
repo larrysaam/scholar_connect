@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { upcomingConsultations } from "../mockData";
 import StudentInfoModal from "../StudentInfoModal";
 
-// Enhanced mock data with student information
+// Enhanced mock data with student information including university
 const enhancedUpcomingConsultations = upcomingConsultations.map(consultation => ({
   ...consultation,
   student: {
@@ -14,6 +14,9 @@ const enhancedUpcomingConsultations = upcomingConsultations.map(consultation => 
     name: consultation.researcher.name.replace("Dr. ", "").replace("Prof. ", ""),
     email: consultation.researcher.name.toLowerCase().replace(" ", ".") + "@student.edu",
     field: consultation.researcher.field,
+    university: consultation.id === "1" ? "Massachusetts Institute of Technology" : 
+                consultation.id === "2" ? "Harvard University" : 
+                consultation.id === "3" ? "University of Cambridge" : "Stanford University",
     researchSummary: `Conducting research in ${consultation.topic}. This work focuses on developing innovative approaches to address current challenges in the field. The research methodology involves comprehensive analysis and practical applications.`,
     challenge: `Main challenge: Need expert guidance on ${consultation.topic} to overcome theoretical and practical obstacles. Specifically struggling with methodology selection and data interpretation.`,
     comment: `Looking forward to discussing the project details and getting insights on best practices. This consultation is crucial for the next phase of my research.`,

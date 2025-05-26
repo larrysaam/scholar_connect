@@ -11,6 +11,11 @@ interface CoAuthorInvitationData {
     title: string;
     institution: string;
     email: string;
+    profileImage?: string;
+    department?: string;
+    researchInterests?: string[];
+    publications?: number;
+    hIndex?: number;
   };
   publicationType: string;
   researchTopic: string;
@@ -23,7 +28,7 @@ interface CoAuthorInvitationData {
   status: 'pending' | 'accepted' | 'declined';
 }
 
-// Mock data for co-author invitations
+// Mock data for co-author invitations with enhanced profile information
 const mockInvitations: CoAuthorInvitationData[] = [
   {
     id: "1",
@@ -31,7 +36,12 @@ const mockInvitations: CoAuthorInvitationData[] = [
       name: "Dr. Sarah Johnson",
       title: "Assistant Professor",
       institution: "University of California, Berkeley",
-      email: "sarah.johnson@berkeley.edu"
+      email: "sarah.johnson@berkeley.edu",
+      profileImage: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
+      department: "Department of Computer Science",
+      researchInterests: ["AI Ethics", "Healthcare AI", "Machine Learning"],
+      publications: 45,
+      hIndex: 18
     },
     publicationType: "Article",
     researchTopic: "AI Ethics in Healthcare Decision Making",
@@ -49,7 +59,12 @@ const mockInvitations: CoAuthorInvitationData[] = [
       name: "Prof. Michael Chen",
       title: "Professor of Computer Science",
       institution: "Stanford University",
-      email: "m.chen@stanford.edu"
+      email: "m.chen@stanford.edu",
+      profileImage: "/lovable-uploads/a2f6a2f6-b795-4e93-914c-2b58648099ff.png",
+      department: "Department of Computer Science",
+      researchInterests: ["Quantum Computing", "Cryptography", "Security"],
+      publications: 120,
+      hIndex: 35
     },
     publicationType: "Conference Paper",
     researchTopic: "Quantum Computing Applications in Cryptography",

@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, FileText } from "lucide-react";
+import { Calendar, Clock, FileText, Mail, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { pastConsultations } from "../mockData";
 
@@ -14,6 +14,18 @@ const PastTab = () => {
   const handleViewNotes = (consultationId: string) => {
     console.log("Viewing notes for consultation:", consultationId);
     // In a real app, this would open the consultation notes
+  };
+
+  const handleContactStudent = (consultationId: string) => {
+    console.log("Contacting student for consultation:", consultationId);
+    // In a real app, this would open email or messaging interface
+    alert("Opening email client to contact student...");
+  };
+
+  const handleAdditionalResources = (consultationId: string) => {
+    console.log("Sharing additional resources for consultation:", consultationId);
+    // In a real app, this would open resource sharing interface
+    alert("Opening resource sharing interface...");
   };
 
   return (
@@ -61,21 +73,39 @@ const PastTab = () => {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between border-t pt-4">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleViewRecording(consultation.id)}
-                >
-                  View Recording
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleViewNotes(consultation.id)}
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  View Notes
-                </Button>
+                <div className="flex gap-2 flex-wrap">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleViewRecording(consultation.id)}
+                  >
+                    View Recording
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleViewNotes(consultation.id)}
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    View Notes
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleContactStudent(consultation.id)}
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Contact Student
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleAdditionalResources(consultation.id)}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Additional Resources
+                  </Button>
+                </div>
               </CardFooter>
             </Card>
           ))}

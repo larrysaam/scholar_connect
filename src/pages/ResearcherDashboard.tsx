@@ -11,11 +11,9 @@ import PaymentsTab from "@/components/dashboard/tabs/PaymentsTab";
 import ProfileTab from "@/components/dashboard/tabs/ProfileTab";
 import DocumentsTab from "@/components/dashboard/tabs/DocumentsTab";
 import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
-import QualityFeedbackTab from "@/components/dashboard/tabs/QualityFeedbackTab";
+import QualityAssuranceAndFeedbackTab from "@/components/dashboard/tabs/QualityAssuranceAndFeedbackTab";
 import CoAuthorInvitationsTab from "@/components/dashboard/tabs/CoAuthorInvitationsTab";
-import QualityAssurance from "@/components/quality/QualityAssurance";
-import VerificationManager from "@/components/verification/VerificationManager";
-import VerificationDocumentsTab from "@/components/dashboard/tabs/VerificationDocumentsTab";
+import VerificationTab from "@/components/dashboard/tabs/VerificationTab";
 import MisconductReportModal from "@/components/dashboard/MisconductReportModal";
 
 const ResearcherDashboard = () => {
@@ -44,13 +42,11 @@ const ResearcherDashboard = () => {
       case "payments":
         return <PaymentsTab />;
       case "quality":
-        return <QualityFeedbackTab />;
-      case "quality-assurance":
-        return <QualityAssurance />;
+        return <QualityAssuranceAndFeedbackTab />;
       case "verification":
-        return <VerificationManager />;
-      case "verification-documents":
-        return <VerificationDocumentsTab />;
+        return <VerificationTab />;
+      case "co-author-invitations":
+        return <CoAuthorInvitationsTab />;
       case "profile":
         return <ProfileTab />;
       case "documents":

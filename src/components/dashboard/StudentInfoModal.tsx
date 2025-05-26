@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, User, MessageSquare, Target } from "lucide-react";
+import { FileText, User, MessageSquare, Target, GraduationCap } from "lucide-react";
 
 interface StudentInfoModalProps {
   student: {
@@ -11,6 +11,7 @@ interface StudentInfoModalProps {
     name: string;
     email: string;
     field: string;
+    university?: string;
     researchSummary: string;
     challenge: string;
     comment: string;
@@ -58,6 +59,15 @@ const StudentInfoModal = ({ student }: StudentInfoModalProps) => {
                   <p className="font-semibold">Field of Study:</p>
                   <Badge variant="outline">{student.field}</Badge>
                 </div>
+                {student.university && (
+                  <div>
+                    <p className="font-semibold flex items-center gap-1">
+                      <GraduationCap className="h-4 w-4" />
+                      University:
+                    </p>
+                    <p className="text-gray-700">{student.university}</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
