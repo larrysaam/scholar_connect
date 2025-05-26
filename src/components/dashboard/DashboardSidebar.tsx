@@ -18,7 +18,10 @@ import {
   Briefcase,
   Mail,
   Upload,
-  Star
+  Star,
+  Home,
+  Cog,
+  Award
 } from "lucide-react";
 import InviteModal from "@/components/researcher/InviteModal";
 import MisconductReportModal from "./MisconductReportModal";
@@ -119,8 +122,70 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
           </Button>
         )}
         
+        {/* Researcher specific navigation */}
+        {userType === "researcher" && (
+          <>
+            <Button 
+              variant={activeTab === "overview" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("overview")}
+            >
+              <Home className="mr-2 h-4 w-4" />
+              Dashboard
+            </Button>
+            <Button 
+              variant={activeTab === "upcoming" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("upcoming")}
+            >
+              <Calendar className="mr-2 h-4 w-4" />
+              Upcoming
+            </Button>
+            <Button 
+              variant={activeTab === "past" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("past")}
+            >
+              <Clock className="mr-2 h-4 w-4" />
+              Past Consultations
+            </Button>
+            <Button 
+              variant={activeTab === "consultation-services" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("consultation-services")}
+            >
+              <Cog className="mr-2 h-4 w-4" />
+              Services Setup
+            </Button>
+            <Button 
+              variant={activeTab === "performance" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("performance")}
+            >
+              <Award className="mr-2 h-4 w-4" />
+              Performance
+            </Button>
+            <Button 
+              variant={activeTab === "payments" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("payments")}
+            >
+              <Banknote className="mr-2 h-4 w-4" />
+              Payments
+            </Button>
+            <Button 
+              variant={activeTab === "quality" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("quality")}
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Quality Feedback
+            </Button>
+          </>
+        )}
+        
         {/* Standard navigation for other user types */}
-        {userType !== "research-aide" && (
+        {userType !== "research-aide" && userType !== "researcher" && (
           <>
             <Button 
               variant={activeTab === "upcoming" ? "default" : "ghost"} 

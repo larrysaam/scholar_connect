@@ -6,6 +6,7 @@ import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import NotificationsBanner from "@/components/dashboard/NotificationsBanner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import WelcomeOverviewTab from "@/components/dashboard/tabs/WelcomeOverviewTab";
 import UpcomingTab from "@/components/dashboard/tabs/UpcomingTab";
 import PastTab from "@/components/dashboard/tabs/PastTab";
 import PaymentsTab from "@/components/dashboard/tabs/PaymentsTab";
@@ -17,10 +18,12 @@ import CoAuthorInvitationsTab from "@/components/dashboard/tabs/CoAuthorInvitati
 import VerificationTab from "@/components/dashboard/tabs/VerificationTab";
 import NotificationsTab from "@/components/dashboard/tabs/NotificationsTab";
 import DiscussionTab from "@/components/dashboard/tabs/DiscussionTab";
+import ConsultationServicesTab from "@/components/dashboard/tabs/ConsultationServicesTab";
+import PerformanceReputationTab from "@/components/dashboard/tabs/PerformanceReputationTab";
 import MisconductReportModal from "@/components/dashboard/MisconductReportModal";
 
 const ResearcherDashboard = () => {
-  const [activeTab, setActiveTab] = useState("upcoming");
+  const [activeTab, setActiveTab] = useState("overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Check if user needs onboarding (simulate with localStorage)
@@ -38,12 +41,18 @@ const ResearcherDashboard = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case "overview":
+        return <WelcomeOverviewTab />;
       case "upcoming":
         return <UpcomingTab />;
       case "past":
         return <PastTab />;
       case "payments":
         return <PaymentsTab />;
+      case "consultation-services":
+        return <ConsultationServicesTab />;
+      case "performance":
+        return <PerformanceReputationTab />;
       case "quality":
         return <QualityAssuranceAndFeedbackTab />;
       case "discussion":
@@ -61,7 +70,7 @@ const ResearcherDashboard = () => {
       case "settings":
         return <SettingsTab />;
       default:
-        return <UpcomingTab />;
+        return <WelcomeOverviewTab />;
     }
   };
 
