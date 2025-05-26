@@ -606,18 +606,469 @@ const ProfileTab = () => {
         </CardContent>
       </Card>
 
-      {/* Awards, Fellowships, Grants, Memberships sections - keep existing code */}
+      {/* Awards */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Awards</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {profileData.awards.map((award, index) => (
+            <div key={index} className="flex gap-2 items-end">
+              <div className="flex-1">
+                <Label>Title</Label>
+                <Input
+                  value={award.title}
+                  onChange={(e) => handleUpdateAward(index, 'title', e.target.value)}
+                  disabled={!isEditing}
+                  placeholder="Award title"
+                />
+              </div>
+              <div className="w-32">
+                <Label>Year</Label>
+                <Input
+                  value={award.year}
+                  onChange={(e) => handleUpdateAward(index, 'year', e.target.value)}
+                  disabled={!isEditing}
+                  placeholder="2023"
+                />
+              </div>
+              {isEditing && (
+                <Button
+                  onClick={() => handleRemoveAward(index)}
+                  variant="outline"
+                  size="icon"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          ))}
+          {isEditing && (
+            <Button onClick={handleAddAward} variant="outline" className="w-full">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Award
+            </Button>
+          )}
+        </CardContent>
+      </Card>
 
-      {/* Publications with enhanced functionality */}
-      <PublicationsSection 
-        publications={profileData.publications}
-        isEditing={isEditing}
-        onAdd={handleAddPublication}
-        onRemove={handleRemovePublication}
-        onUpdate={handleUpdatePublication}
-      />
+      {/* Fellowships */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Fellowships</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {profileData.fellowships.map((fellowship, index) => (
+            <div key={index} className="flex gap-2 items-end">
+              <div className="flex-1">
+                <Label>Title</Label>
+                <Input
+                  value={fellowship.title}
+                  onChange={(e) => handleUpdateFellowship(index, 'title', e.target.value)}
+                  disabled={!isEditing}
+                  placeholder="Fellowship title"
+                />
+              </div>
+              <div className="w-40">
+                <Label>Period</Label>
+                <Input
+                  value={fellowship.period}
+                  onChange={(e) => handleUpdateFellowship(index, 'period', e.target.value)}
+                  disabled={!isEditing}
+                  placeholder="2020-Present"
+                />
+              </div>
+              {isEditing && (
+                <Button
+                  onClick={() => handleRemoveFellowship(index)}
+                  variant="outline"
+                  size="icon"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          ))}
+          {isEditing && (
+            <Button onClick={handleAddFellowship} variant="outline" className="w-full">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Fellowship
+            </Button>
+          )}
+        </CardContent>
+      </Card>
 
-      {/* Languages, Student Supervision, Other Information sections - keep existing code */}
+      {/* Research Grants */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Research Grants</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {profileData.grants.map((grant, index) => (
+            <div key={index} className="flex gap-2 items-end">
+              <div className="flex-1">
+                <Label>Title</Label>
+                <Input
+                  value={grant.title}
+                  onChange={(e) => handleUpdateGrant(index, 'title', e.target.value)}
+                  disabled={!isEditing}
+                  placeholder="Grant title"
+                />
+              </div>
+              <div className="w-32">
+                <Label>Amount</Label>
+                <Input
+                  value={grant.amount}
+                  onChange={(e) => handleUpdateGrant(index, 'amount', e.target.value)}
+                  disabled={!isEditing}
+                  placeholder="$50,000"
+                />
+              </div>
+              <div className="w-40">
+                <Label>Period</Label>
+                <Input
+                  value={grant.period}
+                  onChange={(e) => handleUpdateGrant(index, 'period', e.target.value)}
+                  disabled={!isEditing}
+                  placeholder="2022-2025"
+                />
+              </div>
+              {isEditing && (
+                <Button
+                  onClick={() => handleRemoveGrant(index)}
+                  variant="outline"
+                  size="icon"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          ))}
+          {isEditing && (
+            <Button onClick={handleAddGrant} variant="outline" className="w-full">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Grant
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Professional Memberships */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Professional Memberships</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2 mt-2 mb-3">
+            {profileData.memberships.map((membership, index) => (
+              <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                {membership}
+                {isEditing && (
+                  <button
+                    onClick={() => handleRemoveMembership(membership)}
+                    className="ml-1 hover:bg-red-100 rounded-full p-0.5"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </Badge>
+            ))}
+          </div>
+          {isEditing && (
+            <div className="flex gap-2">
+              <Input
+                value={newMembership}
+                onChange={(e) => setNewMembership(e.target.value)}
+                placeholder="Add professional membership"
+                onKeyPress={(e) => e.key === 'Enter' && handleAddMembership()}
+              />
+              <Button onClick={handleAddMembership} variant="outline">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Publications */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Publications</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {profileData.publications.map((publication, index) => (
+            <div key={index} className="space-y-2 p-4 border rounded-lg">
+              <div className="flex gap-2 items-end">
+                <div className="flex-1">
+                  <Label>Title</Label>
+                  <Input
+                    value={publication.title}
+                    onChange={(e) => handleUpdatePublication(index, 'title', e.target.value)}
+                    disabled={!isEditing}
+                    placeholder="Publication title"
+                  />
+                </div>
+                {isEditing && (
+                  <Button
+                    onClick={() => handleRemovePublication(index)}
+                    variant="outline"
+                    size="icon"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div>
+                  <Label>Journal</Label>
+                  <Input
+                    value={publication.journal}
+                    onChange={(e) => handleUpdatePublication(index, 'journal', e.target.value)}
+                    disabled={!isEditing}
+                    placeholder="Journal name"
+                  />
+                </div>
+                <div>
+                  <Label>Year</Label>
+                  <Input
+                    value={publication.year}
+                    onChange={(e) => handleUpdatePublication(index, 'year', e.target.value)}
+                    disabled={!isEditing}
+                    placeholder="2023"
+                  />
+                </div>
+                <div>
+                  <Label>Link</Label>
+                  <div className="flex gap-1">
+                    <Input
+                      value={publication.link || ''}
+                      onChange={(e) => handleUpdatePublication(index, 'link', e.target.value)}
+                      disabled={!isEditing}
+                      placeholder="https://doi.org/..."
+                    />
+                    {publication.link && !isEditing && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => window.open(publication.link, '_blank')}
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+          {isEditing && (
+            <Button onClick={handleAddPublication} variant="outline" className="w-full">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Publication
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Languages */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Languages</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2 mt-2 mb-3">
+            {profileData.languages.map((language, index) => (
+              <Badge key={index} variant="outline" className="flex items-center gap-1">
+                {language}
+                {isEditing && (
+                  <button
+                    onClick={() => handleRemoveLanguage(language)}
+                    className="ml-1 hover:bg-red-100 rounded-full p-0.5"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </Badge>
+            ))}
+          </div>
+          {isEditing && (
+            <div className="flex gap-2">
+              <Input
+                value={newLanguage}
+                onChange={(e) => setNewLanguage(e.target.value)}
+                placeholder="Add language"
+                onKeyPress={(e) => e.key === 'Enter' && handleAddLanguage()}
+              />
+              <Button onClick={handleAddLanguage} variant="outline">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Student Supervision */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Student Supervision</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+              <Label>Post Doctorate</Label>
+              <Input
+                type="number"
+                value={profileData.supervision.postdoc}
+                onChange={(e) => handleInputChange('supervision', 'postdoc', parseInt(e.target.value) || 0)}
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <Label>PhD</Label>
+              <Input
+                type="number"
+                value={profileData.supervision.phd}
+                onChange={(e) => handleInputChange('supervision', 'phd', parseInt(e.target.value) || 0)}
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <Label>Master's</Label>
+              <Input
+                type="number"
+                value={profileData.supervision.masters}
+                onChange={(e) => handleInputChange('supervision', 'masters', parseInt(e.target.value) || 0)}
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <Label>Undergraduate</Label>
+              <Input
+                type="number"
+                value={profileData.supervision.undergrad}
+                onChange={(e) => handleInputChange('supervision', 'undergrad', parseInt(e.target.value) || 0)}
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <Label>HND</Label>
+              <Input
+                type="number"
+                value={profileData.supervision.hnd}
+                onChange={(e) => handleInputChange('supervision', 'hnd', parseInt(e.target.value) || 0)}
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <Label>DIPES</Label>
+              <Input
+                type="number"
+                value={profileData.supervision.dipes}
+                onChange={(e) => handleInputChange('supervision', 'dipes', parseInt(e.target.value) || 0)}
+                disabled={!isEditing}
+              />
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <h4 className="font-medium mb-4">Student Details</h4>
+            <div className="space-y-4">
+              {profileData.supervisionDetails.map((detail, index) => (
+                <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-2 p-4 border rounded-lg">
+                  <div>
+                    <Label>Student Name</Label>
+                    <Input
+                      value={detail.name}
+                      onChange={(e) => handleUpdateSupervisionDetail(index, 'name', e.target.value)}
+                      disabled={!isEditing}
+                      placeholder="Student name"
+                    />
+                  </div>
+                  <div>
+                    <Label>Thesis Title</Label>
+                    <Input
+                      value={detail.thesisTitle}
+                      onChange={(e) => handleUpdateSupervisionDetail(index, 'thesisTitle', e.target.value)}
+                      disabled={!isEditing}
+                      placeholder="Thesis title"
+                    />
+                  </div>
+                  <div>
+                    <Label>Year</Label>
+                    <Select
+                      value={detail.year}
+                      onValueChange={(value) => handleUpdateSupervisionDetail(index, 'year', value)}
+                      disabled={!isEditing}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select year" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {years.map((year) => (
+                          <SelectItem key={year} value={year}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex gap-2 items-end">
+                    <div className="flex-1">
+                      <Label>Level</Label>
+                      <Select
+                        value={detail.level}
+                        onValueChange={(value) => handleUpdateSupervisionDetail(index, 'level', value)}
+                        disabled={!isEditing}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {levels.map((level) => (
+                            <SelectItem key={level} value={level}>
+                              {level}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {isEditing && (
+                      <Button
+                        onClick={() => handleRemoveSupervisionDetail(index)}
+                        variant="outline"
+                        size="icon"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {isEditing && (
+                <Button onClick={handleAddSupervisionDetail} variant="outline" className="w-full">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Student Detail
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Other Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Other Information</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            value={profileData.otherInformation}
+            onChange={(e) => handleInputChange('otherInformation', '', e.target.value)}
+            disabled={!isEditing}
+            rows={3}
+            placeholder="Any additional information about your availability, specializations, or preferences..."
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };
