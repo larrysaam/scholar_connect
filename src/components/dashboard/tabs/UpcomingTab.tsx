@@ -31,12 +31,12 @@ const UpcomingTab = () => {
     setActionType(null);
   };
 
-  const handleRescheduleWithGoogleMeet = (consultationId: string) => {
-    console.log("Rescheduling consultation with Google Meet:", consultationId);
-    // Create a new Google Meet link for rescheduling
-    const meetLink = `https://meet.google.com/new`;
-    window.open(meetLink, '_blank');
-    alert("New Google Meet session created for rescheduling. Please share the new link with the student.");
+  const handleRescheduleWithGoogleCalendar = (consultationId: string) => {
+    console.log("Rescheduling consultation with Google Calendar:", consultationId);
+    // Create a Google Calendar event for rescheduling
+    const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Consultation+Reschedule&details=Reschedule+consultation+session&location=Google+Meet`;
+    window.open(calendarUrl, '_blank');
+    alert("Google Calendar opened for rescheduling. Please create a new event and share it with the student.");
   };
 
   const handleMoreInfo = (consultationId: string) => {
@@ -44,8 +44,8 @@ const UpcomingTab = () => {
     alert("Opening form to request additional information from student...");
   };
 
-  const handleJoinGoogleMeet = (consultationId: string) => {
-    console.log("Joining Google Meet for consultation:", consultationId);
+  const handleJoinWithGoogleMeet = (consultationId: string) => {
+    console.log("Joining with Google Meet for consultation:", consultationId);
     // Generate or use pre-created Google Meet link
     const meetLink = `https://meet.google.com/abc-defg-hij`;
     window.open(meetLink, '_blank');
@@ -162,11 +162,11 @@ const UpcomingTab = () => {
                   {consultation.status === 'confirmed' ? (
                     <>
                       <Button 
-                        onClick={() => handleJoinGoogleMeet(consultation.id)}
+                        onClick={() => handleJoinWithGoogleMeet(consultation.id)}
                         className="bg-green-600 hover:bg-green-700"
                       >
                         <Video className="h-4 w-4 mr-2" />
-                        Join Google Meet
+                        Join with Google Meet
                       </Button>
                       <Button 
                         variant="outline" 
@@ -278,10 +278,10 @@ const UpcomingTab = () => {
                   
                   <Button 
                     variant="outline" 
-                    onClick={() => handleRescheduleWithGoogleMeet(consultation.id)}
+                    onClick={() => handleRescheduleWithGoogleCalendar(consultation.id)}
                   >
-                    <Video className="h-4 w-4 mr-2" />
-                    Reschedule with Google Meet
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Reschedule with Google Calendar
                   </Button>
                   <Button 
                     variant="outline" 
