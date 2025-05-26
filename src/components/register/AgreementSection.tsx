@@ -15,7 +15,7 @@ const AgreementSection = ({ agreedToTerms, onInputChange }: AgreementSectionProp
         <Checkbox 
           id="terms" 
           checked={agreedToTerms}
-          onCheckedChange={(checked) => onInputChange("agreedToTerms", checked)}
+          onCheckedChange={(checked) => onInputChange("agreedToTerms", checked === true)}
           required 
         />
         <Label htmlFor="terms" className="text-sm">
