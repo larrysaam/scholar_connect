@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { upcomingConsultations } from "../mockData";
+import StudentResearchSummaryModal from "../consultation/StudentResearchSummaryModal";
 
 const UpcomingTab = () => {
   const [responseComment, setResponseComment] = useState("");
@@ -296,6 +298,11 @@ const UpcomingTab = () => {
                     <Upload className="h-4 w-4 mr-2" />
                     Upload Document
                   </Button>
+                  
+                  <StudentResearchSummaryModal 
+                    studentId={consultation.studentId || "student-1"}
+                    consultationId={consultation.id}
+                  />
                 </div>
               </CardFooter>
             </Card>

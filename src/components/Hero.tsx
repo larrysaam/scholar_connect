@@ -5,13 +5,19 @@ import { Link } from "react-router-dom";
 const Hero = () => {
   return (
     <div className="hero-gradient text-white py-20 lg:py-32 relative overflow-hidden">
-      <div className="absolute right-0 top-0 h-full w-1/2 z-10">
+      <div className="absolute right-0 top-0 h-full w-1/2 z-10 bg-blue-600/20">
         <img 
           src="/lovable-uploads/327ccde5-c0c9-443a-acd7-4570799bb7f8.png" 
           alt="Student consulting with researcher" 
-          className="h-full w-full object-cover object-left opacity-60 md:opacity-80"
+          className="h-full w-full object-cover object-left opacity-0 transition-opacity duration-300 md:opacity-80"
           loading="eager"
           decoding="sync"
+          onLoad={(e) => {
+            e.currentTarget.style.opacity = window.innerWidth >= 768 ? '0.8' : '0.6';
+          }}
+          style={{
+            opacity: 0
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-l from-transparent to-blue-600/30"></div>
       </div>
