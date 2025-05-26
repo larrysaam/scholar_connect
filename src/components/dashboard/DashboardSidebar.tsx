@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { 
   Calendar,
@@ -115,6 +114,14 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
             >
               <FileText className="mr-2 h-4 w-4" />
               Verification Documents
+            </Button>
+            <Button 
+              variant={activeTab === "co-author-invitations" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("co-author-invitations")}
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
+              Co-author Invitations
             </Button>
           </>
         )}

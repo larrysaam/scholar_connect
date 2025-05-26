@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -11,6 +12,7 @@ import ProfileTab from "@/components/dashboard/tabs/ProfileTab";
 import DocumentsTab from "@/components/dashboard/tabs/DocumentsTab";
 import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
 import QualityFeedbackTab from "@/components/dashboard/tabs/QualityFeedbackTab";
+import CoAuthorInvitationsTab from "@/components/dashboard/tabs/CoAuthorInvitationsTab";
 import QualityAssurance from "@/components/quality/QualityAssurance";
 import VerificationManager from "@/components/verification/VerificationManager";
 import VerificationDocumentsTab from "@/components/dashboard/tabs/VerificationDocumentsTab";

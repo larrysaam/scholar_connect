@@ -15,6 +15,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import AboutUs from "./pages/AboutUs";
 import ResearcherDashboard from "./pages/ResearcherDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 import HowItWorks from "./pages/HowItWorks";
 import CoAuthorWorkspace from "./pages/CoAuthorWorkspace";
 import ResearchAids from "./pages/ResearchAids";
@@ -50,6 +51,7 @@ const App: React.FC = () => {
                 <Route path="/register" element={<Register />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/researcher-dashboard" element={<ResearcherDashboard />} />
+                <Route path="/admin-dashboard" element={<AdminDashboard />} />
                 <Route path="/about-us" element={<AboutUs />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
                 <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
