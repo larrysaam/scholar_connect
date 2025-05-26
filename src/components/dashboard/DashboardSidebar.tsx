@@ -8,7 +8,9 @@ import {
   Settings,
   Banknote,
   MessageSquare,
-  UserPlus
+  UserPlus,
+  Shield,
+  Bell
 } from "lucide-react";
 import InviteModal from "@/components/researcher/InviteModal";
 import MisconductReportModal from "./MisconductReportModal";
@@ -91,6 +93,22 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
         </Button>
         {userType === "researcher" && (
           <>
+            <Button 
+              variant={activeTab === "verification" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("verification")}
+            >
+              <Shield className="mr-2 h-4 w-4" />
+              Verification
+            </Button>
+            <Button 
+              variant={activeTab === "notifications" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("notifications")}
+            >
+              <Bell className="mr-2 h-4 w-4" />
+              Notifications
+            </Button>
             <Button 
               variant={activeTab === "co-author-invitations" ? "default" : "ghost"} 
               className="w-full justify-start" 

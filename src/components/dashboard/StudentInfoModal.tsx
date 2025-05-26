@@ -1,146 +1,145 @@
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { FileText, User, MessageSquare, Target, GraduationCap } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Eye, GraduationCap, BookOpen, AlertCircle, FileText } from "lucide-react";
+
+interface Student {
+  id: string;
+  name: string;
+  field: string;
+  university: string;
+  researchSummary: string;
+  challenge: string;
+  comment: string;
+  documentsShared: {
+    name: string;
+    type: string;
+    preview: string;
+  }[];
+}
 
 interface StudentInfoModalProps {
-  student: {
-    id: string;
-    name: string;
-    email: string;
-    field: string;
-    university?: string;
-    researchSummary: string;
-    challenge: string;
-    comment: string;
-    documentsShared: {
-      name: string;
-      type: string;
-      preview: string;
-    }[];
-  };
+  student: Student;
 }
 
 const StudentInfoModal = ({ student }: StudentInfoModalProps) => {
+  const [selectedDocument, setSelectedDocument] = useState<string | null>(null);
+
+  const handleViewDocument = (docName: string) => {
+    setSelectedDocument(docName);
+    console.log("Viewing document:", docName);
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
+          <Eye className="h-4 w-4 mr-2" />
           More Information
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Student Information - {student.name}
+            <GraduationCap className="h-5 w-5" />
+            Student Information
           </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6">
-          {/* Student Basic Info */}
+          {/* Student Profile Section */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Contact Information</CardTitle>
+              <CardTitle className="text-lg">Student Profile</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="font-semibold">Name:</p>
-                  <p className="text-gray-700">{student.name}</p>
-                </div>
-                <div>
-                  <p className="font-semibold">Email:</p>
-                  <p className="text-blue-600">{student.email}</p>
-                </div>
-                <div>
-                  <p className="font-semibold">Field of Study:</p>
-                  <Badge variant="outline">{student.field}</Badge>
-                </div>
-                {student.university && (
-                  <div>
-                    <p className="font-semibold flex items-center gap-1">
-                      <GraduationCap className="h-4 w-4" />
-                      University:
-                    </p>
-                    <p className="text-gray-700">{student.university}</p>
+              <div className="flex items-start gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src="/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png" />
+                  <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold">{student.name}</h3>
+                  <p className="text-gray-600 mb-2">{student.field}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="secondary">{student.university}</Badge>
                   </div>
-                )}
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Research Summary */}
+          {/* Research Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  Research Summary
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-700">{student.researchSummary}</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  Research Challenge
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-700">{student.challenge}</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Student Comment */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Research Summary
-              </CardTitle>
+              <CardTitle className="text-base">Student's Comment</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-700 leading-relaxed">{student.researchSummary}</p>
+              <p className="text-sm text-gray-700">{student.comment}</p>
             </CardContent>
           </Card>
 
-          {/* Challenge */}
+          {/* Shared Documents */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Challenge/Issue
+              <CardTitle className="text-base flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Shared Documents
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-700 leading-relaxed">{student.challenge}</p>
-            </CardContent>
-          </Card>
-
-          {/* Additional Comments */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                Additional Comments
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700 leading-relaxed">{student.comment}</p>
-            </CardContent>
-          </Card>
-
-          {/* Documents Shared */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Documents Shared
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {student.documentsShared.length > 0 ? (
-                <div className="space-y-4">
-                  {student.documentsShared.map((doc, index) => (
-                    <div key={index} className="border rounded-lg p-4">
-                      <div className="flex items-center gap-3 mb-3">
-                        <FileText className="h-5 w-5 text-blue-600" />
-                        <div>
-                          <p className="font-semibold">{doc.name}</p>
-                          <Badge variant="secondary" className="text-xs">{doc.type}</Badge>
-                        </div>
+              <div className="space-y-3">
+                {student.documentsShared.map((doc, index) => (
+                  <div key={index} className="border rounded-lg p-3">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h4 className="font-medium text-sm">{doc.name}</h4>
+                        <p className="text-xs text-gray-500">{doc.type}</p>
                       </div>
-                      <div className="bg-gray-50 p-3 rounded border">
-                        <p className="text-sm font-medium mb-2">Document Preview:</p>
-                        <p className="text-sm text-gray-700">{doc.preview}</p>
-                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleViewDocument(doc.name)}
+                      >
+                        <Eye className="h-3 w-3 mr-1" />
+                        View
+                      </Button>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500">No documents shared for this consultation.</p>
-              )}
+                    <p className="text-xs text-gray-600">{doc.preview}</p>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>

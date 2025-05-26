@@ -14,6 +14,7 @@ import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
 import QualityAssuranceAndFeedbackTab from "@/components/dashboard/tabs/QualityAssuranceAndFeedbackTab";
 import CoAuthorInvitationsTab from "@/components/dashboard/tabs/CoAuthorInvitationsTab";
 import VerificationTab from "@/components/dashboard/tabs/VerificationTab";
+import NotificationsTab from "@/components/dashboard/tabs/NotificationsTab";
 import MisconductReportModal from "@/components/dashboard/MisconductReportModal";
 
 const ResearcherDashboard = () => {
@@ -45,6 +46,8 @@ const ResearcherDashboard = () => {
         return <QualityAssuranceAndFeedbackTab />;
       case "verification":
         return <VerificationTab />;
+      case "notifications":
+        return <NotificationsTab />;
       case "co-author-invitations":
         return <CoAuthorInvitationsTab />;
       case "profile":

@@ -1,8 +1,12 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, Video } from "lucide-react";
+import { Calendar, Clock, Video, Upload, Check, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { upcomingConsultations } from "../mockData";
 import StudentInfoModal from "../StudentInfoModal";
 
@@ -12,7 +16,6 @@ const enhancedUpcomingConsultations = upcomingConsultations.map(consultation => 
   student: {
     id: consultation.id + "_student",
     name: consultation.researcher.name.replace("Dr. ", "").replace("Prof. ", ""),
-    email: consultation.researcher.name.toLowerCase().replace(" ", ".") + "@student.edu",
     field: consultation.researcher.field,
     university: consultation.id === "1" ? "Massachusetts Institute of Technology" : 
                 consultation.id === "2" ? "Harvard University" : 
@@ -36,16 +39,51 @@ const enhancedUpcomingConsultations = upcomingConsultations.map(consultation => 
 }));
 
 const UpcomingTab = () => {
+  const [showAcceptForm, setShowAcceptForm] = useState<string | null>(null);
+  const [showDeclineForm, setShowDeclineForm] = useState<string | null>(null);
+  const [acceptComment, setAcceptComment] = useState("");
+  const [declineComment, setDeclineComment] = useState("");
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+
   const handleReschedule = (consultationId: string) => {
     console.log("Rescheduling consultation:", consultationId);
-    // Simulate rescheduling functionality
     alert("Rescheduling functionality activated. A new scheduling interface would open here.");
   };
 
   const handleJoinMeeting = (consultationId: string) => {
     console.log("Joining meeting for consultation:", consultationId);
-    // Simulate joining meeting functionality
     alert("Joining meeting... Video conferencing interface would open here.");
+  };
+
+  const handleAccept = (consultationId: string) => {
+    setShowAcceptForm(consultationId);
+  };
+
+  const handleDecline = (consultationId: string) => {
+    setShowDeclineForm(consultationId);
+  };
+
+  const handleSubmitAccept = (consultationId: string) => {
+    console.log("Accepting consultation:", consultationId, "with comment:", acceptComment);
+    console.log("Uploaded file:", uploadedFile);
+    alert("Consultation accepted with comment!");
+    setShowAcceptForm(null);
+    setAcceptComment("");
+    setUploadedFile(null);
+  };
+
+  const handleSubmitDecline = (consultationId: string) => {
+    console.log("Declining consultation:", consultationId, "with comment:", declineComment);
+    alert("Consultation declined with comment!");
+    setShowDeclineForm(null);
+    setDeclineComment("");
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setUploadedFile(file);
+    }
   };
 
   return (
@@ -97,6 +135,89 @@ const UpcomingTab = () => {
                   <p className="font-medium">Topic:</p>
                   <p className="text-gray-700">{consultation.topic}</p>
                 </div>
+
+                {/* Accept Form */}
+                {showAcceptForm === consultation.id && (
+                  <div className="mt-4 p-4 border rounded-lg bg-green-50">
+                    <Label htmlFor="accept-comment">Accept with Comment</Label>
+                    <Textarea
+                      id="accept-comment"
+                      value={acceptComment}
+                      onChange={(e) => setAcceptComment(e.target.value)}
+                      placeholder="Add your acceptance comment and any preparation notes for the student..."
+                      className="mt-2 mb-4"
+                    />
+                    
+                    <Label htmlFor="file-upload">Upload Document (Optional)</Label>
+                    <Input
+                      id="file-upload"
+                      type="file"
+                      onChange={handleFileUpload}
+                      className="mt-2 mb-4"
+                      accept=".pdf,.doc,.docx,.ppt,.pptx"
+                    />
+                    {uploadedFile && (
+                      <p className="text-sm text-gray-600 mb-4">
+                        Selected: {uploadedFile.name}
+                      </p>
+                    )}
+                    
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => handleSubmitAccept(consultation.id)}
+                        disabled={!acceptComment.trim()}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <Check className="h-4 w-4 mr-2" />
+                        Accept Consultation
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => {
+                          setShowAcceptForm(null);
+                          setAcceptComment("");
+                          setUploadedFile(null);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Decline Form */}
+                {showDeclineForm === consultation.id && (
+                  <div className="mt-4 p-4 border rounded-lg bg-red-50">
+                    <Label htmlFor="decline-comment">Decline with Comment</Label>
+                    <Textarea
+                      id="decline-comment"
+                      value={declineComment}
+                      onChange={(e) => setDeclineComment(e.target.value)}
+                      placeholder="Please provide a reason for declining this consultation..."
+                      className="mt-2 mb-4"
+                    />
+                    
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => handleSubmitDecline(consultation.id)}
+                        disabled={!declineComment.trim()}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Decline Consultation
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => {
+                          setShowDeclineForm(null);
+                          setDeclineComment("");
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
               <CardFooter className="flex justify-between border-t pt-4">
                 <div className="flex gap-2">
@@ -109,15 +230,38 @@ const UpcomingTab = () => {
                     Reschedule
                   </Button>
                   <StudentInfoModal student={consultation.student} />
+                  {consultation.status === "pending" && !showAcceptForm && !showDeclineForm && (
+                    <>
+                      <Button 
+                        size="sm"
+                        onClick={() => handleAccept(consultation.id)}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <Check className="h-4 w-4 mr-2" />
+                        Accept
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDecline(consultation.id)}
+                        className="border-red-600 text-red-600 hover:bg-red-50"
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Decline
+                      </Button>
+                    </>
+                  )}
                 </div>
-                <Button 
-                  size="sm"
-                  onClick={() => handleJoinMeeting(consultation.id)}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  <Video className="h-4 w-4 mr-2" />
-                  Join Meeting
-                </Button>
+                {consultation.status === "confirmed" && (
+                  <Button 
+                    size="sm"
+                    onClick={() => handleJoinMeeting(consultation.id)}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Video className="h-4 w-4 mr-2" />
+                    Join Meeting
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           ))}
