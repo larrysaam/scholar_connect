@@ -1,12 +1,16 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Camera, Save, Plus, X } from "lucide-react";
+import { Save } from "lucide-react";
+import ProfileImage from "@/components/dashboard/profile/ProfileImage";
+import BasicInformation from "@/components/dashboard/profile/BasicInformation";
+import ExperienceSection from "@/components/dashboard/profile/ExperienceSection";
+import PublicationsSection from "@/components/dashboard/profile/PublicationsSection";
+import AwardsSection from "@/components/dashboard/profile/AwardsSection";
+import FellowshipsSection from "@/components/dashboard/profile/FellowshipsSection";
+import GrantsSection from "@/components/dashboard/profile/GrantsSection";
+import MembershipsSection from "@/components/dashboard/profile/MembershipsSection";
+import SupervisionSection from "@/components/dashboard/profile/SupervisionSection";
 
 const ProfileTab = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -55,24 +59,152 @@ const ProfileTab = () => {
     console.log("Opening image upload dialog");
   };
 
-  const addArrayItem = (field: string, newItem: any) => {
+  const handleBasicInfoUpdate = (field: string, value: string) => {
+    setProfileData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleExperienceAdd = () => {
     setProfileData(prev => ({
       ...prev,
-      [field]: [...prev[field as keyof typeof prev] as any[], newItem]
+      experience: [...prev.experience, { position: '', institution: '', period: '' }]
     }));
   };
 
-  const removeArrayItem = (field: string, index: number) => {
+  const handleExperienceRemove = (index: number) => {
     setProfileData(prev => ({
       ...prev,
-      [field]: (prev[field as keyof typeof prev] as any[]).filter((_, i) => i !== index)
+      experience: prev.experience.filter((_, i) => i !== index)
     }));
   };
 
-  const updateArrayItem = (field: string, index: number, newItem: any) => {
+  const handleExperienceUpdate = (index: number, field: 'position' | 'institution' | 'period', value: string) => {
     setProfileData(prev => ({
       ...prev,
-      [field]: (prev[field as keyof typeof prev] as any[]).map((item, i) => i === index ? newItem : item)
+      experience: prev.experience.map((item, i) => 
+        i === index ? { ...item, [field]: value } : item
+      )
+    }));
+  };
+
+  const handlePublicationAdd = () => {
+    setProfileData(prev => ({
+      ...prev,
+      publications: [...prev.publications, { title: '', journal: '', year: '' }]
+    }));
+  };
+
+  const handlePublicationRemove = (index: number) => {
+    setProfileData(prev => ({
+      ...prev,
+      publications: prev.publications.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handlePublicationUpdate = (index: number, field: 'title' | 'journal' | 'year', value: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      publications: prev.publications.map((item, i) => 
+        i === index ? { ...item, [field]: value } : item
+      )
+    }));
+  };
+
+  const handleAwardAdd = () => {
+    setProfileData(prev => ({
+      ...prev,
+      awards: [...prev.awards, { title: '', year: '' }]
+    }));
+  };
+
+  const handleAwardRemove = (index: number) => {
+    setProfileData(prev => ({
+      ...prev,
+      awards: prev.awards.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleAwardUpdate = (index: number, field: 'title' | 'year', value: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      awards: prev.awards.map((item, i) => 
+        i === index ? { ...item, [field]: value } : item
+      )
+    }));
+  };
+
+  const handleFellowshipAdd = () => {
+    setProfileData(prev => ({
+      ...prev,
+      fellowships: [...prev.fellowships, { title: '', period: '' }]
+    }));
+  };
+
+  const handleFellowshipRemove = (index: number) => {
+    setProfileData(prev => ({
+      ...prev,
+      fellowships: prev.fellowships.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleFellowshipUpdate = (index: number, field: 'title' | 'period', value: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      fellowships: prev.fellowships.map((item, i) => 
+        i === index ? { ...item, [field]: value } : item
+      )
+    }));
+  };
+
+  const handleGrantAdd = () => {
+    setProfileData(prev => ({
+      ...prev,
+      grants: [...prev.grants, { title: '', amount: '', period: '' }]
+    }));
+  };
+
+  const handleGrantRemove = (index: number) => {
+    setProfileData(prev => ({
+      ...prev,
+      grants: prev.grants.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleGrantUpdate = (index: number, field: 'title' | 'amount' | 'period', value: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      grants: prev.grants.map((item, i) => 
+        i === index ? { ...item, [field]: value } : item
+      )
+    }));
+  };
+
+  const handleMembershipAdd = () => {
+    setProfileData(prev => ({
+      ...prev,
+      memberships: [...prev.memberships, '']
+    }));
+  };
+
+  const handleMembershipRemove = (index: number) => {
+    setProfileData(prev => ({
+      ...prev,
+      memberships: prev.memberships.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleMembershipUpdate = (index: number, value: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      memberships: prev.memberships.map((item, i) => 
+        i === index ? value : item
+      )
+    }));
+  };
+
+  const handleSupervisionUpdate = (field: 'hnd' | 'undergraduate' | 'masters' | 'phd' | 'postdoc', value: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      supervision: { ...prev.supervision, [field]: value }
     }));
   };
 
@@ -91,551 +223,75 @@ const ProfileTab = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Profile Image */}
         <div className="md:col-span-1">
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="relative inline-block">
-                <div className="w-32 h-32 mx-auto rounded-full overflow-hidden bg-gray-200">
-                  <img 
-                    src="/lovable-uploads/83e0a07d-3527-4693-8172-d7d181156044.png" 
-                    alt="Profile" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                {isEditing && (
-                  <Button
-                    size="sm"
-                    className="absolute -bottom-2 -right-2 rounded-full p-2"
-                    onClick={handleImageUpload}
-                  >
-                    <Camera className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-              <h3 className="mt-4 font-semibold">{profileData.name}</h3>
-              <p className="text-gray-600">{profileData.title}</p>
-            </CardContent>
-          </Card>
+          <ProfileImage
+            name={profileData.name}
+            title={profileData.title}
+            isEditing={isEditing}
+            onImageUpload={handleImageUpload}
+          />
         </div>
 
         {/* Profile Details */}
         <div className="md:col-span-2 space-y-6">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    value={profileData.name}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="title">Title</Label>
-                  <Input
-                    id="title"
-                    value={profileData.title}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, title: e.target.value }))}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="institution">Institution</Label>
-                  <Input
-                    id="institution"
-                    value={profileData.institution}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, institution: e.target.value }))}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="department">Department</Label>
-                  <Input
-                    id="department"
-                    value={profileData.department}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, department: e.target.value }))}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={profileData.email}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    value={profileData.phone}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="hourlyRate">Hourly Rate (XAF)</Label>
-                  <Input
-                    id="hourlyRate"
-                    value={profileData.hourlyRate}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, hourlyRate: e.target.value }))}
-                    disabled={!isEditing}
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <Label htmlFor="bio">Bio</Label>
-                <Textarea
-                  id="bio"
-                  value={profileData.bio}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
-                  disabled={!isEditing}
-                  rows={4}
-                />
-              </div>
-              
-              <div>
-                <Label>Specialties</Label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {profileData.specialties.map((specialty, index) => (
-                    <Badge key={index} variant="secondary">
-                      {specialty}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-              
-              <div>
-                <Label>Languages</Label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {profileData.languages.map((language, index) => (
-                    <Badge key={index} variant="outline">
-                      {language}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <BasicInformation
+            profileData={profileData}
+            isEditing={isEditing}
+            onUpdate={handleBasicInfoUpdate}
+          />
 
-          {/* Experience Section */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Experience</CardTitle>
-                {isEditing && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => addArrayItem('experience', { position: '', institution: '', period: '' })}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Experience
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {profileData.experience.map((exp, index) => (
-                <div key={index} className="border rounded-lg p-4">
-                  {isEditing && (
-                    <div className="flex justify-end mb-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => removeArrayItem('experience', index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label>Position</Label>
-                      <Input
-                        value={exp.position}
-                        onChange={(e) => updateArrayItem('experience', index, { ...exp, position: e.target.value })}
-                        disabled={!isEditing}
-                      />
-                    </div>
-                    <div>
-                      <Label>Institution</Label>
-                      <Input
-                        value={exp.institution}
-                        onChange={(e) => updateArrayItem('experience', index, { ...exp, institution: e.target.value })}
-                        disabled={!isEditing}
-                      />
-                    </div>
-                    <div>
-                      <Label>Period</Label>
-                      <Input
-                        value={exp.period}
-                        onChange={(e) => updateArrayItem('experience', index, { ...exp, period: e.target.value })}
-                        disabled={!isEditing}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <ExperienceSection
+            experience={profileData.experience}
+            isEditing={isEditing}
+            onAdd={handleExperienceAdd}
+            onRemove={handleExperienceRemove}
+            onUpdate={handleExperienceUpdate}
+          />
 
-          {/* Publications Section */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Publications</CardTitle>
-                {isEditing && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => addArrayItem('publications', { title: '', journal: '', year: '' })}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Publication
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {profileData.publications.map((pub, index) => (
-                <div key={index} className="border rounded-lg p-4">
-                  {isEditing && (
-                    <div className="flex justify-end mb-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => removeArrayItem('publications', index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label>Title</Label>
-                      <Input
-                        value={pub.title}
-                        onChange={(e) => updateArrayItem('publications', index, { ...pub, title: e.target.value })}
-                        disabled={!isEditing}
-                      />
-                    </div>
-                    <div>
-                      <Label>Journal</Label>
-                      <Input
-                        value={pub.journal}
-                        onChange={(e) => updateArrayItem('publications', index, { ...pub, journal: e.target.value })}
-                        disabled={!isEditing}
-                      />
-                    </div>
-                    <div>
-                      <Label>Year</Label>
-                      <Input
-                        value={pub.year}
-                        onChange={(e) => updateArrayItem('publications', index, { ...pub, year: e.target.value })}
-                        disabled={!isEditing}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <PublicationsSection
+            publications={profileData.publications}
+            isEditing={isEditing}
+            onAdd={handlePublicationAdd}
+            onRemove={handlePublicationRemove}
+            onUpdate={handlePublicationUpdate}
+          />
 
-          {/* Awards Section */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Awards</CardTitle>
-                {isEditing && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => addArrayItem('awards', { title: '', year: '' })}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Award
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {profileData.awards.map((award, index) => (
-                <div key={index} className="border rounded-lg p-4">
-                  {isEditing && (
-                    <div className="flex justify-end mb-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => removeArrayItem('awards', index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Title</Label>
-                      <Input
-                        value={award.title}
-                        onChange={(e) => updateArrayItem('awards', index, { ...award, title: e.target.value })}
-                        disabled={!isEditing}
-                      />
-                    </div>
-                    <div>
-                      <Label>Year</Label>
-                      <Input
-                        value={award.year}
-                        onChange={(e) => updateArrayItem('awards', index, { ...award, year: e.target.value })}
-                        disabled={!isEditing}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <AwardsSection
+            awards={profileData.awards}
+            isEditing={isEditing}
+            onAdd={handleAwardAdd}
+            onRemove={handleAwardRemove}
+            onUpdate={handleAwardUpdate}
+          />
 
-          {/* Fellowships Section */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Fellowships</CardTitle>
-                {isEditing && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => addArrayItem('fellowships', { title: '', period: '' })}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Fellowship
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {profileData.fellowships.map((fellowship, index) => (
-                <div key={index} className="border rounded-lg p-4">
-                  {isEditing && (
-                    <div className="flex justify-end mb-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => removeArrayItem('fellowships', index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Title</Label>
-                      <Input
-                        value={fellowship.title}
-                        onChange={(e) => updateArrayItem('fellowships', index, { ...fellowship, title: e.target.value })}
-                        disabled={!isEditing}
-                      />
-                    </div>
-                    <div>
-                      <Label>Period</Label>
-                      <Input
-                        value={fellowship.period}
-                        onChange={(e) => updateArrayItem('fellowships', index, { ...fellowship, period: e.target.value })}
-                        disabled={!isEditing}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <FellowshipsSection
+            fellowships={profileData.fellowships}
+            isEditing={isEditing}
+            onAdd={handleFellowshipAdd}
+            onRemove={handleFellowshipRemove}
+            onUpdate={handleFellowshipUpdate}
+          />
 
-          {/* Research Grants Section */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Research Grants</CardTitle>
-                {isEditing && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => addArrayItem('grants', { title: '', amount: '', period: '' })}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Grant
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {profileData.grants.map((grant, index) => (
-                <div key={index} className="border rounded-lg p-4">
-                  {isEditing && (
-                    <div className="flex justify-end mb-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => removeArrayItem('grants', index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label>Title</Label>
-                      <Input
-                        value={grant.title}
-                        onChange={(e) => updateArrayItem('grants', index, { ...grant, title: e.target.value })}
-                        disabled={!isEditing}
-                      />
-                    </div>
-                    <div>
-                      <Label>Amount</Label>
-                      <Input
-                        value={grant.amount}
-                        onChange={(e) => updateArrayItem('grants', index, { ...grant, amount: e.target.value })}
-                        disabled={!isEditing}
-                      />
-                    </div>
-                    <div>
-                      <Label>Period</Label>
-                      <Input
-                        value={grant.period}
-                        onChange={(e) => updateArrayItem('grants', index, { ...grant, period: e.target.value })}
-                        disabled={!isEditing}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <GrantsSection
+            grants={profileData.grants}
+            isEditing={isEditing}
+            onAdd={handleGrantAdd}
+            onRemove={handleGrantRemove}
+            onUpdate={handleGrantUpdate}
+          />
 
-          {/* Professional Memberships Section */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Professional Memberships</CardTitle>
-                {isEditing && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => addArrayItem('memberships', '')}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Membership
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {profileData.memberships.map((membership, index) => (
-                <div key={index} className="flex items-center gap-4">
-                  <Input
-                    value={membership}
-                    onChange={(e) => updateArrayItem('memberships', index, e.target.value)}
-                    disabled={!isEditing}
-                    className="flex-1"
-                  />
-                  {isEditing && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => removeArrayItem('memberships', index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <MembershipsSection
+            memberships={profileData.memberships}
+            isEditing={isEditing}
+            onAdd={handleMembershipAdd}
+            onRemove={handleMembershipRemove}
+            onUpdate={handleMembershipUpdate}
+          />
 
-          {/* Supervision Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Supervision</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div>
-                  <Label htmlFor="hnd">HND</Label>
-                  <Input
-                    id="hnd"
-                    type="number"
-                    value={profileData.supervision.hnd}
-                    onChange={(e) => setProfileData(prev => ({
-                      ...prev,
-                      supervision: { ...prev.supervision, hnd: e.target.value }
-                    }))}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="undergraduate">Undergraduate</Label>
-                  <Input
-                    id="undergraduate"
-                    type="number"
-                    value={profileData.supervision.undergraduate}
-                    onChange={(e) => setProfileData(prev => ({
-                      ...prev,
-                      supervision: { ...prev.supervision, undergraduate: e.target.value }
-                    }))}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="masters">Master's</Label>
-                  <Input
-                    id="masters"
-                    type="number"
-                    value={profileData.supervision.masters}
-                    onChange={(e) => setProfileData(prev => ({
-                      ...prev,
-                      supervision: { ...prev.supervision, masters: e.target.value }
-                    }))}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phd">PhD</Label>
-                  <Input
-                    id="phd"
-                    type="number"
-                    value={profileData.supervision.phd}
-                    onChange={(e) => setProfileData(prev => ({
-                      ...prev,
-                      supervision: { ...prev.supervision, phd: e.target.value }
-                    }))}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="postdoc">Post Doctorate</Label>
-                  <Input
-                    id="postdoc"
-                    type="number"
-                    value={profileData.supervision.postdoc}
-                    onChange={(e) => setProfileData(prev => ({
-                      ...prev,
-                      supervision: { ...prev.supervision, postdoc: e.target.value }
-                    }))}
-                    disabled={!isEditing}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <SupervisionSection
+            supervision={profileData.supervision}
+            isEditing={isEditing}
+            onUpdate={handleSupervisionUpdate}
+          />
 
           {isEditing && (
             <div className="flex justify-end">
