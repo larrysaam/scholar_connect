@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Upload, FileText, Building, Award, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { Upload, FileText, Building, Award, CheckCircle, Clock } from "lucide-react";
 import VerificationBadge from "./VerificationBadge";
 
 interface VerificationItem {
@@ -46,19 +46,6 @@ const VerificationManager = () => {
         return <Building className="h-5 w-5" />;
       default:
         return <FileText className="h-5 w-5" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "verified":
-        return "text-green-600";
-      case "pending":
-        return "text-yellow-600";
-      case "unverified":
-        return "text-gray-400";
-      default:
-        return "text-gray-400";
     }
   };
 
@@ -139,45 +126,6 @@ const VerificationManager = () => {
           </Card>
         ))}
       </div>
-
-      {/* Verification Benefits */}
-      <Card className="bg-blue-50 border-blue-200">
-        <CardHeader>
-          <CardTitle className="text-blue-800">Benefits of Verification</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div className="space-y-2">
-              <div className="flex items-center text-blue-700">
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Increased profile visibility
-              </div>
-              <div className="flex items-center text-blue-700">
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Higher trust rating from clients
-              </div>
-              <div className="flex items-center text-blue-700">
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Priority in search results
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center text-blue-700">
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Access to premium features
-              </div>
-              <div className="flex items-center text-blue-700">
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Institutional partnerships
-              </div>
-              <div className="flex items-center text-blue-700">
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Verified expert badge
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

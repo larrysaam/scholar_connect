@@ -133,12 +133,15 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
           Settings
         </Button>
         
-        <div className="pt-4 border-t">
-          <InviteModal 
-            userType={getInviteUserType()}
-            triggerText={getInviteText()}
-          />
-        </div>
+        {/* Only show invite options for students and research aides */}
+        {userType !== "researcher" && (
+          <div className="pt-4 border-t">
+            <InviteModal 
+              userType={getInviteUserType()}
+              triggerText={getInviteText()}
+            />
+          </div>
+        )}
       </nav>
     </div>
   );

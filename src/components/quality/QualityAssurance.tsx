@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Textarea } from "@/components/ui/textarea";
-import { Shield, CheckCircle, AlertTriangle, Star, MessageSquare } from "lucide-react";
+import { Shield, CheckCircle, AlertTriangle } from "lucide-react";
 
 interface QualityMetrics {
   responseTime: number;
@@ -21,8 +20,6 @@ const QualityAssurance = () => {
     satisfaction: 88,
     completeness: 96
   });
-
-  const [feedback, setFeedback] = useState('');
 
   const qualityChecks = [
     {
@@ -130,43 +127,6 @@ const QualityAssurance = () => {
                 ))}
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Feedback Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <MessageSquare className="h-5 w-5" />
-            <span>Quality Feedback</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Share your feedback to help us improve</label>
-              <Textarea
-                placeholder="Tell us about your experience and suggestions for improvement..."
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-                className="mt-2"
-              />
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <span className="text-sm">Rate this session:</span>
-              <div className="flex space-x-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star 
-                    key={star} 
-                    className="h-4 w-4 text-yellow-400 fill-yellow-400 cursor-pointer hover:scale-110 transition-transform" 
-                  />
-                ))}
-              </div>
-            </div>
-            
-            <Button>Submit Feedback</Button>
           </div>
         </CardContent>
       </Card>
