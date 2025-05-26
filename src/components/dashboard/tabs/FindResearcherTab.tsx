@@ -24,9 +24,9 @@ interface Researcher {
 
 const FindResearcherTab = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedField, setSelectedField] = useState("");
-  const [selectedLanguage, setSelectedLanguage] = useState("");
-  const [priceRange, setPriceRange] = useState("");
+  const [selectedField, setSelectedField] = useState("all");
+  const [selectedLanguage, setSelectedLanguage] = useState("all");
+  const [priceRange, setPriceRange] = useState("all");
 
   const [featuredResearchers] = useState<Researcher[]>([
     {
@@ -97,7 +97,7 @@ const FindResearcherTab = () => {
       researcher.field.toLowerCase().includes(searchQuery.toLowerCase()) ||
       researcher.specializations.some(spec => spec.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    const matchesField = selectedField === "" || researcher.field === selectedField;
+    const matchesField = selectedField === "all" || researcher.field === selectedField;
     
     return matchesSearch && matchesField;
   });
@@ -185,7 +185,7 @@ const FindResearcherTab = () => {
                   <SelectValue placeholder="Field" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Fields</SelectItem>
+                  <SelectItem value="all">All Fields</SelectItem>
                   <SelectItem value="Geographic Information Systems">GIS</SelectItem>
                   <SelectItem value="Epidemiology">Epidemiology</SelectItem>
                   <SelectItem value="Computer Science">Computer Science</SelectItem>
@@ -198,7 +198,7 @@ const FindResearcherTab = () => {
                   <SelectValue placeholder="Language" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Languages</SelectItem>
+                  <SelectItem value="all">All Languages</SelectItem>
                   <SelectItem value="english">English</SelectItem>
                   <SelectItem value="french">French</SelectItem>
                   <SelectItem value="arabic">Arabic</SelectItem>
@@ -210,7 +210,7 @@ const FindResearcherTab = () => {
                   <SelectValue placeholder="Price Range" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any Price</SelectItem>
+                  <SelectItem value="all">Any Price</SelectItem>
                   <SelectItem value="0-10000">0 - 10,000 XAF</SelectItem>
                   <SelectItem value="10000-15000">10,000 - 15,000 XAF</SelectItem>
                   <SelectItem value="15000+">15,000+ XAF</SelectItem>
@@ -227,7 +227,7 @@ const FindResearcherTab = () => {
       </Card>
 
       {/* Featured Experts */}
-      {searchQuery === "" && selectedField === "" && (
+      {searchQuery === "" && selectedField === "all" && (
         <div>
           <h3 className="text-xl font-semibold mb-4">Featured Experts</h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -241,7 +241,7 @@ const FindResearcherTab = () => {
       {/* Search Results */}
       <div>
         <h3 className="text-xl font-semibold mb-4">
-          {searchQuery || selectedField ? "Search Results" : "All Researchers"} 
+          {searchQuery || selectedField !== "all" ? "Search Results" : "All Researchers"} 
           <span className="text-gray-500 font-normal ml-2">({filteredResearchers.length} found)</span>
         </h3>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
