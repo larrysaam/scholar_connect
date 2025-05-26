@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +24,8 @@ import Partnerships from "./pages/Partnerships";
 import CoAuthorWorkspace from "./pages/CoAuthorWorkspace";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
+import StudentPayments from "./pages/StudentPayments";
+import ProviderEarnings from "./pages/ProviderEarnings";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,8 @@ const App = () => (
             <Route path="/partnerships" element={<Partnerships />} />
             <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            <Route path="/student-payments" element={<StudentPayments />} />
+            <Route path="/provider-earnings" element={<ProviderEarnings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
