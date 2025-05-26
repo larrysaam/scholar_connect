@@ -23,28 +23,6 @@ interface DashboardSidebarProps {
 }
 
 const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSidebarProps) => {
-  const getInviteText = () => {
-    switch (userType) {
-      case "researcher":
-        return "Invite Researcher";
-      case "research-aide":
-        return "Invite Research Aid";
-      default:
-        return "Invite Student";
-    }
-  };
-
-  const getInviteUserType = () => {
-    switch (userType) {
-      case "researcher":
-        return "researcher" as const;
-      case "research-aide":
-        return "research-aid" as const;
-      default:
-        return "student" as const;
-    }
-  };
-
   return (
     <div className="bg-white p-5 rounded-lg shadow-sm">
       <div className="flex items-center space-x-4 mb-6">
@@ -162,18 +140,19 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
         
         {/* Invite and Report options */}
         <div className="pt-4 border-t space-y-2">
-          {userType !== "researcher" && (
-            <InviteModal 
-              userType={getInviteUserType()}
-              triggerText={getInviteText()}
-            />
-          )}
-          
           {/* Always show "Invite a Researcher" for all user types */}
           <InviteModal 
             userType="researcher"
             triggerText="Invite a Researcher"
           />
+          
+          {/* Show "Invite a Student" only for researchers */}
+          {userType === "researcher" && (
+            <InviteModal 
+              userType="student"
+              triggerText="Invite a Student"
+            />
+          )}
           
           {/* Misconduct Reporting */}
           <MisconductReportModal />

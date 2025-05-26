@@ -1,147 +1,146 @@
 
-import { useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Eye, GraduationCap, BookOpen, AlertCircle, FileText } from "lucide-react";
-
-interface Student {
-  id: string;
-  name: string;
-  field: string;
-  university: string;
-  researchSummary: string;
-  challenge: string;
-  comment: string;
-  documentsShared: {
-    name: string;
-    type: string;
-    preview: string;
-  }[];
-}
+import { Info, User, MapPin, FileText, Target, HelpCircle, Lightbulb, Microscope } from "lucide-react";
 
 interface StudentInfoModalProps {
-  student: Student;
+  studentName: string;
+  researchSummary?: {
+    level: string;
+    researchTitle: string;
+    projectLocation: string;
+    problemStatement: string;
+    researchQuestions: string;
+    objectives: string;
+    hypotheses: string;
+    methodology: string;
+    comments: string;
+  };
 }
 
-const StudentInfoModal = ({ student }: StudentInfoModalProps) => {
-  const [selectedDocument, setSelectedDocument] = useState<string | null>(null);
-
-  const handleViewDocument = (docName: string) => {
-    setSelectedDocument(docName);
-    console.log("Viewing document:", docName);
-  };
-
+const StudentInfoModal = ({ studentName, researchSummary }: StudentInfoModalProps) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
-          <Eye className="h-4 w-4 mr-2" />
-          More Information
+          <Info className="h-4 w-4 mr-2" />
+          More Info
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <GraduationCap className="h-5 w-5" />
-            Student Information
+            <User className="h-5 w-5" />
+            {studentName} - Research Summary
           </DialogTitle>
+          <DialogDescription>
+            Detailed information about the student's research project
+          </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-6">
-          {/* Student Profile Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Student Profile</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-start gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src="/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png" />
-                  <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold">{student.name}</h3>
-                  <p className="text-gray-600 mb-2">{student.field}</p>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="secondary">{student.university}</Badge>
+        <div className="space-y-4">
+          {researchSummary ? (
+            <>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Basic Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="font-medium text-gray-700">Level:</p>
+                    <p className="text-gray-900">{researchSummary.level}</p>
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                  <div>
+                    <p className="font-medium text-gray-700">Project Location:</p>
+                    <p className="text-gray-900 flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      {researchSummary.projectLocation}
+                    </p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <p className="font-medium text-gray-700">Research Title:</p>
+                    <p className="text-gray-900 font-medium">{researchSummary.researchTitle}</p>
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* Research Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <HelpCircle className="h-5 w-5" />
+                    Problem Statement
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-900 whitespace-pre-wrap">{researchSummary.problemStatement}</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Target className="h-5 w-5" />
+                    Research Questions & Objectives
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <p className="font-medium text-gray-700 mb-2">Research Questions:</p>
+                    <p className="text-gray-900 whitespace-pre-wrap">{researchSummary.researchQuestions}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-700 mb-2">Objectives:</p>
+                    <p className="text-gray-900 whitespace-pre-wrap">{researchSummary.objectives}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Lightbulb className="h-5 w-5" />
+                    Hypotheses
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-900 whitespace-pre-wrap">{researchSummary.hypotheses}</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Microscope className="h-5 w-5" />
+                    Methodology
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-900 whitespace-pre-wrap">{researchSummary.methodology}</p>
+                </CardContent>
+              </Card>
+
+              {researchSummary.comments && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Additional Comments</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-900 whitespace-pre-wrap">{researchSummary.comments}</p>
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          ) : (
             <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <BookOpen className="h-4 w-4" />
-                  Research Summary
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-700">{student.researchSummary}</p>
+              <CardContent className="text-center py-8">
+                <p className="text-gray-500">No research summary available for this student.</p>
               </CardContent>
             </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4" />
-                  Research Challenge
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-700">{student.challenge}</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Student Comment */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Student's Comment</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-700">{student.comment}</p>
-            </CardContent>
-          </Card>
-
-          {/* Shared Documents */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Shared Documents
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {student.documentsShared.map((doc, index) => (
-                  <div key={index} className="border rounded-lg p-3">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h4 className="font-medium text-sm">{doc.name}</h4>
-                        <p className="text-xs text-gray-500">{doc.type}</p>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handleViewDocument(doc.name)}
-                      >
-                        <Eye className="h-3 w-3 mr-1" />
-                        View
-                      </Button>
-                    </div>
-                    <p className="text-xs text-gray-600">{doc.preview}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          )}
         </div>
       </DialogContent>
     </Dialog>

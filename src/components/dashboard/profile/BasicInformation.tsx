@@ -4,6 +4,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Upload } from "lucide-react";
+import AIBioGenerator from "./AIBioGenerator";
 
 interface BasicInformationProps {
   profileData: {
@@ -17,12 +20,25 @@ interface BasicInformationProps {
     bio: string;
     specialties: string[];
     languages: string[];
+    employmentFile?: {
+      name: string;
+      uploadDate: string;
+    };
   };
   isEditing: boolean;
+  userType?: "student" | "researcher";
   onUpdate: (field: string, value: string) => void;
+  onFileUpload?: (file: File) => void;
 }
 
-const BasicInformation = ({ profileData, isEditing, onUpdate }: BasicInformationProps) => {
+const BasicInformation = ({ profileData, isEditing, userType = "researcher", onUpdate, onFileUpload }: BasicInformationProps) => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && onFileUpload) {
+      onFileUpload(file);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -85,19 +101,31 @@ const BasicInformation = ({ profileData, isEditing, onUpdate }: BasicInformation
               disabled={!isEditing}
             />
           </div>
-          <div>
-            <Label htmlFor="hourlyRate">Hourly Rate (XAF)</Label>
-            <Input
-              id="hourlyRate"
-              value={profileData.hourlyRate}
-              onChange={(e) => onUpdate('hourlyRate', e.target.value)}
-              disabled={!isEditing}
-            />
-          </div>
+          {userType === "researcher" && (
+            <div>
+              <Label htmlFor="hourlyRate">Hourly Rate (XAF)</Label>
+              <Input
+                id="hourlyRate"
+                value={profileData.hourlyRate}
+                onChange={(e) => onUpdate('hourlyRate', e.target.value)}
+                disabled={!isEditing}
+              />
+            </div>
+          )}
         </div>
         
         <div>
-          <Label htmlFor="bio">Bio</Label>
+          <div className="flex items-center gap-2 mb-2">
+            <Label htmlFor="bio">Bio</Label>
+            {isEditing && (
+              <AIBioGenerator
+                currentBio={profileData.bio}
+                profileData={profileData}
+                userType={userType}
+                onBioGenerated={(newBio) => onUpdate('bio', newBio)}
+              />
+            )}
+          </div>
           <Textarea
             id="bio"
             value={profileData.bio}
@@ -128,6 +156,47 @@ const BasicInformation = ({ profileData, isEditing, onUpdate }: BasicInformation
             ))}
           </div>
         </div>
+
+        {userType === "researcher" && (
+          <div>
+            <Label>Employment Verification Document</Label>
+            <div className="mt-2">
+              {profileData.employmentFile ? (
+                <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{profileData.employmentFile.name}</p>
+                    <p className="text-xs text-gray-500">Uploaded: {profileData.employmentFile.uploadDate}</p>
+                  </div>
+                  {isEditing && (
+                    <Button variant="outline" size="sm" onClick={() => document.getElementById('employment-file')?.click()}>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Replace
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    disabled={!isEditing}
+                    onClick={() => document.getElementById('employment-file')?.click()}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Document
+                  </Button>
+                  <span className="text-sm text-gray-500">No document uploaded</span>
+                </div>
+              )}
+              <input
+                id="employment-file"
+                type="file"
+                className="hidden"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                onChange={handleFileUpload}
+              />
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
