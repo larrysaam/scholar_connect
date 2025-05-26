@@ -92,7 +92,7 @@ const Navbar = () => {
                     <DropdownMenuItem onClick={() => navigate("/auth")}>
                       {t("nav.signIn") || "Sign In"}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/auth")}>
+                    <DropdownMenuItem onClick={() => navigate("/register")}>
                       {t("nav.signUp") || "Sign Up"}
                     </DropdownMenuItem>
                   </>
@@ -134,7 +134,7 @@ const Navbar = () => {
                         <Button variant="outline" className="w-full" onClick={() => navigate("/auth")}>
                           {t("nav.signIn") || "Sign In"}
                         </Button>
-                        <Button className="w-full" onClick={() => navigate("/auth")}>
+                        <Button className="w-full" onClick={() => navigate("/register")}>
                           {t("nav.signUp") || "Sign Up"}
                         </Button>
                       </>

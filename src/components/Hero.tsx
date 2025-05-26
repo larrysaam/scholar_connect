@@ -36,7 +36,7 @@ const Hero = () => {
                 <Link to="/researchers">Find Researchers</Link>
               </Button>
               <Button asChild size="lg" className="bg-green-600 text-white hover:bg-green-700 shadow-lg transition-all duration-300 hover:shadow-xl border-2 border-green-500">
-                <Link to="/auth">Join as a Researcher</Link>
+                <Link to="/register">Join Platform</Link>
               </Button>
             </div>
           </div>
