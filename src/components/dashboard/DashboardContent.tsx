@@ -7,6 +7,8 @@ import ProfileTab from "./tabs/ProfileTab";
 import DocumentsTab from "./tabs/DocumentsTab";
 import SettingsTab from "./tabs/SettingsTab";
 import QualityFeedbackTab from "./tabs/QualityFeedbackTab";
+import NotificationsTab from "./tabs/NotificationsTab";
+import ResearchSummaryTab from "./tabs/ResearchSummaryTab";
 
 interface DashboardContentProps {
   activeTab: string;
@@ -30,6 +32,14 @@ const DashboardContent = ({ activeTab, setActiveTab }: DashboardContentProps) =>
       
       <TabsContent value="quality" className="mt-0">
         <QualityFeedbackTab />
+      </TabsContent>
+      
+      <TabsContent value="notifications" className="mt-0">
+        <NotificationsTab />
+      </TabsContent>
+      
+      <TabsContent value="research-summary" className="mt-0">
+        <ResearchSummaryTab />
       </TabsContent>
       
       <TabsContent value="profile" className="mt-0">

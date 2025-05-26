@@ -4,7 +4,18 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardContent from "@/components/dashboard/DashboardContent";
+import NotificationsBanner from "@/components/dashboard/NotificationsBanner";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import StudentUpcomingTab from "@/components/dashboard/tabs/StudentUpcomingTab";
+import StudentPastTab from "@/components/dashboard/tabs/StudentPastTab";
+import PaymentsTab from "@/components/dashboard/tabs/PaymentsTab";
+import ProfileTab from "@/components/dashboard/tabs/ProfileTab";
+import DocumentsTab from "@/components/dashboard/tabs/DocumentsTab";
+import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
+import QualityFeedbackTab from "@/components/dashboard/tabs/QualityFeedbackTab";
+import NotificationsTab from "@/components/dashboard/tabs/NotificationsTab";
+import ResearchSummaryTab from "@/components/dashboard/tabs/ResearchSummaryTab";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -21,6 +32,31 @@ const Dashboard = () => {
   const handleOnboardingComplete = () => {
     localStorage.setItem('student_onboarding_complete', 'true');
     setShowOnboarding(false);
+  };
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "upcoming":
+        return <StudentUpcomingTab />;
+      case "past":
+        return <StudentPastTab />;
+      case "payments":
+        return <PaymentsTab />;
+      case "quality":
+        return <QualityFeedbackTab />;
+      case "notifications":
+        return <NotificationsTab />;
+      case "research-summary":
+        return <ResearchSummaryTab />;
+      case "profile":
+        return <ProfileTab />;
+      case "documents":
+        return <DocumentsTab />;
+      case "settings":
+        return <SettingsTab />;
+      default:
+        return <StudentUpcomingTab />;
+    }
   };
 
   return (
@@ -62,10 +98,14 @@ const Dashboard = () => {
             
             {/* Main content */}
             <div className="md:col-span-3">
-              <DashboardContent 
-                activeTab={activeTab} 
-                setActiveTab={setActiveTab} 
-              />
+              {/* Notifications Banner */}
+              <NotificationsBanner />
+              
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsContent value={activeTab} className="mt-0">
+                  {renderTabContent()}
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
         </div>

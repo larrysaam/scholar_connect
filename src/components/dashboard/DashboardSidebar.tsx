@@ -10,7 +10,8 @@ import {
   MessageSquare,
   UserPlus,
   Shield,
-  Bell
+  Bell,
+  BookOpen
 } from "lucide-react";
 import InviteModal from "@/components/researcher/InviteModal";
 import MisconductReportModal from "./MisconductReportModal";
@@ -91,6 +92,29 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
           <MessageSquare className="mr-2 h-4 w-4" />
           Quality Feedback
         </Button>
+        
+        {/* Show notifications for all user types */}
+        <Button 
+          variant={activeTab === "notifications" ? "default" : "ghost"} 
+          className="w-full justify-start" 
+          onClick={() => setActiveTab("notifications")}
+        >
+          <Bell className="mr-2 h-4 w-4" />
+          Notifications
+        </Button>
+        
+        {/* Show research summary only for students */}
+        {userType !== "researcher" && userType !== "research-aide" && (
+          <Button 
+            variant={activeTab === "research-summary" ? "default" : "ghost"} 
+            className="w-full justify-start" 
+            onClick={() => setActiveTab("research-summary")}
+          >
+            <BookOpen className="mr-2 h-4 w-4" />
+            Research Summary
+          </Button>
+        )}
+        
         {userType === "researcher" && (
           <>
             <Button 
@@ -100,14 +124,6 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
             >
               <Shield className="mr-2 h-4 w-4" />
               Verification
-            </Button>
-            <Button 
-              variant={activeTab === "notifications" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("notifications")}
-            >
-              <Bell className="mr-2 h-4 w-4" />
-              Notifications
             </Button>
             <Button 
               variant={activeTab === "co-author-invitations" ? "default" : "ghost"} 
