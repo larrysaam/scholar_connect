@@ -21,7 +21,9 @@ import {
   Star,
   Home,
   Cog,
-  Award
+  Award,
+  Search,
+  Target
 } from "lucide-react";
 import InviteModal from "@/components/researcher/InviteModal";
 import MisconductReportModal from "./MisconductReportModal";
@@ -184,9 +186,33 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
           </>
         )}
         
-        {/* Standard navigation for other user types */}
+        {/* Student specific navigation */}
         {userType !== "research-aide" && userType !== "researcher" && (
           <>
+            <Button 
+              variant={activeTab === "overview" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("overview")}
+            >
+              <Home className="mr-2 h-4 w-4" />
+              Dashboard
+            </Button>
+            <Button 
+              variant={activeTab === "find-researcher" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("find-researcher")}
+            >
+              <Search className="mr-2 h-4 w-4" />
+              Find Researcher
+            </Button>
+            <Button 
+              variant={activeTab === "performance" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("performance")}
+            >
+              <Target className="mr-2 h-4 w-4" />
+              My Progress
+            </Button>
             <Button 
               variant={activeTab === "upcoming" ? "default" : "ghost"} 
               className="w-full justify-start" 

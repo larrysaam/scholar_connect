@@ -9,6 +9,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import StudentUpcomingTab from "@/components/dashboard/tabs/StudentUpcomingTab";
 import StudentPastTab from "@/components/dashboard/tabs/StudentPastTab";
+import StudentWelcomeOverviewTab from "@/components/dashboard/tabs/StudentWelcomeOverviewTab";
+import StudentPerformanceTab from "@/components/dashboard/tabs/StudentPerformanceTab";
+import FindResearcherTab from "@/components/dashboard/tabs/FindResearcherTab";
 import PaymentsTab from "@/components/dashboard/tabs/PaymentsTab";
 import ProfileTab from "@/components/dashboard/tabs/ProfileTab";
 import DocumentsTab from "@/components/dashboard/tabs/DocumentsTab";
@@ -19,7 +22,7 @@ import ResearchSummaryTab from "@/components/dashboard/tabs/ResearchSummaryTab";
 import DiscussionTab from "@/components/dashboard/tabs/DiscussionTab";
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState("upcoming");
+  const [activeTab, setActiveTab] = useState("overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Check if user needs onboarding (simulate with localStorage)
@@ -37,6 +40,12 @@ const Dashboard = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case "overview":
+        return <StudentWelcomeOverviewTab />;
+      case "find-researcher":
+        return <FindResearcherTab />;
+      case "performance":
+        return <StudentPerformanceTab />;
       case "upcoming":
         return <StudentUpcomingTab />;
       case "past":
@@ -58,7 +67,7 @@ const Dashboard = () => {
       case "settings":
         return <SettingsTab />;
       default:
-        return <StudentUpcomingTab />;
+        return <StudentWelcomeOverviewTab />;
     }
   };
 
