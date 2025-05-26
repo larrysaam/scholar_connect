@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { 
   Calendar,
@@ -7,8 +8,7 @@ import {
   Settings,
   Banknote,
   MessageSquare,
-  UserPlus,
-  Shield
+  UserPlus
 } from "lucide-react";
 import InviteModal from "@/components/researcher/InviteModal";
 import MisconductReportModal from "./MisconductReportModal";
@@ -91,30 +91,6 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
         </Button>
         {userType === "researcher" && (
           <>
-            <Button 
-              variant={activeTab === "quality-assurance" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("quality-assurance")}
-            >
-              <MessageSquare className="mr-2 h-4 w-4" />
-              Quality Assurance
-            </Button>
-            <Button 
-              variant={activeTab === "verification" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("verification")}
-            >
-              <Shield className="mr-2 h-4 w-4" />
-              Verification
-            </Button>
-            <Button 
-              variant={activeTab === "verification-documents" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("verification-documents")}
-            >
-              <FileText className="mr-2 h-4 w-4" />
-              Verification Documents
-            </Button>
             <Button 
               variant={activeTab === "co-author-invitations" ? "default" : "ghost"} 
               className="w-full justify-start" 

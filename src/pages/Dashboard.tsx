@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import StudentProfileInfo from "@/components/dashboard/StudentProfileInfo";
 import DashboardContent from "@/components/dashboard/DashboardContent";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -50,9 +49,6 @@ const Dashboard = () => {
               </Card>
             </div>
           )}
-
-          {/* Student Profile Information */}
-          <StudentProfileInfo />
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Sidebar */}

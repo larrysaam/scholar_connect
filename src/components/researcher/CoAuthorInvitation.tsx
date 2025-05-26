@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Calendar, User, Mail, BookOpen, Award, MessageSquare, Phone, Video } from "lucide-react";
+import { Calendar, User, Mail, BookOpen, Award, MessageSquare, Phone, Video, Download } from "lucide-react";
 
 interface CoAuthorInvitationProps {
   invitation: {
@@ -77,6 +77,11 @@ const CoAuthorInvitation = ({ invitation, onAccept, onDecline }: CoAuthorInvitat
   const handleStartChat = () => {
     console.log("Starting chat for invitation:", invitation.id);
     alert("Opening chat interface...");
+  };
+
+  const handleDownloadDocument = () => {
+    console.log("Downloading document for invitation:", invitation.id);
+    alert("Downloading research proposal document...");
   };
 
   return (
@@ -230,21 +235,23 @@ const CoAuthorInvitation = ({ invitation, onAccept, onDecline }: CoAuthorInvitat
         
         {/* Action Buttons */}
         {invitation.status === 'pending' && !showCommentBox && (
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-4 border-t">
             <Button 
               onClick={() => handleAction('accept')}
               className="bg-green-600 hover:bg-green-700"
             >
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Accept Invitation
+              Accept
             </Button>
             <Button 
               variant="outline" 
               onClick={() => handleAction('decline')}
               className="border-red-600 text-red-600 hover:bg-red-50"
             >
-              <MessageSquare className="h-4 w-4 mr-2" />
               Decline
+            </Button>
+            <Button variant="outline" onClick={handleDownloadDocument}>
+              <Download className="h-4 w-4 mr-2" />
+              Download Document
             </Button>
           </div>
         )}
@@ -259,6 +266,20 @@ const CoAuthorInvitation = ({ invitation, onAccept, onDecline }: CoAuthorInvitat
             <Button variant="outline" onClick={handleStartChat}>
               <MessageSquare className="h-4 w-4 mr-2" />
               Start Chat
+            </Button>
+            <Button variant="outline" onClick={handleDownloadDocument}>
+              <Download className="h-4 w-4 mr-2" />
+              Download Document
+            </Button>
+          </div>
+        )}
+
+        {/* Post-Decline Actions */}
+        {invitation.status === 'declined' && (
+          <div className="flex gap-3 pt-4 border-t">
+            <Button variant="outline" onClick={handleDownloadDocument}>
+              <Download className="h-4 w-4 mr-2" />
+              Download Document
             </Button>
           </div>
         )}
