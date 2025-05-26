@@ -300,7 +300,7 @@ const UpcomingTab = () => {
                   </Button>
                   
                   <StudentResearchSummaryModal 
-                    studentId={consultation.studentId || "student-1"}
+                    studentId={`student-${consultation.id}`}
                     consultationId={consultation.id}
                   />
                 </div>
