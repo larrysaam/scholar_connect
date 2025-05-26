@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -14,6 +13,8 @@ import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
 import QualityFeedbackTab from "@/components/dashboard/tabs/QualityFeedbackTab";
 import QualityAssurance from "@/components/quality/QualityAssurance";
 import VerificationManager from "@/components/verification/VerificationManager";
+import VerificationDocumentsTab from "@/components/dashboard/tabs/VerificationDocumentsTab";
+import MisconductReportModal from "@/components/dashboard/MisconductReportModal";
 
 const ResearcherDashboard = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -46,6 +47,8 @@ const ResearcherDashboard = () => {
         return <QualityAssurance />;
       case "verification":
         return <VerificationManager />;
+      case "verification-documents":
+        return <VerificationDocumentsTab />;
       case "profile":
         return <ProfileTab />;
       case "documents":

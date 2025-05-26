@@ -8,9 +8,11 @@ import {
   Settings,
   Banknote,
   MessageSquare,
-  UserPlus
+  UserPlus,
+  Shield
 } from "lucide-react";
 import InviteModal from "@/components/researcher/InviteModal";
+import MisconductReportModal from "./MisconductReportModal";
 
 interface DashboardSidebarProps {
   activeTab: string;
@@ -103,8 +105,16 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
               className="w-full justify-start" 
               onClick={() => setActiveTab("verification")}
             >
-              <MessageSquare className="mr-2 h-4 w-4" />
+              <Shield className="mr-2 h-4 w-4" />
               Verification
+            </Button>
+            <Button 
+              variant={activeTab === "verification-documents" ? "default" : "ghost"} 
+              className="w-full justify-start" 
+              onClick={() => setActiveTab("verification-documents")}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Verification Documents
             </Button>
           </>
         )}
@@ -133,7 +143,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
           Settings
         </Button>
         
-        {/* Invite options */}
+        {/* Invite and Report options */}
         <div className="pt-4 border-t space-y-2">
           {userType !== "researcher" && (
             <InviteModal 
@@ -147,6 +157,9 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
             userType="researcher"
             triggerText="Invite a Researcher"
           />
+          
+          {/* Misconduct Reporting */}
+          <MisconductReportModal />
         </div>
       </nav>
     </div>
