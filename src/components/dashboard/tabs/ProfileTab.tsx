@@ -1,15 +1,19 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { User, Plus, X, Trash2, Sparkles, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import AIBioGenerator from "@/components/dashboard/profile/AIBioGenerator";
+import PersonalInformationSection from "@/components/dashboard/profile/PersonalInformationSection";
+import ProfessionalBioSection from "@/components/dashboard/profile/ProfessionalBioSection";
+import EducationalBackgroundSection from "@/components/dashboard/profile/EducationalBackgroundSection";
+import WorkExperienceSection from "@/components/dashboard/profile/WorkExperienceSection";
+import AwardsRecognitionsSection from "@/components/dashboard/profile/AwardsRecognitionsSection";
+import PublicationsSectionProfile from "@/components/dashboard/profile/PublicationsSectionProfile";
+import ScholarshipsFellowshipsSection from "@/components/dashboard/profile/ScholarshipsFellowshipsSection";
+import ProfessionalAffiliationsSection from "@/components/dashboard/profile/ProfessionalAffiliationsSection";
+import LanguagesSection from "@/components/dashboard/profile/LanguagesSection";
+import StudentSupervisionSummary from "@/components/dashboard/profile/StudentSupervisionSummary";
+import StudentSupervisionDetails from "@/components/dashboard/profile/StudentSupervisionDetails";
+import AccountStatisticsSection from "@/components/dashboard/profile/AccountStatisticsSection";
 
 const ProfileTab = () => {
   const { toast } = useToast();
@@ -324,655 +328,93 @@ const ProfileTab = () => {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <User className="h-5 w-5 mr-2" />
-            Personal Information
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="title">Title</Label>
-              <Select
-                value={formData.title}
-                onValueChange={(value) => handleInputChange("title", value)}
-                disabled={!isEditing}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select title" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Mr.">Mr.</SelectItem>
-                  <SelectItem value="Mrs.">Mrs.</SelectItem>
-                  <SelectItem value="Ms.">Ms.</SelectItem>
-                  <SelectItem value="Dr.">Dr.</SelectItem>
-                  <SelectItem value="Prof.">Prof.</SelectItem>
-                  <SelectItem value="Eng.">Eng.</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="md:col-span-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-                disabled={!isEditing}
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-                disabled={!isEditing}
-              />
-            </div>
-            <div>
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
-                disabled={!isEditing}
-              />
-            </div>
-            <div>
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => handleInputChange("location", e.target.value)}
-                disabled={!isEditing}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <PersonalInformationSection
+        formData={formData}
+        isEditing={isEditing}
+        onInputChange={handleInputChange}
+      />
 
-      {/* Professional Bio with AI Generation */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Professional Bio</span>
-            {isEditing && (
-              <AIBioGenerator 
-                currentBio={formData.bio}
-                profileData={formData}
-                onBioGenerated={handleBioGenerated}
-                userType="researcher"
-              />
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            value={formData.bio}
-            onChange={(e) => handleInputChange("bio", e.target.value)}
-            disabled={!isEditing}
-            rows={4}
-            placeholder="Your professional bio will be displayed here..."
-          />
-        </CardContent>
-      </Card>
+      <ProfessionalBioSection
+        bio={formData.bio}
+        isEditing={isEditing}
+        profileData={formData}
+        onInputChange={handleInputChange}
+        onBioGenerated={handleBioGenerated}
+      />
 
-      {/* Educational Background */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Educational Background</CardTitle>
-            {isEditing && (
-              <Button variant="outline" size="sm" onClick={handleAddEducation}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Education
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {formData.educationalBackground.map((edu, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
-                <div>
-                  <Label>Degree</Label>
-                  <Input
-                    value={edu.degree}
-                    onChange={(e) => handleUpdateEducation(index, 'degree', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="e.g., PhD in Computer Science"
-                  />
-                </div>
-                <div>
-                  <Label>Institution</Label>
-                  <Input
-                    value={edu.institution}
-                    onChange={(e) => handleUpdateEducation(index, 'institution', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="University name"
-                  />
-                </div>
-                <div>
-                  <Label>Year</Label>
-                  <Input
-                    value={edu.year}
-                    onChange={(e) => handleUpdateEducation(index, 'year', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="2023"
-                  />
-                </div>
-                {isEditing && (
-                  <div className="flex items-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRemoveEducation(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <EducationalBackgroundSection
+        education={formData.educationalBackground}
+        isEditing={isEditing}
+        onAdd={handleAddEducation}
+        onUpdate={handleUpdateEducation}
+        onRemove={handleRemoveEducation}
+      />
 
-      {/* Work Experience */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Work Experience</CardTitle>
-            {isEditing && (
-              <Button variant="outline" size="sm" onClick={handleAddWorkExperience}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Experience
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {formData.workExperience.map((exp, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
-                <div>
-                  <Label>Position</Label>
-                  <Input
-                    value={exp.position}
-                    onChange={(e) => handleUpdateWorkExperience(index, 'position', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="Job title"
-                  />
-                </div>
-                <div>
-                  <Label>Company/Institution</Label>
-                  <Input
-                    value={exp.company}
-                    onChange={(e) => handleUpdateWorkExperience(index, 'company', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="Company name"
-                  />
-                </div>
-                <div>
-                  <Label>Period</Label>
-                  <Input
-                    value={exp.period}
-                    onChange={(e) => handleUpdateWorkExperience(index, 'period', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="2020-2023"
-                  />
-                </div>
-                {isEditing && (
-                  <div className="flex items-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRemoveWorkExperience(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <WorkExperienceSection
+        workExperience={formData.workExperience}
+        isEditing={isEditing}
+        onAdd={handleAddWorkExperience}
+        onUpdate={handleUpdateWorkExperience}
+        onRemove={handleRemoveWorkExperience}
+      />
 
-      {/* Awards and Recognitions */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Awards and Recognitions</CardTitle>
-            {isEditing && (
-              <Button variant="outline" size="sm" onClick={handleAddAward}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Award
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {formData.awards.map((award, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
-                <div>
-                  <Label>Award Title</Label>
-                  <Input
-                    value={award.title}
-                    onChange={(e) => handleUpdateAward(index, 'title', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="Award name"
-                  />
-                </div>
-                <div>
-                  <Label>Organization</Label>
-                  <Input
-                    value={award.organization}
-                    onChange={(e) => handleUpdateAward(index, 'organization', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="Awarding organization"
-                  />
-                </div>
-                <div>
-                  <Label>Year</Label>
-                  <Input
-                    value={award.year}
-                    onChange={(e) => handleUpdateAward(index, 'year', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="2023"
-                  />
-                </div>
-                {isEditing && (
-                  <div className="flex items-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRemoveAward(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <AwardsRecognitionsSection
+        awards={formData.awards}
+        isEditing={isEditing}
+        onAdd={handleAddAward}
+        onUpdate={handleUpdateAward}
+        onRemove={handleRemoveAward}
+      />
 
-      {/* Publications */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Publications</CardTitle>
-            {isEditing && (
-              <Button variant="outline" size="sm" onClick={handleAddPublication}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Publication
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {formData.publications.map((pub, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
-                <div>
-                  <Label>Title</Label>
-                  <Input
-                    value={pub.title}
-                    onChange={(e) => handleUpdatePublication(index, 'title', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="Publication title"
-                  />
-                </div>
-                <div>
-                  <Label>Journal/Conference</Label>
-                  <Input
-                    value={pub.journal}
-                    onChange={(e) => handleUpdatePublication(index, 'journal', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="Journal name"
-                  />
-                </div>
-                <div>
-                  <Label>Year</Label>
-                  <Input
-                    value={pub.year}
-                    onChange={(e) => handleUpdatePublication(index, 'year', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="2023"
-                  />
-                </div>
-                {isEditing && (
-                  <div className="flex items-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRemovePublication(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <PublicationsSectionProfile
+        publications={formData.publications}
+        isEditing={isEditing}
+        onAdd={handleAddPublication}
+        onUpdate={handleUpdatePublication}
+        onRemove={handleRemovePublication}
+      />
 
-      {/* Scholarships and Fellowships */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Scholarships and Fellowships</CardTitle>
-            {isEditing && (
-              <Button variant="outline" size="sm" onClick={handleAddScholarship}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Scholarship
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {formData.scholarships.map((scholarship, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
-                <div>
-                  <Label>Title</Label>
-                  <Input
-                    value={scholarship.title}
-                    onChange={(e) => handleUpdateScholarship(index, 'title', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="Scholarship/Fellowship title"
-                  />
-                </div>
-                <div>
-                  <Label>Organization</Label>
-                  <Input
-                    value={scholarship.organization}
-                    onChange={(e) => handleUpdateScholarship(index, 'organization', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="Granting organization"
-                  />
-                </div>
-                <div>
-                  <Label>Period</Label>
-                  <Input
-                    value={scholarship.period}
-                    onChange={(e) => handleUpdateScholarship(index, 'period', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="2020-2023"
-                  />
-                </div>
-                {isEditing && (
-                  <div className="flex items-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRemoveScholarship(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <ScholarshipsFellowshipsSection
+        scholarships={formData.scholarships}
+        isEditing={isEditing}
+        onAdd={handleAddScholarship}
+        onUpdate={handleUpdateScholarship}
+        onRemove={handleRemoveScholarship}
+      />
 
-      {/* Professional Affiliations */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Professional Affiliations</CardTitle>
-            {isEditing && (
-              <Button variant="outline" size="sm" onClick={handleAddAffiliation}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Affiliation
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {formData.affiliations.map((affiliation, index) => (
-              <div key={index} className="flex gap-2 items-center">
-                <Input
-                  value={affiliation}
-                  onChange={(e) => handleUpdateAffiliation(index, e.target.value)}
-                  disabled={!isEditing}
-                  placeholder="Professional organization"
-                  className="flex-1"
-                />
-                {isEditing && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRemoveAffiliation(index)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <ProfessionalAffiliationsSection
+        affiliations={formData.affiliations}
+        isEditing={isEditing}
+        onAdd={handleAddAffiliation}
+        onUpdate={handleUpdateAffiliation}
+        onRemove={handleRemoveAffiliation}
+      />
 
-      {/* Languages */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Languages</CardTitle>
-            {isEditing && (
-              <Button variant="outline" size="sm" onClick={handleAddLanguage}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Language
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {formData.languages.map((language, index) => (
-              <div key={index} className="flex gap-2 items-center">
-                <Input
-                  value={language}
-                  onChange={(e) => handleUpdateLanguage(index, e.target.value)}
-                  disabled={!isEditing}
-                  placeholder="Language"
-                  className="flex-1"
-                />
-                {isEditing && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRemoveLanguage(index)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <LanguagesSection
+        languages={formData.languages}
+        isEditing={isEditing}
+        onAdd={handleAddLanguage}
+        onUpdate={handleUpdateLanguage}
+        onRemove={handleRemoveLanguage}
+      />
 
-      {/* Student Supervision */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Student Supervision</CardTitle>
-            {isEditing && (
-              <Button variant="outline" size="sm" onClick={handleAddSupervision}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Level
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {formData.supervision.map((sup, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg">
-                <div>
-                  <Label>Academic Level</Label>
-                  <Select
-                    value={sup.level}
-                    onValueChange={(value) => handleUpdateSupervision(index, 'level', value)}
-                    disabled={!isEditing}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Post Doctorate">Post Doctorate</SelectItem>
-                      <SelectItem value="PhD">PhD</SelectItem>
-                      <SelectItem value="Master's">Master's</SelectItem>
-                      <SelectItem value="Undergraduate">Undergraduate</SelectItem>
-                      <SelectItem value="Higher National Diploma">Higher National Diploma</SelectItem>
-                      <SelectItem value="National Diploma">National Diploma</SelectItem>
-                      <SelectItem value="DIPES">DIPES</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Number of Students</Label>
-                  <Input
-                    type="number"
-                    value={sup.count}
-                    onChange={(e) => handleUpdateSupervision(index, 'count', parseInt(e.target.value) || 0)}
-                    disabled={!isEditing}
-                    placeholder="0"
-                  />
-                </div>
-                {isEditing && (
-                  <div className="flex items-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRemoveSupervision(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <StudentSupervisionSummary
+        supervision={formData.supervision}
+        isEditing={isEditing}
+        onAdd={handleAddSupervision}
+        onUpdate={handleUpdateSupervision}
+        onRemove={handleRemoveSupervision}
+      />
 
-      {/* Student Supervision Details */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Details of Student Supervision</CardTitle>
-            {isEditing && (
-              <Button variant="outline" size="sm" onClick={handleAddSupervisionDetail}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Student
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {formData.supervisionDetails.map((detail, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border rounded-lg">
-                <div>
-                  <Label>Student Name</Label>
-                  <Input
-                    value={detail.name}
-                    onChange={(e) => handleUpdateSupervisionDetail(index, 'name', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="Student full name"
-                  />
-                </div>
-                <div>
-                  <Label>Academic Level</Label>
-                  <Select
-                    value={detail.level}
-                    onValueChange={(value) => handleUpdateSupervisionDetail(index, 'level', value)}
-                    disabled={!isEditing}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Post Doctorate">Post Doctorate</SelectItem>
-                      <SelectItem value="PhD">PhD</SelectItem>
-                      <SelectItem value="Master's">Master's</SelectItem>
-                      <SelectItem value="Undergraduate">Undergraduate</SelectItem>
-                      <SelectItem value="Higher National Diploma">Higher National Diploma</SelectItem>
-                      <SelectItem value="National Diploma">National Diploma</SelectItem>
-                      <SelectItem value="DIPES">DIPES</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Thesis Title</Label>
-                  <Input
-                    value={detail.thesisTitle}
-                    onChange={(e) => handleUpdateSupervisionDetail(index, 'thesisTitle', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="Research/thesis title"
-                  />
-                </div>
-                <div>
-                  <Label>Year</Label>
-                  <Input
-                    value={detail.year}
-                    onChange={(e) => handleUpdateSupervisionDetail(index, 'year', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="2023"
-                  />
-                </div>
-                {isEditing && (
-                  <div className="flex items-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRemoveSupervisionDetail(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <StudentSupervisionDetails
+        supervisionDetails={formData.supervisionDetails}
+        isEditing={isEditing}
+        onAdd={handleAddSupervisionDetail}
+        onUpdate={handleUpdateSupervisionDetail}
+        onRemove={handleRemoveSupervisionDetail}
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Account Statistics</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">47</p>
-              <p className="text-sm text-gray-600">Total Consultations</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">4.8</p>
-              <p className="text-sm text-gray-600">Average Rating</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-purple-600">2.5 years</p>
-              <p className="text-sm text-gray-600">Member Since</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <AccountStatisticsSection />
     </div>
   );
 };
