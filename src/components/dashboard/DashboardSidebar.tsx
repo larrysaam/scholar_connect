@@ -21,7 +21,7 @@ import {
 interface DashboardSidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  userType: "student" | "researcher";
+  userType: "student" | "researcher" | "research-aide";
 }
 
 const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSidebarProps) => {
