@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,7 +30,8 @@ const ResearchAidsAppointments = () => {
       duration: "45 minutes",
       type: "video",
       status: "pending",
-      description: "Present completed sections and get feedback"
+      description: "Present completed sections and get feedback",
+      meetingLink: "https://zoom.us/j/123456789"
     },
     {
       id: 3,
@@ -57,7 +57,8 @@ const ResearchAidsAppointments = () => {
       duration: "1 hour",
       type: "video",
       status: "completed",
-      description: "Initial project discussion and requirements gathering"
+      description: "Initial project discussion and requirements gathering",
+      meetingLink: "https://meet.google.com/xyz-uvw-rst"
     }
   ];
 
