@@ -28,8 +28,12 @@ interface ChatAssistantProviderProps {
 
 export const ChatAssistantProvider = ({ children }: ChatAssistantProviderProps) => {
   const [isVisible, setIsVisible] = useState(false);
-  const [currentContext, setCurrentContextState] = useState({
-    userType: "student" as const,
+  const [currentContext, setCurrentContextState] = useState<{
+    userType: "student" | "researcher" | "research-aide";
+    currentTab?: string;
+    pageContext?: string;
+  }>({
+    userType: "student",
     currentTab: undefined,
     pageContext: undefined
   });
