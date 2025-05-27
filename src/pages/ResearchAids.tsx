@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,12 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Star, MapPin, Filter, Users, Award, BookOpen, Eye, CheckCircle, Clock, Shield, MessageCircle, FileText, Target, User, TrendingUp, Globe } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 const ResearchAids = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedField, setSelectedField] = useState("all");
   const [selectedLanguage, setSelectedLanguage] = useState("all");
   const [priceRange, setPriceRange] = useState("all");
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   const researchAids = [
     {
@@ -81,7 +87,7 @@ const ResearchAids = () => {
       title: "GIS Specialists", 
       services: "Map creation, spatial analysis, remote sensing, GIS data visualization",
       icon: MapPin,
-      color: "bg-green-50 text-green-700 border-green-200"
+      color: "bg-emerald-50 text-emerald-700 border-emerald-200"
     },
     {
       title: "Academic Editors",
@@ -137,19 +143,48 @@ const ResearchAids = () => {
     return matchesSearch && matchesField;
   });
 
+  const handleBrowseAids = () => {
+    const aidsSection = document.getElementById('research-aids-listing');
+    if (aidsSection) {
+      aidsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handlePostTask = () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to post a task.",
+        variant: "destructive"
+      });
+      navigate('/auth');
+      return;
+    }
+    // Navigate to task posting page
+    navigate('/dashboard');
+  };
+
+  const handleBecomeResearchAid = () => {
+    navigate('/research-aid-signup');
+  };
+
+  const handleViewProfile = (aidId: string) => {
+    navigate(`/research-aid/${aidId}`);
+  };
+
   const ResearchAidCard = ({ aid }: { aid: typeof researchAids[0] }) => (
-    <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-green-500">
+    <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary">
       <CardContent className="p-6">
         <div className="flex items-start space-x-4">
           <div className="relative">
             <img 
               src={aid.imageUrl} 
               alt={aid.name}
-              className="w-16 h-16 rounded-full object-cover border-2 border-green-100"
+              className="w-16 h-16 rounded-full object-cover border-2 border-primary/20"
             />
             {aid.featured && (
-              <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full p-1">
-                <Award className="h-3 w-3 text-yellow-800" />
+              <div className="absolute -top-1 -right-1 bg-accent rounded-full p-1">
+                <Award className="h-3 w-3 text-accent-foreground" />
               </div>
             )}
           </div>
@@ -157,14 +192,14 @@ const ResearchAids = () => {
             <div className="flex items-center justify-between mb-2">
               <div>
                 <h3 className="font-semibold text-lg text-gray-900">{aid.name}</h3>
-                <p className="text-sm text-green-600 font-medium">{aid.title}</p>
+                <p className="text-sm text-primary font-medium">{aid.title}</p>
                 <p className="text-sm text-gray-500 flex items-center mt-1">
                   <MapPin className="h-3 w-3 mr-1" />
                   {aid.location}
                 </p>
               </div>
               {aid.featured && (
-                <Badge className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white border-0">
+                <Badge className="bg-accent text-accent-foreground border-0">
                   Featured
                 </Badge>
               )}
@@ -174,7 +209,7 @@ const ResearchAids = () => {
             
             <div className="flex flex-wrap gap-1 mb-4">
               {aid.expertise.map((skill, index) => (
-                <Badge key={index} variant="secondary" className="text-xs bg-green-50 text-green-700 border-green-200">
+                <Badge key={index} variant="secondary" className="text-xs bg-primary/10 text-primary border-primary/20">
                   {skill}
                 </Badge>
               ))}
@@ -187,11 +222,15 @@ const ResearchAids = () => {
                   <span className="text-sm font-medium">{aid.rating}</span>
                   <span className="text-sm text-gray-500">({aid.reviews})</span>
                 </div>
-                <div className="text-sm font-bold text-green-600">
+                <div className="text-sm font-bold text-primary">
                   {aid.hourlyRate.toLocaleString()} XAF/hr
                 </div>
               </div>
-              <Button size="sm" className="bg-green-600 hover:bg-green-700">
+              <Button 
+                size="sm" 
+                className="bg-primary hover:bg-primary/90"
+                onClick={() => handleViewProfile(aid.id)}
+              >
                 <Eye className="h-4 w-4 mr-1" />
                 View Profile
               </Button>
@@ -208,23 +247,32 @@ const ResearchAids = () => {
       
       <main className="flex-grow">
         {/* Enhanced Hero Section */}
-        <section className="bg-gradient-to-r from-green-600 to-green-800 text-white py-20">
+        <section className="bg-gradient-to-r from-primary to-primary/80 text-white py-20">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-5xl mx-auto text-center">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
                 Find Specialized Assistance For Your Research Projects, When You Need It Most
               </h1>
-              <p className="text-xl md:text-2xl text-green-100 mb-4">
+              <p className="text-xl md:text-2xl text-primary-foreground/90 mb-4">
                 On-demand academic support from trusted specialists — from statisticians to editors.
               </p>
-              <p className="text-lg text-green-200 mb-8 max-w-4xl mx-auto">
+              <p className="text-lg text-primary-foreground/80 mb-8 max-w-4xl mx-auto">
                 Find and hire verified research professionals to help you with data analysis, GIS mapping, transcription, publishing, editing, and more — all in one platform built for serious students and researchers.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-white text-green-600 hover:bg-green-50 px-8 py-3 text-lg">
+                <Button 
+                  size="lg" 
+                  className="bg-white text-primary hover:bg-gray-50 px-8 py-3 text-lg"
+                  onClick={handleBrowseAids}
+                >
                   Browse Research Aids
                 </Button>
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-green-600 px-8 py-3 text-lg">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-white text-white hover:bg-white hover:text-primary px-8 py-3 text-lg"
+                  onClick={handlePostTask}
+                >
                   Post a Task
                 </Button>
               </div>
@@ -238,23 +286,23 @@ const ResearchAids = () => {
             <div className="max-w-6xl mx-auto">
               <h2 className="text-3xl font-bold text-center mb-12">Why Choose ScholarConnect Research Aids?</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <Card className="text-center border-green-100 hover:shadow-lg transition-shadow">
+                <Card className="text-center border-primary/20 hover:shadow-lg transition-shadow">
                   <CardContent className="p-8">
-                    <Clock className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                    <Clock className="h-12 w-12 text-primary mx-auto mb-4" />
                     <h3 className="text-xl font-semibold mb-3">Precision Help, On-Demand</h3>
                     <p className="text-gray-600">Get matched with statisticians, editors, GIS experts, and more — exactly when you need them.</p>
                   </CardContent>
                 </Card>
-                <Card className="text-center border-green-100 hover:shadow-lg transition-shadow">
+                <Card className="text-center border-primary/20 hover:shadow-lg transition-shadow">
                   <CardContent className="p-8">
-                    <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                    <CheckCircle className="h-12 w-12 text-primary mx-auto mb-4" />
                     <h3 className="text-xl font-semibold mb-3">Verified Experts Only</h3>
                     <p className="text-gray-600">Every Research Aid is vetted based on academic credentials and relevant experience.</p>
                   </CardContent>
                 </Card>
-                <Card className="text-center border-green-100 hover:shadow-lg transition-shadow">
+                <Card className="text-center border-primary/20 hover:shadow-lg transition-shadow">
                   <CardContent className="p-8">
-                    <Shield className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                    <Shield className="h-12 w-12 text-primary mx-auto mb-4" />
                     <h3 className="text-xl font-semibold mb-3">Seamless Collaboration</h3>
                     <p className="text-gray-600">Chat, share files, and manage tasks directly on ScholarConnect's secure platform.</p>
                   </CardContent>
@@ -271,22 +319,22 @@ const ResearchAids = () => {
               <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <div className="text-center">
-                  <div className="bg-green-500 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">1</div>
+                  <div className="bg-primary text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">1</div>
                   <h3 className="text-lg font-semibold mb-3">Post Your Task</h3>
                   <p className="text-gray-600 text-sm">Describe the help you need and available budget: editing a thesis chapter, analysing survey data, designing a map, etc.</p>
                 </div>
                 <div className="text-center">
-                  <div className="bg-green-500 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">2</div>
+                  <div className="bg-primary text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">2</div>
                   <h3 className="text-lg font-semibold mb-3">Get Matched</h3>
                   <p className="text-gray-600 text-sm">Browse expert profiles or receive suggested matches based on your task type.</p>
                 </div>
                 <div className="text-center">
-                  <div className="bg-green-500 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">3</div>
+                  <div className="bg-primary text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">3</div>
                   <h3 className="text-lg font-semibold mb-3">Hire & Collaborate</h3>
                   <p className="text-gray-600 text-sm">Agree on price and timeline. Chat, share documents, and track progress right from your dashboard. Then make payment before they commence work.</p>
                 </div>
                 <div className="text-center">
-                  <div className="bg-green-500 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">4</div>
+                  <div className="bg-primary text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">4</div>
                   <h3 className="text-lg font-semibold mb-3">Approve & Review</h3>
                   <p className="text-gray-600 text-sm">Once the job is complete, approve delivery and leave a rating. The expert gets paid, you get results.</p>
                 </div>
@@ -322,35 +370,41 @@ const ResearchAids = () => {
         {/* Search and Filters */}
         <section className="py-8 bg-gray-50">
           <div className="container mx-auto px-4 md:px-6">
-            <Card className="border-green-100 shadow-sm">
+            <Card className="border-primary/20 shadow-sm">
               <CardContent className="p-6">
                 <div className="space-y-4">
                   <div className="flex items-center space-x-2">
-                    <Search className="h-5 w-5 text-green-500" />
+                    <Search className="h-5 w-5 text-primary" />
                     <Input
                       placeholder="Search by name, skills, or expertise..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="flex-1 border-green-200 focus:border-green-400"
+                      className="flex-1 border-primary/20 focus:border-primary"
                     />
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <Select value={selectedField} onValueChange={setSelectedField}>
-                      <SelectTrigger className="border-green-200">
+                      <SelectTrigger className="border-primary/20">
                         <SelectValue placeholder="Expertise Area" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Areas</SelectItem>
+                        <SelectItem value="Statistician">Statistician</SelectItem>
                         <SelectItem value="Data Analysis">Data Analysis</SelectItem>
                         <SelectItem value="Academic Editing">Academic Editing</SelectItem>
                         <SelectItem value="GIS">GIS & Mapping</SelectItem>
                         <SelectItem value="Research">Research Assistance</SelectItem>
+                        <SelectItem value="Translators">Translators</SelectItem>
+                        <SelectItem value="Design & Visualization">Design & Visualization</SelectItem>
+                        <SelectItem value="Transcribers">Transcribers</SelectItem>
+                        <SelectItem value="Publishers / Advisors">Publishers / Advisors</SelectItem>
+                        <SelectItem value="Survey Tool Experts">Survey Tool Experts</SelectItem>
                       </SelectContent>
                     </Select>
                     
                     <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                      <SelectTrigger className="border-green-200">
+                      <SelectTrigger className="border-primary/20">
                         <SelectValue placeholder="Language" />
                       </SelectTrigger>
                       <SelectContent>
@@ -358,11 +412,14 @@ const ResearchAids = () => {
                         <SelectItem value="english">English</SelectItem>
                         <SelectItem value="french">French</SelectItem>
                         <SelectItem value="arabic">Arabic</SelectItem>
+                        <SelectItem value="german">German</SelectItem>
+                        <SelectItem value="mandarin">Mandarin</SelectItem>
+                        <SelectItem value="spanish">Spanish</SelectItem>
                       </SelectContent>
                     </Select>
                     
                     <Select value={priceRange} onValueChange={setPriceRange}>
-                      <SelectTrigger className="border-green-200">
+                      <SelectTrigger className="border-primary/20">
                         <SelectValue placeholder="Price Range" />
                       </SelectTrigger>
                       <SelectContent>
@@ -373,7 +430,7 @@ const ResearchAids = () => {
                       </SelectContent>
                     </Select>
                     
-                    <Button variant="outline" className="border-green-200 text-green-600 hover:bg-green-50">
+                    <Button variant="outline" className="border-primary/20 text-primary hover:bg-primary/10">
                       <Filter className="h-4 w-4 mr-2" />
                       Advanced Filters
                     </Button>
@@ -388,21 +445,21 @@ const ResearchAids = () => {
         <section className="py-8">
           <div className="container mx-auto px-4 md:px-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="text-center border-green-100">
+              <Card className="text-center border-primary/20">
                 <CardContent className="p-4">
-                  <Users className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                  <Users className="h-8 w-8 text-primary mx-auto mb-2" />
                   <div className="text-2xl font-bold text-gray-900">200+</div>
                   <div className="text-sm text-gray-600">Expert Research Aids</div>
                 </CardContent>
               </Card>
-              <Card className="text-center border-green-100">
+              <Card className="text-center border-primary/20">
                 <CardContent className="p-4">
                   <BookOpen className="h-8 w-8 text-blue-500 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-gray-900">15+</div>
                   <div className="text-sm text-gray-600">Service Categories</div>
                 </CardContent>
               </Card>
-              <Card className="text-center border-green-100">
+              <Card className="text-center border-primary/20">
                 <CardContent className="p-4">
                   <Star className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-gray-900">4.7</div>
@@ -414,7 +471,7 @@ const ResearchAids = () => {
         </section>
 
         {/* Research Aids Listing */}
-        <section className="py-16">
+        <section id="research-aids-listing" className="py-16">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-6xl mx-auto">
               <h2 className="text-2xl font-bold mb-8">
@@ -431,12 +488,12 @@ const ResearchAids = () => {
         </section>
 
         {/* Testimonials */}
-        <section className="py-16 bg-green-50">
+        <section className="py-16 bg-primary/5">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-6xl mx-auto">
               <h2 className="text-3xl font-bold text-center mb-12">What Our Users Say</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <Card className="border-green-200">
+                <Card className="border-primary/20">
                   <CardContent className="p-6">
                     <div className="flex items-center mb-4">
                       <Star className="h-5 w-5 text-yellow-400 fill-current" />
@@ -455,7 +512,7 @@ const ResearchAids = () => {
                     </div>
                   </CardContent>
                 </Card>
-                <Card className="border-green-200">
+                <Card className="border-primary/20">
                   <CardContent className="p-6">
                     <div className="flex items-center mb-4">
                       <Star className="h-5 w-5 text-yellow-400 fill-current" />
@@ -485,19 +542,19 @@ const ResearchAids = () => {
             <div className="max-w-4xl mx-auto">
               <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
               <div className="space-y-6">
-                <Card className="border-green-100">
+                <Card className="border-primary/20">
                   <CardContent className="p-6">
                     <h3 className="font-semibold text-lg mb-3">Are these services allowed by my university?</h3>
                     <p className="text-gray-600">Most universities allow academic support services like editing, statistical consultation, and data transcription. However, we recommend checking your institution's academic integrity policies to ensure compliance.</p>
                   </CardContent>
                 </Card>
-                <Card className="border-green-100">
+                <Card className="border-primary/20">
                   <CardContent className="p-6">
                     <h3 className="font-semibold text-lg mb-3">What if I'm not satisfied with the work?</h3>
                     <p className="text-gray-600">We offer revision requests and our secure payment system ensures you only pay when satisfied. If issues persist, our support team will help resolve disputes fairly.</p>
                   </CardContent>
                 </Card>
-                <Card className="border-green-100">
+                <Card className="border-primary/20">
                   <CardContent className="p-6">
                     <h3 className="font-semibold text-lg mb-3">How secure are my documents and payments?</h3>
                     <p className="text-gray-600">All file transfers are encrypted, payments are secured through our escrow system, and we maintain strict confidentiality agreements with all Research Aids.</p>
@@ -509,18 +566,27 @@ const ResearchAids = () => {
         </section>
 
         {/* Call to Action */}
-        <section className="py-16 bg-green-600">
+        <section className="py-16 bg-primary">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-3xl mx-auto text-center text-white">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Get Expert Help?</h2>
-              <p className="text-xl text-green-100 mb-8">
+              <p className="text-xl text-primary-foreground/90 mb-8">
                 Join thousands of researchers who trust ScholarConnect for their academic support needs.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-white text-green-600 hover:bg-green-50 px-8 py-3">
+                <Button 
+                  size="lg" 
+                  className="bg-white text-primary hover:bg-gray-50 px-8 py-3"
+                  onClick={handleBrowseAids}
+                >
                   Browse Research Aids
                 </Button>
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-green-600 px-8 py-3">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-white text-white hover:bg-white hover:text-primary px-8 py-3"
+                  onClick={handleBecomeResearchAid}
+                >
                   Become a Research Aid
                 </Button>
               </div>

@@ -20,6 +20,7 @@ import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Blogs from "./pages/Blogs";
 import Partnerships from "./pages/Partnerships";
+import JobBoard from "./pages/JobBoard";
 import { AuthProvider } from "./hooks/useAuth";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import SecureAuth from "@/pages/SecureAuth";
@@ -52,6 +53,7 @@ function App() {
                 <Route path="/admin-dashboard" element={<AdminDashboard />} />
                 <Route path="/partnerships" element={<Partnerships />} />
                 <Route path="/blogs" element={<Blogs />} />
+                <Route path="/job-board" element={<JobBoard />} />
                 
                 {/* Replace the existing auth route with secure version */}
                 <Route path="/auth" element={<SecureAuth />} />

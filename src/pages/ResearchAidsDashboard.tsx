@@ -1,10 +1,13 @@
+
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ResearchAidsSidebar from "@/components/dashboard/ResearchAidsSidebar";
 import NDAModal from "@/components/dashboard/NDAModal";
 import IntelligentChatAssistant from "@/components/ai/IntelligentChatAssistant";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import ResearchAidsOverview from "@/components/dashboard/tabs/ResearchAidsOverview";
 import ResearchAidsJobRequests from "@/components/dashboard/tabs/ResearchAidsJobRequests";
@@ -21,11 +24,13 @@ import QualityAssuranceAndFeedbackTab from "@/components/dashboard/tabs/QualityA
 import VerificationTab from "@/components/dashboard/tabs/VerificationTab";
 import { notificationService } from "@/services/notificationService";
 import { useToast } from "@/hooks/use-toast";
+import { Search, TrendingUp } from "lucide-react";
 
 const ResearchAidsDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showNDA, setShowNDA] = useState(false);
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -63,6 +68,10 @@ const ResearchAidsDashboard = () => {
     localStorage.setItem('research_aids_nda_signed', 'true');
     localStorage.setItem('research_aids_nda_date', new Date().toISOString());
     setShowNDA(false);
+  };
+
+  const handleViewJobBoard = () => {
+    navigate('/job-board');
   };
 
   const renderTabContent = () => {
@@ -104,8 +113,19 @@ const ResearchAidsDashboard = () => {
       
       <main className="flex-grow bg-gray-50 py-12">
         <div className="container mx-auto px-4 md:px-6">
-          <h1 className="text-3xl font-bold mb-2">Research Aids Dashboard</h1>
-          <p className="text-gray-600 mb-8">Manage your jobs, clients, and earnings</p>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Research Aids Dashboard</h1>
+              <p className="text-gray-600">Manage your jobs, clients, and earnings</p>
+            </div>
+            <Button 
+              onClick={handleViewJobBoard}
+              className="bg-primary hover:bg-primary/90 lg:w-auto w-full mt-4 lg:mt-0"
+            >
+              <Search className="h-4 w-4 mr-2" />
+              Browse Job Board
+            </Button>
+          </div>
           
           {showOnboarding && (
             <div className="mb-8">
@@ -115,7 +135,7 @@ const ResearchAidsDashboard = () => {
                   <p className="text-gray-600 mb-4">Complete your profile to start receiving research assistance requests.</p>
                   <button 
                     onClick={handleOnboardingComplete}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90"
                   >
                     Get Started
                   </button>
@@ -123,6 +143,30 @@ const ResearchAidsDashboard = () => {
               </Card>
             </div>
           )}
+
+          {/* Quick Actions Card */}
+          <div className="mb-8">
+            <Card className="border-primary/20">
+              <CardContent className="p-6">
+                <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <TrendingUp className="h-8 w-8 text-primary" />
+                    <div>
+                      <h3 className="font-semibold text-lg">New Opportunities Available</h3>
+                      <p className="text-gray-600 text-sm">Check out the latest research assistance jobs posted by students</p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={handleViewJobBoard}
+                    variant="outline"
+                    className="border-primary text-primary hover:bg-primary/10"
+                  >
+                    View All Jobs
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="md:col-span-1">
