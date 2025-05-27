@@ -1,57 +1,17 @@
 
-import { useToast } from "@/hooks/use-toast";
-
-export interface Notification {
-  id: string;
-  type: "job_request" | "delivery_pending" | "payment_received" | "appointment_reminder" | "message_received";
-  title: string;
-  message: string;
-  isNew: boolean;
-  priority: "high" | "medium" | "low";
-  timestamp: Date;
-  metadata?: Record<string, any>;
-}
-
-export interface UserSkills {
-  skills: string[];
-  categories: string[];
-  experience_level: string;
-}
-
-export interface JobMatch {
-  jobId: string;
-  title: string;
-  description: string;
-  skillsMatch: number;
-  client: string;
-  budget: string;
-  deadline: string;
-}
+import { Notification } from "@/types/notifications";
+import { NotificationPriorityService } from "./notificationPriorityService";
+import { JobMatchingService } from "./jobMatchingService";
+import { EmailService } from "./emailService";
 
 class NotificationService {
   private notifications: Notification[] = [];
-  private userSkills: UserSkills = {
-    skills: ["Statistical Analysis", "Data Analysis", "Literature Review", "Academic Writing"],
-    categories: ["Statistics", "Research", "Agriculture"],
-    experience_level: "intermediate"
-  };
+  private jobMatchingService: JobMatchingService;
+  private emailService: EmailService;
 
-  // Determine notification priority based on type and urgency
-  private determinePriority(type: string, urgency?: string): "high" | "medium" | "low" {
-    switch (type) {
-      case "job_request":
-        return "high"; // New opportunities are high priority
-      case "delivery_pending":
-        return "high"; // Deadlines are critical
-      case "payment_received":
-        return "medium"; // Important but not urgent
-      case "appointment_reminder":
-        return urgency === "soon" ? "high" : "medium"; // Time-sensitive
-      case "message_received":
-        return "medium"; // Communication is important
-      default:
-        return "low";
-    }
+  constructor() {
+    this.jobMatchingService = new JobMatchingService();
+    this.emailService = new EmailService();
   }
 
   // Generate summary notification with better logic
@@ -80,7 +40,10 @@ class NotificationService {
 
   // Add notification with smart priority assignment
   addNotification(notification: Omit<Notification, 'id' | 'timestamp' | 'priority'>): void {
-    const priority = this.determinePriority(notification.type, notification.metadata?.urgency);
+    const priority = NotificationPriorityService.determinePriority(
+      notification.type, 
+      notification.metadata?.urgency
+    );
     
     const newNotification: Notification = {
       ...notification,
@@ -115,25 +78,8 @@ class NotificationService {
     });
   }
 
-  // Match jobs based on user skills
-  findJobMatches(availableJobs: JobMatch[]): JobMatch[] {
-    return availableJobs.filter(job => {
-      const skillsInDescription = this.userSkills.skills.some(skill => 
-        job.description.toLowerCase().includes(skill.toLowerCase()) ||
-        job.title.toLowerCase().includes(skill.toLowerCase())
-      );
-      
-      return skillsInDescription;
-    }).sort((a, b) => b.skillsMatch - a.skillsMatch);
-  }
-
   // Generate weekly email summary
-  generateWeeklyEmailSummary(): {
-    subject: string;
-    content: string;
-    notifications: Notification[];
-    jobMatches: JobMatch[];
-  } {
+  generateWeeklyEmailSummary() {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     
@@ -141,101 +87,10 @@ class NotificationService {
       n => n.timestamp >= weekAgo
     );
 
-    // Sample job matches based on user skills
-    const potentialJobs: JobMatch[] = [
-      {
-        jobId: "job_001",
-        title: "Statistical Analysis for Agricultural Research",
-        description: "Need help with statistical analysis of crop yield data using SPSS",
-        skillsMatch: 95,
-        client: "Dr. Sarah Johnson",
-        budget: "75,000 XAF",
-        deadline: "2024-02-15"
-      },
-      {
-        jobId: "job_002", 
-        title: "Literature Review on Climate Change Impact",
-        description: "Comprehensive literature review on climate change effects on agriculture",
-        skillsMatch: 85,
-        client: "Prof. Michael Chen",
-        budget: "50,000 XAF",
-        deadline: "2024-02-20"
-      }
-    ];
+    const potentialJobs = this.jobMatchingService.getSampleJobs();
+    const matchedJobs = this.jobMatchingService.findJobMatches(potentialJobs);
 
-    const matchedJobs = this.findJobMatches(potentialJobs);
-
-    const content = `
-      <h2>Your Weekly ScholarConnect Summary</h2>
-      
-      <h3>📊 Activity Summary</h3>
-      <ul>
-        <li>Total notifications: ${weeklyNotifications.length}</li>
-        <li>New job requests: ${weeklyNotifications.filter(n => n.type === "job_request").length}</li>
-        <li>Pending deliveries: ${weeklyNotifications.filter(n => n.type === "delivery_pending").length}</li>
-        <li>Messages received: ${weeklyNotifications.filter(n => n.type === "message_received").length}</li>
-      </ul>
-
-      <h3>🎯 Jobs Matching Your Skills</h3>
-      ${matchedJobs.length > 0 ? `
-        <p>We found ${matchedJobs.length} job(s) that match your skills:</p>
-        <ul>
-          ${matchedJobs.map(job => `
-            <li>
-              <strong>${job.title}</strong> - ${job.budget}<br>
-              Client: ${job.client}<br>
-              Deadline: ${job.deadline}<br>
-              Match: ${job.skillsMatch}%
-            </li>
-          `).join('')}
-        </ul>
-      ` : '<p>No new jobs matching your skills this week.</p>'}
-
-      <h3>🔔 Recent Notifications</h3>
-      ${weeklyNotifications.length > 0 ? `
-        <ul>
-          ${weeklyNotifications.slice(0, 5).map(n => `
-            <li>
-              <strong>${n.title}</strong><br>
-              ${n.message}<br>
-              <small>${n.timestamp.toLocaleDateString()}</small>
-            </li>
-          `).join('')}
-        </ul>
-      ` : '<p>No new notifications this week.</p>'}
-
-      <p>
-        <a href="https://scholarconnect.com/research-aids-dashboard">Visit your dashboard</a> to see all updates and apply for jobs.
-      </p>
-    `;
-
-    return {
-      subject: `Weekly Summary: ${weeklyNotifications.length} updates and ${matchedJobs.length} job matches`,
-      content,
-      notifications: weeklyNotifications,
-      jobMatches: matchedJobs
-    };
-  }
-
-  // Limit notifications to prevent memory issues
-  private limitNotifications(): void {
-    if (this.notifications.length > 100) {
-      this.notifications = this.notifications.slice(0, 100);
-    }
-  }
-
-  // Send email notification (mock implementation)
-  async sendEmailNotification(
-    email: string, 
-    subject: string, 
-    content: string
-  ): Promise<boolean> {
-    console.log(`Sending email to ${email}`);
-    console.log(`Subject: ${subject}`);
-    console.log(`Content: ${content}`);
-    
-    // Mock successful send
-    return true;
+    return this.emailService.generateWeeklyEmailSummary(weeklyNotifications, matchedJobs);
   }
 
   // Schedule weekly email summary
@@ -247,7 +102,14 @@ class NotificationService {
     console.log(`Scheduled weekly email for ${userEmail}:`, summary);
     
     // Mock sending the email
-    this.sendEmailNotification(userEmail, summary.subject, summary.content);
+    this.emailService.sendEmailNotification(userEmail, summary.subject, summary.content);
+  }
+
+  // Limit notifications to prevent memory issues
+  private limitNotifications(): void {
+    if (this.notifications.length > 100) {
+      this.notifications = this.notifications.slice(0, 100);
+    }
   }
 
   // Get notifications
