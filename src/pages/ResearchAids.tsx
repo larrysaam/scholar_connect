@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Star, MapPin, Filter, Users, Award, BookOpen, Eye } from "lucide-react";
+import { Search, Star, MapPin, Filter, Users, Award, BookOpen, Eye, CheckCircle, Clock, Shield, MessageCircle, FileText, Target, User, TrendingUp, Globe } from "lucide-react";
 
 const ResearchAids = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -67,6 +67,63 @@ const ResearchAids = () => {
       imageUrl: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
       featured: false,
       description: "Experienced research assistant fluent in French, English, and local languages."
+    }
+  ];
+
+  const serviceTypes = [
+    {
+      title: "Statisticians",
+      services: "Data analysis (SPSS, R, STATA), model building, interpretation, consultations",
+      icon: TrendingUp,
+      color: "bg-blue-50 text-blue-700 border-blue-200"
+    },
+    {
+      title: "GIS Specialists", 
+      services: "Map creation, spatial analysis, remote sensing, GIS data visualization",
+      icon: MapPin,
+      color: "bg-green-50 text-green-700 border-green-200"
+    },
+    {
+      title: "Academic Editors",
+      services: "Proofreading, formatting, language polishing, plagiarism checks", 
+      icon: FileText,
+      color: "bg-purple-50 text-purple-700 border-purple-200"
+    },
+    {
+      title: "Research Assistants",
+      services: "Data collection (field or online), survey administration, transcription",
+      icon: Users,
+      color: "bg-orange-50 text-orange-700 border-orange-200"
+    },
+    {
+      title: "Transcribers",
+      services: "Converting interview audio into clean text; coding where needed",
+      icon: MessageCircle,
+      color: "bg-pink-50 text-pink-700 border-pink-200"
+    },
+    {
+      title: "Publishers / Advisors",
+      services: "Journal submission support, peer review readiness, open access guidance",
+      icon: BookOpen,
+      color: "bg-indigo-50 text-indigo-700 border-indigo-200"
+    },
+    {
+      title: "Survey Tool Experts",
+      services: "ODK, KoboToolbox, SurveyMonkey setup, custom questionnaire building",
+      icon: Target,
+      color: "bg-cyan-50 text-cyan-700 border-cyan-200"
+    },
+    {
+      title: "Design & Visualization",
+      services: "Infographics, charts, diagrams, research posters, presentation design",
+      icon: Award,
+      color: "bg-yellow-50 text-yellow-700 border-yellow-200"
+    },
+    {
+      title: "Translators",
+      services: "Translating research abstracts or instruments into local/international languages",
+      icon: Globe,
+      color: "bg-red-50 text-red-700 border-red-200"
     }
   ];
 
@@ -150,14 +207,114 @@ const ResearchAids = () => {
       <Navbar />
       
       <main className="flex-grow">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-r from-green-600 to-green-800 text-white py-16">
+        {/* Enhanced Hero Section */}
+        <section className="bg-gradient-to-r from-green-600 to-green-800 text-white py-20">
           <div className="container mx-auto px-4 md:px-6">
-            <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">Find Expert Research Aids</h1>
-              <p className="text-xl text-green-100">
-                Connect with skilled professionals for data analysis, editing, field work, and more
+            <div className="max-w-5xl mx-auto text-center">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                Find Specialized Assistance For Your Research Projects, When You Need It Most
+              </h1>
+              <p className="text-xl md:text-2xl text-green-100 mb-4">
+                On-demand academic support from trusted specialists — from statisticians to editors.
               </p>
+              <p className="text-lg text-green-200 mb-8 max-w-4xl mx-auto">
+                Find and hire verified research professionals to help you with data analysis, GIS mapping, transcription, publishing, editing, and more — all in one platform built for serious students and researchers.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button size="lg" className="bg-white text-green-600 hover:bg-green-50 px-8 py-3 text-lg">
+                  Browse Research Aids
+                </Button>
+                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-green-600 px-8 py-3 text-lg">
+                  Post a Task
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Key Value Propositions */}
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="max-w-6xl mx-auto">
+              <h2 className="text-3xl font-bold text-center mb-12">Why Choose ScholarConnect Research Aids?</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <Card className="text-center border-green-100 hover:shadow-lg transition-shadow">
+                  <CardContent className="p-8">
+                    <Clock className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-3">Precision Help, On-Demand</h3>
+                    <p className="text-gray-600">Get matched with statisticians, editors, GIS experts, and more — exactly when you need them.</p>
+                  </CardContent>
+                </Card>
+                <Card className="text-center border-green-100 hover:shadow-lg transition-shadow">
+                  <CardContent className="p-8">
+                    <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-3">Verified Experts Only</h3>
+                    <p className="text-gray-600">Every Research Aid is vetted based on academic credentials and relevant experience.</p>
+                  </CardContent>
+                </Card>
+                <Card className="text-center border-green-100 hover:shadow-lg transition-shadow">
+                  <CardContent className="p-8">
+                    <Shield className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-3">Seamless Collaboration</h3>
+                    <p className="text-gray-600">Chat, share files, and manage tasks directly on ScholarConnect's secure platform.</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* How It Works */}
+        <section className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="max-w-6xl mx-auto">
+              <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="text-center">
+                  <div className="bg-green-500 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">1</div>
+                  <h3 className="text-lg font-semibold mb-3">Post Your Task</h3>
+                  <p className="text-gray-600 text-sm">Describe the help you need and available budget: editing a thesis chapter, analysing survey data, designing a map, etc.</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-green-500 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">2</div>
+                  <h3 className="text-lg font-semibold mb-3">Get Matched</h3>
+                  <p className="text-gray-600 text-sm">Browse expert profiles or receive suggested matches based on your task type.</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-green-500 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">3</div>
+                  <h3 className="text-lg font-semibold mb-3">Hire & Collaborate</h3>
+                  <p className="text-gray-600 text-sm">Agree on price and timeline. Chat, share documents, and track progress right from your dashboard. Then make payment before they commence work.</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-green-500 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">4</div>
+                  <h3 className="text-lg font-semibold mb-3">Approve & Review</h3>
+                  <p className="text-gray-600 text-sm">Once the job is complete, approve delivery and leave a rating. The expert gets paid, you get results.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Types of Research Aids */}
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="max-w-6xl mx-auto">
+              <h2 className="text-3xl font-bold text-center mb-12">Types of Research Aids Available</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {serviceTypes.map((service, index) => (
+                  <Card key={index} className={`border-2 ${service.color} hover:shadow-lg transition-shadow`}>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center space-x-3">
+                        <service.icon className="h-6 w-6" />
+                        <CardTitle className="text-lg">{service.title}</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-gray-600">{service.services}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -273,20 +430,98 @@ const ResearchAids = () => {
           </div>
         </section>
 
-        {/* Call to Action */}
-        <section className="py-16 bg-gray-50">
+        {/* Testimonials */}
+        <section className="py-16 bg-green-50">
           <div className="container mx-auto px-4 md:px-6">
-            <div className="max-w-2xl mx-auto text-center">
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">Need Help with Your Research?</h2>
-              <p className="text-gray-600 mb-8">
-                Our expert research aids are ready to help you with data analysis, editing, field work, and more.
+            <div className="max-w-6xl mx-auto">
+              <h2 className="text-3xl font-bold text-center mb-12">What Our Users Say</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <Card className="border-green-200">
+                  <CardContent className="p-6">
+                    <div className="flex items-center mb-4">
+                      <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                      <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                      <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                      <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                      <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                    </div>
+                    <p className="text-gray-700 mb-4">"My thesis transcription was done in 48 hours — affordable and high quality!"</p>
+                    <div className="flex items-center">
+                      <User className="h-8 w-8 text-gray-400 mr-3" />
+                      <div>
+                        <p className="font-medium">Dr. Marie Kouadio</p>
+                        <p className="text-sm text-gray-500">PhD Student, University of Abidjan</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-green-200">
+                  <CardContent className="p-6">
+                    <div className="flex items-center mb-4">
+                      <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                      <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                      <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                      <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                      <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                    </div>
+                    <p className="text-gray-700 mb-4">"The statistician helped me correct my SPSS output and even explained it in simple terms."</p>
+                    <div className="flex items-center">
+                      <User className="h-8 w-8 text-gray-400 mr-3" />
+                      <div>
+                        <p className="font-medium">James Osei</p>
+                        <p className="text-sm text-gray-500">Research Fellow, University of Ghana</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+              <div className="space-y-6">
+                <Card className="border-green-100">
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold text-lg mb-3">Are these services allowed by my university?</h3>
+                    <p className="text-gray-600">Most universities allow academic support services like editing, statistical consultation, and data transcription. However, we recommend checking your institution's academic integrity policies to ensure compliance.</p>
+                  </CardContent>
+                </Card>
+                <Card className="border-green-100">
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold text-lg mb-3">What if I'm not satisfied with the work?</h3>
+                    <p className="text-gray-600">We offer revision requests and our secure payment system ensures you only pay when satisfied. If issues persist, our support team will help resolve disputes fairly.</p>
+                  </CardContent>
+                </Card>
+                <Card className="border-green-100">
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold text-lg mb-3">How secure are my documents and payments?</h3>
+                    <p className="text-gray-600">All file transfers are encrypted, payments are secured through our escrow system, and we maintain strict confidentiality agreements with all Research Aids.</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Call to Action */}
+        <section className="py-16 bg-green-600">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="max-w-3xl mx-auto text-center text-white">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Get Expert Help?</h2>
+              <p className="text-xl text-green-100 mb-8">
+                Join thousands of researchers who trust ScholarConnect for their academic support needs.
               </p>
-              <div className="space-x-4">
-                <Button size="lg" className="bg-green-600 hover:bg-green-700">
-                  Post a Job Request
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button size="lg" className="bg-white text-green-600 hover:bg-green-50 px-8 py-3">
+                  Browse Research Aids
                 </Button>
-                <Button asChild variant="outline" size="lg">
-                  <a href="/research-aid-signup">Join as Research Aid</a>
+                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-green-600 px-8 py-3">
+                  Become a Research Aid
                 </Button>
               </div>
             </div>
