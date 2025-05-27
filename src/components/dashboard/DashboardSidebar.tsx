@@ -1,353 +1,134 @@
 
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
+  BarChart3,
   Calendar,
-  Clock,
+  CreditCard,
+  Search,
+  MessageSquare,
+  Settings,
+  LogOut,
   User,
   FileText,
-  Settings,
-  Banknote,
-  MessageSquare,
-  UserPlus,
-  Shield,
   Bell,
-  BookOpen,
-  MessageCircle,
-  CheckSquare,
-  BarChart3,
+  TrendingUp,
   Briefcase,
-  Mail,
-  Upload,
-  Star,
-  Home,
-  Cog,
+  BookOpen,
+  ClipboardCheck,
   Award,
-  Search,
-  Target
+  Brain
 } from "lucide-react";
-import InviteModal from "@/components/researcher/InviteModal";
-import MisconductReportModal from "./MisconductReportModal";
 
 interface DashboardSidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  userType?: string;
+  userType: "student" | "researcher" | "research-aide";
 }
 
 const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSidebarProps) => {
+  const getMenuItems = () => {
+    switch (userType) {
+      case "student":
+        return [
+          { id: "overview", label: "Dashboard Overview", icon: BarChart3 },
+          { id: "ai-assistant", label: "AI Assistant", icon: Brain },
+          { id: "find-researcher", label: "Find Researcher", icon: Search },
+          { id: "session-booking", label: "Session Booking", icon: Calendar },
+          { id: "upcoming", label: "Upcoming Sessions", icon: Calendar },
+          { id: "past", label: "Past Sessions", icon: BarChart3 },
+          { id: "payments", label: "Payments", icon: CreditCard },
+          { id: "messages", label: "Messages", icon: MessageSquare },
+          { id: "performance", label: "My Performance", icon: TrendingUp },
+          { id: "notifications", label: "Notifications", icon: Bell },
+          { id: "profile", label: "My Profile", icon: User },
+          { id: "documents", label: "Documents", icon: FileText },
+          { id: "settings", label: "Settings", icon: Settings }
+        ];
+      case "researcher":
+        return [
+          { id: "overview", label: "Dashboard Overview", icon: BarChart3 },
+          { id: "upcoming", label: "Upcoming Sessions", icon: Calendar },
+          { id: "past", label: "Past Sessions", icon: BarChart3 },
+          { id: "payments", label: "Payments", icon: CreditCard },
+          { id: "consultation-services", label: "Consultation Services", icon: Briefcase },
+          { id: "performance", label: "Performance & Reputation", icon: TrendingUp },
+          { id: "quality", label: "Quality Assurance", icon: ClipboardCheck },
+          { id: "discussion", label: "Discussion", icon: MessageSquare },
+          { id: "verification", label: "Verification", icon: Award },
+          { id: "notifications", label: "Notifications", icon: Bell },
+          { id: "co-author-invitations", label: "Co-author Invitations", icon: BookOpen },
+          { id: "profile", label: "My Profile", icon: User },
+          { id: "documents", label: "Documents", icon: FileText },
+          { id: "settings", label: "Settings", icon: Settings }
+        ];
+      case "research-aide":
+        return [
+          { id: "overview", label: "Dashboard Overview", icon: BarChart3 },
+          { id: "job-requests", label: "Job Requests", icon: Briefcase },
+          { id: "messages", label: "Messages", icon: MessageSquare },
+          { id: "appointments", label: "Appointments", icon: Calendar },
+          { id: "files-deliverables", label: "Files & Deliverables", icon: FileText },
+          { id: "payments-earnings", label: "Payments & Earnings", icon: CreditCard },
+          { id: "previous-works", label: "Previous Works", icon: Award },
+          { id: "notifications", label: "Notifications", icon: Bell },
+          { id: "discussion", label: "Discussion", icon: MessageSquare },
+          { id: "quality-feedback", label: "Quality Feedback", icon: ClipboardCheck },
+          { id: "verification", label: "Verification", icon: Award },
+          { id: "profile-ratings", label: "My Profile & Ratings", icon: User },
+          { id: "settings", label: "Settings", icon: Settings }
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const menuItems = getMenuItems();
+
   return (
     <div className="bg-white p-5 rounded-lg shadow-sm">
       <div className="flex items-center space-x-4 mb-6">
-        <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-          <User className="text-blue-600" />
-        </div>
+        <Avatar className="h-12 w-12">
+          <AvatarImage src="/placeholder-avatar.jpg" alt="User" />
+          <AvatarFallback>
+            {userType === "student" ? "ST" : userType === "researcher" ? "RS" : "RA"}
+          </AvatarFallback>
+        </Avatar>
         <div>
-          <p className="font-medium">Alex Smith</p>
+          <p className="font-medium">
+            {userType === "student" ? "Student User" : 
+             userType === "researcher" ? "Dr. Jane Smith" : 
+             "Research Assistant"}
+          </p>
           <p className="text-sm text-gray-500">
-            {userType === "researcher" ? "Researcher" : userType === "research-aide" ? "Research Aid" : "Student"}
+            {userType === "student" ? "Computer Science" : 
+             userType === "researcher" ? "Professor" : 
+             "Academic Editor"}
           </p>
         </div>
       </div>
       
       <nav className="space-y-1">
-        {/* Research Aid specific navigation */}
-        {userType === "research-aide" && (
-          <>
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          return (
             <Button 
-              variant={activeTab === "overview" ? "default" : "ghost"} 
+              key={item.id}
+              variant={activeTab === item.id ? "default" : "ghost"} 
               className="w-full justify-start" 
-              onClick={() => setActiveTab("overview")}
+              onClick={() => setActiveTab(item.id)}
             >
-              <BarChart3 className="mr-2 h-4 w-4" />
-              Dashboard Overview
+              <Icon className="mr-2 h-4 w-4" />
+              {item.label}
             </Button>
-            <Button 
-              variant={activeTab === "job-requests" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("job-requests")}
-            >
-              <Briefcase className="mr-2 h-4 w-4" />
-              Job Requests
-            </Button>
-            <Button 
-              variant={activeTab === "messages" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("messages")}
-            >
-              <Mail className="mr-2 h-4 w-4" />
-              Messages
-            </Button>
-            <Button 
-              variant={activeTab === "appointments" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("appointments")}
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              Appointments
-            </Button>
-            <Button 
-              variant={activeTab === "files-deliverables" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("files-deliverables")}
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              Files & Deliverables
-            </Button>
-            <Button 
-              variant={activeTab === "payments-earnings" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("payments-earnings")}
-            >
-              <Banknote className="mr-2 h-4 w-4" />
-              Payments & Earnings
-            </Button>
-            <Button 
-              variant={activeTab === "profile-ratings" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("profile-ratings")}
-            >
-              <Star className="mr-2 h-4 w-4" />
-              My Profile & Ratings
-            </Button>
-          </>
-        )}
+          );
+        })}
         
-        {/* Show tasks tab for research aids (legacy support) */}
-        {userType === "research-aide" && (
-          <Button 
-            variant={activeTab === "tasks" ? "default" : "ghost"} 
-            className="w-full justify-start" 
-            onClick={() => setActiveTab("tasks")}
-          >
-            <CheckSquare className="mr-2 h-4 w-4" />
-            Tasks (Legacy)
+        <div className="pt-4 border-t">
+          <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50">
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
           </Button>
-        )}
-        
-        {/* Researcher specific navigation */}
-        {userType === "researcher" && (
-          <>
-            <Button 
-              variant={activeTab === "overview" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("overview")}
-            >
-              <Home className="mr-2 h-4 w-4" />
-              Dashboard
-            </Button>
-            <Button 
-              variant={activeTab === "upcoming" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("upcoming")}
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              Upcoming
-            </Button>
-            <Button 
-              variant={activeTab === "past" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("past")}
-            >
-              <Clock className="mr-2 h-4 w-4" />
-              Past Consultations
-            </Button>
-            <Button 
-              variant={activeTab === "consultation-services" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("consultation-services")}
-            >
-              <Cog className="mr-2 h-4 w-4" />
-              Services Setup
-            </Button>
-            <Button 
-              variant={activeTab === "performance" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("performance")}
-            >
-              <Award className="mr-2 h-4 w-4" />
-              Performance
-            </Button>
-            <Button 
-              variant={activeTab === "payments" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("payments")}
-            >
-              <Banknote className="mr-2 h-4 w-4" />
-              Payments
-            </Button>
-            <Button 
-              variant={activeTab === "quality" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("quality")}
-            >
-              <MessageSquare className="mr-2 h-4 w-4" />
-              Quality Feedback
-            </Button>
-          </>
-        )}
-        
-        {/* Student specific navigation */}
-        {userType !== "research-aide" && userType !== "researcher" && (
-          <>
-            <Button 
-              variant={activeTab === "overview" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("overview")}
-            >
-              <Home className="mr-2 h-4 w-4" />
-              Dashboard
-            </Button>
-            <Button 
-              variant={activeTab === "find-researcher" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("find-researcher")}
-            >
-              <Search className="mr-2 h-4 w-4" />
-              Find Researcher
-            </Button>
-            <Button 
-              variant={activeTab === "performance" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("performance")}
-            >
-              <Target className="mr-2 h-4 w-4" />
-              My Progress
-            </Button>
-            <Button 
-              variant={activeTab === "upcoming" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("upcoming")}
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              Upcoming
-            </Button>
-            <Button 
-              variant={activeTab === "past" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("past")}
-            >
-              <Clock className="mr-2 h-4 w-4" />
-              Past Consultations
-            </Button>
-            <Button 
-              variant={activeTab === "payments" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("payments")}
-            >
-              <Banknote className="mr-2 h-4 w-4" />
-              Payments
-            </Button>
-            <Button 
-              variant={activeTab === "quality" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("quality")}
-            >
-              <MessageSquare className="mr-2 h-4 w-4" />
-              Quality Feedback
-            </Button>
-          </>
-        )}
-        
-        {/* Discussion tab for all user types */}
-        <Button 
-          variant={activeTab === "discussion" ? "default" : "ghost"} 
-          className="w-full justify-start" 
-          onClick={() => setActiveTab("discussion")}
-        >
-          <MessageCircle className="mr-2 h-4 w-4" />
-          Discussion
-        </Button>
-        
-        {/* Show notifications for all user types */}
-        <Button 
-          variant={activeTab === "notifications" ? "default" : "ghost"} 
-          className="w-full justify-start" 
-          onClick={() => setActiveTab("notifications")}
-        >
-          <Bell className="mr-2 h-4 w-4" />
-          Notifications
-        </Button>
-        
-        {/* Show research summary only for students */}
-        {userType !== "researcher" && userType !== "research-aide" && (
-          <Button 
-            variant={activeTab === "research-summary" ? "default" : "ghost"} 
-            className="w-full justify-start" 
-            onClick={() => setActiveTab("research-summary")}
-          >
-            <BookOpen className="mr-2 h-4 w-4" />
-            Research Summary
-          </Button>
-        )}
-        
-        {userType === "researcher" && (
-          <>
-            <Button 
-              variant={activeTab === "verification" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("verification")}
-            >
-              <Shield className="mr-2 h-4 w-4" />
-              Verification
-            </Button>
-            <Button 
-              variant={activeTab === "co-author-invitations" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("co-author-invitations")}
-            >
-              <UserPlus className="mr-2 h-4 w-4" />
-              Co-author Invitations
-            </Button>
-          </>
-        )}
-        
-        {/* Standard navigation for all users */}
-        {userType !== "research-aide" && (
-          <>
-            <Button 
-              variant={activeTab === "profile" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("profile")}
-            >
-              <User className="mr-2 h-4 w-4" />
-              Profile
-            </Button>
-            <Button 
-              variant={activeTab === "documents" ? "default" : "ghost"} 
-              className="w-full justify-start" 
-              onClick={() => setActiveTab("documents")}
-            >
-              <FileText className="mr-2 h-4 w-4" />
-              Documents
-            </Button>
-          </>
-        )}
-        
-        <Button 
-          variant={activeTab === "settings" ? "default" : "ghost"} 
-          className="w-full justify-start" 
-          onClick={() => setActiveTab("settings")}
-        >
-          <Settings className="mr-2 h-4 w-4" />
-          Settings
-        </Button>
-        
-        {/* Invite and Report options */}
-        <div className="pt-4 border-t space-y-2">
-          {/* Always show "Invite a Researcher" for all user types */}
-          <InviteModal 
-            userType="researcher"
-            triggerText="Invite a Researcher"
-          />
-          
-          {/* Always show "Invite a Student" for all user types */}
-          <InviteModal 
-            userType="student"
-            triggerText="Invite a Student"
-          />
-          
-          {/* Misconduct Reporting */}
-          <MisconductReportModal />
         </div>
       </nav>
     </div>
