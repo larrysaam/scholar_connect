@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import NotificationsBanner from "@/components/dashboard/NotificationsBanner";
+import IntelligentChatAssistant from "@/components/ai/IntelligentChatAssistant";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import WelcomeOverviewTab from "@/components/dashboard/tabs/WelcomeOverviewTab";
@@ -125,6 +125,9 @@ const ResearcherDashboard = () => {
           </div>
         </div>
       </main>
+      
+      {/* AI Chat Assistant */}
+      <IntelligentChatAssistant userType="researcher" currentTab={activeTab} />
       
       <Footer />
     </div>

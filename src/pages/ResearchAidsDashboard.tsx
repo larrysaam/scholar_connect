@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ResearchAidsSidebar from "@/components/dashboard/ResearchAidsSidebar";
 import NDAModal from "@/components/dashboard/NDAModal";
+import IntelligentChatAssistant from "@/components/ai/IntelligentChatAssistant";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import ResearchAidsOverview from "@/components/dashboard/tabs/ResearchAidsOverview";
@@ -91,6 +91,7 @@ const ResearchAidsDashboard = () => {
           <h1 className="text-3xl font-bold mb-2">Research Aids Dashboard</h1>
           <p className="text-gray-600 mb-8">Manage your jobs, clients, and earnings</p>
           
+          {/* Show onboarding for new users */}
           {showOnboarding && (
             <div className="mb-8">
               <Card>
@@ -126,6 +127,9 @@ const ResearchAidsDashboard = () => {
           </div>
         </div>
       </main>
+      
+      {/* AI Chat Assistant */}
+      <IntelligentChatAssistant userType="research-aide" currentTab={activeTab} />
       
       <Footer />
       

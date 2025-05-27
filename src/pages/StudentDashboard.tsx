@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import NotificationsBanner from "@/components/dashboard/NotificationsBanner";
+import IntelligentChatAssistant from "@/components/ai/IntelligentChatAssistant";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import StudentWelcomeOverviewTab from "@/components/dashboard/tabs/StudentWelcomeOverviewTab";
@@ -18,6 +19,7 @@ import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
 import NotificationsTab from "@/components/dashboard/tabs/NotificationsTab";
 import StudentPerformanceTab from "@/components/dashboard/tabs/StudentPerformanceTab";
 import StudentMessagesTab from "@/components/dashboard/tabs/StudentMessagesTab";
+import StudentAIAssistantTab from "@/components/dashboard/tabs/StudentAIAssistantTab";
 
 const StudentDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -40,6 +42,8 @@ const StudentDashboard = () => {
     switch (activeTab) {
       case "overview":
         return <StudentWelcomeOverviewTab />;
+      case "ai-assistant":
+        return <StudentAIAssistantTab />;
       case "find-researcher":
         return <FindResearcherTab />;
       case "session-booking":
@@ -118,6 +122,9 @@ const StudentDashboard = () => {
           </div>
         </div>
       </main>
+      
+      {/* AI Chat Assistant */}
+      <IntelligentChatAssistant userType="student" currentTab={activeTab} />
       
       <Footer />
     </div>
