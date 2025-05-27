@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,21 +7,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DollarSign, Download, CreditCard, Plus, Edit, Trash2 } from "lucide-react";
+import { 
+  DollarSign, 
+  Download, 
+  CreditCard, 
+  Plus, 
+  Edit,
+  TrendingUp,
+  Calendar
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const ResearchAidsPaymentsEarnings = () => {
   const [activeTab, setActiveTab] = useState("earnings");
   const [withdrawalAmount, setWithdrawalAmount] = useState("");
-  const [newSkill, setNewSkill] = useState("");
-  const [skills, setSkills] = useState([
-    "Statistical Analysis",
-    "SPSS",
-    "Literature Review",
-    "Data Collection",
-    "Research Writing",
-    "Academic Writing"
-  ]);
+  const [paymentMethodType, setPaymentMethodType] = useState("");
+  const [paymentDetails, setPaymentDetails] = useState("");
+  const [editingPaymentMethod, setEditingPaymentMethod] = useState<any>(null);
   const { toast } = useToast();
 
   const earnings = [
@@ -28,124 +31,186 @@ const ResearchAidsPaymentsEarnings = () => {
       id: 1,
       project: "Statistical Analysis Project",
       client: "Dr. Sarah Johnson",
-      amount: "25,000 XAF",
-      status: "paid",
-      date: "2024-01-25",
-      type: "completed_project"
+      amount: 75000,
+      date: "2024-01-28",
+      status: "completed",
+      type: "hourly"
     },
     {
       id: 2,
       project: "Literature Review",
       client: "Prof. Michael Chen",
-      amount: "15,000 XAF", 
+      amount: 50000,
+      date: "2024-01-25",
       status: "pending",
-      date: "2024-01-28",
-      type: "milestone_payment"
+      type: "fixed"
     },
     {
       id: 3,
-      project: "Data Collection Planning",
+      project: "Data Collection",
       client: "Dr. Marie Dubois",
-      amount: "8,000 XAF",
-      status: "released",
+      amount: 120000,
       date: "2024-01-20",
-      type: "consultation"
+      status: "completed",
+      type: "milestone"
     }
   ];
 
-  const paymentMethods = [
+  const transactions = [
     {
       id: 1,
-      type: "mobile_money",
-      provider: "MTN Mobile Money",
-      number: "**** **** 1234",
+      type: "earning",
+      description: "Payment for Statistical Analysis Project",
+      amount: 75000,
+      date: "2024-01-28",
+      status: "completed"
+    },
+    {
+      id: 2,
+      type: "withdrawal",
+      description: "Bank transfer withdrawal",
+      amount: -45000,
+      date: "2024-01-26",
+      status: "completed"
+    },
+    {
+      id: 3,
+      type: "earning",
+      description: "Payment for Data Collection",
+      amount: 120000,
+      date: "2024-01-20",
+      status: "completed"
+    }
+  ];
+
+  const [paymentMethods, setPaymentMethods] = useState([
+    {
+      id: 1,
+      type: "bank",
+      name: "Commercial Bank",
+      details: "****1234",
       isDefault: true
     },
     {
       id: 2,
-      type: "bank_account",
-      provider: "Afriland First Bank",
-      number: "**** **** 5678",
+      type: "mobile",
+      name: "Orange Money",
+      details: "****5678",
       isDefault: false
     }
-  ];
+  ]);
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "paid":
-        return <Badge className="bg-green-600">Paid</Badge>;
-      case "pending":
-        return <Badge className="bg-yellow-600">Pending</Badge>;
-      case "released":
-        return <Badge className="bg-blue-600">Released</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
+  const totalEarnings = earnings.reduce((sum, earning) => 
+    earning.status === "completed" ? sum + earning.amount : sum, 0
+  );
+
+  const pendingEarnings = earnings.reduce((sum, earning) => 
+    earning.status === "pending" ? sum + earning.amount : sum, 0
+  );
+
+  const availableBalance = 150000; // Mock available balance
+
+  const handleExport = (type: string) => {
+    toast({
+      title: "Exporting Data",
+      description: `Exporting ${type} data to CSV file`
+    });
   };
 
-  const handleExport = () => {
+  const handleAddPaymentMethod = () => {
+    if (!paymentMethodType || !paymentDetails) {
+      toast({
+        title: "Error",
+        description: "Please fill in all payment method details",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newMethod = {
+      id: paymentMethods.length + 1,
+      type: paymentMethodType,
+      name: paymentMethodType === "bank" ? "New Bank Account" : "New Mobile Money",
+      details: `****${paymentDetails.slice(-4)}`,
+      isDefault: paymentMethods.length === 0
+    };
+
+    setPaymentMethods([...paymentMethods, newMethod]);
+    setPaymentMethodType("");
+    setPaymentDetails("");
+
     toast({
-      title: "Export Started",
-      description: "Your earnings report is being generated"
+      title: "Payment Method Added",
+      description: "New payment method has been added successfully"
+    });
+  };
+
+  const handleEditPaymentMethod = (method: any) => {
+    if (!paymentDetails) {
+      toast({
+        title: "Error",
+        description: "Please enter payment details",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setPaymentMethods(prev => prev.map(pm => 
+      pm.id === method.id 
+        ? { ...pm, details: `****${paymentDetails.slice(-4)}` }
+        : pm
+    ));
+
+    setEditingPaymentMethod(null);
+    setPaymentDetails("");
+
+    toast({
+      title: "Payment Method Updated",
+      description: "Payment method has been updated successfully"
     });
   };
 
   const handleRequestWithdrawal = () => {
-    if (!withdrawalAmount.trim()) {
+    const amount = parseFloat(withdrawalAmount);
+    
+    if (!amount || amount <= 0) {
       toast({
         title: "Error",
-        description: "Please enter withdrawal amount",
+        description: "Please enter a valid withdrawal amount",
         variant: "destructive"
       });
       return;
     }
 
+    if (amount > availableBalance) {
+      toast({
+        title: "Error",
+        description: "Insufficient balance for withdrawal",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setWithdrawalAmount("");
+    
     toast({
       title: "Withdrawal Requested",
-      description: `Withdrawal of ${withdrawalAmount} XAF has been requested`
+      description: `Withdrawal of ${amount.toLocaleString()} XAF has been requested`
     });
-    setWithdrawalAmount("");
   };
 
-  const handleAddSkill = () => {
-    if (!newSkill.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a skill",
-        variant: "destructive"
-      });
-      return;
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "completed":
+        return <Badge className="bg-green-600">Completed</Badge>;
+      case "pending":
+        return <Badge variant="secondary">Pending</Badge>;
+      case "processing":
+        return <Badge className="bg-blue-600">Processing</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
     }
-
-    if (skills.includes(newSkill.trim())) {
-      toast({
-        title: "Error",
-        description: "This skill already exists",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setSkills([...skills, newSkill.trim()]);
-    toast({
-      title: "Skill Added",
-      description: `${newSkill} has been added to your skills`
-    });
-    setNewSkill("");
   };
-
-  const handleDeleteSkill = (skillToDelete: string) => {
-    setSkills(skills.filter(skill => skill !== skillToDelete));
-    toast({
-      title: "Skill Removed",
-      description: `${skillToDelete} has been removed from your skills`
-    });
-  };
-
-  const totalEarnings = earnings.reduce((sum, earning) => {
-    const amount = parseInt(earning.amount.replace(/[^\d]/g, ''));
-    return sum + amount;
-  }, 0);
 
   return (
     <div className="space-y-6">
@@ -156,140 +221,158 @@ const ResearchAidsPaymentsEarnings = () => {
             variant={activeTab === "earnings" ? "default" : "outline"} 
             onClick={() => setActiveTab("earnings")}
           >
+            <DollarSign className="h-4 w-4 mr-2" />
             Earnings
           </Button>
           <Button 
-            variant={activeTab === "payments" ? "default" : "outline"} 
-            onClick={() => setActiveTab("payments")}
+            variant={activeTab === "transactions" ? "default" : "outline"} 
+            onClick={() => setActiveTab("transactions")}
           >
-            Payment Methods
+            Transactions
           </Button>
           <Button 
-            variant={activeTab === "skills" ? "default" : "outline"} 
-            onClick={() => setActiveTab("skills")}
+            variant={activeTab === "methods" ? "default" : "outline"} 
+            onClick={() => setActiveTab("methods")}
           >
-            Skills
+            <CreditCard className="h-4 w-4 mr-2" />
+            Payment Methods
           </Button>
         </div>
       </div>
 
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <DollarSign className="h-8 w-8 text-green-600" />
+              <div>
+                <p className="text-sm text-gray-600">Total Earnings</p>
+                <p className="text-2xl font-bold">{totalEarnings.toLocaleString()} XAF</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="h-8 w-8 text-blue-600" />
+              <div>
+                <p className="text-sm text-gray-600">Pending Earnings</p>
+                <p className="text-2xl font-bold">{pendingEarnings.toLocaleString()} XAF</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <CreditCard className="h-8 w-8 text-purple-600" />
+              <div>
+                <p className="text-sm text-gray-600">Available Balance</p>
+                <p className="text-2xl font-bold">{availableBalance.toLocaleString()} XAF</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {activeTab === "earnings" && (
-        <div className="space-y-6">
-          {/* Earnings Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Total Earnings</p>
-                    <p className="text-2xl font-bold">{totalEarnings.toLocaleString()} XAF</p>
-                  </div>
-                  <DollarSign className="h-8 w-8 text-green-600" />
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Available Balance</p>
-                    <p className="text-2xl font-bold">18,000 XAF</p>
-                  </div>
-                  <DollarSign className="h-8 w-8 text-blue-600" />
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">This Month</p>
-                    <p className="text-2xl font-bold">25,000 XAF</p>
-                  </div>
-                  <DollarSign className="h-8 w-8 text-purple-600" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Actions */}
-          <div className="flex space-x-4">
-            <Button onClick={handleExport}>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Earnings Overview</h3>
+            <Button onClick={() => handleExport("earnings")}>
               <Download className="h-4 w-4 mr-2" />
-              Export Report
+              Export
             </Button>
-            
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <DollarSign className="h-4 w-4 mr-2" />
-                  Request Withdrawal
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Request Withdrawal</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
+          </div>
+          
+          {earnings.map((earning) => (
+            <Card key={earning.id}>
+              <CardContent className="p-4">
+                <div className="flex justify-between items-center">
                   <div>
-                    <Label htmlFor="amount">Amount (XAF)</Label>
-                    <Input
-                      id="amount"
-                      placeholder="Enter amount"
-                      value={withdrawalAmount}
-                      onChange={(e) => setWithdrawalAmount(e.target.value)}
-                    />
+                    <h4 className="font-medium">{earning.project}</h4>
+                    <p className="text-sm text-gray-600">Client: {earning.client}</p>
+                    <p className="text-xs text-blue-600 capitalize">{earning.type} payment</p>
                   </div>
-                  <div>
-                    <Label>Payment Method</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select payment method" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {paymentMethods.map((method) => (
-                          <SelectItem key={method.id} value={method.id.toString()}>
-                            {method.provider} - {method.number}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <div className="text-right">
+                    <p className="text-lg font-semibold">{earning.amount.toLocaleString()} XAF</p>
+                    <p className="text-sm text-gray-500">{earning.date}</p>
+                    {getStatusBadge(earning.status)}
                   </div>
-                  <Button onClick={handleRequestWithdrawal} className="w-full">
-                    Request Withdrawal
-                  </Button>
                 </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          {/* Earnings List */}
-          <div className="space-y-4">
-            {earnings.map((earning) => (
-              <Card key={earning.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">{earning.project}</h4>
-                      <p className="text-sm text-gray-600">Client: {earning.client}</p>
-                      <p className="text-xs text-gray-500">{earning.date}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-lg">{earning.amount}</p>
-                      {getStatusBadge(earning.status)}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 
-      {activeTab === "payments" && (
-        <div className="space-y-6">
+      {activeTab === "transactions" && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Transaction History</h3>
+            <Button onClick={() => handleExport("transactions")}>
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          </div>
+          
+          {transactions.map((transaction) => (
+            <Card key={transaction.id}>
+              <CardContent className="p-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h4 className="font-medium">{transaction.description}</h4>
+                    <p className="text-sm text-gray-600 capitalize">{transaction.type}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-lg font-semibold ${
+                      transaction.amount > 0 ? "text-green-600" : "text-red-600"
+                    }`}>
+                      {transaction.amount > 0 ? "+" : ""}{transaction.amount.toLocaleString()} XAF
+                    </p>
+                    <p className="text-sm text-gray-500">{transaction.date}</p>
+                    {getStatusBadge(transaction.status)}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+          
+          {/* Withdrawal Request */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Request Withdrawal</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="withdrawal-amount">Amount (XAF)</Label>
+                  <Input
+                    id="withdrawal-amount"
+                    type="number"
+                    placeholder="Enter amount"
+                    value={withdrawalAmount}
+                    onChange={(e) => setWithdrawalAmount(e.target.value)}
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    Available balance: {availableBalance.toLocaleString()} XAF
+                  </p>
+                </div>
+                <Button onClick={handleRequestWithdrawal} className="w-full">
+                  Request Withdrawal
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {activeTab === "methods" && (
+        <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Payment Methods</h3>
             <Dialog>
@@ -305,122 +388,83 @@ const ResearchAidsPaymentsEarnings = () => {
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
-                    <Label>Payment Type</Label>
-                    <Select>
+                    <Label htmlFor="payment-type">Payment Type</Label>
+                    <Select value={paymentMethodType} onValueChange={setPaymentMethodType}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select payment type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="mobile_money">Mobile Money</SelectItem>
-                        <SelectItem value="bank_account">Bank Account</SelectItem>
+                        <SelectItem value="bank">Bank Account</SelectItem>
+                        <SelectItem value="mobile">Mobile Money</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="provider">Provider</Label>
+                    <Label htmlFor="payment-details">
+                      {paymentMethodType === "bank" ? "Account Number" : "Phone Number"}
+                    </Label>
                     <Input
-                      id="provider"
-                      placeholder="Enter provider name"
+                      id="payment-details"
+                      placeholder={paymentMethodType === "bank" ? "Enter account number" : "Enter phone number"}
+                      value={paymentDetails}
+                      onChange={(e) => setPaymentDetails(e.target.value)}
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="account">Account Number</Label>
-                    <Input
-                      id="account"
-                      placeholder="Enter account number"
-                    />
-                  </div>
-                  <Button className="w-full">
+                  <Button onClick={handleAddPaymentMethod} className="w-full">
                     Add Payment Method
                   </Button>
                 </div>
               </DialogContent>
             </Dialog>
           </div>
-
-          <div className="space-y-4">
-            {paymentMethods.map((method) => (
-              <Card key={method.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <CreditCard className="h-8 w-8 text-gray-600" />
-                      <div>
-                        <h4 className="font-medium">{method.provider}</h4>
-                        <p className="text-sm text-gray-600">{method.number}</p>
-                        {method.isDefault && (
-                          <Badge variant="outline" className="text-xs">Default</Badge>
-                        )}
+          
+          {paymentMethods.map((method) => (
+            <Card key={method.id}>
+              <CardContent className="p-4">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center space-x-3">
+                    <CreditCard className="h-8 w-8 text-blue-600" />
+                    <div>
+                      <h4 className="font-medium">{method.name}</h4>
+                      <p className="text-sm text-gray-600">{method.details}</p>
+                      {method.isDefault && (
+                        <Badge variant="secondary" className="text-xs">Default</Badge>
+                      )}
+                    </div>
+                  </div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" onClick={() => setEditingPaymentMethod(method)}>
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Edit Payment Method</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="edit-payment-details">
+                            {method.type === "bank" ? "Account Number" : "Phone Number"}
+                          </Label>
+                          <Input
+                            id="edit-payment-details"
+                            placeholder={method.type === "bank" ? "Enter account number" : "Enter phone number"}
+                            value={paymentDetails}
+                            onChange={(e) => setPaymentDetails(e.target.value)}
+                          />
+                        </div>
+                        <Button onClick={() => handleEditPaymentMethod(method)} className="w-full">
+                          Update Payment Method
+                        </Button>
                       </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="sm" className="text-red-600">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {activeTab === "skills" && (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Your Skills</h3>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Skill
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add New Skill</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="new-skill">Skill Name</Label>
-                    <Input
-                      id="new-skill"
-                      placeholder="Enter skill name"
-                      value={newSkill}
-                      onChange={(e) => setNewSkill(e.target.value)}
-                    />
-                  </div>
-                  <Button onClick={handleAddSkill} className="w-full">
-                    Add Skill
-                  </Button>
+                    </DialogContent>
+                  </Dialog>
                 </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {skills.map((skill, index) => (
-              <Card key={index}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">{skill}</span>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleDeleteSkill(skill)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>

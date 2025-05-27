@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ResearchAidsSidebar from "@/components/dashboard/ResearchAidsSidebar";
+import NDAModal from "@/components/dashboard/NDAModal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import ResearchAidsOverview from "@/components/dashboard/tabs/ResearchAidsOverview";
@@ -22,17 +23,30 @@ import VerificationTab from "@/components/dashboard/tabs/VerificationTab";
 const ResearchAidsDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showNDA, setShowNDA] = useState(false);
 
   useEffect(() => {
     const hasCompletedOnboarding = localStorage.getItem('research_aids_onboarding_complete');
+    const hasSignedNDA = localStorage.getItem('research_aids_nda_signed');
+    
     if (!hasCompletedOnboarding) {
       setShowOnboarding(true);
+    }
+    
+    if (!hasSignedNDA) {
+      setShowNDA(true);
     }
   }, []);
 
   const handleOnboardingComplete = () => {
     localStorage.setItem('research_aids_onboarding_complete', 'true');
     setShowOnboarding(false);
+  };
+
+  const handleNDAAccept = () => {
+    localStorage.setItem('research_aids_nda_signed', 'true');
+    localStorage.setItem('research_aids_nda_date', new Date().toISOString());
+    setShowNDA(false);
   };
 
   const renderTabContent = () => {
@@ -114,6 +128,13 @@ const ResearchAidsDashboard = () => {
       </main>
       
       <Footer />
+      
+      {/* NDA Modal */}
+      <NDAModal 
+        isOpen={showNDA}
+        onClose={() => {}} // Don't allow closing without signing
+        onAccept={handleNDAAccept}
+      />
     </div>
   );
 };

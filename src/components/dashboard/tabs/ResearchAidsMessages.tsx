@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 const ResearchAidsMessages = () => {
   const [selectedConversation, setSelectedConversation] = useState(1);
   const [newMessage, setNewMessage] = useState("");
+  const { toast } = useToast();
+
   const [conversations, setConversations] = useState([
     {
       id: 1,
@@ -41,63 +43,115 @@ const ResearchAidsMessages = () => {
     }
   ]);
 
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: "Dr. Sarah Johnson",
-      content: "Hi Dr. Neba, I've reviewed your proposal for the statistical analysis. It looks comprehensive!",
-      time: "10:30 AM",
-      isMe: false
-    },
-    {
-      id: 2,
-      sender: "You",
-      content: "Thank you! I'm excited to work on this project. When would you like to start?",
-      time: "10:45 AM",
-      isMe: true
-    },
-    {
-      id: 3,
-      sender: "Dr. Sarah Johnson",
-      content: "We can start as soon as possible. I'll send you the dataset by tomorrow.",
-      time: "11:00 AM",
-      isMe: false
-    },
-    {
-      id: 4,
-      sender: "You",
-      content: "Perfect! I've completed the initial analysis. Please find the results attached.",
-      time: "2:15 PM",
-      isMe: true
-    },
-    {
-      id: 5,
-      sender: "Dr. Sarah Johnson",
-      content: "Thank you for the analysis. Can we schedule a call to discuss the findings?",
-      time: "2:18 PM",
-      isMe: false
-    }
-  ]);
+  const [allMessages, setAllMessages] = useState({
+    1: [
+      {
+        id: 1,
+        sender: "Dr. Sarah Johnson",
+        content: "Hi Dr. Neba, I've reviewed your proposal for the statistical analysis. It looks comprehensive!",
+        time: "10:30 AM",
+        isMe: false
+      },
+      {
+        id: 2,
+        sender: "You",
+        content: "Thank you! I'm excited to work on this project. When would you like to start?",
+        time: "10:45 AM",
+        isMe: true
+      },
+      {
+        id: 3,
+        sender: "Dr. Sarah Johnson",
+        content: "We can start as soon as possible. I'll send you the dataset by tomorrow.",
+        time: "11:00 AM",
+        isMe: false
+      },
+      {
+        id: 4,
+        sender: "You",
+        content: "Perfect! I've completed the initial analysis. Please find the results attached.",
+        time: "2:15 PM",
+        isMe: true
+      },
+      {
+        id: 5,
+        sender: "Dr. Sarah Johnson",
+        content: "Thank you for the analysis. Can we schedule a call to discuss the findings?",
+        time: "2:18 PM",
+        isMe: false
+      }
+    ],
+    2: [
+      {
+        id: 1,
+        sender: "Prof. Michael Chen",
+        content: "Hello! I need help with a comprehensive literature review on climate change impacts.",
+        time: "9:00 AM",
+        isMe: false
+      },
+      {
+        id: 2,
+        sender: "You",
+        content: "I'd be happy to help with your literature review. What specific aspects are you focusing on?",
+        time: "9:15 AM",
+        isMe: true
+      },
+      {
+        id: 3,
+        sender: "Prof. Michael Chen",
+        content: "The literature review looks great so far. Please continue with the current approach.",
+        time: "Yesterday",
+        isMe: false
+      }
+    ],
+    3: [
+      {
+        id: 1,
+        sender: "Dr. Marie Dubois",
+        content: "I have an agricultural research project that needs data collection support.",
+        time: "2 days ago",
+        isMe: false
+      },
+      {
+        id: 2,
+        sender: "You",
+        content: "I have experience with agricultural data collection. What's the scope of your project?",
+        time: "2 days ago",
+        isMe: true
+      },
+      {
+        id: 3,
+        sender: "Dr. Marie Dubois",
+        content: "When can you start the data collection? We need to begin next week.",
+        time: "3 hours ago",
+        isMe: false
+      }
+    ]
+  });
 
-  const { toast } = useToast();
+  const currentMessages = allMessages[selectedConversation as keyof typeof allMessages] || [];
+  const selectedConv = conversations.find(conv => conv.id === selectedConversation);
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
       const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       
-      // Add new message to messages
       const newMsg = {
-        id: messages.length + 1,
+        id: currentMessages.length + 1,
         sender: "You",
         content: newMessage,
         time: currentTime,
         isMe: true
       };
       
-      setMessages([...messages, newMsg]);
+      // Update messages for current conversation
+      setAllMessages(prev => ({
+        ...prev,
+        [selectedConversation]: [...(prev[selectedConversation as keyof typeof prev] || []), newMsg]
+      }));
       
       // Update conversation last message
-      setConversations(conversations.map(conv => 
+      setConversations(prev => prev.map(conv => 
         conv.id === selectedConversation 
           ? { ...conv, lastMessage: newMessage, time: "now" }
           : conv
@@ -117,6 +171,16 @@ const ResearchAidsMessages = () => {
       title: "File attachment",
       description: "File attachment feature will be implemented"
     });
+  };
+
+  const handleConversationSelect = (conversationId: number) => {
+    setSelectedConversation(conversationId);
+    // Mark as read
+    setConversations(prev => prev.map(conv => 
+      conv.id === conversationId 
+        ? { ...conv, unread: 0 }
+        : conv
+    ));
   };
 
   return (
@@ -141,7 +205,7 @@ const ResearchAidsMessages = () => {
               className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${
                 selectedConversation === conversation.id ? "bg-blue-50 border-l-4 border-l-blue-600" : ""
               }`}
-              onClick={() => setSelectedConversation(conversation.id)}
+              onClick={() => handleConversationSelect(conversation.id)}
             >
               <div className="flex items-start space-x-3">
                 <Avatar className="h-10 w-10">
@@ -173,12 +237,12 @@ const ResearchAidsMessages = () => {
         <div className="p-4 border-b bg-white flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <Avatar className="h-10 w-10">
-              <AvatarImage src="/placeholder-avatar.jpg" alt="Dr. Sarah Johnson" />
-              <AvatarFallback>SJ</AvatarFallback>
+              <AvatarImage src={selectedConv?.avatar} alt={selectedConv?.name} />
+              <AvatarFallback>{selectedConv?.name?.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <div>
-              <h4 className="font-medium">Dr. Sarah Johnson</h4>
-              <p className="text-sm text-gray-600">Statistical Analysis Project</p>
+              <h4 className="font-medium">{selectedConv?.name}</h4>
+              <p className="text-sm text-gray-600">{selectedConv?.project}</p>
             </div>
           </div>
           <Button variant="ghost" size="sm">
@@ -188,7 +252,7 @@ const ResearchAidsMessages = () => {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((message) => (
+          {currentMessages.map((message) => (
             <div
               key={message.id}
               className={`flex ${message.isMe ? "justify-end" : "justify-start"}`}

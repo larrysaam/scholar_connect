@@ -3,363 +3,295 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Star, Eye, Download, Plus, Edit, Trash2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Star, Calendar, FileText, Download, Eye } from "lucide-react";
 
 const ResearchAidsPreviousWorks = () => {
-  const [activeCategory, setActiveCategory] = useState("platform");
-  const [newWorkTitle, setNewWorkTitle] = useState("");
-  const [newWorkDescription, setNewWorkDescription] = useState("");
-  const [newWorkCategory, setNewWorkCategory] = useState("");
-  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("platform");
 
   const platformWorks = [
     {
       id: 1,
-      title: "Statistical Analysis of Student Performance Data",
-      description: "Comprehensive analysis of academic performance patterns using SPSS and R",
-      category: "Statistical Analysis",
-      rating: 4.8,
-      clientFeedback: "Excellent work with clear insights and professional presentation. Dr. Neba delivered beyond expectations.",
-      completedDate: "2024-01-15",
+      title: "Statistical Analysis for Agricultural Study",
       client: "Dr. Sarah Johnson",
-      university: "University of Yaoundé I",
-      tags: ["SPSS", "R Programming", "Education Research"],
-      previewImage: "/placeholder-image.jpg"
+      clientAvatar: "/placeholder-avatar.jpg",
+      completedDate: "2024-01-15",
+      duration: "3 weeks",
+      rating: 5,
+      review: "Excellent work on the statistical analysis. Very thorough and professional.",
+      tags: ["Statistics", "Agriculture", "Data Analysis"],
+      deliverables: ["Final Report", "SPSS Output", "Presentation"],
+      projectValue: "75,000 XAF"
     },
     {
       id: 2,
-      title: "Systematic Literature Review on Climate Change Adaptation",
-      description: "Conducted comprehensive review of 150+ papers on climate adaptation strategies in Sub-Saharan Africa",
-      category: "Literature Review",
-      rating: 4.9,
-      clientFeedback: "Outstanding literature review with excellent synthesis of complex information. Highly recommended.",
-      completedDate: "2024-01-08",
+      title: "Literature Review on Climate Change",
       client: "Prof. Michael Chen",
-      university: "University of Douala",
-      tags: ["Climate Change", "Systematic Review", "Environmental Science"],
-      previewImage: "/placeholder-image.jpg"
-    }
-  ];
-
-  const priorWorks = [
+      clientAvatar: "/placeholder-avatar.jpg",
+      completedDate: "2024-01-08",
+      duration: "2 weeks",
+      rating: 4,
+      review: "Good quality literature review with comprehensive coverage of recent studies.",
+      tags: ["Literature Review", "Climate Change", "Environmental Science"],
+      deliverables: ["Literature Review Document", "Bibliography", "Summary"],
+      projectValue: "50,000 XAF"
+    },
     {
       id: 3,
-      title: "Agricultural Productivity Analysis in Rural Cameroon",
-      description: "Multi-year study analyzing agricultural productivity trends and factors affecting crop yields in rural communities",
-      category: "Agricultural Research",
-      rating: 4.7,
-      clientFeedback: "Comprehensive research with practical implications for policy making. Excellent field work and data analysis.",
-      completedDate: "2023-08-20",
-      client: "Ministry of Agriculture",
-      university: "National Institute of Statistics",
-      tags: ["Agricultural Economics", "Field Research", "Policy Analysis"],
-      previewImage: "/placeholder-image.jpg"
-    },
-    {
-      id: 4,
-      title: "Educational Assessment Framework Development",
-      description: "Developed standardized assessment framework for primary education evaluation across Central Africa",
-      category: "Educational Research",
-      rating: 4.8,
-      clientFeedback: "Innovative framework that has been adopted by multiple educational institutions. Outstanding methodological approach.",
-      completedDate: "2023-05-15",
-      client: "UNESCO Regional Office",
-      university: "Regional Education Research Center",
-      tags: ["Educational Assessment", "Framework Development", "Primary Education"],
-      previewImage: "/placeholder-image.jpg"
-    },
-    {
-      id: 5,
-      title: "Healthcare Access Study in Remote Communities",
-      description: "Extensive research on healthcare accessibility challenges in remote communities of Cameroon",
-      category: "Healthcare Research",
-      rating: 4.6,
-      clientFeedback: "Thorough research with actionable recommendations. Dr. Neba's field work was exceptional.",
-      completedDate: "2022-11-30",
-      client: "World Health Organization",
-      university: "Public Health Research Institute",
-      tags: ["Healthcare Access", "Community Health", "Public Policy"],
-      previewImage: "/placeholder-image.jpg"
+      title: "Survey Data Collection",
+      client: "Dr. Marie Dubois",
+      clientAvatar: "/placeholder-avatar.jpg",
+      completedDate: "2023-12-20",
+      duration: "4 weeks",
+      rating: 5,
+      review: "Outstanding data collection work. Very organized and efficient.",
+      tags: ["Data Collection", "Surveys", "Field Work"],
+      deliverables: ["Raw Data", "Data Entry", "Quality Report"],
+      projectValue: "120,000 XAF"
     }
   ];
 
-  const handleAddWork = () => {
-    if (!newWorkTitle.trim() || !newWorkDescription.trim() || !newWorkCategory.trim()) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
-      });
-      return;
+  const prePlatformWorks = [
+    {
+      id: 1,
+      title: "PhD Dissertation Research Support",
+      institution: "University of Yaoundé I",
+      completedDate: "2023-06-15",
+      duration: "6 months",
+      description: "Provided comprehensive research support for doctoral dissertation on agricultural productivity in Cameroon.",
+      tags: ["PhD Support", "Agricultural Research", "Statistical Analysis"],
+      outcomes: ["Successful PhD Defense", "2 Publications", "Conference Presentation"]
+    },
+    {
+      id: 2,
+      title: "Research Project for Ministry of Agriculture",
+      institution: "Ministry of Agriculture",
+      completedDate: "2023-03-10",
+      duration: "4 months",
+      description: "Conducted impact assessment study on agricultural extension programs in rural communities.",
+      tags: ["Impact Assessment", "Government Project", "Rural Development"],
+      outcomes: ["Policy Recommendations", "Government Report", "Community Feedback"]
+    },
+    {
+      id: 3,
+      title: "NGO Research Initiative",
+      institution: "Green Earth Foundation",
+      completedDate: "2022-11-20",
+      duration: "3 months",
+      description: "Led research on sustainable farming practices and their economic impact on smallholder farmers.",
+      tags: ["Sustainability", "NGO", "Economic Impact"],
+      outcomes: ["Research Report", "Training Materials", "Impact Metrics"]
     }
+  ];
 
-    toast({
-      title: "Work Added",
-      description: "Your previous work has been added to your portfolio"
-    });
-    setNewWorkTitle("");
-    setNewWorkDescription("");
-    setNewWorkCategory("");
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, index) => (
+      <Star
+        key={index}
+        className={`h-4 w-4 ${
+          index < rating ? "text-yellow-400 fill-current" : "text-gray-300"
+        }`}
+      />
+    ));
   };
-
-  const handleDeleteWork = (workId: number, title: string) => {
-    toast({
-      title: "Work Removed",
-      description: `"${title}" has been removed from your portfolio`
-    });
-  };
-
-  const handleViewWork = (work: any) => {
-    toast({
-      title: "Opening Work Details",
-      description: `Viewing details for "${work.title}"`
-    });
-  };
-
-  const handleDownloadWork = (work: any) => {
-    toast({
-      title: "Downloading",
-      description: `Downloading files for "${work.title}"`
-    });
-  };
-
-  const currentWorks = activeCategory === "platform" ? platformWorks : priorWorks;
-  const totalWorks = platformWorks.length + priorWorks.length;
-  const averageRating = [...platformWorks, ...priorWorks].reduce((sum, work) => sum + work.rating, 0) / totalWorks;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Previous Works Portfolio</h2>
-          <p className="text-gray-600">Showcase your completed projects to attract new clients</p>
-        </div>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Work
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Add Previous Work</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="work-title">Title *</Label>
-                <Input
-                  id="work-title"
-                  placeholder="Enter work title"
-                  value={newWorkTitle}
-                  onChange={(e) => setNewWorkTitle(e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="work-description">Description *</Label>
-                <Textarea
-                  id="work-description"
-                  placeholder="Describe the work you completed..."
-                  value={newWorkDescription}
-                  onChange={(e) => setNewWorkDescription(e.target.value)}
-                  rows={4}
-                />
-              </div>
-              <div>
-                <Label htmlFor="work-category">Category *</Label>
-                <Input
-                  id="work-category"
-                  placeholder="e.g., Statistical Analysis, Literature Review"
-                  value={newWorkCategory}
-                  onChange={(e) => setNewWorkCategory(e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="work-category-type">Work Type</Label>
-                <select className="w-full p-2 border rounded">
-                  <option value="platform">Completed on Platform</option>
-                  <option value="prior">Completed Prior to Platform</option>
-                </select>
-              </div>
-              <div>
-                <Label htmlFor="work-image">Preview Image</Label>
-                <Input
-                  id="work-image"
-                  type="file"
-                  accept="image/*"
-                />
-              </div>
-              <div>
-                <Label htmlFor="work-file">Attach Sample File (optional)</Label>
-                <Input
-                  id="work-file"
-                  type="file"
-                />
-              </div>
-              <Button onClick={handleAddWork} className="w-full">
-                Add Work to Portfolio
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Category Selection */}
-      <div className="flex space-x-2">
-        <Button 
-          variant={activeCategory === "platform" ? "default" : "outline"} 
-          onClick={() => setActiveCategory("platform")}
-        >
-          Completed on Platform ({platformWorks.length})
-        </Button>
-        <Button 
-          variant={activeCategory === "prior" ? "default" : "outline"} 
-          onClick={() => setActiveCategory("prior")}
-        >
-          Completed Prior to Platform ({priorWorks.length})
-        </Button>
-      </div>
-
-      {/* Portfolio Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">{totalWorks}</p>
-              <p className="text-sm text-gray-600">Total Projects</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <div className="flex items-center justify-center space-x-1">
-                <p className="text-2xl font-bold text-yellow-600">{averageRating.toFixed(1)}</p>
-                <Star className="h-5 w-5 text-yellow-400 fill-current" />
-              </div>
-              <p className="text-sm text-gray-600">Average Rating</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">100%</p>
-              <p className="text-sm text-gray-600">Client Satisfaction</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Works Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {currentWorks.map((work) => (
-          <Card key={work.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <CardTitle className="text-lg mb-2">{work.title}</CardTitle>
-                  <Badge variant="secondary" className="mb-2">
-                    {work.category}
-                  </Badge>
-                  <Badge variant="outline" className="ml-2">
-                    {activeCategory === "platform" ? "Platform" : "Prior Work"}
-                  </Badge>
-                </div>
-                <div className="flex space-x-1">
-                  <Button variant="ghost" size="sm">
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => handleDeleteWork(work.id, work.title)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            
-            <CardContent>
-              {/* Preview Image */}
-              <div className="mb-3">
-                <img
-                  src={work.previewImage}
-                  alt={work.title}
-                  className="w-full h-32 object-cover rounded-md bg-gray-200"
-                />
-              </div>
-              
-              <p className="text-sm text-gray-600 mb-3">{work.description}</p>
-              
-              {/* Tags */}
-              <div className="flex flex-wrap gap-1 mb-3">
-                {work.tags.map((tag, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-              
-              {/* Rating */}
-              <div className="flex items-center mb-2">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-4 w-4 ${
-                        i < Math.floor(work.rating) ? "text-yellow-400 fill-current" : "text-gray-300"
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="text-sm text-gray-600 ml-2">{work.rating}/5</span>
-              </div>
-              
-              {/* Client Feedback */}
-              <blockquote className="text-sm italic text-gray-600 mb-3 border-l-2 border-gray-200 pl-3">
-                "{work.clientFeedback}"
-              </blockquote>
-              
-              {/* Project Details */}
-              <div className="text-xs text-gray-500 mb-3">
-                <p>Client: {work.client}</p>
-                <p>Institution: {work.university}</p>
-                <p>Completed: {new Date(work.completedDate).toLocaleDateString()}</p>
-              </div>
-              
-              {/* Actions */}
-              <div className="flex space-x-2">
-                <Button size="sm" variant="outline" className="flex-1" onClick={() => handleViewWork(work)}>
-                  <Eye className="h-3 w-3 mr-1" />
-                  View Details
-                </Button>
-                <Button size="sm" variant="outline" className="flex-1" onClick={() => handleDownloadWork(work)}>
-                  <Download className="h-3 w-3 mr-1" />
-                  Download
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {currentWorks.length === 0 && (
-        <div className="text-center py-8">
-          <p className="text-gray-500">No works found in this category.</p>
-          <Button className="mt-4">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Your First Work
+        <h2 className="text-2xl font-bold">Previous Works</h2>
+        <div className="flex space-x-2">
+          <Button 
+            variant={activeTab === "platform" ? "default" : "outline"} 
+            onClick={() => setActiveTab("platform")}
+          >
+            Completed on the Platform
+          </Button>
+          <Button 
+            variant={activeTab === "pre-platform" ? "default" : "outline"} 
+            onClick={() => setActiveTab("pre-platform")}
+          >
+            Completed Before Joining the Platform
           </Button>
         </div>
+      </div>
+
+      {activeTab === "platform" && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 gap-6">
+            {platformWorks.map((work) => (
+              <Card key={work.id} className="border-l-4 border-l-green-500">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-2">
+                      <CardTitle className="text-lg">{work.title}</CardTitle>
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={work.clientAvatar} alt={work.client} />
+                          <AvatarFallback>{work.client.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium text-sm">{work.client}</p>
+                          <div className="flex items-center space-x-1">
+                            {renderStars(work.rating)}
+                            <span className="text-sm text-gray-600 ml-2">({work.rating}/5)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <Badge className="bg-green-600">{work.projectValue}</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <span>Completed: {work.completedDate}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <span>Duration: {work.duration}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-2">Client Review</h4>
+                    <p className="text-gray-700 text-sm italic">"{work.review}"</p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-2">Skills & Tags</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {work.tags.map((tag, index) => (
+                        <Badge key={index} variant="secondary">{tag}</Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-2">Deliverables</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {work.deliverables.map((deliverable, index) => (
+                        <div key={index} className="flex items-center space-x-1 text-sm bg-blue-50 px-2 py-1 rounded">
+                          <FileText className="h-3 w-3 text-blue-600" />
+                          <span>{deliverable}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-2 pt-2">
+                    <Button variant="outline" size="sm">
+                      <Eye className="h-4 w-4 mr-1" />
+                      View Details
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-1" />
+                      Download Portfolio
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
       )}
+
+      {activeTab === "pre-platform" && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 gap-6">
+            {prePlatformWorks.map((work) => (
+              <Card key={work.id} className="border-l-4 border-l-blue-500">
+                <CardHeader>
+                  <div className="space-y-2">
+                    <CardTitle className="text-lg">{work.title}</CardTitle>
+                    <p className="text-sm text-gray-600 font-medium">{work.institution}</p>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <span>Completed: {work.completedDate}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <span>Duration: {work.duration}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-2">Project Description</h4>
+                    <p className="text-gray-700 text-sm">{work.description}</p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-2">Skills & Tags</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {work.tags.map((tag, index) => (
+                        <Badge key={index} variant="outline">{tag}</Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-2">Key Outcomes</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {work.outcomes.map((outcome, index) => (
+                        <div key={index} className="flex items-center space-x-1 text-sm bg-green-50 px-2 py-1 rounded">
+                          <FileText className="h-3 w-3 text-green-600" />
+                          <span>{outcome}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-2 pt-2">
+                    <Button variant="outline" size="sm">
+                      <Eye className="h-4 w-4 mr-1" />
+                      View Details
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <FileText className="h-4 w-4 mr-1" />
+                      View Certificate
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Summary Statistics */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Portfolio Summary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div>
+              <p className="text-2xl font-bold text-blue-600">{platformWorks.length}</p>
+              <p className="text-sm text-gray-600">Platform Projects</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-green-600">{prePlatformWorks.length}</p>
+              <p className="text-sm text-gray-600">Previous Projects</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-purple-600">
+                {(platformWorks.reduce((sum, work) => sum + work.rating, 0) / platformWorks.length).toFixed(1)}
+              </p>
+              <p className="text-sm text-gray-600">Average Rating</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-orange-600">
+                {platformWorks.reduce((sum, work) => sum + parseInt(work.projectValue.replace(/[^\d]/g, '')), 0).toLocaleString()}
+              </p>
+              <p className="text-sm text-gray-600">Total Earnings (XAF)</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

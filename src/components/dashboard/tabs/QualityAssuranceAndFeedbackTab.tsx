@@ -1,157 +1,318 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, MessageSquare, Calendar, User, ThumbsUp } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Star, MessageSquare, ThumbsUp, AlertTriangle, Send, Eye } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const QualityAssuranceAndFeedbackTab = () => {
-  const feedbacks = [
-    {
-      id: "1",
-      studentName: "Sarah Johnson",
-      consultationDate: "2024-01-15",
-      rating: 5,
-      feedback: "Excellent consultation! Dr. Smith provided valuable insights into my AI research methodology. The session was well-structured and highly informative.",
-      category: "Research Methodology"
-    },
-    {
-      id: "2", 
-      studentName: "Michael Chen",
-      consultationDate: "2024-01-12",
-      rating: 4,
-      feedback: "Very helpful discussion about machine learning algorithms. Would have liked more time for Q&A session.",
-      category: "Machine Learning"
-    },
-    {
-      id: "3",
-      studentName: "Emily Davis",
-      consultationDate: "2024-01-10", 
-      rating: 5,
-      feedback: "Outstanding expertise in data science. The practical examples really helped clarify complex concepts.",
-      category: "Data Science"
-    }
-  ];
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackCategory, setFeedbackCategory] = useState("");
+  const [viewAllFeedback, setViewAllFeedback] = useState(false);
+  const { toast } = useToast();
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
+  const [feedbackList, setFeedbackList] = useState([
+    {
+      id: 1,
+      client: "Dr. Sarah Johnson",
+      project: "Statistical Analysis Project",
+      rating: 5,
+      feedback: "Excellent work! Very thorough analysis and professional presentation.",
+      date: "2024-01-28",
+      category: "Quality",
+      status: "positive"
+    },
+    {
+      id: 2,
+      client: "Prof. Michael Chen",
+      project: "Literature Review",
+      rating: 4,
+      feedback: "Good quality work, delivered on time. Could improve on formatting.",
+      date: "2024-01-25",
+      category: "Timeliness",
+      status: "positive"
+    },
+    {
+      id: 3,
+      client: "Dr. Marie Dubois",
+      project: "Data Collection",
+      rating: 5,
+      feedback: "Outstanding data collection work. Very organized and efficient.",
+      date: "2024-01-20",
+      category: "Organization",
+      status: "positive"
+    }
+  ]);
+
+  const qualityMetrics = {
+    averageRating: 4.7,
+    totalFeedbacks: feedbackList.length,
+    positivePercentage: 95,
+    responseRate: 100
+  };
+
+  const handleSubmitFeedback = () => {
+    if (!selectedRating || !feedbackText.trim() || !feedbackCategory) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newFeedback = {
+      id: feedbackList.length + 1,
+      client: "System Generated",
+      project: "Self Assessment",
+      rating: selectedRating,
+      feedback: feedbackText,
+      date: new Date().toISOString().split('T')[0],
+      category: feedbackCategory,
+      status: selectedRating >= 4 ? "positive" : selectedRating >= 3 ? "neutral" : "negative"
+    };
+
+    setFeedbackList(prev => [newFeedback, ...prev]);
+    setSelectedRating(0);
+    setFeedbackText("");
+    setFeedbackCategory("");
+
+    toast({
+      title: "Feedback Submitted",
+      description: "Your feedback has been submitted successfully"
+    });
+  };
+
+  const renderStars = (rating: number, interactive = false, size = "h-4 w-4") => {
+    return Array.from({ length: 5 }, (_, index) => (
       <Star
-        key={i}
-        className={`h-4 w-4 ${
-          i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+        key={index}
+        className={`${size} cursor-pointer transition-colors ${
+          index < rating 
+            ? "text-yellow-400 fill-current" 
+            : interactive 
+              ? "text-gray-300 hover:text-yellow-300" 
+              : "text-gray-300"
         }`}
+        onClick={interactive ? () => setSelectedRating(index + 1) : undefined}
       />
     ));
   };
 
-  return (
-    <div className="bg-white p-6 rounded-lg shadow-sm space-y-6">
-      <h2 className="text-xl font-semibold mb-6">Quality Assurance & Feedback</h2>
-      
-      {/* Platform Rating Section */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-lg">Rate this platform</CardTitle>
-          <p className="text-gray-600">How would you rate your overall experience with ScholarConnect?</p>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center space-x-2 mb-4">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Star
-                key={star}
-                className="h-6 w-6 cursor-pointer hover:text-yellow-500 fill-yellow-400 text-yellow-400"
-              />
-            ))}
-          </div>
-          <textarea
-            className="w-full p-3 border rounded-md"
-            rows={4}
-            placeholder="Share your thoughts about the platform..."
-          />
-          <Button className="mt-3">Submit Feedback</Button>
-        </CardContent>
-      </Card>
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "positive":
+        return <Badge className="bg-green-600">Positive</Badge>;
+      case "neutral":
+        return <Badge variant="secondary">Neutral</Badge>;
+      case "negative":
+        return <Badge variant="destructive">Needs Improvement</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
 
-      {/* Recent Feedback and Platform Info Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  const displayedFeedback = viewAllFeedback ? feedbackList : feedbackList.slice(0, 3);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Quality Assurance & Feedback</h2>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Submit Feedback
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Submit Quality Feedback</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label>Overall Rating</Label>
+                <div className="flex items-center space-x-1 mt-2">
+                  {renderStars(selectedRating, true, "h-6 w-6")}
+                </div>
+                <p className="text-sm text-gray-500 mt-1">
+                  {selectedRating === 0 && "Select a rating"}
+                  {selectedRating === 1 && "Poor"}
+                  {selectedRating === 2 && "Fair"}
+                  {selectedRating === 3 && "Good"}
+                  {selectedRating === 4 && "Very Good"}
+                  {selectedRating === 5 && "Excellent"}
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="feedback-category">Category</Label>
+                <select
+                  id="feedback-category"
+                  value={feedbackCategory}
+                  onChange={(e) => setFeedbackCategory(e.target.value)}
+                  className="w-full p-2 border rounded-md mt-1"
+                >
+                  <option value="">Select category</option>
+                  <option value="Quality">Work Quality</option>
+                  <option value="Timeliness">Timeliness</option>
+                  <option value="Communication">Communication</option>
+                  <option value="Organization">Organization</option>
+                  <option value="Technical Skills">Technical Skills</option>
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="feedback-text">Feedback Details</Label>
+                <Textarea
+                  id="feedback-text"
+                  placeholder="Provide detailed feedback..."
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  rows={4}
+                />
+              </div>
+              <Button onClick={handleSubmitFeedback} className="w-full">
+                <Send className="h-4 w-4 mr-2" />
+                Submit Feedback
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Quality Metrics Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center">
-              <MessageSquare className="mr-2 h-4 w-4" />
-              Recent Feedback
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600">
-              "Great platform for connecting with researchers. The booking system is very intuitive."
-            </p>
-            <Badge className="mt-2 bg-green-100 text-green-800">Submitted</Badge>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <Star className="h-8 w-8 text-yellow-500" />
+              <div>
+                <p className="text-sm text-gray-600">Average Rating</p>
+                <p className="text-2xl font-bold">{qualityMetrics.averageRating}/5</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
         
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center">
-              <ThumbsUp className="mr-2 h-4 w-4" />
-              Your Performance
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm">Total Sessions</span>
-                <span className="text-sm font-medium">12</span>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <MessageSquare className="h-8 w-8 text-blue-600" />
+              <div>
+                <p className="text-sm text-gray-600">Total Feedback</p>
+                <p className="text-2xl font-bold">{qualityMetrics.totalFeedbacks}</p>
               </div>
-              <div className="flex justify-between">
-                <span className="text-sm">Avg Rating Received</span>
-                <span className="text-sm font-medium">4.8/5</span>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <ThumbsUp className="h-8 w-8 text-green-600" />
+              <div>
+                <p className="text-sm text-gray-600">Positive Rate</p>
+                <p className="text-2xl font-bold">{qualityMetrics.positivePercentage}%</p>
               </div>
-              <div className="flex justify-between">
-                <span className="text-sm">Feedback Given</span>
-                <span className="text-sm font-medium">3</span>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <AlertTriangle className="h-8 w-8 text-orange-600" />
+              <div>
+                <p className="text-sm text-gray-600">Response Rate</p>
+                <p className="text-2xl font-bold">{qualityMetrics.responseRate}%</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Student Feedback Section */}
+      {/* Feedback List */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
-            Recent Student Feedback
-          </CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-lg">Recent Feedback</CardTitle>
+            <Button 
+              variant="outline" 
+              onClick={() => setViewAllFeedback(!viewAllFeedback)}
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              {viewAllFeedback ? "View Less" : "View All Feedback"}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {feedbacks.map((feedback) => (
-              <div key={feedback.id} className="border-b pb-4 last:border-b-0">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1">
-                      <User className="h-4 w-4 text-gray-500" />
-                      <span className="font-medium">{feedback.studentName}</span>
+            {displayedFeedback.map((feedback) => (
+              <Card key={feedback.id} className="border-l-4 border-l-blue-500">
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src="/placeholder-avatar.jpg" alt={feedback.client} />
+                        <AvatarFallback>{feedback.client.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h4 className="font-medium">{feedback.client}</h4>
+                        <p className="text-sm text-gray-600">{feedback.project}</p>
+                        <p className="text-xs text-gray-500">{feedback.date}</p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">{feedback.consultationDate}</span>
+                    <div className="text-right">
+                      <div className="flex items-center space-x-1 mb-1">
+                        {renderStars(feedback.rating)}
+                        <span className="text-sm text-gray-600 ml-2">({feedback.rating}/5)</span>
+                      </div>
+                      {getStatusBadge(feedback.status)}
                     </div>
                   </div>
-                  <Badge variant="outline">{feedback.category}</Badge>
-                </div>
-                
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="flex">{renderStars(feedback.rating)}</div>
-                  <span className="text-sm text-gray-600">({feedback.rating}/5)</span>
-                </div>
-                
-                <p className="text-sm text-gray-700">{feedback.feedback}</p>
-              </div>
+                  
+                  <div className="mb-3">
+                    <Badge variant="outline" className="mb-2">{feedback.category}</Badge>
+                    <p className="text-gray-700">{feedback.feedback}</p>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
-          
-          <div className="flex justify-center mt-6">
-            <Button variant="outline">View All Feedback</Button>
+        </CardContent>
+      </Card>
+
+      {/* Quality Improvement Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Quality Improvement Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 bg-blue-50 rounded-lg">
+              <h4 className="font-medium mb-2">Strengths</h4>
+              <ul className="text-sm space-y-1">
+                <li>• Consistent high-quality deliverables</li>
+                <li>• Excellent communication skills</li>
+                <li>• Timely project completion</li>
+                <li>• Professional presentation</li>
+              </ul>
+            </div>
+            <div className="p-4 bg-orange-50 rounded-lg">
+              <h4 className="font-medium mb-2">Areas for Improvement</h4>
+              <ul className="text-sm space-y-1">
+                <li>• Document formatting consistency</li>
+                <li>• Initial response time to queries</li>
+                <li>• Proactive progress updates</li>
+                <li>• Technical documentation clarity</li>
+              </ul>
+            </div>
           </div>
         </CardContent>
       </Card>

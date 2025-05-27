@@ -5,55 +5,185 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Send, MessageCircle, Users, Pin, Search } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Send, MessageCircle, Users, Pin, Search, Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const DiscussionTab = () => {
   const [newMessage, setNewMessage] = useState("");
   const [selectedTopic, setSelectedTopic] = useState("general");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [newTopicTitle, setNewTopicTitle] = useState("");
+  const [newTopicDescription, setNewTopicDescription] = useState("");
+  const { toast } = useToast();
 
-  const discussionTopics = [
+  const [discussionTopics, setDiscussionTopics] = useState([
     { id: "general", name: "General Discussion", participants: 45, unread: 3 },
     { id: "research-methods", name: "Research Methods", participants: 28, unread: 0 },
     { id: "academic-writing", name: "Academic Writing", participants: 32, unread: 1 },
     { id: "data-analysis", name: "Data Analysis", participants: 19, unread: 5 },
     { id: "collaboration", name: "Collaboration Opportunities", participants: 15, unread: 0 }
-  ];
+  ]);
 
-  const messages = [
-    {
-      id: 1,
-      author: "Dr. Sarah Johnson",
-      avatar: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
-      message: "Has anyone worked with mixed-methods research in education? I'm looking for some guidance on data integration techniques.",
-      timestamp: "2 hours ago",
-      replies: 3,
-      isPinned: true
-    },
-    {
-      id: 2,
-      author: "Prof. Michael Chen",
-      avatar: "/lovable-uploads/327ccde5-c0c9-443a-acd7-4570799bb7f8.png",
-      message: "I'd be happy to help! I've used concurrent triangulation in several studies. The key is ensuring your qual and quant data address the same research questions.",
-      timestamp: "1 hour ago",
-      replies: 0,
-      isPinned: false
-    },
-    {
-      id: 3,
-      author: "Alex Smith",
-      avatar: "/lovable-uploads/0c2151ac-5e74-4b77-86a9-9b359241cfca.png",
-      message: "Thank you both! This discussion is exactly what I needed. Would it be possible to set up a consultation to dive deeper into this topic?",
-      timestamp: "30 minutes ago",
-      replies: 1,
-      isPinned: false
-    }
-  ];
+  const [allMessages, setAllMessages] = useState({
+    general: [
+      {
+        id: 1,
+        author: "Dr. Sarah Johnson",
+        avatar: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
+        message: "Has anyone worked with mixed-methods research in education? I'm looking for some guidance on data integration techniques.",
+        timestamp: "2 hours ago",
+        replies: 3,
+        isPinned: true
+      },
+      {
+        id: 2,
+        author: "Prof. Michael Chen",
+        avatar: "/lovable-uploads/327ccde5-c0c9-443a-acd7-4570799bb7f8.png",
+        message: "I'd be happy to help! I've used concurrent triangulation in several studies. The key is ensuring your qual and quant data address the same research questions.",
+        timestamp: "1 hour ago",
+        replies: 0,
+        isPinned: false
+      },
+      {
+        id: 3,
+        author: "Alex Smith",
+        avatar: "/lovable-uploads/0c2151ac-5e74-4b77-86a9-9b359241cfca.png",
+        message: "Thank you both! This discussion is exactly what I needed. Would it be possible to set up a consultation to dive deeper into this topic?",
+        timestamp: "30 minutes ago",
+        replies: 1,
+        isPinned: false
+      }
+    ],
+    "research-methods": [
+      {
+        id: 1,
+        author: "Dr. Marie Dubois",
+        avatar: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
+        message: "What are the best practices for sample size calculation in qualitative research?",
+        timestamp: "3 hours ago",
+        replies: 2,
+        isPinned: false
+      }
+    ],
+    "academic-writing": [
+      {
+        id: 1,
+        author: "Prof. John Doe",
+        avatar: "/lovable-uploads/327ccde5-c0c9-443a-acd7-4570799bb7f8.png",
+        message: "Tips for writing a compelling research abstract?",
+        timestamp: "1 day ago",
+        replies: 5,
+        isPinned: true
+      }
+    ],
+    "data-analysis": [
+      {
+        id: 1,
+        author: "Dr. Jane Smith",
+        avatar: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
+        message: "Which statistical software is best for longitudinal data analysis?",
+        timestamp: "2 days ago",
+        replies: 4,
+        isPinned: false
+      }
+    ],
+    collaboration: [
+      {
+        id: 1,
+        author: "Research Team Lead",
+        avatar: "/lovable-uploads/0c2151ac-5e74-4b77-86a9-9b359241cfca.png",
+        message: "Looking for collaborators on climate change research project.",
+        timestamp: "1 week ago",
+        replies: 8,
+        isPinned: false
+      }
+    ]
+  });
+
+  const currentMessages = allMessages[selectedTopic as keyof typeof allMessages] || [];
+  const filteredTopics = discussionTopics.filter(topic =>
+    topic.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
-      console.log("Sending message:", newMessage);
+      const newMsg = {
+        id: currentMessages.length + 1,
+        author: "You",
+        avatar: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
+        message: newMessage,
+        timestamp: "Just now",
+        replies: 0,
+        isPinned: false
+      };
+
+      setAllMessages(prev => ({
+        ...prev,
+        [selectedTopic]: [...(prev[selectedTopic as keyof typeof prev] || []), newMsg]
+      }));
+
       setNewMessage("");
+      
+      toast({
+        title: "Message Sent",
+        description: "Your message has been posted to the discussion"
+      });
+    }
+  };
+
+  const handleCreateTopic = () => {
+    if (!newTopicTitle.trim() || !newTopicDescription.trim()) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const topicId = newTopicTitle.toLowerCase().replace(/\s+/g, '-');
+    const newTopic = {
+      id: topicId,
+      name: newTopicTitle,
+      participants: 1,
+      unread: 0
+    };
+
+    setDiscussionTopics(prev => [...prev, newTopic]);
+    setAllMessages(prev => ({
+      ...prev,
+      [topicId]: [
+        {
+          id: 1,
+          author: "You",
+          avatar: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
+          message: newTopicDescription,
+          timestamp: "Just now",
+          replies: 0,
+          isPinned: true
+        }
+      ]
+    }));
+
+    setNewTopicTitle("");
+    setNewTopicDescription("");
+    setSelectedTopic(topicId);
+
+    toast({
+      title: "Topic Created",
+      description: "Your new discussion topic has been created successfully"
+    });
+  };
+
+  const handleSearch = () => {
+    if (searchTerm.trim()) {
+      toast({
+        title: "Search Results",
+        description: `Found ${filteredTopics.length} topics matching "${searchTerm}"`
+      });
     }
   };
 
@@ -67,9 +197,49 @@ const DiscussionTab = () => {
             <Input 
               placeholder="Search discussions..." 
               className="pl-10 w-64"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             />
           </div>
-          <Button>New Topic</Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                New Topic
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Discussion Topic</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="topic-title">Topic Title</Label>
+                  <Input
+                    id="topic-title"
+                    placeholder="Enter topic title"
+                    value={newTopicTitle}
+                    onChange={(e) => setNewTopicTitle(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="topic-description">Initial Message</Label>
+                  <Textarea
+                    id="topic-description"
+                    placeholder="Start the discussion..."
+                    value={newTopicDescription}
+                    onChange={(e) => setNewTopicDescription(e.target.value)}
+                    rows={4}
+                  />
+                </div>
+                <Button onClick={handleCreateTopic} className="w-full">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Topic
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -84,7 +254,7 @@ const DiscussionTab = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {discussionTopics.map((topic) => (
+              {filteredTopics.map((topic) => (
                 <div
                   key={topic.id}
                   className={`p-3 rounded-lg cursor-pointer transition-colors ${
@@ -122,7 +292,7 @@ const DiscussionTab = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4 mb-6">
-                {messages.map((message) => (
+                {currentMessages.map((message) => (
                   <div key={message.id} className="flex gap-4">
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={message.avatar} alt={message.author} />
@@ -153,7 +323,7 @@ const DiscussionTab = () => {
               <div className="border-t pt-4">
                 <div className="flex gap-3">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback>AS</AvatarFallback>
+                    <AvatarFallback>YU</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 space-y-2">
                     <Textarea

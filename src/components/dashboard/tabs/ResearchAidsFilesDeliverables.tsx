@@ -14,6 +14,9 @@ const ResearchAidsFilesDeliverables = () => {
   const [deliverableTitle, setDeliverableTitle] = useState("");
   const [deliverableDescription, setDeliverableDescription] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [workFile, setWorkFile] = useState<File | null>(null);
+  const [viewingFile, setViewingFile] = useState<any>(null);
+  const [viewingDeliverable, setViewingDeliverable] = useState<any>(null);
   const { toast } = useToast();
 
   const files = [
@@ -24,7 +27,8 @@ const ResearchAidsFilesDeliverables = () => {
       size: "2.5 MB",
       uploadedBy: "Dr. Sarah Johnson",
       uploadDate: "2024-01-25",
-      project: "Statistical Analysis Project"
+      project: "Statistical Analysis Project",
+      content: "This file contains comprehensive statistical analysis data including regression models, correlation matrices, and hypothesis testing results for the agricultural productivity study."
     },
     {
       id: 2,
@@ -33,7 +37,8 @@ const ResearchAidsFilesDeliverables = () => {
       size: "1.8 MB",
       uploadedBy: "Prof. Michael Chen",
       uploadDate: "2024-01-24",
-      project: "Climate Change Review"
+      project: "Climate Change Review",
+      content: "A collection of peer-reviewed articles and research papers related to climate change impacts on agricultural systems, including references from 2020-2024."
     },
     {
       id: 3,
@@ -42,11 +47,12 @@ const ResearchAidsFilesDeliverables = () => {
       size: "456 KB",
       uploadedBy: "Dr. Marie Dubois",
       uploadDate: "2024-01-23",
-      project: "Agricultural Study"
+      project: "Agricultural Study",
+      content: "Structured questionnaire for farmer interviews including demographic questions, farming practices, and climate adaptation strategies."
     }
   ];
 
-  const deliverables = [
+  const [deliverables, setDeliverables] = useState([
     {
       id: 1,
       title: "Statistical Analysis Report",
@@ -55,7 +61,8 @@ const ResearchAidsFilesDeliverables = () => {
       dueDate: "2024-01-30",
       submittedDate: "2024-01-28",
       project: "Statistical Analysis Project",
-      client: "Dr. Sarah Johnson"
+      client: "Dr. Sarah Johnson",
+      workSubmitted: false
     },
     {
       id: 2,
@@ -64,7 +71,8 @@ const ResearchAidsFilesDeliverables = () => {
       status: "in-progress",
       dueDate: "2024-02-05",
       project: "Climate Change Review",
-      client: "Prof. Michael Chen"
+      client: "Prof. Michael Chen",
+      workSubmitted: false
     },
     {
       id: 3,
@@ -73,9 +81,10 @@ const ResearchAidsFilesDeliverables = () => {
       status: "pending",
       dueDate: "2024-02-10",
       project: "Agricultural Study",
-      client: "Dr. Marie Dubois"
+      client: "Dr. Marie Dubois",
+      workSubmitted: false
     }
-  ];
+  ]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -99,6 +108,17 @@ const ResearchAidsFilesDeliverables = () => {
       toast({
         title: "File Selected",
         description: `${file.name} is ready to upload`
+      });
+    }
+  };
+
+  const handleWorkFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setWorkFile(file);
+      toast({
+        title: "Work File Selected",
+        description: `${file.name} is ready to submit`
       });
     }
   };
@@ -138,26 +158,35 @@ const ResearchAidsFilesDeliverables = () => {
     setDeliverableDescription("");
   };
 
-  const handleViewFile = (file: any) => {
-    // Simulate opening file viewer
+  const handleSubmitWork = (deliverableId: number) => {
+    if (!workFile) {
+      toast({
+        title: "Error",
+        description: "Please select a file to submit",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setDeliverables(prev => prev.map(d => 
+      d.id === deliverableId 
+        ? { ...d, workSubmitted: true, status: "submitted" }
+        : d
+    ));
+
     toast({
-      title: "Opening File",
-      description: `Opening ${file.name} in viewer`
+      title: "Work Submitted",
+      description: `Your work has been submitted successfully`
     });
-    
-    // In a real app, this would open a file viewer modal or new tab
-    console.log("Viewing file:", file);
+    setWorkFile(null);
+  };
+
+  const handleViewFile = (file: any) => {
+    setViewingFile(file);
   };
 
   const handleViewDeliverable = (deliverable: any) => {
-    // Simulate opening deliverable details
-    toast({
-      title: "Opening Deliverable",
-      description: `Viewing details for ${deliverable.title}`
-    });
-    
-    // In a real app, this would open a detailed view modal
-    console.log("Viewing deliverable:", deliverable);
+    setViewingDeliverable(deliverable);
   };
 
   return (
@@ -334,10 +363,43 @@ const ResearchAidsFilesDeliverables = () => {
                       View Details
                     </Button>
                     {deliverable.status === "pending" && (
-                      <Button size="sm">
-                        <Send className="h-4 w-4 mr-1" />
-                        Submit Work
-                      </Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button size="sm">
+                            <Send className="h-4 w-4 mr-1" />
+                            Submit Work
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Submit Work for {deliverable.title}</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <Label htmlFor="work-file">Upload Work File</Label>
+                              <Input
+                                id="work-file"
+                                type="file"
+                                onChange={handleWorkFileUpload}
+                                className="mt-1"
+                              />
+                            </div>
+                            {workFile && (
+                              <div className="p-3 bg-green-50 rounded">
+                                <p className="text-sm">Selected: {workFile.name}</p>
+                              </div>
+                            )}
+                            <Button 
+                              onClick={() => handleSubmitWork(deliverable.id)} 
+                              className="w-full"
+                              disabled={!workFile}
+                            >
+                              <Send className="h-4 w-4 mr-2" />
+                              Submit Work
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     )}
                     {deliverable.status === "submitted" && (
                       <Button variant="outline" size="sm">
@@ -352,6 +414,62 @@ const ResearchAidsFilesDeliverables = () => {
           </div>
         </div>
       )}
+
+      {/* File Viewer Dialog */}
+      <Dialog open={!!viewingFile} onOpenChange={() => setViewingFile(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{viewingFile?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="p-4 bg-gray-50 rounded">
+              <h4 className="font-medium mb-2">File Details</h4>
+              <p><strong>Size:</strong> {viewingFile?.size}</p>
+              <p><strong>Uploaded by:</strong> {viewingFile?.uploadedBy}</p>
+              <p><strong>Upload date:</strong> {viewingFile?.uploadDate}</p>
+              <p><strong>Project:</strong> {viewingFile?.project}</p>
+            </div>
+            <div className="p-4 bg-blue-50 rounded">
+              <h4 className="font-medium mb-2">Content Preview</h4>
+              <p className="text-sm">{viewingFile?.content}</p>
+            </div>
+            <div className="flex space-x-2">
+              <Button onClick={() => handleDownload(viewingFile?.name)}>
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+              <Button variant="outline" onClick={() => setViewingFile(null)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Deliverable Viewer Dialog */}
+      <Dialog open={!!viewingDeliverable} onOpenChange={() => setViewingDeliverable(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{viewingDeliverable?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="p-4 bg-gray-50 rounded">
+              <h4 className="font-medium mb-2">Deliverable Details</h4>
+              <p><strong>Description:</strong> {viewingDeliverable?.description}</p>
+              <p><strong>Client:</strong> {viewingDeliverable?.client}</p>
+              <p><strong>Project:</strong> {viewingDeliverable?.project}</p>
+              <p><strong>Due Date:</strong> {viewingDeliverable?.dueDate}</p>
+              <p><strong>Status:</strong> {viewingDeliverable?.status}</p>
+              {viewingDeliverable?.submittedDate && (
+                <p><strong>Submitted:</strong> {viewingDeliverable.submittedDate}</p>
+              )}
+            </div>
+            <Button variant="outline" onClick={() => setViewingDeliverable(null)}>
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
