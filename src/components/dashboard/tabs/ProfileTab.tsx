@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { User, Mail, Phone, MapPin, Calendar, Briefcase, Plus, X, Trash2 } from "lucide-react";
+import { User, Plus, X, Trash2, Sparkles, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import AIBioGenerator from "@/components/dashboard/profile/AIBioGenerator";
 
 const ProfileTab = () => {
   const { toast } = useToast();
@@ -19,13 +20,7 @@ const ProfileTab = () => {
     email: "john.researcher@university.cm",
     phone: "+237 6XX XXX XXX",
     location: "Yaoundé, Cameroon",
-    institution: "University of Yaoundé I",
-    department: "Computer Science",
-    position: "Associate Professor",
     bio: "Specialized in artificial intelligence and machine learning with over 10 years of research experience in healthcare applications.",
-    employmentStatus: "actively-employed",
-    hourlyRate: "15000",
-    availability: "Available weekdays 9 AM - 5 PM",
     educationalBackground: [
       { degree: "PhD in Computer Science", institution: "University of Yaoundé I", year: "2015" },
       { degree: "MSc in Information Systems", institution: "University of Buea", year: "2010" }
@@ -57,6 +52,11 @@ const ProfileTab = () => {
       { level: "Master's", count: 12 },
       { level: "Undergraduate", count: 25 },
       { level: "Higher National Diploma", count: 8 }
+    ],
+    supervisionDetails: [
+      { name: "Marie Dupont", level: "PhD", thesisTitle: "Machine Learning Applications in Agricultural Prediction", year: "2023" },
+      { name: "Paul Ngozi", level: "Master's", thesisTitle: "Data Mining Techniques for Healthcare Analytics", year: "2023" },
+      { name: "Sarah Mballa", level: "PhD", thesisTitle: "AI-Driven Climate Change Modeling", year: "2022" }
     ]
   });
 
@@ -90,6 +90,10 @@ const ProfileTab = () => {
     
     setIsEditing(false);
     console.log("Saving profile data:", formData);
+  };
+
+  const handleBioGenerated = (newBio: string) => {
+    setFormData(prev => ({ ...prev, bio: newBio }));
   };
 
   // Educational Background handlers
@@ -284,6 +288,30 @@ const ProfileTab = () => {
     }));
   };
 
+  // Supervision Details handlers
+  const handleAddSupervisionDetail = () => {
+    setFormData(prev => ({
+      ...prev,
+      supervisionDetails: [...prev.supervisionDetails, { name: "", level: "", thesisTitle: "", year: "" }]
+    }));
+  };
+
+  const handleUpdateSupervisionDetail = (index: number, field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      supervisionDetails: prev.supervisionDetails.map((detail, i) =>
+        i === index ? { ...detail, [field]: value } : detail
+      )
+    }));
+  };
+
+  const handleRemoveSupervisionDetail = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      supervisionDetails: prev.supervisionDetails.filter((_, i) => i !== index)
+    }));
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -368,91 +396,29 @@ const ProfileTab = () => {
         </CardContent>
       </Card>
 
+      {/* Professional Bio with AI Generation */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Briefcase className="h-5 w-5 mr-2" />
-            Professional Information
+          <CardTitle className="flex items-center justify-between">
+            <span>Professional Bio</span>
+            {isEditing && (
+              <AIBioGenerator 
+                currentBio={formData.bio}
+                profileData={formData}
+                onBioGenerated={handleBioGenerated}
+                userType="researcher"
+              />
+            )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="institution">Institution</Label>
-              <Input
-                id="institution"
-                value={formData.institution}
-                onChange={(e) => handleInputChange("institution", e.target.value)}
-                disabled={!isEditing}
-              />
-            </div>
-            <div>
-              <Label htmlFor="department">Department</Label>
-              <Input
-                id="department"
-                value={formData.department}
-                onChange={(e) => handleInputChange("department", e.target.value)}
-                disabled={!isEditing}
-              />
-            </div>
-            <div>
-              <Label htmlFor="position">Title/Position</Label>
-              <Input
-                id="position"
-                value={formData.position}
-                onChange={(e) => handleInputChange("position", e.target.value)}
-                disabled={!isEditing}
-              />
-            </div>
-            <div>
-              <Label htmlFor="employment-status">Employment Status</Label>
-              <Select 
-                value={formData.employmentStatus} 
-                onValueChange={(value) => handleInputChange("employmentStatus", value)}
-                disabled={!isEditing}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select employment status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="actively-employed">Actively Employed</SelectItem>
-                  <SelectItem value="retired">Retired</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="hourly-rate">Hourly Rate (XAF)</Label>
-              <Input
-                id="hourly-rate"
-                type="number"
-                value={formData.hourlyRate}
-                onChange={(e) => handleInputChange("hourlyRate", e.target.value)}
-                disabled={!isEditing}
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="bio">Professional Bio</Label>
-            <Textarea
-              id="bio"
-              value={formData.bio}
-              onChange={(e) => handleInputChange("bio", e.target.value)}
-              disabled={!isEditing}
-              rows={4}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="availability">Availability</Label>
-            <Input
-              id="availability"
-              value={formData.availability}
-              onChange={(e) => handleInputChange("availability", e.target.value)}
-              disabled={!isEditing}
-              placeholder="e.g., Available weekdays 9 AM - 5 PM"
-            />
-          </div>
+        <CardContent>
+          <Textarea
+            value={formData.bio}
+            onChange={(e) => handleInputChange("bio", e.target.value)}
+            disabled={!isEditing}
+            rows={4}
+            placeholder="Your professional bio will be displayed here..."
+          />
         </CardContent>
       </Card>
 
@@ -893,6 +859,88 @@ const ProfileTab = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleRemoveSupervision(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Student Supervision Details */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Details of Student Supervision</CardTitle>
+            {isEditing && (
+              <Button variant="outline" size="sm" onClick={handleAddSupervisionDetail}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Student
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {formData.supervisionDetails.map((detail, index) => (
+              <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border rounded-lg">
+                <div>
+                  <Label>Student Name</Label>
+                  <Input
+                    value={detail.name}
+                    onChange={(e) => handleUpdateSupervisionDetail(index, 'name', e.target.value)}
+                    disabled={!isEditing}
+                    placeholder="Student full name"
+                  />
+                </div>
+                <div>
+                  <Label>Academic Level</Label>
+                  <Select
+                    value={detail.level}
+                    onValueChange={(value) => handleUpdateSupervisionDetail(index, 'level', value)}
+                    disabled={!isEditing}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Post Doctorate">Post Doctorate</SelectItem>
+                      <SelectItem value="PhD">PhD</SelectItem>
+                      <SelectItem value="Master's">Master's</SelectItem>
+                      <SelectItem value="Undergraduate">Undergraduate</SelectItem>
+                      <SelectItem value="Higher National Diploma">Higher National Diploma</SelectItem>
+                      <SelectItem value="National Diploma">National Diploma</SelectItem>
+                      <SelectItem value="DIPES">DIPES</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Thesis Title</Label>
+                  <Input
+                    value={detail.thesisTitle}
+                    onChange={(e) => handleUpdateSupervisionDetail(index, 'thesisTitle', e.target.value)}
+                    disabled={!isEditing}
+                    placeholder="Research/thesis title"
+                  />
+                </div>
+                <div>
+                  <Label>Year</Label>
+                  <Input
+                    value={detail.year}
+                    onChange={(e) => handleUpdateSupervisionDetail(index, 'year', e.target.value)}
+                    disabled={!isEditing}
+                    placeholder="2023"
+                  />
+                </div>
+                {isEditing && (
+                  <div className="flex items-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRemoveSupervisionDetail(index)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
