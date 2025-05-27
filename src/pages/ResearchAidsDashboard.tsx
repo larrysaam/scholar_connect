@@ -33,7 +33,7 @@ const ResearchAidsDashboard = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case "overview":
-        return <ResearchAidsOverview />;
+        return <ResearchAidsOverview setActiveTab={setActiveTab} />;
       case "job-requests":
         return <ResearchAidsJobRequests />;
       case "messages":
@@ -49,7 +49,7 @@ const ResearchAidsDashboard = () => {
       case "settings":
         return <ResearchAidsSettings />;
       default:
-        return <ResearchAidsOverview />;
+        return <ResearchAidsOverview setActiveTab={setActiveTab} />;
     }
   };
 

@@ -7,8 +7,24 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star, TrendingUp, MessageSquare, Clock, DollarSign, Briefcase } from "lucide-react";
 
-const ResearchAidsOverview = () => {
+interface ResearchAidsOverviewProps {
+  setActiveTab: (tab: string) => void;
+}
+
+const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
   const [isAvailable, setIsAvailable] = useState(true);
+
+  const handleViewJobRequests = () => {
+    setActiveTab("job-requests");
+  };
+
+  const handleCheckMessages = () => {
+    setActiveTab("messages");
+  };
+
+  const handleUpdateProfile = () => {
+    setActiveTab("profile-ratings");
+  };
 
   return (
     <div className="space-y-6">
@@ -142,13 +158,13 @@ const ResearchAidsOverview = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button className="w-full">
+            <Button className="w-full" onClick={handleViewJobRequests}>
               View Job Requests
             </Button>
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full" onClick={handleCheckMessages}>
               Check Messages
             </Button>
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full" onClick={handleUpdateProfile}>
               Update Profile
             </Button>
           </div>
