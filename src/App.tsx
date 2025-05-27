@@ -9,6 +9,7 @@ import About from "./pages/AboutUs";
 import Contact from "./pages/Contact";
 import HowItWorks from "./pages/HowItWorks";
 import Register from "./pages/Register";
+import Researchers from "./pages/Researchers";
 import ResearcherDashboard from "./pages/ResearcherDashboard";
 import ResearchAidsDashboard from "./pages/ResearchAidsDashboard";
 import ResearchAidSignup from "./pages/ResearchAidSignup";
@@ -35,6 +36,7 @@ function App() {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/services" element={<HowItWorks />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/researchers" element={<Researchers />} />
                 <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
                 <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
                 <Route path="/dashboard" element={<Dashboard />} />
