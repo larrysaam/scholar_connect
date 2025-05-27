@@ -1,11 +1,11 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Star, MapPin, Filter, Users, Award, BookOpen } from "lucide-react";
+import { Search, Star, MapPin, Filter, Users, Award, BookOpen, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface Researcher {
   id: string;
@@ -27,6 +27,7 @@ const FindResearcherTab = () => {
   const [selectedField, setSelectedField] = useState("all");
   const [selectedLanguage, setSelectedLanguage] = useState("all");
   const [priceRange, setPriceRange] = useState("all");
+  const navigate = useNavigate();
 
   const [featuredResearchers] = useState<Researcher[]>([
     {
@@ -164,7 +165,12 @@ const FindResearcherTab = () => {
                   {researcher.hourlyRate.toLocaleString()} XAF/hr
                 </div>
               </div>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+              <Button 
+                size="sm" 
+                className="bg-blue-600 hover:bg-blue-700"
+                onClick={() => navigate(`/researcher/${researcher.id}`)}
+              >
+                <Eye className="h-4 w-4 mr-1" />
                 View Profile
               </Button>
             </div>

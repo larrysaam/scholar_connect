@@ -3,9 +3,10 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MessageCircle, Calendar, Star } from "lucide-react";
+import { MessageCircle, Calendar, Star, Eye } from "lucide-react";
 import VerificationBadge from "@/components/verification/VerificationBadge";
 import ServiceBookingModal from "@/components/payment/ServiceBookingModal";
+import { useNavigate } from "react-router-dom";
 
 interface ResearcherCardProps {
   id: string;
@@ -39,6 +40,11 @@ const ResearcherCard = ({
   verifications
 }: ResearcherCardProps) => {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleViewProfile = () => {
+    navigate(`/researcher/${id}`);
+  };
 
   return (
     <>
@@ -98,9 +104,10 @@ const ResearcherCard = ({
                 variant="outline" 
                 size="sm" 
                 className="flex-1"
+                onClick={handleViewProfile}
               >
-                <MessageCircle className="h-4 w-4 mr-1" />
-                Message
+                <Eye className="h-4 w-4 mr-1" />
+                View Profile
               </Button>
               <Button 
                 size="sm" 
