@@ -10,6 +10,7 @@ import Contact from "./pages/Contact";
 import HowItWorks from "./pages/HowItWorks";
 import Register from "./pages/Register";
 import Researchers from "./pages/Researchers";
+import ResearchAids from "./pages/ResearchAids";
 import ResearcherProfile from "./pages/ResearcherProfile";
 import ResearcherDashboard from "./pages/ResearcherDashboard";
 import ResearchAidsDashboard from "./pages/ResearchAidsDashboard";
@@ -17,6 +18,8 @@ import ResearchAidSignup from "./pages/ResearchAidSignup";
 import ResearchAideSignup from "./pages/ResearchAideSignup";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import Blogs from "./pages/Blogs";
+import Partnerships from "./pages/Partnerships";
 import { AuthProvider } from "./hooks/useAuth";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import SecureAuth from "@/pages/SecureAuth";
@@ -36,8 +39,10 @@ function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/services" element={<HowItWorks />} />
+                <Route path="/how-it-works" element={<HowItWorks />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/researchers" element={<Researchers />} />
+                <Route path="/research-aids" element={<ResearchAids />} />
                 <Route path="/researcher/:id" element={<ResearcherProfile />} />
                 <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
                 <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
@@ -45,6 +50,8 @@ function App() {
                 <Route path="/researcher-dashboard" element={<ResearcherDashboard />} />
                 <Route path="/research-aids-dashboard" element={<ResearchAidsDashboard />} />
                 <Route path="/admin-dashboard" element={<AdminDashboard />} />
+                <Route path="/partnerships" element={<Partnerships />} />
+                <Route path="/blogs" element={<Blogs />} />
                 
                 {/* Replace the existing auth route with secure version */}
                 <Route path="/auth" element={<SecureAuth />} />
