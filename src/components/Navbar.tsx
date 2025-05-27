@@ -1,27 +1,10 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Menu, X } from "lucide-react";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { toast } = useToast();
-
-  const handleLogout = () => {
-    toast({
-      title: "Logging Out",
-      description: "You have been logged out successfully"
-    });
-    
-    // In a real app, this would clear the session and redirect to login
-    console.log("Logging out user...");
-    
-    // Simulate logout by redirecting to home page
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 1000);
-  };
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -60,9 +43,11 @@ const Navbar = () => {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="outline" onClick={handleLogout} className="flex items-center gap-2">
-              <LogOut className="h-4 w-4" />
-              Logout
+            <Button variant="outline" asChild>
+              <a href="/auth">Sign In</a>
+            </Button>
+            <Button asChild>
+              <a href="/auth">Sign Up</a>
             </Button>
           </div>
 
@@ -100,10 +85,14 @@ const Navbar = () => {
               <a href="/blogs" className="text-gray-600 hover:text-blue-600">
                 Blogs
               </a>
-              <Button variant="outline" onClick={handleLogout} className="w-full flex items-center gap-2">
-                <LogOut className="h-4 w-4" />
-                Logout
-              </Button>
+              <div className="flex flex-col space-y-2 pt-4">
+                <Button variant="outline" asChild className="w-full">
+                  <a href="/auth">Sign In</a>
+                </Button>
+                <Button asChild className="w-full">
+                  <a href="/auth">Sign Up</a>
+                </Button>
+              </div>
             </div>
           </div>
         )}
