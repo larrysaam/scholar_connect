@@ -1,15 +1,15 @@
+
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import NotificationsBanner from "@/components/dashboard/NotificationsBanner";
 import IntelligentChatAssistant from "@/components/ai/IntelligentChatAssistant";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import WelcomeOverviewTab from "@/components/dashboard/tabs/WelcomeOverviewTab";
 import UpcomingTab from "@/components/dashboard/tabs/UpcomingTab";
 import PastTab from "@/components/dashboard/tabs/PastTab";
-import PaymentsTab from "@/components/dashboard/tabs/PaymentsTab";
+import PaymentsEarningsTab from "@/components/dashboard/tabs/PaymentsEarningsTab";
 import ProfileTab from "@/components/dashboard/tabs/ProfileTab";
 import DocumentsTab from "@/components/dashboard/tabs/DocumentsTab";
 import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
@@ -48,7 +48,7 @@ const ResearcherDashboard = () => {
       case "past":
         return <PastTab />;
       case "payments":
-        return <PaymentsTab />;
+        return <PaymentsEarningsTab />;
       case "consultation-services":
         return <ConsultationServicesTab />;
       case "performance":
@@ -63,10 +63,10 @@ const ResearcherDashboard = () => {
         return <NotificationsTab />;
       case "co-author-invitations":
         return <CoAuthorInvitationsTab />;
-      case "profile":
-        return <ProfileTab />;
       case "documents":
         return <DocumentsTab />;
+      case "profile":
+        return <ProfileTab />;
       case "settings":
         return <SettingsTab />;
       default:
@@ -113,9 +113,6 @@ const ResearcherDashboard = () => {
             
             {/* Main content */}
             <div className="md:col-span-3">
-              {/* Notifications Banner - appears on all tabs */}
-              <NotificationsBanner />
-              
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsContent value={activeTab} className="mt-0">
                   {renderTabContent()}

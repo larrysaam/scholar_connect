@@ -1,122 +1,266 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import CoAuthorInvitation from "@/components/researcher/CoAuthorInvitation";
-
-// Define the invitation type explicitly
-interface CoAuthorInvitationData {
-  id: string;
-  fromUser: {
-    name: string;
-    title: string;
-    institution: string;
-    email: string;
-    profileImage?: string;
-    department?: string;
-    researchInterests?: string[];
-    publications?: number;
-    hIndex?: number;
-  };
-  publicationType: string;
-  researchTopic: string;
-  researchProblem: string;
-  objectives: string;
-  methodology: string;
-  roles: string;
-  nextSteps: string;
-  dateSent: string;
-  status: 'pending' | 'accepted' | 'declined';
-}
-
-// Mock data for co-author invitations with enhanced profile information
-const mockInvitations: CoAuthorInvitationData[] = [
-  {
-    id: "1",
-    fromUser: {
-      name: "Dr. Sarah Johnson",
-      title: "Assistant Professor",
-      institution: "University of California, Berkeley",
-      email: "sarah.johnson@berkeley.edu",
-      profileImage: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
-      department: "Department of Computer Science",
-      researchInterests: ["AI Ethics", "Healthcare AI", "Machine Learning"],
-      publications: 45,
-      hIndex: 18
-    },
-    publicationType: "Article",
-    researchTopic: "AI Ethics in Healthcare Decision Making",
-    researchProblem: "Current AI systems in healthcare lack transparency and accountability mechanisms, leading to potential bias in patient care decisions.",
-    objectives: "To develop a framework for ethical AI implementation in healthcare settings that ensures transparency, accountability, and bias mitigation.",
-    methodology: "Mixed-methods approach including systematic literature review, stakeholder interviews, and case study analysis of existing AI systems.",
-    roles: "I would lead the technical implementation and data analysis, while seeking collaboration on the ethical framework development and healthcare domain expertise.",
-    nextSteps: "I propose a 30-minute video call to discuss the collaboration details and establish a timeline for the research project.",
-    dateSent: "2024-01-15",
-    status: "pending"
-  },
-  {
-    id: "2",
-    fromUser: {
-      name: "Prof. Michael Chen",
-      title: "Professor of Computer Science",
-      institution: "Stanford University",
-      email: "m.chen@stanford.edu",
-      profileImage: "/lovable-uploads/a2f6a2f6-b795-4e93-914c-2b58648099ff.png",
-      department: "Department of Computer Science",
-      researchInterests: ["Quantum Computing", "Cryptography", "Security"],
-      publications: 120,
-      hIndex: 35
-    },
-    publicationType: "Conference Paper",
-    researchTopic: "Quantum Computing Applications in Cryptography",
-    researchProblem: "Traditional cryptographic methods are becoming vulnerable to quantum computing attacks, requiring new quantum-resistant algorithms.",
-    objectives: "To develop and validate new quantum-resistant cryptographic protocols suitable for real-world applications.",
-    methodology: "Theoretical analysis combined with simulation studies and performance benchmarking against existing cryptographic standards.",
-    roles: "I bring expertise in quantum algorithms, seeking collaboration on cryptographic protocol design and security analysis.",
-    nextSteps: "Let's schedule a meeting to discuss the technical details and potential publication venues for this work.",
-    dateSent: "2024-01-10",
-    status: "accepted"
-  }
-];
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Download, Calendar, MessageSquare, Clock, CheckCircle, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const CoAuthorInvitationsTab = () => {
-  const [invitations, setInvitations] = useState<CoAuthorInvitationData[]>(mockInvitations);
+  const { toast } = useToast();
+  const [replyMessage, setReplyMessage] = useState("");
+  const [selectedInvitation, setSelectedInvitation] = useState<any>(null);
 
-  const handleAccept = (id: string, comment: string) => {
-    setInvitations(prev => 
-      prev.map(inv => 
-        inv.id === id ? { ...inv, status: "accepted" as const } : inv
-      )
-    );
-    console.log("Accepted invitation:", id, "with comment:", comment);
+  const invitations = [
+    {
+      id: 1,
+      title: "AI in Healthcare: A Comprehensive Review",
+      requester: "Dr. Sarah Johnson",
+      institution: "University of Yaoundé I",
+      date: "2024-01-28",
+      status: "pending",
+      description: "Looking for co-authors for a comprehensive review on AI applications in healthcare systems across African contexts.",
+      deadline: "2024-02-15",
+      estimatedWork: "20-30 hours",
+      documentUrl: "/sample-research-proposal.pdf"
+    },
+    {
+      id: 2,
+      title: "Sustainable Agriculture Technologies in Cameroon",
+      requester: "Prof. Marie Dubois",
+      institution: "University of Douala",
+      date: "2024-01-25",
+      status: "accepted",
+      description: "Research collaboration on sustainable farming technologies and their impact on rural communities.",
+      deadline: "2024-03-01",
+      estimatedWork: "40-50 hours",
+      documentUrl: "/agriculture-research-plan.pdf"
+    },
+    {
+      id: 3,
+      title: "Digital Banking Security in Central Africa",
+      requester: "Dr. Paul Mbarga",
+      institution: "ESTI",
+      date: "2024-01-20",
+      status: "declined",
+      description: "Study on cybersecurity challenges and solutions for digital banking platforms in Central African markets.",
+      deadline: "2024-02-28",
+      estimatedWork: "25-35 hours",
+      documentUrl: "/banking-security-proposal.pdf"
+    }
+  ];
+
+  const handleDownloadDocument = (documentUrl: string, title: string) => {
+    toast({
+      title: "Downloading Document",
+      description: `Downloading ${title} research proposal...`
+    });
+    
+    // In a real app, this would download the actual document
+    console.log("Downloading document:", documentUrl);
+    
+    // Simulate download
+    const link = document.createElement('a');
+    link.href = documentUrl;
+    link.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
+    link.click();
   };
 
-  const handleDecline = (id: string, comment: string) => {
-    setInvitations(prev => 
-      prev.map(inv => 
-        inv.id === id ? { ...inv, status: "declined" as const } : inv
-      )
-    );
-    console.log("Declined invitation:", id, "with comment:", comment);
+  const handleScheduleCall = (invitation: any) => {
+    toast({
+      title: "Scheduling Call",
+      description: `Opening calendar to schedule call with ${invitation.requester}...`
+    });
+    
+    // In a real app, this would integrate with calendar API
+    const calendarUrl = `https://calendar.google.com/calendar/u/0/r/eventedit?text=Research%20Collaboration%20Call%20-%20${encodeURIComponent(invitation.title)}&details=Call%20with%20${encodeURIComponent(invitation.requester)}%20regarding%20research%20collaboration`;
+    window.open(calendarUrl, '_blank');
+  };
+
+  const handleStartChat = (invitation: any) => {
+    setSelectedInvitation(invitation);
+    toast({
+      title: "Starting Chat",
+      description: `Initiating conversation with ${invitation.requester}...`
+    });
+  };
+
+  const handleSendMessage = () => {
+    if (!replyMessage.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a message before sending",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Message Sent",
+      description: `Your message has been sent to ${selectedInvitation?.requester}`
+    });
+    
+    setReplyMessage("");
+    setSelectedInvitation(null);
+  };
+
+  const handleAcceptInvitation = (id: number) => {
+    toast({
+      title: "Invitation Accepted",
+      description: "You have accepted this co-authorship invitation"
+    });
+    console.log("Accepting invitation:", id);
+  };
+
+  const handleDeclineInvitation = (id: number) => {
+    toast({
+      title: "Invitation Declined",
+      description: "You have declined this co-authorship invitation"
+    });
+    console.log("Declining invitation:", id);
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "pending":
+        return <Badge className="bg-yellow-100 text-yellow-800"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
+      case "accepted":
+        return <Badge className="bg-green-100 text-green-800"><CheckCircle className="h-3 w-3 mr-1" />Accepted</Badge>;
+      case "declined":
+        return <Badge className="bg-red-100 text-red-800"><X className="h-3 w-3 mr-1" />Declined</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm">
-      <h2 className="text-xl font-semibold mb-4">Co-author Invitations</h2>
-      
-      {invitations.length > 0 ? (
-        <div className="space-y-6">
-          {invitations.map((invitation) => (
-            <CoAuthorInvitation
-              key={invitation.id}
-              invitation={invitation}
-              onAccept={handleAccept}
-              onDecline={handleDecline}
-            />
-          ))}
-        </div>
-      ) : (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Co-author Invitations</h2>
+        <Badge variant="secondary">
+          {invitations.filter(inv => inv.status === "pending").length} Pending
+        </Badge>
+      </div>
+
+      <div className="space-y-4">
+        {invitations.map((invitation) => (
+          <Card key={invitation.id} className={invitation.status === "pending" ? "border-blue-200" : ""}>
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="text-lg">{invitation.title}</CardTitle>
+                  <p className="text-sm text-gray-600 mt-1">
+                    by {invitation.requester} • {invitation.institution}
+                  </p>
+                </div>
+                {getStatusBadge(invitation.status)}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-700 mb-4">{invitation.description}</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Deadline</p>
+                  <p className="text-sm">{invitation.deadline}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Estimated Work</p>
+                  <p className="text-sm">{invitation.estimatedWork}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Received</p>
+                  <p className="text-sm">{invitation.date}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDownloadDocument(invitation.documentUrl, invitation.title)}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download Document
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleScheduleCall(invitation)}
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Schedule Call
+                </Button>
+                
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleStartChat(invitation)}
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Start Chat
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Message {invitation.requester}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="message">Your Message</Label>
+                        <Textarea
+                          id="message"
+                          placeholder="Type your message here..."
+                          value={replyMessage}
+                          onChange={(e) => setReplyMessage(e.target.value)}
+                          rows={4}
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button onClick={handleSendMessage}>Send Message</Button>
+                        <Button variant="outline" onClick={() => setSelectedInvitation(null)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                {invitation.status === "pending" && (
+                  <>
+                    <Button
+                      size="sm"
+                      onClick={() => handleAcceptInvitation(invitation.id)}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      Accept
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDeclineInvitation(invitation.id)}
+                    >
+                      Decline
+                    </Button>
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {invitations.length === 0 && (
         <Card>
-          <CardContent className="p-8 text-center">
-            <p className="text-gray-500">No co-author invitations at this time.</p>
+          <CardContent className="text-center py-8">
+            <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">No co-authorship invitations yet.</p>
           </CardContent>
         </Card>
       )}
