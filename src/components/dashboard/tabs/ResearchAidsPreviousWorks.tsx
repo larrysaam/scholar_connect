@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Star, Calendar, FileText, Download, Eye, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -19,7 +20,8 @@ const ResearchAidsPreviousWorks = () => {
     category: "",
     institution: "",
     duration: "",
-    outcomes: ""
+    outcomes: "",
+    projectType: "" // new field for dropdown selection
   });
   const { toast } = useToast();
 
@@ -99,10 +101,10 @@ const ResearchAidsPreviousWorks = () => {
   ];
 
   const handleAddWork = () => {
-    if (!newWork.title.trim() || !newWork.description.trim()) {
+    if (!newWork.title.trim() || !newWork.description.trim() || !newWork.projectType) {
       toast({
         title: "Error",
-        description: "Please fill in required fields",
+        description: "Please fill in required fields including project type",
         variant: "destructive"
       });
       return;
@@ -110,9 +112,9 @@ const ResearchAidsPreviousWorks = () => {
 
     toast({
       title: "Work Added",
-      description: "Your previous work has been added to your portfolio"
+      description: `Your ${newWork.projectType === "platform" ? "platform project" : "previous experience"} has been added to your portfolio`
     });
-    setNewWork({ title: "", description: "", category: "", institution: "", duration: "", outcomes: "" });
+    setNewWork({ title: "", description: "", category: "", institution: "", duration: "", outcomes: "", projectType: "" });
     setIsAddWorkOpen(false);
   };
 
@@ -165,6 +167,18 @@ const ResearchAidsPreviousWorks = () => {
                 <DialogTitle>Add Previous Work</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
+                <div>
+                  <Label htmlFor="projectType">Project Type *</Label>
+                  <Select value={newWork.projectType} onValueChange={(value) => setNewWork(prev => ({ ...prev, projectType: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select project type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="platform">Platform Project</SelectItem>
+                      <SelectItem value="previous">Previous Experience</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="title">Project Title *</Label>

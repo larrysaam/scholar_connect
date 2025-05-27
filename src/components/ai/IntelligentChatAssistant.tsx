@@ -1,447 +1,315 @@
 
 import { useState, useRef, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Bot, 
-  Send, 
-  Minimize2, 
-  Maximize2, 
-  X, 
-  Lightbulb,
-  HelpCircle,
-  Sparkles,
-  MessageCircle
-} from "lucide-react";
+import { MessageCircle, X, Send, Minimize2, Maximize2, Bot, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
-  content: string;
-  type: "user" | "assistant";
+  text: string;
+  sender: "user" | "assistant";
   timestamp: Date;
-  suggestions?: string[];
-  category?: "guidance" | "qa" | "suggestion" | "help";
+  category?: string;
 }
 
-interface ChatAssistantProps {
+interface IntelligentChatAssistantProps {
   userType: "student" | "researcher" | "research-aide";
   currentTab?: string;
 }
 
-const IntelligentChatAssistant = ({ userType, currentTab }: ChatAssistantProps) => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [inputMessage, setInputMessage] = useState("");
+const IntelligentChatAssistant = ({ userType, currentTab }: IntelligentChatAssistantProps) => {
+  const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputValue, setInputValue] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Welcome message based on user type and current tab
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   useEffect(() => {
-    const welcomeMessage = getWelcomeMessage(userType, currentTab);
-    if (messages.length === 0) {
-      setMessages([{
-        id: "welcome",
-        content: welcomeMessage.content,
-        type: "assistant",
-        timestamp: new Date(),
-        suggestions: welcomeMessage.suggestions,
-        category: "guidance"
-      }]);
-    }
-  }, [userType, currentTab]);
+    scrollToBottom();
+  }, [messages]);
 
-  const getWelcomeMessage = (type: string, tab?: string) => {
-    const tabSpecific = tab ? getTabSpecificGuidance(type, tab) : null;
+  const getSuggestions = () => {
+    const baseSuggestions = [
+      "How do I update my profile?",
+      "What are the payment methods?",
+      "How to contact support?",
+      "Platform guidelines"
+    ];
+
+    const tabSpecificSuggestions: Record<string, string[]> = {
+      "job-requests": [
+        "How to apply for jobs?",
+        "What makes a good proposal?",
+        "How to set competitive rates?"
+      ],
+      "notifications": [
+        "How to manage notifications?",
+        "What do priority levels mean?",
+        "How to update notification preferences?"
+      ],
+      "previous-works": [
+        "How to showcase my portfolio?",
+        "What files can I upload?",
+        "How to add previous experience?"
+      ]
+    };
+
+    return currentTab && tabSpecificSuggestions[currentTab] 
+      ? [...tabSpecificSuggestions[currentTab], ...baseSuggestions.slice(0, 2)]
+      : baseSuggestions;
+  };
+
+  const generateResponse = (userMessage: string): string => {
+    const message = userMessage.toLowerCase();
     
-    const baseMessages = {
-      student: {
-        content: `Hi there! I'm your AI assistant. I'm here to help you navigate the platform, find researchers, book consultations, and maximize your learning experience. ${tabSpecific?.content || "What can I help you with today?"}`,
-        suggestions: tabSpecific?.suggestions || [
-          "How do I find the right researcher?",
-          "What's the consultation process?",
-          "How do I prepare for a session?",
-          "Platform features overview"
-        ]
-      },
-      researcher: {
-        content: `Welcome! I'm here to assist you with managing consultations, optimizing your profile, and growing your research practice on the platform. ${tabSpecific?.content || "How can I help you today?"}`,
-        suggestions: tabSpecific?.suggestions || [
-          "How to optimize my profile?",
-          "Managing consultation requests",
-          "Building my reputation",
-          "Payment and earnings guide"
-        ]
-      },
-      "research-aide": {
-        content: `Hello! I'm your AI helper for managing jobs, delivering quality work, and building your professional reputation. ${tabSpecific?.content || "What would you like to know?"}`,
-        suggestions: tabSpecific?.suggestions || [
-          "How to find quality jobs?",
-          "Best practices for deliverables",
-          "Building client relationships",
-          "Managing deadlines effectively"
-        ]
-      }
-    };
+    if (message.includes("notification") && message.includes("priority")) {
+      return `Notification priorities are determined automatically based on urgency and type:
 
-    return baseMessages[type] || baseMessages.student;
-  };
+**High Priority** (🔴):
+- New job requests (immediate opportunities)
+- Pending deliveries with approaching deadlines
+- Urgent appointment reminders
 
-  const getTabSpecificGuidance = (userType: string, tab: string) => {
-    const guidance = {
-      student: {
-        "find-researcher": {
-          content: "I see you're looking for researchers. Let me help you find the perfect match!",
-          suggestions: [
-            "Search filters and criteria",
-            "How to evaluate researchers",
-            "Understanding researcher profiles",
-            "Booking consultation tips"
-          ]
-        },
-        "session-booking": {
-          content: "Ready to book a session? I'll guide you through the process.",
-          suggestions: [
-            "Choosing the right session type",
-            "Preparing for your consultation",
-            "What to expect during booking",
-            "Payment and scheduling"
-          ]
-        },
-        "ai-assistant": {
-          content: "Exploring our AI features? These tools can supercharge your research!",
-          suggestions: [
-            "How AI matching works",
-            "Using AI scheduling",
-            "Getting topic recommendations",
-            "Maximizing AI benefits"
-          ]
-        }
-      },
-      researcher: {
-        "consultation-services": {
-          content: "Let's optimize your consultation services and attract more students.",
-          suggestions: [
-            "Setting competitive rates",
-            "Creating compelling service descriptions",
-            "Managing availability",
-            "Improving consultation quality"
-          ]
-        },
-        "performance": {
-          content: "Want to boost your performance metrics? I can help with that!",
-          suggestions: [
-            "Understanding rating factors",
-            "Improving response times",
-            "Building student satisfaction",
-            "Growing your reputation"
-          ]
-        }
-      },
-      "research-aide": {
-        "job-requests": {
-          content: "Looking at job opportunities? Let me help you find the best matches.",
-          suggestions: [
-            "Evaluating job quality",
-            "Writing winning proposals",
-            "Understanding requirements",
-            "Pricing your services"
-          ]
-        },
-        "files-deliverables": {
-          content: "Managing deliverables effectively is key to success. Let me guide you.",
-          suggestions: [
-            "Quality standards",
-            "File formatting tips",
-            "Meeting deadlines",
-            "Client communication"
-          ]
-        }
-      }
-    };
+**Medium Priority** (🟡):
+- Payment confirmations
+- Regular appointment reminders
+- New messages from clients
 
-    return guidance[userType]?.[tab];
-  };
+**Low Priority** (🟢):
+- General updates
+- Profile views
+- System announcements
 
-  const generateAIResponse = async (userMessage: string): Promise<Message> => {
-    // Simulate AI processing
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-
-    const responses = getContextualResponses(userMessage, userType, currentTab);
-    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-
-    return {
-      id: Date.now().toString(),
-      content: randomResponse.content,
-      type: "assistant",
-      timestamp: new Date(),
-      suggestions: randomResponse.suggestions,
-      category: randomResponse.category
-    };
-  };
-
-  const getContextualResponses = (message: string, userType: string, tab?: string) => {
-    const lowerMessage = message.toLowerCase();
-
-    // Platform navigation help
-    if (lowerMessage.includes("navigate") || lowerMessage.includes("find") || lowerMessage.includes("where")) {
-      return [{
-        content: "I can help you navigate the platform! Use the sidebar to access different sections. Each tab has specific functionality - would you like me to explain any particular area?",
-        suggestions: ["Dashboard overview", "Key features guide", "Quick start tips"],
-        category: "guidance" as const
-      }];
+You can filter notifications by priority in your notifications tab to focus on what's most important.`;
     }
 
-    // User-specific responses
-    if (userType === "student") {
-      if (lowerMessage.includes("researcher") || lowerMessage.includes("find expert")) {
-        return [{
-          content: "To find the perfect researcher: 1) Use advanced filters (field, rating, price), 2) Read profiles carefully, 3) Check reviews and ratings, 4) Consider availability and response time. Would you like specific tips for your research area?",
-          suggestions: ["Search strategies", "Evaluating profiles", "Booking tips"],
-          category: "guidance" as const
-        }];
-      }
-      
-      if (lowerMessage.includes("consultation") || lowerMessage.includes("session")) {
-        return [{
-          content: "For successful consultations: 1) Prepare specific questions beforehand, 2) Share relevant documents in advance, 3) Be clear about your goals, 4) Take notes during the session. Want help preparing for your next consultation?",
-          suggestions: ["Preparation checklist", "Question templates", "Follow-up strategies"],
-          category: "help" as const
-        }];
-      }
+    if (message.includes("portfolio") || message.includes("previous work")) {
+      return `To add previous works to your portfolio:
+
+1. **Click "Include Previous Work"** button
+2. **Select Project Type** from dropdown:
+   - Platform Project (work done through ScholarConnect)
+   - Previous Experience (work done outside platform)
+3. **Fill required fields**: Title, Description, Project Type
+4. **Add optional details**: Institution, Duration, Outcomes
+5. **Click "Add Work"** to save
+
+Your portfolio helps clients understand your expertise and builds trust. Include diverse projects that showcase your skills!`;
     }
 
-    if (userType === "researcher") {
-      if (lowerMessage.includes("profile") || lowerMessage.includes("optimize")) {
-        return [{
-          content: "To optimize your profile: 1) Complete all sections thoroughly, 2) Add recent publications and achievements, 3) Set competitive but fair rates, 4) Upload a professional photo, 5) Keep availability updated. Your profile completeness affects visibility!",
-          suggestions: ["Profile checklist", "Rate setting guide", "Visibility tips"],
-          category: "suggestion" as const
-        }];
-      }
-      
-      if (lowerMessage.includes("student") || lowerMessage.includes("consultation")) {
-        return [{
-          content: "Building great student relationships: 1) Respond promptly to inquiries, 2) Set clear expectations, 3) Provide valuable insights during sessions, 4) Follow up when appropriate, 5) Maintain professionalism. Happy students lead to better ratings!",
-          suggestions: ["Communication best practices", "Session management", "Building reputation"],
-          category: "guidance" as const
-        }];
-      }
+    if (message.includes("job") && message.includes("apply")) {
+      return `Here's how to successfully apply for jobs:
+
+1. **Read carefully** - Understand all requirements
+2. **Write a personalized proposal** - Show you understand their needs
+3. **Highlight relevant experience** - Reference similar past work
+4. **Be specific about deliverables** - What exactly will you provide?
+5. **Set realistic timelines** - Consider your current workload
+6. **Ask clarifying questions** - Show engagement and professionalism
+
+💡 **Pro tip**: Response time matters! Apply quickly but thoughtfully to quality opportunities.`;
     }
 
+    // Default responses based on user type
     if (userType === "research-aide") {
-      if (lowerMessage.includes("job") || lowerMessage.includes("work")) {
-        return [{
-          content: "Finding quality jobs: 1) Look for detailed job descriptions, 2) Check client ratings and history, 3) Ensure clear deliverable requirements, 4) Communicate before accepting, 5) Build long-term client relationships. Quality over quantity wins!",
-          suggestions: ["Job evaluation criteria", "Proposal writing", "Client communication"],
-          category: "guidance" as const
-        }];
-      }
-      
-      if (lowerMessage.includes("deliverable") || lowerMessage.includes("quality")) {
-        return [{
-          content: "Delivering excellent work: 1) Understand requirements fully before starting, 2) Maintain high quality standards, 3) Meet deadlines consistently, 4) Communicate progress regularly, 5) Ask for clarification when needed. Your reputation depends on consistency!",
-          suggestions: ["Quality standards", "Time management", "Client updates"],
-          category: "help" as const
-        }];
-      }
+      return `I'm here to help you navigate the Research Aids platform! 
+
+Common topics I can assist with:
+- Job applications and proposals
+- Portfolio management
+- Payment and earnings
+- Client communication
+- Platform guidelines
+
+Feel free to ask specific questions about any feature or process. What would you like to know more about?`;
     }
 
-    // General platform help
-    return [{
-      content: "I'm here to help with any platform-related questions! I can assist with navigation, features, best practices, and troubleshooting. What specific area would you like to explore?",
-      suggestions: ["Platform features", "Best practices", "Getting started", "Troubleshooting"],
-      category: "qa" as const
-    }];
+    return "I'm here to help! Could you please be more specific about what you'd like to know?";
   };
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return;
+    if (!inputValue.trim()) return;
 
     const userMessage: Message = {
-      id: Date.now().toString(),
-      content: inputMessage,
-      type: "user",
+      id: `msg_${Date.now()}_user`,
+      text: inputValue,
+      sender: "user",
       timestamp: new Date()
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setInputMessage("");
-    setIsLoading(true);
+    setInputValue("");
+    setIsTyping(true);
 
-    try {
-      const aiResponse = await generateAIResponse(inputMessage);
-      setMessages(prev => [...prev, aiResponse]);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to get AI response. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    // Simulate AI thinking time
+    setTimeout(() => {
+      const assistantMessage: Message = {
+        id: `msg_${Date.now()}_assistant`,
+        text: generateResponse(inputValue),
+        sender: "assistant",
+        timestamp: new Date(),
+        category: "guidance"
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+      setIsTyping(false);
+    }, 1000 + Math.random() * 1000);
   };
 
   const handleSuggestionClick = (suggestion: string) => {
-    setInputMessage(suggestion);
+    setInputValue(suggestion);
   };
 
-  const getCategoryIcon = (category?: string) => {
-    switch (category) {
-      case "guidance": return <Lightbulb className="h-3 w-3" />;
-      case "qa": return <HelpCircle className="h-3 w-3" />;
-      case "suggestion": return <Sparkles className="h-3 w-3" />;
-      case "help": return <MessageCircle className="h-3 w-3" />;
-      default: return <Bot className="h-3 w-3" />;
-    }
-  };
-
-  const getCategoryColor = (category?: string) => {
-    switch (category) {
-      case "guidance": return "bg-blue-100 text-blue-700";
-      case "qa": return "bg-green-100 text-green-700";
-      case "suggestion": return "bg-purple-100 text-purple-700";
-      case "help": return "bg-orange-100 text-orange-700";
-      default: return "bg-gray-100 text-gray-700";
-    }
-  };
-
-  if (isMinimized) {
+  if (!isOpen) {
     return (
-      <div className="fixed bottom-4 right-4 z-50">
+      <div className="fixed bottom-6 right-6 z-50">
         <Button
-          onClick={() => setIsMinimized(false)}
-          className="rounded-full w-14 h-14 bg-blue-600 hover:bg-blue-700 shadow-lg"
+          onClick={() => setIsOpen(true)}
+          className="rounded-full h-14 w-14 bg-blue-600 hover:bg-blue-700 shadow-lg"
         >
-          <Bot className="h-6 w-6" />
+          <MessageCircle className="h-6 w-6" />
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-96 h-[500px]">
-      <Card className="h-full flex flex-col shadow-2xl border-2 border-blue-200">
-        <CardHeader className="pb-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Bot className="h-5 w-5" />
-              <CardTitle className="text-lg">AI Assistant</CardTitle>
-            </div>
-            <div className="flex space-x-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsMinimized(true)}
-                className="text-white hover:bg-white/20 h-8 w-8 p-0"
-              >
-                <Minimize2 className="h-4 w-4" />
-              </Button>
-            </div>
+    <div className="fixed bottom-6 right-6 z-50">
+      <Card className={`w-96 shadow-xl transition-all duration-200 ${isMinimized ? 'h-16' : 'h-[500px]'}`}>
+        <CardHeader className="flex flex-row items-center justify-between p-4 bg-blue-600 text-white rounded-t-lg">
+          <CardTitle className="text-sm font-medium flex items-center">
+            <Bot className="h-4 w-4 mr-2" />
+            AI Assistant
+          </CardTitle>
+          <div className="flex space-x-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMinimized(!isMinimized)}
+              className="h-6 w-6 p-0 text-white hover:bg-blue-700"
+            >
+              {isMinimized ? <Maximize2 className="h-3 w-3" /> : <Minimize2 className="h-3 w-3" />}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsOpen(false)}
+              className="h-6 w-6 p-0 text-white hover:bg-blue-700"
+            >
+              <X className="h-3 w-3" />
+            </Button>
           </div>
         </CardHeader>
-        
-        <CardContent className="flex-1 flex flex-col p-0">
-          <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-            <div className="space-y-4">
+
+        {!isMinimized && (
+          <CardContent className="flex flex-col h-[calc(500px-64px)] p-0">
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {messages.length === 0 && (
+                <div className="text-center text-gray-500 py-8">
+                  <Bot className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                  <p className="text-sm">Hi! I'm your AI assistant.</p>
+                  <p className="text-xs">How can I help you today?</p>
+                </div>
+              )}
+
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
+                  className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
                 >
-                  <div className={`flex items-start space-x-2 max-w-[85%] ${message.type === "user" ? "flex-row-reverse space-x-reverse" : ""}`}>
-                    <Avatar className="h-8 w-8 flex-shrink-0">
-                      {message.type === "user" ? (
-                        <AvatarFallback className="bg-blue-100 text-blue-600">U</AvatarFallback>
-                      ) : (
-                        <AvatarFallback className="bg-purple-100 text-purple-600">
-                          <Bot className="h-4 w-4" />
-                        </AvatarFallback>
+                  <div
+                    className={`max-w-[80%] rounded-lg p-3 ${
+                      message.sender === "user"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-900"
+                    }`}
+                  >
+                    <div className="flex items-start space-x-2">
+                      {message.sender === "assistant" && (
+                        <Bot className="h-4 w-4 mt-0.5 text-blue-600" />
                       )}
-                    </Avatar>
-                    
-                    <div className="space-y-2">
-                      <div className={`rounded-lg p-3 ${
-                        message.type === "user" 
-                          ? "bg-blue-600 text-white ml-2" 
-                          : "bg-gray-100 text-gray-800 mr-2"
-                      }`}>
-                        <p className="text-sm leading-relaxed">{message.content}</p>
-                        {message.category && message.type === "assistant" && (
-                          <Badge className={`mt-2 text-xs ${getCategoryColor(message.category)}`}>
-                            {getCategoryIcon(message.category)}
-                            <span className="ml-1 capitalize">{message.category}</span>
+                      <div className="flex-1">
+                        <div className="text-sm whitespace-pre-wrap">{message.text}</div>
+                        {message.category && (
+                          <Badge variant="secondary" className="mt-1 text-xs">
+                            {message.category}
                           </Badge>
                         )}
                       </div>
-                      
-                      {message.suggestions && message.suggestions.length > 0 && (
-                        <div className="space-y-1">
-                          {message.suggestions.map((suggestion, index) => (
-                            <Button
-                              key={index}
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleSuggestionClick(suggestion)}
-                              className="text-xs h-7 mr-1 mb-1 hover:bg-blue-50 hover:border-blue-200"
-                            >
-                              {suggestion}
-                            </Button>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
               ))}
-              
-              {isLoading && (
+
+              {isTyping && (
                 <div className="flex justify-start">
-                  <div className="flex items-center space-x-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-purple-100 text-purple-600">
-                        <Bot className="h-4 w-4" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="bg-gray-100 rounded-lg p-3">
+                  <div className="bg-gray-100 rounded-lg p-3 max-w-[80%]">
+                    <div className="flex items-center space-x-2">
+                      <Bot className="h-4 w-4 text-blue-600" />
                       <div className="flex space-x-1">
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
                       </div>
                     </div>
                   </div>
                 </div>
               )}
+
+              <div ref={messagesEndRef} />
             </div>
-          </ScrollArea>
-          
-          <div className="border-t p-4">
-            <div className="flex space-x-2">
-              <Input
-                placeholder="Ask me anything about the platform..."
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                disabled={isLoading}
-                className="flex-1"
-              />
-              <Button 
-                onClick={handleSendMessage} 
-                disabled={isLoading || !inputMessage.trim()}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
+
+            {/* Suggestions */}
+            {messages.length === 0 && (
+              <div className="px-4 pb-2">
+                <p className="text-xs text-gray-500 mb-2">Quick suggestions:</p>
+                <div className="flex flex-wrap gap-1">
+                  {getSuggestions().slice(0, 3).map((suggestion, index) => (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className="text-xs h-6 px-2"
+                    >
+                      {suggestion}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Input Area */}
+            <div className="border-t p-4">
+              <div className="flex space-x-2">
+                <Input
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="Ask me anything..."
+                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                  className="text-sm"
+                />
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={!inputValue.trim() || isTyping}
+                  size="sm"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          </div>
-        </CardContent>
+          </CardContent>
+        )}
       </Card>
     </div>
   );

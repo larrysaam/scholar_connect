@@ -17,6 +17,8 @@ import {
   Shield,
   Award
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 interface ResearchAidsSidebarProps {
   activeTab: string;
@@ -24,6 +26,9 @@ interface ResearchAidsSidebarProps {
 }
 
 const ResearchAidsSidebar = ({ activeTab, setActiveTab }: ResearchAidsSidebarProps) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
   const menuItems = [
     { id: "overview", label: "Dashboard Overview", icon: BarChart3 },
     { id: "job-requests", label: "Job Requests", icon: Briefcase },
@@ -39,6 +44,21 @@ const ResearchAidsSidebar = ({ activeTab, setActiveTab }: ResearchAidsSidebarPro
     { id: "profile-ratings", label: "My Profile & Ratings", icon: Star },
     { id: "settings", label: "Settings", icon: Settings }
   ];
+
+  const handleLogout = () => {
+    // Clear local storage
+    localStorage.removeItem('research_aids_onboarding_complete');
+    localStorage.removeItem('research_aids_nda_signed');
+    localStorage.removeItem('research_aids_nda_date');
+    
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out"
+    });
+    
+    // Navigate to home page
+    navigate('/');
+  };
 
   return (
     <div className="bg-white p-5 rounded-lg shadow-sm">
@@ -70,7 +90,11 @@ const ResearchAidsSidebar = ({ activeTab, setActiveTab }: ResearchAidsSidebarPro
         })}
         
         <div className="pt-4 border-t">
-          <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50">
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+            onClick={handleLogout}
+          >
             <LogOut className="mr-2 h-4 w-4" />
             Logout
           </Button>

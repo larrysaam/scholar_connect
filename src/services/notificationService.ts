@@ -36,10 +36,28 @@ class NotificationService {
     experience_level: "intermediate"
   };
 
-  // Generate summary notification
+  // Determine notification priority based on type and urgency
+  private determinePriority(type: string, urgency?: string): "high" | "medium" | "low" {
+    switch (type) {
+      case "job_request":
+        return "high"; // New opportunities are high priority
+      case "delivery_pending":
+        return "high"; // Deadlines are critical
+      case "payment_received":
+        return "medium"; // Important but not urgent
+      case "appointment_reminder":
+        return urgency === "soon" ? "high" : "medium"; // Time-sensitive
+      case "message_received":
+        return "medium"; // Communication is important
+      default:
+        return "low";
+    }
+  }
+
+  // Generate summary notification with better logic
   generateSummaryNotification(): Notification {
-    const jobRequests = this.notifications.filter(n => n.type === "job_request").length;
-    const pendingDeliveries = this.notifications.filter(n => n.type === "delivery_pending").length;
+    const jobRequests = this.notifications.filter(n => n.type === "job_request" && n.isNew).length;
+    const pendingDeliveries = this.notifications.filter(n => n.type === "delivery_pending" && n.isNew).length;
     
     const summary = [];
     if (jobRequests > 0) summary.push(`${jobRequests} new job request${jobRequests > 1 ? 's' : ''}`);
@@ -55,43 +73,45 @@ class NotificationService {
       title: "Notification Summary",
       message,
       isNew: true,
-      priority: "medium",
+      priority: summary.length > 0 ? "medium" : "low",
       timestamp: new Date()
     };
   }
 
-  // Add notification
-  addNotification(notification: Omit<Notification, 'id' | 'timestamp'>): void {
+  // Add notification with smart priority assignment
+  addNotification(notification: Omit<Notification, 'id' | 'timestamp' | 'priority'>): void {
+    const priority = this.determinePriority(notification.type, notification.metadata?.urgency);
+    
     const newNotification: Notification = {
       ...notification,
       id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: new Date()
+      timestamp: new Date(),
+      priority
     };
     
     this.notifications.unshift(newNotification);
     this.limitNotifications();
   }
 
-  // Generate sample notifications for testing
+  // Generate sample notifications for testing with proper priorities
   generateSampleNotifications(): void {
-    // Add 3 job requests
+    // Add 3 job requests (high priority - new opportunities)
     for (let i = 1; i <= 3; i++) {
       this.addNotification({
         type: "job_request",
         title: `New Job Request #${i}`,
         message: `You have received a new job request for statistical analysis project from Client ${i}`,
-        isNew: true,
-        priority: "high"
+        isNew: true
       });
     }
 
-    // Add 1 pending delivery
+    // Add 1 pending delivery (high priority - deadline approaching)
     this.addNotification({
       type: "delivery_pending",
       title: "Delivery Pending",
       message: "Your deliverable for 'Agricultural Data Analysis' project is due in 2 days",
       isNew: true,
-      priority: "high"
+      metadata: { urgency: "soon" }
     });
   }
 
