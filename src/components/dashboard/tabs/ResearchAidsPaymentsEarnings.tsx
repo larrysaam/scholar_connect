@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,96 +7,131 @@ import { Progress } from "@/components/ui/progress";
 import { 
   DollarSign, 
   TrendingUp, 
-  CreditCard, 
+  Calendar, 
   Download,
-  Eye,
-  Calendar,
+  CreditCard,
+  Wallet,
   ArrowUpRight,
-  Smartphone,
-  Building
+  ArrowDownRight
 } from "lucide-react";
 
-interface PaymentRecord {
-  id: string;
-  jobTitle: string;
-  studentName: string;
-  amount: number;
-  currency: string;
-  status: "paid" | "processing" | "failed";
-  completedDate: string;
-  payoutDate?: string;
-}
-
-const mockPayments: PaymentRecord[] = [
-  {
-    id: "1",
-    jobTitle: "Quantitative Data Analysis",
-    studentName: "Kome Divine",
-    amount: 7500,
-    currency: "XAF",
-    status: "paid",
-    completedDate: "2024-01-15",
-    payoutDate: "2024-01-17"
-  },
-  {
-    id: "2",
-    jobTitle: "Thesis Editing - Chapter 3",
-    studentName: "Sama Njoya",
-    amount: 12000,
-    currency: "XAF",
-    status: "processing",
-    completedDate: "2024-01-20"
-  },
-  {
-    id: "3",
-    jobTitle: "GIS Mapping Project",
-    studentName: "Paul Biya Jr.",
-    amount: 18000,
-    currency: "XAF",
-    status: "paid",
-    completedDate: "2024-01-10",
-    payoutDate: "2024-01-12"
-  }
-];
-
 const ResearchAidsPaymentsEarnings = () => {
-  const totalEarnings = mockPayments.reduce((sum, payment) => sum + payment.amount, 0);
-  const completedJobs = mockPayments.length;
-  const availableBalance = mockPayments
-    .filter(p => p.status === "paid")
-    .reduce((sum, payment) => sum + payment.amount, 0);
+  const [timeframe, setTimeframe] = useState("this-month");
 
-  const getStatusColor = (status: string) => {
+  const earningsData = {
+    total: 145750,
+    thisMonth: 45750,
+    pending: 25000,
+    completed: 120750,
+    growth: 15.2
+  };
+
+  const recentTransactions = [
+    {
+      id: 1,
+      project: "Statistical Analysis Project",
+      client: "Dr. Sarah Johnson",
+      amount: 25000,
+      status: "completed",
+      date: "2024-01-25",
+      type: "payment"
+    },
+    {
+      id: 2,
+      project: "Literature Review - Chapter 1",
+      client: "Prof. Michael Chen",
+      amount: 15000,
+      status: "pending",
+      date: "2024-01-28",
+      type: "payment"
+    },
+    {
+      id: 3,
+      project: "Platform Fee",
+      client: "ScholarConnect",
+      amount: -2500,
+      status: "completed",
+      date: "2024-01-25",
+      type: "fee"
+    },
+    {
+      id: 4,
+      project: "Data Collection Protocol",
+      client: "Dr. Marie Dubois",
+      amount: 30000,
+      status: "completed",
+      date: "2024-01-20",
+      type: "payment"
+    }
+  ];
+
+  const paymentMethods = [
+    {
+      id: 1,
+      type: "Mobile Money",
+      details: "MTN (***678)",
+      isDefault: true
+    },
+    {
+      id: 2,
+      type: "Bank Account",
+      details: "UBA (***1234)",
+      isDefault: false
+    }
+  ];
+
+  const getStatusBadge = (status: string) => {
     switch (status) {
-      case "paid": return "bg-green-100 text-green-800";
-      case "processing": return "bg-yellow-100 text-yellow-800";
-      case "failed": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "completed":
+        return <Badge className="bg-green-600">Completed</Badge>;
+      case "pending":
+        return <Badge variant="secondary">Pending</Badge>;
+      case "processing":
+        return <Badge className="bg-blue-600">Processing</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const getTransactionIcon = (type: string, amount: number) => {
+    if (amount > 0) {
+      return <ArrowDownRight className="h-4 w-4 text-green-600" />;
+    } else {
+      return <ArrowUpRight className="h-4 w-4 text-red-600" />;
     }
   };
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Payments & Earnings</h2>
-        <p className="text-gray-600">Track your income and manage payouts</p>
+        <div className="flex space-x-2">
+          <Button 
+            variant={timeframe === "this-month" ? "default" : "outline"} 
+            onClick={() => setTimeframe("this-month")}
+          >
+            This Month
+          </Button>
+          <Button 
+            variant={timeframe === "all-time" ? "default" : "outline"} 
+            onClick={() => setTimeframe("all-time")}
+          >
+            All Time
+          </Button>
+        </div>
       </div>
 
       {/* Earnings Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Total Earned</p>
-                <p className="text-3xl font-bold">{totalEarnings.toLocaleString()} XAF</p>
-                <p className="text-sm text-green-600 flex items-center mt-2">
-                  <TrendingUp className="h-4 w-4 mr-1" />
-                  +12% this month
-                </p>
-              </div>
+            <div className="flex items-center space-x-3">
               <div className="p-3 bg-green-100 rounded-lg">
-                <DollarSign className="h-8 w-8 text-green-600" />
+                <Wallet className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Total Earnings</p>
+                <p className="text-2xl font-bold">{earningsData.total.toLocaleString()} XAF</p>
               </div>
             </div>
           </CardContent>
@@ -103,17 +139,13 @@ const ResearchAidsPaymentsEarnings = () => {
 
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Completed Jobs</p>
-                <p className="text-3xl font-bold">{completedJobs}</p>
-                <p className="text-sm text-blue-600 flex items-center mt-2">
-                  <ArrowUpRight className="h-4 w-4 mr-1" />
-                  3 this week
-                </p>
-              </div>
+            <div className="flex items-center space-x-3">
               <div className="p-3 bg-blue-100 rounded-lg">
-                <Calendar className="h-8 w-8 text-blue-600" />
+                <Calendar className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">This Month</p>
+                <p className="text-2xl font-bold">{earningsData.thisMonth.toLocaleString()} XAF</p>
               </div>
             </div>
           </CardContent>
@@ -121,86 +153,61 @@ const ResearchAidsPaymentsEarnings = () => {
 
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Available Balance</p>
-                <p className="text-3xl font-bold">{availableBalance.toLocaleString()} XAF</p>
-                <Button size="sm" className="mt-3 bg-green-600 hover:bg-green-700">
-                  Withdraw Earnings
-                </Button>
+            <div className="flex items-center space-x-3">
+              <div className="p-3 bg-yellow-100 rounded-lg">
+                <DollarSign className="h-6 w-6 text-yellow-600" />
               </div>
+              <div>
+                <p className="text-sm text-gray-600">Pending</p>
+                <p className="text-2xl font-bold">{earningsData.pending.toLocaleString()} XAF</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-3">
               <div className="p-3 bg-purple-100 rounded-lg">
-                <CreditCard className="h-8 w-8 text-purple-600" />
+                <TrendingUp className="h-6 w-6 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Growth</p>
+                <p className="text-2xl font-bold">+{earningsData.growth}%</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Payout Methods */}
+      {/* Recent Transactions */}
       <Card>
         <CardHeader>
-          <CardTitle>Payout Methods</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 border rounded-lg">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-3">
-                  <Smartphone className="h-6 w-6 text-orange-600" />
-                  <h4 className="font-medium">Mobile Money</h4>
-                </div>
-                <Badge className="bg-green-100 text-green-800">Primary</Badge>
-              </div>
-              <p className="text-sm text-gray-600 mb-3">Orange Money - *****1234</p>
-              <Button size="sm" variant="outline">Edit</Button>
-            </div>
-            <div className="p-4 border rounded-lg border-dashed">
-              <div className="flex items-center space-x-3 mb-3">
-                <Building className="h-6 w-6 text-blue-600" />
-                <h4 className="font-medium">Bank Transfer</h4>
-              </div>
-              <p className="text-sm text-gray-600 mb-3">Add a bank account for payouts</p>
-              <Button size="sm" variant="outline">Add Bank Account</Button>
-            </div>
+          <div className="flex justify-between items-center">
+            <CardTitle>Recent Transactions</CardTitle>
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-1" />
+              Export
+            </Button>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Payment History */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Payment History</CardTitle>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {mockPayments.map((payment) => (
-              <div key={payment.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium">{payment.jobTitle}</h4>
-                    <Badge className={getStatusColor(payment.status)}>
-                      {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
-                    </Badge>
+            {recentTransactions.map((transaction) => (
+              <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center space-x-3">
+                  {getTransactionIcon(transaction.type, transaction.amount)}
+                  <div>
+                    <h4 className="font-medium">{transaction.project}</h4>
+                    <p className="text-sm text-gray-600">{transaction.client}</p>
+                    <p className="text-xs text-gray-500">{transaction.date}</p>
                   </div>
-                  <p className="text-sm text-gray-600 mb-1">Client: {payment.studentName}</p>
-                  <p className="text-sm text-gray-500">
-                    Completed: {new Date(payment.completedDate).toLocaleDateString()}
-                    {payment.payoutDate && (
-                      <span> • Paid: {new Date(payment.payoutDate).toLocaleDateString()}</span>
-                    )}
-                  </p>
                 </div>
-                <div className="text-right ml-4">
-                  <p className="text-xl font-semibold">{payment.amount.toLocaleString()} {payment.currency}</p>
-                  <Button size="sm" variant="ghost" className="mt-1">
-                    <Eye className="h-4 w-4 mr-1" />
-                    View Details
-                  </Button>
+                <div className="text-right">
+                  <p className={`font-semibold ${transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {transaction.amount > 0 ? '+' : ''}{transaction.amount.toLocaleString()} XAF
+                  </p>
+                  {getStatusBadge(transaction.status)}
                 </div>
               </div>
             ))}
@@ -208,20 +215,51 @@ const ResearchAidsPaymentsEarnings = () => {
         </CardContent>
       </Card>
 
-      {/* Monthly Progress */}
+      {/* Payment Methods */}
       <Card>
         <CardHeader>
-          <CardTitle>Monthly Goal Progress</CardTitle>
+          <CardTitle>Payment Methods</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {paymentMethods.map((method) => (
+              <div key={method.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <CreditCard className="h-5 w-5 text-gray-500" />
+                  <div>
+                    <p className="font-medium">{method.type}</p>
+                    <p className="text-sm text-gray-600">{method.details}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {method.isDefault && <Badge variant="outline">Default</Badge>}
+                  <Button variant="ghost" size="sm">Edit</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <Button variant="outline" className="w-full mt-4">
+            Add Payment Method
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Withdraw Earnings */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Withdraw Earnings</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex justify-between text-sm">
-              <span>Earnings Goal</span>
-              <span>65,000 / 100,000 XAF</span>
+            <div className="p-4 bg-green-50 rounded-lg">
+              <p className="text-sm text-gray-600">Available for withdrawal</p>
+              <p className="text-2xl font-bold text-green-600">{earningsData.completed.toLocaleString()} XAF</p>
             </div>
-            <Progress value={65} className="h-3" />
-            <p className="text-sm text-gray-600">
-              You're 65% towards your monthly goal. Keep it up!
+            <Button className="w-full">
+              Request Withdrawal
+            </Button>
+            <p className="text-xs text-gray-500 text-center">
+              Withdrawals are processed within 1-3 business days
             </p>
           </div>
         </CardContent>
