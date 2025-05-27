@@ -1,7 +1,8 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -46,9 +47,31 @@ const Navbar = () => {
             <Button variant="outline" asChild>
               <a href="/auth">Sign In</a>
             </Button>
-            <Button asChild>
-              <a href="/auth">Sign Up</a>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  Sign Up
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <a href="/register" className="w-full cursor-pointer">
+                    Sign up as Student
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="/research-aide-signup" className="w-full cursor-pointer">
+                    Sign up as Researcher
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="/research-aid-signup" className="w-full cursor-pointer">
+                    Sign up as Research Aid
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Mobile Menu Button */}
@@ -89,9 +112,17 @@ const Navbar = () => {
                 <Button variant="outline" asChild className="w-full">
                   <a href="/auth">Sign In</a>
                 </Button>
-                <Button asChild className="w-full">
-                  <a href="/auth">Sign Up</a>
-                </Button>
+                <div className="space-y-2">
+                  <Button asChild className="w-full">
+                    <a href="/register">Sign up as Student</a>
+                  </Button>
+                  <Button variant="outline" asChild className="w-full">
+                    <a href="/research-aide-signup">Sign up as Researcher</a>
+                  </Button>
+                  <Button variant="outline" asChild className="w-full">
+                    <a href="/research-aid-signup">Sign up as Research Aid</a>
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
