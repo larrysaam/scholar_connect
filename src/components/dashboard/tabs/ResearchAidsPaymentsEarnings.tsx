@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,14 @@ const ResearchAidsPaymentsEarnings = () => {
   const [activeTab, setActiveTab] = useState("earnings");
   const [withdrawalAmount, setWithdrawalAmount] = useState("");
   const [newSkill, setNewSkill] = useState("");
+  const [skills, setSkills] = useState([
+    "Statistical Analysis",
+    "SPSS",
+    "Literature Review",
+    "Data Collection",
+    "Research Writing",
+    "Academic Writing"
+  ]);
   const { toast } = useToast();
 
   const earnings = [
@@ -63,15 +70,6 @@ const ResearchAidsPaymentsEarnings = () => {
     }
   ];
 
-  const skills = [
-    "Statistical Analysis",
-    "SPSS",
-    "Literature Review",
-    "Data Collection",
-    "Research Writing",
-    "Academic Writing"
-  ];
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "paid":
@@ -119,6 +117,16 @@ const ResearchAidsPaymentsEarnings = () => {
       return;
     }
 
+    if (skills.includes(newSkill.trim())) {
+      toast({
+        title: "Error",
+        description: "This skill already exists",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSkills([...skills, newSkill.trim()]);
     toast({
       title: "Skill Added",
       description: `${newSkill} has been added to your skills`
@@ -126,10 +134,11 @@ const ResearchAidsPaymentsEarnings = () => {
     setNewSkill("");
   };
 
-  const handleDeleteSkill = (skill: string) => {
+  const handleDeleteSkill = (skillToDelete: string) => {
+    setSkills(skills.filter(skill => skill !== skillToDelete));
     toast({
       title: "Skill Removed",
-      description: `${skill} has been removed from your skills`
+      description: `${skillToDelete} has been removed from your skills`
     });
   };
 

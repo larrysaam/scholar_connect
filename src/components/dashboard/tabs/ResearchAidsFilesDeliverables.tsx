@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -139,6 +138,28 @@ const ResearchAidsFilesDeliverables = () => {
     setDeliverableDescription("");
   };
 
+  const handleViewFile = (file: any) => {
+    // Simulate opening file viewer
+    toast({
+      title: "Opening File",
+      description: `Opening ${file.name} in viewer`
+    });
+    
+    // In a real app, this would open a file viewer modal or new tab
+    console.log("Viewing file:", file);
+  };
+
+  const handleViewDeliverable = (deliverable: any) => {
+    // Simulate opening deliverable details
+    toast({
+      title: "Opening Deliverable",
+      description: `Viewing details for ${deliverable.title}`
+    });
+    
+    // In a real app, this would open a detailed view modal
+    console.log("Viewing deliverable:", deliverable);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -207,7 +228,7 @@ const ResearchAidsFilesDeliverables = () => {
                       </div>
                     </div>
                     <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => handleViewFile(file)}>
                         <Eye className="h-4 w-4 mr-1" />
                         View
                       </Button>
@@ -308,7 +329,7 @@ const ResearchAidsFilesDeliverables = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="flex space-x-2">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => handleViewDeliverable(deliverable)}>
                       <Eye className="h-4 w-4 mr-1" />
                       View Details
                     </Button>

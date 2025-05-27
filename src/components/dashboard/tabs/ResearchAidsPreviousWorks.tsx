@@ -11,12 +11,13 @@ import { Star, Eye, Download, Plus, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const ResearchAidsPreviousWorks = () => {
+  const [activeCategory, setActiveCategory] = useState("platform");
   const [newWorkTitle, setNewWorkTitle] = useState("");
   const [newWorkDescription, setNewWorkDescription] = useState("");
   const [newWorkCategory, setNewWorkCategory] = useState("");
   const { toast } = useToast();
 
-  const previousWorks = [
+  const platformWorks = [
     {
       id: 1,
       title: "Statistical Analysis of Student Performance Data",
@@ -42,31 +43,47 @@ const ResearchAidsPreviousWorks = () => {
       university: "University of Douala",
       tags: ["Climate Change", "Systematic Review", "Environmental Science"],
       previewImage: "/placeholder-image.jpg"
-    },
+    }
+  ];
+
+  const priorWorks = [
     {
       id: 3,
-      title: "Qualitative Research on Rural Healthcare Access",
-      description: "Field research and analysis of healthcare accessibility in rural Cameroon communities",
-      category: "Qualitative Research",
+      title: "Agricultural Productivity Analysis in Rural Cameroon",
+      description: "Multi-year study analyzing agricultural productivity trends and factors affecting crop yields in rural communities",
+      category: "Agricultural Research",
       rating: 4.7,
-      clientFeedback: "Thorough fieldwork and insightful analysis. Dr. Neba's expertise in qualitative methods is evident.",
-      completedDate: "2023-12-20",
-      client: "Dr. Marie Dubois",
-      university: "University of Buea",
-      tags: ["Qualitative Methods", "Healthcare", "Field Research"],
+      clientFeedback: "Comprehensive research with practical implications for policy making. Excellent field work and data analysis.",
+      completedDate: "2023-08-20",
+      client: "Ministry of Agriculture",
+      university: "National Institute of Statistics",
+      tags: ["Agricultural Economics", "Field Research", "Policy Analysis"],
       previewImage: "/placeholder-image.jpg"
     },
     {
       id: 4,
-      title: "Meta-Analysis of Educational Interventions",
-      description: "Statistical meta-analysis of 45 studies on educational intervention effectiveness",
-      category: "Meta-Analysis",
+      title: "Educational Assessment Framework Development",
+      description: "Developed standardized assessment framework for primary education evaluation across Central Africa",
+      category: "Educational Research",
+      rating: 4.8,
+      clientFeedback: "Innovative framework that has been adopted by multiple educational institutions. Outstanding methodological approach.",
+      completedDate: "2023-05-15",
+      client: "UNESCO Regional Office",
+      university: "Regional Education Research Center",
+      tags: ["Educational Assessment", "Framework Development", "Primary Education"],
+      previewImage: "/placeholder-image.jpg"
+    },
+    {
+      id: 5,
+      title: "Healthcare Access Study in Remote Communities",
+      description: "Extensive research on healthcare accessibility challenges in remote communities of Cameroon",
+      category: "Healthcare Research",
       rating: 4.6,
-      clientFeedback: "Solid methodological approach and clear presentation of complex statistical concepts.",
-      completedDate: "2023-12-10",
-      client: "Dr. James Njoku",
-      university: "University of Bamenda",
-      tags: ["Meta-Analysis", "Education", "Statistical Methods"],
+      clientFeedback: "Thorough research with actionable recommendations. Dr. Neba's field work was exceptional.",
+      completedDate: "2022-11-30",
+      client: "World Health Organization",
+      university: "Public Health Research Institute",
+      tags: ["Healthcare Access", "Community Health", "Public Policy"],
       previewImage: "/placeholder-image.jpg"
     }
   ];
@@ -97,7 +114,23 @@ const ResearchAidsPreviousWorks = () => {
     });
   };
 
-  const averageRating = previousWorks.reduce((sum, work) => sum + work.rating, 0) / previousWorks.length;
+  const handleViewWork = (work: any) => {
+    toast({
+      title: "Opening Work Details",
+      description: `Viewing details for "${work.title}"`
+    });
+  };
+
+  const handleDownloadWork = (work: any) => {
+    toast({
+      title: "Downloading",
+      description: `Downloading files for "${work.title}"`
+    });
+  };
+
+  const currentWorks = activeCategory === "platform" ? platformWorks : priorWorks;
+  const totalWorks = platformWorks.length + priorWorks.length;
+  const averageRating = [...platformWorks, ...priorWorks].reduce((sum, work) => sum + work.rating, 0) / totalWorks;
 
   return (
     <div className="space-y-6">
@@ -147,6 +180,13 @@ const ResearchAidsPreviousWorks = () => {
                 />
               </div>
               <div>
+                <Label htmlFor="work-category-type">Work Type</Label>
+                <select className="w-full p-2 border rounded">
+                  <option value="platform">Completed on Platform</option>
+                  <option value="prior">Completed Prior to Platform</option>
+                </select>
+              </div>
+              <div>
                 <Label htmlFor="work-image">Preview Image</Label>
                 <Input
                   id="work-image"
@@ -169,13 +209,29 @@ const ResearchAidsPreviousWorks = () => {
         </Dialog>
       </div>
 
+      {/* Category Selection */}
+      <div className="flex space-x-2">
+        <Button 
+          variant={activeCategory === "platform" ? "default" : "outline"} 
+          onClick={() => setActiveCategory("platform")}
+        >
+          Completed on Platform ({platformWorks.length})
+        </Button>
+        <Button 
+          variant={activeCategory === "prior" ? "default" : "outline"} 
+          onClick={() => setActiveCategory("prior")}
+        >
+          Completed Prior to Platform ({priorWorks.length})
+        </Button>
+      </div>
+
       {/* Portfolio Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">{previousWorks.length}</p>
-              <p className="text-sm text-gray-600">Completed Projects</p>
+              <p className="text-2xl font-bold text-blue-600">{totalWorks}</p>
+              <p className="text-sm text-gray-600">Total Projects</p>
             </div>
           </CardContent>
         </Card>
@@ -200,9 +256,9 @@ const ResearchAidsPreviousWorks = () => {
         </Card>
       </div>
 
-      {/* Previous Works Grid */}
+      {/* Works Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {previousWorks.map((work) => (
+        {currentWorks.map((work) => (
           <Card key={work.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start">
@@ -210,6 +266,9 @@ const ResearchAidsPreviousWorks = () => {
                   <CardTitle className="text-lg mb-2">{work.title}</CardTitle>
                   <Badge variant="secondary" className="mb-2">
                     {work.category}
+                  </Badge>
+                  <Badge variant="outline" className="ml-2">
+                    {activeCategory === "platform" ? "Platform" : "Prior Work"}
                   </Badge>
                 </div>
                 <div className="flex space-x-1">
@@ -278,11 +337,11 @@ const ResearchAidsPreviousWorks = () => {
               
               {/* Actions */}
               <div className="flex space-x-2">
-                <Button size="sm" variant="outline" className="flex-1">
+                <Button size="sm" variant="outline" className="flex-1" onClick={() => handleViewWork(work)}>
                   <Eye className="h-3 w-3 mr-1" />
                   View Details
                 </Button>
-                <Button size="sm" variant="outline" className="flex-1">
+                <Button size="sm" variant="outline" className="flex-1" onClick={() => handleDownloadWork(work)}>
                   <Download className="h-3 w-3 mr-1" />
                   Download
                 </Button>
@@ -291,6 +350,16 @@ const ResearchAidsPreviousWorks = () => {
           </Card>
         ))}
       </div>
+
+      {currentWorks.length === 0 && (
+        <div className="text-center py-8">
+          <p className="text-gray-500">No works found in this category.</p>
+          <Button className="mt-4">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Your First Work
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -148,18 +147,40 @@ const ResearchAidsAppointments = () => {
   };
 
   const handleAddToCalendar = (appointment: any) => {
-    // Create calendar event URL (Google Calendar format)
-    const startDate = new Date(`${appointment.date}T${appointment.time}`);
-    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // Add 1 hour
-    
-    const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(appointment.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(appointment.description)}`;
-    
-    window.open(calendarUrl, '_blank');
-    
-    toast({
-      title: "Calendar Event",
-      description: "Opening calendar to add event"
-    });
+    try {
+      // Parse the date and time properly
+      const [hours, minutes] = appointment.time.split(' ')[0].split(':');
+      const isPM = appointment.time.includes('PM');
+      const hour24 = isPM && parseInt(hours) !== 12 ? parseInt(hours) + 12 : 
+                   !isPM && parseInt(hours) === 12 ? 0 : parseInt(hours);
+      
+      const startDate = new Date(appointment.date);
+      startDate.setHours(hour24, parseInt(minutes), 0, 0);
+      
+      const endDate = new Date(startDate);
+      const durationMatch = appointment.duration.match(/(\d+(?:\.\d+)?)/);
+      const durationHours = durationMatch ? parseFloat(durationMatch[1]) : 1;
+      endDate.setHours(endDate.getHours() + durationHours);
+      
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        throw new Error('Invalid date');
+      }
+      
+      const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(appointment.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(appointment.description)}`;
+      
+      window.open(calendarUrl, '_blank');
+      
+      toast({
+        title: "Calendar Event",
+        description: "Opening calendar to add event"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Unable to create calendar event. Please check the appointment details.",
+        variant: "destructive"
+      });
+    }
   };
 
   const currentAppointments = view === "upcoming" ? appointments : pastAppointments;

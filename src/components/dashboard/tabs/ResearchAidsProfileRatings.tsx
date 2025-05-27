@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { 
   Star, 
   Edit, 
@@ -14,16 +15,27 @@ import {
   Award,
   TrendingUp,
   Users,
-  Calendar
+  Calendar,
+  Plus,
+  Trash2,
+  BookOpen,
+  Briefcase,
+  Trophy,
+  FileText,
+  GraduationCap,
+  Network
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const ResearchAidsProfileRatings = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
+  const { toast } = useToast();
 
-  const profileData = {
-    name: "Dr. Neba Emmanuel",
-    title: "Academic Editor & Statistician",
+  const [profileData, setProfileData] = useState({
+    title: "Dr.",
+    name: "Neba Emmanuel",
+    jobTitle: "Academic Editor & Statistician",
     bio: "Experienced academic editor with over 8 years in statistical analysis and research methodology. Specialized in SPSS, R, and academic writing support.",
     location: "Yaoundé, Cameroon",
     languages: ["English", "French"],
@@ -32,8 +44,82 @@ const ResearchAidsProfileRatings = () => {
     totalReviews: 47,
     completedJobs: 47,
     responseTime: "< 2 hours",
-    successRate: 98
-  };
+    successRate: 98,
+    education: [
+      {
+        degree: "PhD in Statistics",
+        institution: "University of Yaoundé I",
+        year: "2015",
+        field: "Applied Statistics"
+      },
+      {
+        degree: "MSc in Mathematics",
+        institution: "University of Buea",
+        year: "2010",
+        field: "Statistical Methods"
+      }
+    ],
+    experience: [
+      {
+        position: "Senior Research Analyst",
+        organization: "Statistical Research Institute",
+        duration: "2018 - Present",
+        description: "Leading statistical analysis projects and mentoring junior researchers"
+      },
+      {
+        position: "Academic Editor",
+        organization: "Journal of Applied Statistics",
+        duration: "2016 - Present",
+        description: "Editorial review and statistical consultation for academic publications"
+      }
+    ],
+    awards: [
+      {
+        title: "Excellence in Statistical Research",
+        organization: "Cameroon Statistical Society",
+        year: "2020"
+      },
+      {
+        title: "Best Academic Editor",
+        organization: "African Journal Network",
+        year: "2019"
+      }
+    ],
+    publications: [
+      {
+        title: "Advanced Statistical Methods in African Research",
+        journal: "Journal of African Statistics",
+        year: "2021",
+        type: "Peer-reviewed Article"
+      },
+      {
+        title: "Data Analysis Techniques for Educational Research",
+        journal: "Educational Statistics Quarterly",
+        year: "2020",
+        type: "Research Paper"
+      }
+    ],
+    scholarships: [
+      {
+        title: "African Excellence Scholarship",
+        organization: "African Development Bank",
+        year: "2012-2015",
+        amount: "Full Tuition"
+      }
+    ],
+    affiliations: [
+      {
+        organization: "International Statistical Institute",
+        position: "Member",
+        since: "2016"
+      },
+      {
+        organization: "Cameroon Statistical Society",
+        position: "Board Member",
+        since: "2018"
+      }
+    ]
+  });
 
   const ratingBreakdown = [
     { stars: 5, count: 42, percentage: 89 },
@@ -85,6 +171,35 @@ const ResearchAidsProfileRatings = () => {
     ));
   };
 
+  const handleSaveProfile = () => {
+    toast({
+      title: "Profile Updated",
+      description: "Your profile has been saved successfully"
+    });
+    setIsEditing(false);
+  };
+
+  const handleUpdateField = (field: string, value: any) => {
+    setProfileData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleAddEducation = (education: any) => {
+    setProfileData(prev => ({
+      ...prev,
+      education: [...prev.education, education]
+    }));
+  };
+
+  const handleRemoveEducation = (index: number) => {
+    setProfileData(prev => ({
+      ...prev,
+      education: prev.education.filter((_, i) => i !== index)
+    }));
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -118,29 +233,68 @@ const ResearchAidsProfileRatings = () => {
                       {profileData.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0"
-                  >
-                    <Camera className="h-4 w-4" />
-                  </Button>
+                  {isEditing && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0"
+                    >
+                      <Camera className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
                 
                 <div className="flex-1">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="text-2xl font-bold">{profileData.name}</h3>
-                      <p className="text-lg text-gray-600">{profileData.title}</p>
-                      <p className="text-sm text-gray-500">{profileData.location}</p>
+                      {isEditing ? (
+                        <div className="space-y-2">
+                          <div className="flex space-x-2">
+                            <Input
+                              value={profileData.title}
+                              onChange={(e) => handleUpdateField('title', e.target.value)}
+                              placeholder="Title"
+                              className="w-20"
+                            />
+                            <Input
+                              value={profileData.name}
+                              onChange={(e) => handleUpdateField('name', e.target.value)}
+                              placeholder="Full Name"
+                              className="flex-1"
+                            />
+                          </div>
+                          <Input
+                            value={profileData.jobTitle}
+                            onChange={(e) => handleUpdateField('jobTitle', e.target.value)}
+                            placeholder="Job Title"
+                          />
+                          <Input
+                            value={profileData.location}
+                            onChange={(e) => handleUpdateField('location', e.target.value)}
+                            placeholder="Location"
+                          />
+                        </div>
+                      ) : (
+                        <div>
+                          <h3 className="text-2xl font-bold">{profileData.title} {profileData.name}</h3>
+                          <p className="text-lg text-gray-600">{profileData.jobTitle}</p>
+                          <p className="text-sm text-gray-500">{profileData.location}</p>
+                        </div>
+                      )}
                     </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsEditing(!isEditing)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit Profile
-                    </Button>
+                    <div className="flex space-x-2">
+                      {isEditing ? (
+                        <>
+                          <Button onClick={handleSaveProfile}>Save Changes</Button>
+                          <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
+                        </>
+                      ) : (
+                        <Button variant="outline" onClick={() => setIsEditing(true)}>
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit Profile
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -176,20 +330,273 @@ const ResearchAidsProfileRatings = () => {
             </CardHeader>
             <CardContent>
               {isEditing ? (
-                <div className="space-y-4">
-                  <Textarea
-                    value={profileData.bio}
-                    placeholder="Write about your experience and expertise..."
-                    rows={4}
-                  />
-                  <div className="flex space-x-2">
-                    <Button>Save Changes</Button>
-                    <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
-                  </div>
-                </div>
+                <Textarea
+                  value={profileData.bio}
+                  onChange={(e) => handleUpdateField('bio', e.target.value)}
+                  placeholder="Write about your experience and expertise..."
+                  rows={4}
+                />
               ) : (
                 <p className="text-gray-700">{profileData.bio}</p>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Educational Background */}
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="flex items-center">
+                  <GraduationCap className="h-5 w-5 mr-2" />
+                  Educational Background
+                </CardTitle>
+                {isEditing && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button size="sm">
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add Education
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add Education</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Degree</Label>
+                          <Input placeholder="e.g., PhD in Statistics" />
+                        </div>
+                        <div>
+                          <Label>Institution</Label>
+                          <Input placeholder="University name" />
+                        </div>
+                        <div>
+                          <Label>Year</Label>
+                          <Input placeholder="Graduation year" />
+                        </div>
+                        <div>
+                          <Label>Field of Study</Label>
+                          <Input placeholder="Area of specialization" />
+                        </div>
+                        <Button className="w-full">Add Education</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {profileData.education.map((edu, index) => (
+                  <div key={index} className="border-l-4 border-blue-500 pl-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-semibold">{edu.degree}</h4>
+                        <p className="text-gray-600">{edu.institution}</p>
+                        <p className="text-sm text-gray-500">{edu.year} • {edu.field}</p>
+                      </div>
+                      {isEditing && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveEducation(index)}
+                          className="text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Work Experience */}
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="flex items-center">
+                  <Briefcase className="h-5 w-5 mr-2" />
+                  Work Experience
+                </CardTitle>
+                {isEditing && (
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Experience
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {profileData.experience.map((exp, index) => (
+                  <div key={index} className="border-l-4 border-green-500 pl-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-semibold">{exp.position}</h4>
+                        <p className="text-gray-600">{exp.organization}</p>
+                        <p className="text-sm text-gray-500">{exp.duration}</p>
+                        <p className="text-sm mt-1">{exp.description}</p>
+                      </div>
+                      {isEditing && (
+                        <Button variant="ghost" size="sm" className="text-red-600">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Awards and Recognition */}
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="flex items-center">
+                  <Trophy className="h-5 w-5 mr-2" />
+                  Awards & Recognition
+                </CardTitle>
+                {isEditing && (
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Award
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {profileData.awards.map((award, index) => (
+                  <div key={index} className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                    <div>
+                      <h4 className="font-semibold">{award.title}</h4>
+                      <p className="text-sm text-gray-600">{award.organization} • {award.year}</p>
+                    </div>
+                    {isEditing && (
+                      <Button variant="ghost" size="sm" className="text-red-600">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Publications */}
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="flex items-center">
+                  <FileText className="h-5 w-5 mr-2" />
+                  Publications
+                </CardTitle>
+                {isEditing && (
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Publication
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {profileData.publications.map((pub, index) => (
+                  <div key={index} className="border-l-4 border-purple-500 pl-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-semibold">{pub.title}</h4>
+                        <p className="text-gray-600">{pub.journal}</p>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <Badge variant="outline">{pub.type}</Badge>
+                          <span className="text-sm text-gray-500">{pub.year}</span>
+                        </div>
+                      </div>
+                      {isEditing && (
+                        <Button variant="ghost" size="sm" className="text-red-600">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Scholarships and Fellowships */}
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="flex items-center">
+                  <Award className="h-5 w-5 mr-2" />
+                  Scholarships & Fellowships
+                </CardTitle>
+                {isEditing && (
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Scholarship
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {profileData.scholarships.map((scholarship, index) => (
+                  <div key={index} className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                    <div>
+                      <h4 className="font-semibold">{scholarship.title}</h4>
+                      <p className="text-sm text-gray-600">{scholarship.organization}</p>
+                      <p className="text-sm text-gray-500">{scholarship.year} • {scholarship.amount}</p>
+                    </div>
+                    {isEditing && (
+                      <Button variant="ghost" size="sm" className="text-red-600">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Professional Affiliations */}
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="flex items-center">
+                  <Network className="h-5 w-5 mr-2" />
+                  Professional Affiliations
+                </CardTitle>
+                {isEditing && (
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Affiliation
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {profileData.affiliations.map((affiliation, index) => (
+                  <div key={index} className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                    <div>
+                      <h4 className="font-semibold">{affiliation.organization}</h4>
+                      <p className="text-sm text-gray-600">{affiliation.position}</p>
+                      <p className="text-sm text-gray-500">Since {affiliation.since}</p>
+                    </div>
+                    {isEditing && (
+                      <Button variant="ghost" size="sm" className="text-red-600">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
 
