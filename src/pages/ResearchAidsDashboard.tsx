@@ -19,11 +19,14 @@ import ResearchAidsNotifications from "@/components/dashboard/tabs/ResearchAidsN
 import DiscussionTab from "@/components/dashboard/tabs/DiscussionTab";
 import QualityAssuranceAndFeedbackTab from "@/components/dashboard/tabs/QualityAssuranceAndFeedbackTab";
 import VerificationTab from "@/components/dashboard/tabs/VerificationTab";
+import { notificationService } from "@/services/notificationService";
+import { useToast } from "@/hooks/use-toast";
 
 const ResearchAidsDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showNDA, setShowNDA] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const hasCompletedOnboarding = localStorage.getItem('research_aids_onboarding_complete');
@@ -36,7 +39,20 @@ const ResearchAidsDashboard = () => {
     if (!hasSignedNDA) {
       setShowNDA(true);
     }
-  }, []);
+
+    // Generate and show summary notification
+    const summaryNotification = notificationService.generateSummaryNotification();
+    if (summaryNotification.message !== "No new notifications at this time.") {
+      toast({
+        title: summaryNotification.title,
+        description: summaryNotification.message,
+      });
+    }
+
+    // Schedule weekly email summary
+    const userEmail = "neba.emmanuel@example.com"; // This would come from user context
+    notificationService.scheduleWeeklyEmail(userEmail);
+  }, [toast]);
 
   const handleOnboardingComplete = () => {
     localStorage.setItem('research_aids_onboarding_complete', 'true');
@@ -91,7 +107,6 @@ const ResearchAidsDashboard = () => {
           <h1 className="text-3xl font-bold mb-2">Research Aids Dashboard</h1>
           <p className="text-gray-600 mb-8">Manage your jobs, clients, and earnings</p>
           
-          {/* Show onboarding for new users */}
           {showOnboarding && (
             <div className="mb-8">
               <Card>

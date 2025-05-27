@@ -4,61 +4,60 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Star, MessageSquare, ThumbsUp, AlertTriangle, Send, Eye } from "lucide-react";
+import { Star, MessageSquare, Send, TrendingUp, Users, Award, Lightbulb } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const QualityAssuranceAndFeedbackTab = () => {
   const [selectedRating, setSelectedRating] = useState(0);
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackCategory, setFeedbackCategory] = useState("");
-  const [viewAllFeedback, setViewAllFeedback] = useState(false);
+  const [suggestionText, setSuggestionText] = useState("");
+  const [platformExperience, setPlatformExperience] = useState("");
   const { toast } = useToast();
 
-  const [feedbackList, setFeedbackList] = useState([
-    {
-      id: 1,
-      client: "Dr. Sarah Johnson",
-      project: "Statistical Analysis Project",
-      rating: 5,
-      feedback: "Excellent work! Very thorough analysis and professional presentation.",
-      date: "2024-01-28",
-      category: "Quality",
-      status: "positive"
-    },
-    {
-      id: 2,
-      client: "Prof. Michael Chen",
-      project: "Literature Review",
-      rating: 4,
-      feedback: "Good quality work, delivered on time. Could improve on formatting.",
-      date: "2024-01-25",
-      category: "Timeliness",
-      status: "positive"
-    },
-    {
-      id: 3,
-      client: "Dr. Marie Dubois",
-      project: "Data Collection",
-      rating: 5,
-      feedback: "Outstanding data collection work. Very organized and efficient.",
-      date: "2024-01-20",
-      category: "Organization",
-      status: "positive"
-    }
-  ]);
-
-  const qualityMetrics = {
-    averageRating: 4.7,
-    totalFeedbacks: feedbackList.length,
-    positivePercentage: 95,
-    responseRate: 100
+  const platformMetrics = {
+    overallRating: 4.6,
+    totalFeedbacks: 156,
+    improvementRate: 85,
+    userSatisfaction: 92
   };
 
-  const handleSubmitFeedback = () => {
+  const feedbackCategories = [
+    "User Interface",
+    "Job Matching System",
+    "Payment Process",
+    "Communication Tools",
+    "Profile Management",
+    "Notification System",
+    "Mobile Experience",
+    "Customer Support",
+    "General Experience"
+  ];
+
+  const recentImprovements = [
+    {
+      title: "Enhanced Job Matching",
+      description: "Improved AI-powered job matching based on user feedback",
+      implementedDate: "2024-01-20",
+      userRequests: 23
+    },
+    {
+      title: "Faster Payment Processing",
+      description: "Reduced payment processing time from 48 to 24 hours",
+      implementedDate: "2024-01-15",
+      userRequests: 45
+    },
+    {
+      title: "Mobile App Optimization",
+      description: "Enhanced mobile interface for better user experience",
+      implementedDate: "2024-01-10",
+      userRequests: 67
+    }
+  ];
+
+  const handleSubmitPlatformFeedback = () => {
     if (!selectedRating || !feedbackText.trim() || !feedbackCategory) {
       toast({
         title: "Error",
@@ -68,26 +67,32 @@ const QualityAssuranceAndFeedbackTab = () => {
       return;
     }
 
-    const newFeedback = {
-      id: feedbackList.length + 1,
-      client: "System Generated",
-      project: "Self Assessment",
-      rating: selectedRating,
-      feedback: feedbackText,
-      date: new Date().toISOString().split('T')[0],
-      category: feedbackCategory,
-      status: selectedRating >= 4 ? "positive" : selectedRating >= 3 ? "neutral" : "negative"
-    };
+    toast({
+      title: "Feedback Submitted",
+      description: "Thank you for helping us improve ScholarConnect!"
+    });
 
-    setFeedbackList(prev => [newFeedback, ...prev]);
     setSelectedRating(0);
     setFeedbackText("");
     setFeedbackCategory("");
+  };
+
+  const handleSubmitSuggestion = () => {
+    if (!suggestionText.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your suggestion",
+        variant: "destructive"
+      });
+      return;
+    }
 
     toast({
-      title: "Feedback Submitted",
-      description: "Your feedback has been submitted successfully"
+      title: "Suggestion Submitted",
+      description: "Your suggestion has been forwarded to our development team"
     });
+
+    setSuggestionText("");
   };
 
   const renderStars = (rating: number, interactive = false, size = "h-4 w-4") => {
@@ -106,53 +111,38 @@ const QualityAssuranceAndFeedbackTab = () => {
     ));
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "positive":
-        return <Badge className="bg-green-600">Positive</Badge>;
-      case "neutral":
-        return <Badge variant="secondary">Neutral</Badge>;
-      case "negative":
-        return <Badge variant="destructive">Needs Improvement</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
-  const displayedFeedback = viewAllFeedback ? feedbackList : feedbackList.slice(0, 3);
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Quality Assurance & Feedback</h2>
+        <h2 className="text-2xl font-bold">Platform Quality & Feedback</h2>
         <Dialog>
           <DialogTrigger asChild>
             <Button>
               <MessageSquare className="h-4 w-4 mr-2" />
-              Submit Feedback
+              Rate Platform
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Submit Quality Feedback</DialogTitle>
+              <DialogTitle>Rate ScholarConnect Platform</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label>Overall Rating</Label>
+                <Label>Overall Platform Rating</Label>
                 <div className="flex items-center space-x-1 mt-2">
                   {renderStars(selectedRating, true, "h-6 w-6")}
                 </div>
                 <p className="text-sm text-gray-500 mt-1">
                   {selectedRating === 0 && "Select a rating"}
-                  {selectedRating === 1 && "Poor"}
-                  {selectedRating === 2 && "Fair"}
-                  {selectedRating === 3 && "Good"}
-                  {selectedRating === 4 && "Very Good"}
-                  {selectedRating === 5 && "Excellent"}
+                  {selectedRating === 1 && "Poor - Needs major improvements"}
+                  {selectedRating === 2 && "Fair - Several issues to address"}
+                  {selectedRating === 3 && "Good - Generally satisfactory"}
+                  {selectedRating === 4 && "Very Good - Minor improvements needed"}
+                  {selectedRating === 5 && "Excellent - Highly satisfied"}
                 </p>
               </div>
               <div>
-                <Label htmlFor="feedback-category">Category</Label>
+                <Label htmlFor="feedback-category">Feedback Category</Label>
                 <select
                   id="feedback-category"
                   value={feedbackCategory}
@@ -160,24 +150,22 @@ const QualityAssuranceAndFeedbackTab = () => {
                   className="w-full p-2 border rounded-md mt-1"
                 >
                   <option value="">Select category</option>
-                  <option value="Quality">Work Quality</option>
-                  <option value="Timeliness">Timeliness</option>
-                  <option value="Communication">Communication</option>
-                  <option value="Organization">Organization</option>
-                  <option value="Technical Skills">Technical Skills</option>
+                  {feedbackCategories.map((category) => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
                 </select>
               </div>
               <div>
-                <Label htmlFor="feedback-text">Feedback Details</Label>
+                <Label htmlFor="feedback-text">Your Feedback</Label>
                 <Textarea
                   id="feedback-text"
-                  placeholder="Provide detailed feedback..."
+                  placeholder="Tell us about your experience with ScholarConnect..."
                   value={feedbackText}
                   onChange={(e) => setFeedbackText(e.target.value)}
                   rows={4}
                 />
               </div>
-              <Button onClick={handleSubmitFeedback} className="w-full">
+              <Button onClick={handleSubmitPlatformFeedback} className="w-full">
                 <Send className="h-4 w-4 mr-2" />
                 Submit Feedback
               </Button>
@@ -186,15 +174,15 @@ const QualityAssuranceAndFeedbackTab = () => {
         </Dialog>
       </div>
 
-      {/* Quality Metrics Overview */}
+      {/* Platform Metrics Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2">
               <Star className="h-8 w-8 text-yellow-500" />
               <div>
-                <p className="text-sm text-gray-600">Average Rating</p>
-                <p className="text-2xl font-bold">{qualityMetrics.averageRating}/5</p>
+                <p className="text-sm text-gray-600">Platform Rating</p>
+                <p className="text-2xl font-bold">{platformMetrics.overallRating}/5</p>
               </div>
             </div>
           </CardContent>
@@ -203,10 +191,10 @@ const QualityAssuranceAndFeedbackTab = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2">
-              <MessageSquare className="h-8 w-8 text-blue-600" />
+              <Users className="h-8 w-8 text-blue-600" />
               <div>
-                <p className="text-sm text-gray-600">Total Feedback</p>
-                <p className="text-2xl font-bold">{qualityMetrics.totalFeedbacks}</p>
+                <p className="text-sm text-gray-600">User Feedback</p>
+                <p className="text-2xl font-bold">{platformMetrics.totalFeedbacks}</p>
               </div>
             </div>
           </CardContent>
@@ -215,10 +203,10 @@ const QualityAssuranceAndFeedbackTab = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2">
-              <ThumbsUp className="h-8 w-8 text-green-600" />
+              <TrendingUp className="h-8 w-8 text-green-600" />
               <div>
-                <p className="text-sm text-gray-600">Positive Rate</p>
-                <p className="text-2xl font-bold">{qualityMetrics.positivePercentage}%</p>
+                <p className="text-sm text-gray-600">Improvement Rate</p>
+                <p className="text-2xl font-bold">{platformMetrics.improvementRate}%</p>
               </div>
             </div>
           </CardContent>
@@ -227,92 +215,102 @@ const QualityAssuranceAndFeedbackTab = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2">
-              <AlertTriangle className="h-8 w-8 text-orange-600" />
+              <Award className="h-8 w-8 text-purple-600" />
               <div>
-                <p className="text-sm text-gray-600">Response Rate</p>
-                <p className="text-2xl font-bold">{qualityMetrics.responseRate}%</p>
+                <p className="text-sm text-gray-600">Satisfaction</p>
+                <p className="text-2xl font-bold">{platformMetrics.userSatisfaction}%</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Feedback List */}
+      {/* Recent Platform Improvements */}
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-lg">Recent Feedback</CardTitle>
-            <Button 
-              variant="outline" 
-              onClick={() => setViewAllFeedback(!viewAllFeedback)}
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              {viewAllFeedback ? "View Less" : "View All Feedback"}
-            </Button>
-          </div>
+          <CardTitle className="text-lg flex items-center">
+            <TrendingUp className="h-5 w-5 mr-2 text-green-600" />
+            Recent Platform Improvements
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {displayedFeedback.map((feedback) => (
-              <Card key={feedback.id} className="border-l-4 border-l-blue-500">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src="/placeholder-avatar.jpg" alt={feedback.client} />
-                        <AvatarFallback>{feedback.client.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h4 className="font-medium">{feedback.client}</h4>
-                        <p className="text-sm text-gray-600">{feedback.project}</p>
-                        <p className="text-xs text-gray-500">{feedback.date}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center space-x-1 mb-1">
-                        {renderStars(feedback.rating)}
-                        <span className="text-sm text-gray-600 ml-2">({feedback.rating}/5)</span>
-                      </div>
-                      {getStatusBadge(feedback.status)}
-                    </div>
-                  </div>
-                  
-                  <div className="mb-3">
-                    <Badge variant="outline" className="mb-2">{feedback.category}</Badge>
-                    <p className="text-gray-700">{feedback.feedback}</p>
-                  </div>
-                </CardContent>
-              </Card>
+            {recentImprovements.map((improvement, index) => (
+              <div key={index} className="flex justify-between items-start p-4 border rounded-lg">
+                <div className="flex-1">
+                  <h4 className="font-medium mb-1">{improvement.title}</h4>
+                  <p className="text-sm text-gray-600 mb-2">{improvement.description}</p>
+                  <p className="text-xs text-gray-500">Implemented: {improvement.implementedDate}</p>
+                </div>
+                <Badge variant="secondary">
+                  {improvement.userRequests} requests
+                </Badge>
+              </div>
             ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* Quality Improvement Actions */}
+      {/* Suggestion Box */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Quality Improvement Actions</CardTitle>
+          <CardTitle className="text-lg flex items-center">
+            <Lightbulb className="h-5 w-5 mr-2 text-yellow-600" />
+            Suggest Improvements
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="suggestion-text">How can we improve ScholarConnect?</Label>
+              <Textarea
+                id="suggestion-text"
+                placeholder="Share your ideas for new features, improvements, or any changes you'd like to see..."
+                value={suggestionText}
+                onChange={(e) => setSuggestionText(e.target.value)}
+                rows={4}
+              />
+            </div>
+            <Button onClick={handleSubmitSuggestion}>
+              <Send className="h-4 w-4 mr-2" />
+              Submit Suggestion
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Feedback Areas */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Help Us Improve</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-medium mb-2">Strengths</h4>
-              <ul className="text-sm space-y-1">
-                <li>• Consistent high-quality deliverables</li>
-                <li>• Excellent communication skills</li>
-                <li>• Timely project completion</li>
-                <li>• Professional presentation</li>
+              <h4 className="font-medium mb-2 text-blue-800">What's Working Well?</h4>
+              <ul className="text-sm space-y-1 text-blue-700">
+                <li>• Easy job application process</li>
+                <li>• Quick payment processing</li>
+                <li>• Good communication tools</li>
+                <li>• Helpful client matching</li>
               </ul>
             </div>
             <div className="p-4 bg-orange-50 rounded-lg">
-              <h4 className="font-medium mb-2">Areas for Improvement</h4>
-              <ul className="text-sm space-y-1">
-                <li>• Document formatting consistency</li>
-                <li>• Initial response time to queries</li>
-                <li>• Proactive progress updates</li>
-                <li>• Technical documentation clarity</li>
+              <h4 className="font-medium mb-2 text-orange-800">Areas for Enhancement</h4>
+              <ul className="text-sm space-y-1 text-orange-700">
+                <li>• Mobile app performance</li>
+                <li>• Advanced search filters</li>
+                <li>• Real-time notifications</li>
+                <li>• Enhanced profile customization</li>
               </ul>
             </div>
+          </div>
+          <div className="mt-4 p-4 bg-green-50 rounded-lg">
+            <h4 className="font-medium mb-2 text-green-800">Your Voice Matters</h4>
+            <p className="text-sm text-green-700">
+              Every piece of feedback helps us create a better platform for research aids and clients. 
+              We review all submissions and prioritize improvements based on user needs.
+            </p>
           </div>
         </CardContent>
       </Card>

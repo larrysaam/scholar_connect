@@ -1,13 +1,27 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Star, Calendar, FileText, Download, Eye } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Star, Calendar, FileText, Download, Eye, Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const ResearchAidsPreviousWorks = () => {
   const [activeTab, setActiveTab] = useState("platform");
+  const [isAddWorkOpen, setIsAddWorkOpen] = useState(false);
+  const [newWork, setNewWork] = useState({
+    title: "",
+    description: "",
+    category: "",
+    institution: "",
+    duration: "",
+    outcomes: ""
+  });
+  const { toast } = useToast();
 
   const platformWorks = [
     {
@@ -84,6 +98,45 @@ const ResearchAidsPreviousWorks = () => {
     }
   ];
 
+  const handleAddWork = () => {
+    if (!newWork.title.trim() || !newWork.description.trim()) {
+      toast({
+        title: "Error",
+        description: "Please fill in required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Work Added",
+      description: "Your previous work has been added to your portfolio"
+    });
+    setNewWork({ title: "", description: "", category: "", institution: "", duration: "", outcomes: "" });
+    setIsAddWorkOpen(false);
+  };
+
+  const handleViewDetails = (workId: number, type: string) => {
+    toast({
+      title: "View Details",
+      description: `Viewing details for work ID: ${workId}`
+    });
+  };
+
+  const handleDownloadPortfolio = (workId: number, title: string) => {
+    toast({
+      title: "Download Started",
+      description: `Downloading portfolio for: ${title}`
+    });
+  };
+
+  const handleViewCertificate = (workId: number, title: string) => {
+    toast({
+      title: "Certificate Viewer",
+      description: `Opening certificate for: ${title}`
+    });
+  };
+
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, index) => (
       <Star
@@ -100,17 +153,100 @@ const ResearchAidsPreviousWorks = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Previous Works</h2>
         <div className="flex space-x-2">
+          <Dialog open={isAddWorkOpen} onOpenChange={setIsAddWorkOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Include Previous Work
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Add Previous Work</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="title">Project Title *</Label>
+                    <Input
+                      id="title"
+                      value={newWork.title}
+                      onChange={(e) => setNewWork(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="Enter project title"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="category">Category</Label>
+                    <Input
+                      id="category"
+                      value={newWork.category}
+                      onChange={(e) => setNewWork(prev => ({ ...prev, category: e.target.value }))}
+                      placeholder="e.g., Research, Analysis"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="description">Description *</Label>
+                  <Textarea
+                    id="description"
+                    value={newWork.description}
+                    onChange={(e) => setNewWork(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Describe the project and your role"
+                    rows={3}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="institution">Institution/Client</Label>
+                    <Input
+                      id="institution"
+                      value={newWork.institution}
+                      onChange={(e) => setNewWork(prev => ({ ...prev, institution: e.target.value }))}
+                      placeholder="Organization name"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="duration">Duration</Label>
+                    <Input
+                      id="duration"
+                      value={newWork.duration}
+                      onChange={(e) => setNewWork(prev => ({ ...prev, duration: e.target.value }))}
+                      placeholder="e.g., 3 months"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="outcomes">Key Outcomes</Label>
+                  <Textarea
+                    id="outcomes"
+                    value={newWork.outcomes}
+                    onChange={(e) => setNewWork(prev => ({ ...prev, outcomes: e.target.value }))}
+                    placeholder="List key achievements or deliverables"
+                    rows={2}
+                  />
+                </div>
+                <div className="flex space-x-2">
+                  <Button onClick={handleAddWork} className="flex-1">
+                    Add Work
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsAddWorkOpen(false)} className="flex-1">
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
           <Button 
             variant={activeTab === "platform" ? "default" : "outline"} 
             onClick={() => setActiveTab("platform")}
           >
-            Completed on the Platform
+            Platform Projects
           </Button>
           <Button 
             variant={activeTab === "pre-platform" ? "default" : "outline"} 
             onClick={() => setActiveTab("pre-platform")}
           >
-            Completed Before Joining the Platform
+            Previous Experience
           </Button>
         </div>
       </div>
@@ -180,11 +316,19 @@ const ResearchAidsPreviousWorks = () => {
                   </div>
 
                   <div className="flex space-x-2 pt-2">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleViewDetails(work.id, "platform")}
+                    >
                       <Eye className="h-4 w-4 mr-1" />
                       View Details
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDownloadPortfolio(work.id, work.title)}
+                    >
                       <Download className="h-4 w-4 mr-1" />
                       Download Portfolio
                     </Button>
@@ -246,11 +390,19 @@ const ResearchAidsPreviousWorks = () => {
                   </div>
 
                   <div className="flex space-x-2 pt-2">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleViewDetails(work.id, "pre-platform")}
+                    >
                       <Eye className="h-4 w-4 mr-1" />
                       View Details
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleViewCertificate(work.id, work.title)}
+                    >
                       <FileText className="h-4 w-4 mr-1" />
                       View Certificate
                     </Button>
@@ -262,7 +414,6 @@ const ResearchAidsPreviousWorks = () => {
         </div>
       )}
 
-      {/* Summary Statistics */}
       <Card>
         <CardHeader>
           <CardTitle>Portfolio Summary</CardTitle>

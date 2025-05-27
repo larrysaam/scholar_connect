@@ -1,16 +1,19 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Calendar, MessageSquare, DollarSign, UserCheck, AlertTriangle, CheckCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Bell, Calendar, MessageSquare, DollarSign, UserCheck, AlertTriangle, CheckCircle, Video } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const ResearchAidsNotifications = () => {
   const [filter, setFilter] = useState("all");
+  const [replyText, setReplyText] = useState("");
+  const [selectedNotification, setSelectedNotification] = useState<number | null>(null);
   const { toast } = useToast();
 
-  const notifications = [
+  const [notifications, setNotifications] = useState([
     {
       id: 1,
       type: "job_invitation",
@@ -19,7 +22,9 @@ const ResearchAidsNotifications = () => {
       time: "5 minutes ago",
       isNew: true,
       icon: UserCheck,
-      priority: "high"
+      priority: "high",
+      jobId: "job_001",
+      clientId: "client_001"
     },
     {
       id: 2,
@@ -39,7 +44,9 @@ const ResearchAidsNotifications = () => {
       time: "30 minutes",
       isNew: true,
       icon: Calendar,
-      priority: "high"
+      priority: "high",
+      meetingLink: "https://meet.google.com/abc-defg-hij",
+      clientId: "client_002"
     },
     {
       id: 4,
@@ -49,7 +56,8 @@ const ResearchAidsNotifications = () => {
       time: "1 hour ago",
       isNew: true,
       icon: MessageSquare,
-      priority: "medium"
+      priority: "medium",
+      clientId: "client_003"
     },
     {
       id: 5,
@@ -81,7 +89,58 @@ const ResearchAidsNotifications = () => {
       icon: UserCheck,
       priority: "low"
     }
-  ];
+  ]);
+
+  const handleViewJob = (jobId: string, notificationId: number) => {
+    toast({
+      title: "Opening Job Details",
+      description: `Redirecting to job: ${jobId}`
+    });
+    
+    // Mark notification as read
+    setNotifications(prev => 
+      prev.map(n => n.id === notificationId ? { ...n, isNew: false } : n)
+    );
+  };
+
+  const handleJoinMeeting = (meetingLink: string, notificationId: number) => {
+    toast({
+      title: "Joining Meeting",
+      description: "Opening meeting in new window"
+    });
+    
+    // Open meeting link
+    window.open(meetingLink, '_blank');
+    
+    // Mark notification as read
+    setNotifications(prev => 
+      prev.map(n => n.id === notificationId ? { ...n, isNew: false } : n)
+    );
+  };
+
+  const handleReply = (clientId: string, notificationId: number) => {
+    if (!replyText.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a reply message",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Reply Sent",
+      description: `Your message has been sent to the client`
+    });
+    
+    setReplyText("");
+    setSelectedNotification(null);
+    
+    // Mark notification as read
+    setNotifications(prev => 
+      prev.map(n => n.id === notificationId ? { ...n, isNew: false } : n)
+    );
+  };
 
   const getNotificationColor = (type: string) => {
     switch (type) {
@@ -124,6 +183,9 @@ const ResearchAidsNotifications = () => {
   });
 
   const handleMarkAsRead = (id: number) => {
+    setNotifications(prev => 
+      prev.map(n => n.id === id ? { ...n, isNew: false } : n)
+    );
     toast({
       title: "Marked as Read",
       description: "Notification has been marked as read"
@@ -131,6 +193,9 @@ const ResearchAidsNotifications = () => {
   };
 
   const handleMarkAllAsRead = () => {
+    setNotifications(prev => 
+      prev.map(n => ({ ...n, isNew: false }))
+    );
     toast({
       title: "All Notifications Read",
       description: "All notifications have been marked as read"
@@ -157,7 +222,6 @@ const ResearchAidsNotifications = () => {
         </Button>
       </div>
 
-      {/* Filter Buttons */}
       <div className="flex flex-wrap gap-2">
         <Button 
           variant={filter === "all" ? "default" : "outline"} 
@@ -240,18 +304,61 @@ const ResearchAidsNotifications = () => {
                       Mark as Read
                     </Button>
                   )}
-                  {notification.type === "job_invitation" && (
-                    <Button size="sm">
+                  {notification.type === "job_invitation" && notification.jobId && (
+                    <Button 
+                      size="sm"
+                      onClick={() => handleViewJob(notification.jobId!, notification.id)}
+                    >
                       View Job
                     </Button>
                   )}
-                  {notification.type === "message_received" && (
-                    <Button size="sm">
-                      Reply
-                    </Button>
+                  {notification.type === "message_received" && notification.clientId && (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button 
+                          size="sm"
+                          onClick={() => setSelectedNotification(notification.id)}
+                        >
+                          Reply
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Reply to Message</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <p className="text-sm text-gray-600 mb-2">Original message:</p>
+                            <p className="text-sm italic border-l-2 border-gray-200 pl-3">{notification.message}</p>
+                          </div>
+                          <Textarea
+                            placeholder="Type your reply..."
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            rows={4}
+                          />
+                          <div className="flex space-x-2">
+                            <Button 
+                              onClick={() => handleReply(notification.clientId!, notification.id)}
+                              className="flex-1"
+                            >
+                              Send Reply
+                            </Button>
+                            <Button variant="outline" className="flex-1">
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   )}
-                  {notification.type === "appointment_reminder" && (
-                    <Button size="sm">
+                  {notification.type === "appointment_reminder" && notification.meetingLink && (
+                    <Button 
+                      size="sm"
+                      onClick={() => handleJoinMeeting(notification.meetingLink!, notification.id)}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <Video className="h-4 w-4 mr-1" />
                       Join Meeting
                     </Button>
                   )}

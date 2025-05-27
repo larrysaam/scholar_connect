@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Trash2, CreditCard, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -19,7 +19,22 @@ const ResearchAidsSettings = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [deletionReason, setDeletionReason] = useState("");
+  const [finalConfirmation, setFinalConfirmation] = useState(false);
+  const [showReasonDialog, setShowReasonDialog] = useState(false);
+  const [showFinalDialog, setShowFinalDialog] = useState(false);
   const { toast } = useToast();
+
+  const deletionReasons = [
+    "Found better opportunities elsewhere",
+    "Not enough job opportunities",
+    "Payment issues",
+    "Technical difficulties with platform",
+    "Poor client communication",
+    "Time constraints",
+    "Privacy concerns",
+    "Other"
+  ];
 
   const paymentMethods = [
     {
@@ -82,11 +97,25 @@ const ResearchAidsSettings = () => {
     });
   };
 
-  const handleDeleteAccount = () => {
-    if (deleteConfirmation !== "DELETE") {
+  const handleReasonSubmit = () => {
+    if (!deletionReason) {
       toast({
         title: "Error",
-        description: "Please type 'DELETE' to confirm account deletion",
+        description: "Please select a reason for account deletion",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setShowReasonDialog(false);
+    setShowFinalDialog(true);
+  };
+
+  const handleFinalDeleteAccount = () => {
+    if (deleteConfirmation !== "DELETE" || !finalConfirmation) {
+      toast({
+        title: "Error",
+        description: "Please type 'DELETE' and confirm your decision",
         variant: "destructive"
       });
       return;
@@ -97,7 +126,11 @@ const ResearchAidsSettings = () => {
       description: "Your account deletion request has been submitted. This process may take 24-48 hours.",
       variant: "destructive"
     });
+    
     setDeleteConfirmation("");
+    setDeletionReason("");
+    setFinalConfirmation(false);
+    setShowFinalDialog(false);
   };
 
   const handleAddPaymentMethod = () => {
@@ -118,7 +151,6 @@ const ResearchAidsSettings = () => {
     <div className="space-y-8 max-w-4xl">
       <h2 className="text-2xl font-bold">Account Settings</h2>
       
-      {/* Account Information */}
       <Card>
         <CardHeader>
           <CardTitle>Account Information</CardTitle>
@@ -145,7 +177,6 @@ const ResearchAidsSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Notification Settings */}
       <Card>
         <CardHeader>
           <CardTitle>Notification Preferences</CardTitle>
@@ -176,7 +207,6 @@ const ResearchAidsSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Privacy Settings */}
       <Card>
         <CardHeader>
           <CardTitle>Privacy Settings</CardTitle>
@@ -196,7 +226,6 @@ const ResearchAidsSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Payment Methods */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
@@ -269,7 +298,6 @@ const ResearchAidsSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Password Change */}
       <Card>
         <CardHeader>
           <CardTitle>Change Password</CardTitle>
@@ -311,7 +339,7 @@ const ResearchAidsSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Danger Zone */}
+      {/* Danger Zone with Enhanced Delete Process */}
       <Card className="border-red-200">
         <CardHeader>
           <CardTitle className="text-red-600">Danger Zone</CardTitle>
@@ -323,7 +351,8 @@ const ResearchAidsSettings = () => {
               <p className="text-sm text-gray-600 mb-3">
                 Once you delete your account, there is no going back. This action cannot be undone.
               </p>
-              <Dialog>
+              
+              <Dialog open={showReasonDialog} onOpenChange={setShowReasonDialog}>
                 <DialogTrigger asChild>
                   <Button variant="destructive">
                     <Trash2 className="h-4 w-4 mr-2" />
@@ -332,40 +361,117 @@ const ResearchAidsSettings = () => {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle className="text-red-600">Delete Account</DialogTitle>
+                    <DialogTitle className="text-red-600">Why are you leaving?</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <p className="text-sm text-gray-600">
+                      Help us understand why you want to delete your account. Your feedback will help us improve ScholarConnect.
+                    </p>
+                    
+                    <div>
+                      <Label>Reason for leaving</Label>
+                      <Select value={deletionReason} onValueChange={setDeletionReason}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a reason" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {deletionReasons.map((reason) => (
+                            <SelectItem key={reason} value={reason}>
+                              {reason}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label>Additional feedback (optional)</Label>
+                      <Textarea
+                        placeholder="Tell us more about your experience or how we could improve..."
+                        rows={3}
+                      />
+                    </div>
+                    
+                    <div className="flex space-x-2">
+                      <Button onClick={handleReasonSubmit} variant="destructive" className="flex-1">
+                        Continue with Deletion
+                      </Button>
+                      <Button variant="outline" onClick={() => setShowReasonDialog(false)} className="flex-1">
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={showFinalDialog} onOpenChange={setShowFinalDialog}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="text-red-600">Final Confirmation</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div className="p-4 bg-red-50 border border-red-200 rounded">
                       <p className="text-sm text-red-800">
-                        <strong>Warning:</strong> This action is irreversible. All your data, including:
+                        <strong>Warning:</strong> This action is irreversible. All your data will be permanently deleted:
                       </p>
                       <ul className="list-disc list-inside text-sm text-red-800 mt-2">
-                        <li>Profile information</li>
-                        <li>Project history</li>
-                        <li>Messages and communications</li>
-                        <li>Earnings history</li>
+                        <li>Profile information and work history</li>
+                        <li>All project communications</li>
+                        <li>Earnings and payment history</li>
+                        <li>Ratings and reviews</li>
+                        <li>Portfolio and uploaded documents</li>
                       </ul>
-                      <p className="text-sm text-red-800 mt-2">will be permanently deleted.</p>
                     </div>
-                    <div>
-                      <Label htmlFor="delete-confirmation">
-                        Type "DELETE" to confirm account deletion
-                      </Label>
-                      <Input
-                        id="delete-confirmation"
-                        value={deleteConfirmation}
-                        onChange={(e) => setDeleteConfirmation(e.target.value)}
-                        placeholder="Type DELETE to confirm"
-                      />
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor="delete-confirmation">
+                          Type "DELETE" to confirm (case sensitive)
+                        </Label>
+                        <Input
+                          id="delete-confirmation"
+                          value={deleteConfirmation}
+                          onChange={(e) => setDeleteConfirmation(e.target.value)}
+                          placeholder="Type DELETE to confirm"
+                          className={deleteConfirmation === "DELETE" ? "border-red-500 bg-red-50" : ""}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="final-confirmation"
+                          checked={finalConfirmation}
+                          onChange={(e) => setFinalConfirmation(e.target.checked)}
+                          className="rounded"
+                        />
+                        <Label htmlFor="final-confirmation" className="text-sm">
+                          I understand that this action cannot be undone and all my data will be permanently deleted
+                        </Label>
+                      </div>
                     </div>
-                    <Button 
-                      variant="destructive" 
-                      onClick={handleDeleteAccount}
-                      className="w-full"
-                      disabled={deleteConfirmation !== "DELETE"}
-                    >
-                      I understand, delete my account permanently
-                    </Button>
+                    
+                    <div className="flex space-x-2">
+                      <Button 
+                        variant="destructive" 
+                        onClick={handleFinalDeleteAccount}
+                        className="flex-1"
+                        disabled={deleteConfirmation !== "DELETE" || !finalConfirmation}
+                      >
+                        Permanently Delete Account
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          setShowFinalDialog(false);
+                          setDeleteConfirmation("");
+                          setFinalConfirmation(false);
+                        }} 
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
                 </DialogContent>
               </Dialog>
