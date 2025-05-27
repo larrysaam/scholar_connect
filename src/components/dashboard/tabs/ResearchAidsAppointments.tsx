@@ -1,12 +1,20 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Calendar, Clock, MapPin, Video, Phone, MessageSquare } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const ResearchAidsAppointments = () => {
   const [view, setView] = useState("upcoming");
+  const [changeRequestMessage, setChangeRequestMessage] = useState("");
+  const [clientMessage, setClientMessage] = useState("");
+  const { toast } = useToast();
 
   const appointments = [
     {
@@ -90,6 +98,70 @@ const ResearchAidsAppointments = () => {
     }
   };
 
+  const handleJoinMeeting = (meetingLink: string) => {
+    window.open(meetingLink, '_blank');
+    toast({
+      title: "Joining Meeting",
+      description: "Opening meeting in new tab"
+    });
+  };
+
+  const handleConfirm = (appointmentId: number) => {
+    toast({
+      title: "Appointment Confirmed",
+      description: "The appointment has been confirmed successfully"
+    });
+  };
+
+  const handleRequestChanges = (appointmentId: number) => {
+    if (!changeRequestMessage.trim()) {
+      toast({
+        title: "Error",
+        description: "Please provide a message for the change request",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Change Request Sent",
+      description: "Your change request has been sent to the client"
+    });
+    setChangeRequestMessage("");
+  };
+
+  const handleMessageClient = (clientName: string) => {
+    if (!clientMessage.trim()) {
+      toast({
+        title: "Error",
+        description: "Please write a message",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Message Sent",
+      description: `Your message has been sent to ${clientName}`
+    });
+    setClientMessage("");
+  };
+
+  const handleAddToCalendar = (appointment: any) => {
+    // Create calendar event URL (Google Calendar format)
+    const startDate = new Date(`${appointment.date}T${appointment.time}`);
+    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // Add 1 hour
+    
+    const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(appointment.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(appointment.description)}`;
+    
+    window.open(calendarUrl, '_blank');
+    
+    toast({
+      title: "Calendar Event",
+      description: "Opening calendar to add event"
+    });
+  };
+
   const currentAppointments = view === "upcoming" ? appointments : pastAppointments;
 
   return (
@@ -163,28 +235,82 @@ const ResearchAidsAppointments = () => {
                 </div>
               )}
 
-              <div className="flex space-x-2">
+              <div className="flex flex-wrap gap-2">
                 {appointment.status === "confirmed" && view === "upcoming" && (
                   <>
-                    {appointment.type === "video" && (
-                      <Button size="sm">
+                    {appointment.type === "video" && appointment.meetingLink && (
+                      <Button size="sm" onClick={() => handleJoinMeeting(appointment.meetingLink)}>
                         <Video className="h-4 w-4 mr-1" />
                         Join Meeting
                       </Button>
                     )}
-                    <Button variant="outline" size="sm">
-                      <MessageSquare className="h-4 w-4 mr-1" />
-                      Message Client
-                    </Button>
+                    
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <MessageSquare className="h-4 w-4 mr-1" />
+                          Message Client
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Message {appointment.client}</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="clientMessage">Message</Label>
+                            <Textarea
+                              id="clientMessage"
+                              placeholder="Write your message..."
+                              value={clientMessage}
+                              onChange={(e) => setClientMessage(e.target.value)}
+                              rows={4}
+                            />
+                          </div>
+                          <Button onClick={() => handleMessageClient(appointment.client)} className="w-full">
+                            Send Message
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </>
                 )}
+                
                 {appointment.status === "pending" && (
                   <>
-                    <Button size="sm">Confirm</Button>
-                    <Button variant="outline" size="sm">Request Changes</Button>
+                    <Button size="sm" onClick={() => handleConfirm(appointment.id)}>
+                      Confirm
+                    </Button>
+                    
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">Request Changes</Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Request Changes</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="changeRequest">Change Request</Label>
+                            <Textarea
+                              id="changeRequest"
+                              placeholder="Describe what changes you need..."
+                              value={changeRequestMessage}
+                              onChange={(e) => setChangeRequestMessage(e.target.value)}
+                              rows={4}
+                            />
+                          </div>
+                          <Button onClick={() => handleRequestChanges(appointment.id)} className="w-full">
+                            Send Request
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </>
                 )}
-                <Button variant="ghost" size="sm">
+                
+                <Button variant="ghost" size="sm" onClick={() => handleAddToCalendar(appointment)}>
                   <Calendar className="h-4 w-4 mr-1" />
                   Add to Calendar
                 </Button>

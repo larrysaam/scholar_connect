@@ -3,103 +3,140 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { 
-  DollarSign, 
-  TrendingUp, 
-  Calendar, 
-  Download,
-  CreditCard,
-  Wallet,
-  ArrowUpRight,
-  ArrowDownRight
-} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DollarSign, Download, CreditCard, Plus, Edit, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const ResearchAidsPaymentsEarnings = () => {
-  const [timeframe, setTimeframe] = useState("this-month");
+  const [activeTab, setActiveTab] = useState("earnings");
+  const [withdrawalAmount, setWithdrawalAmount] = useState("");
+  const [newSkill, setNewSkill] = useState("");
+  const { toast } = useToast();
 
-  const earningsData = {
-    total: 145750,
-    thisMonth: 45750,
-    pending: 25000,
-    completed: 120750,
-    growth: 15.2
-  };
-
-  const recentTransactions = [
+  const earnings = [
     {
       id: 1,
       project: "Statistical Analysis Project",
       client: "Dr. Sarah Johnson",
-      amount: 25000,
-      status: "completed",
+      amount: "25,000 XAF",
+      status: "paid",
       date: "2024-01-25",
-      type: "payment"
+      type: "completed_project"
     },
     {
       id: 2,
-      project: "Literature Review - Chapter 1",
+      project: "Literature Review",
       client: "Prof. Michael Chen",
-      amount: 15000,
+      amount: "15,000 XAF", 
       status: "pending",
       date: "2024-01-28",
-      type: "payment"
+      type: "milestone_payment"
     },
     {
       id: 3,
-      project: "Platform Fee",
-      client: "ScholarConnect",
-      amount: -2500,
-      status: "completed",
-      date: "2024-01-25",
-      type: "fee"
-    },
-    {
-      id: 4,
-      project: "Data Collection Protocol",
+      project: "Data Collection Planning",
       client: "Dr. Marie Dubois",
-      amount: 30000,
-      status: "completed",
+      amount: "8,000 XAF",
+      status: "released",
       date: "2024-01-20",
-      type: "payment"
+      type: "consultation"
     }
   ];
 
   const paymentMethods = [
     {
       id: 1,
-      type: "Mobile Money",
-      details: "MTN (***678)",
+      type: "mobile_money",
+      provider: "MTN Mobile Money",
+      number: "**** **** 1234",
       isDefault: true
     },
     {
       id: 2,
-      type: "Bank Account",
-      details: "UBA (***1234)",
+      type: "bank_account",
+      provider: "Afriland First Bank",
+      number: "**** **** 5678",
       isDefault: false
     }
   ];
 
+  const skills = [
+    "Statistical Analysis",
+    "SPSS",
+    "Literature Review",
+    "Data Collection",
+    "Research Writing",
+    "Academic Writing"
+  ];
+
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "completed":
-        return <Badge className="bg-green-600">Completed</Badge>;
+      case "paid":
+        return <Badge className="bg-green-600">Paid</Badge>;
       case "pending":
-        return <Badge variant="secondary">Pending</Badge>;
-      case "processing":
-        return <Badge className="bg-blue-600">Processing</Badge>;
+        return <Badge className="bg-yellow-600">Pending</Badge>;
+      case "released":
+        return <Badge className="bg-blue-600">Released</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
 
-  const getTransactionIcon = (type: string, amount: number) => {
-    if (amount > 0) {
-      return <ArrowDownRight className="h-4 w-4 text-green-600" />;
-    } else {
-      return <ArrowUpRight className="h-4 w-4 text-red-600" />;
-    }
+  const handleExport = () => {
+    toast({
+      title: "Export Started",
+      description: "Your earnings report is being generated"
+    });
   };
+
+  const handleRequestWithdrawal = () => {
+    if (!withdrawalAmount.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter withdrawal amount",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Withdrawal Requested",
+      description: `Withdrawal of ${withdrawalAmount} XAF has been requested`
+    });
+    setWithdrawalAmount("");
+  };
+
+  const handleAddSkill = () => {
+    if (!newSkill.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a skill",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Skill Added",
+      description: `${newSkill} has been added to your skills`
+    });
+    setNewSkill("");
+  };
+
+  const handleDeleteSkill = (skill: string) => {
+    toast({
+      title: "Skill Removed",
+      description: `${skill} has been removed from your skills`
+    });
+  };
+
+  const totalEarnings = earnings.reduce((sum, earning) => {
+    const amount = parseInt(earning.amount.replace(/[^\d]/g, ''));
+    return sum + amount;
+  }, 0);
 
   return (
     <div className="space-y-6">
@@ -107,163 +144,276 @@ const ResearchAidsPaymentsEarnings = () => {
         <h2 className="text-2xl font-bold">Payments & Earnings</h2>
         <div className="flex space-x-2">
           <Button 
-            variant={timeframe === "this-month" ? "default" : "outline"} 
-            onClick={() => setTimeframe("this-month")}
+            variant={activeTab === "earnings" ? "default" : "outline"} 
+            onClick={() => setActiveTab("earnings")}
           >
-            This Month
+            Earnings
           </Button>
           <Button 
-            variant={timeframe === "all-time" ? "default" : "outline"} 
-            onClick={() => setTimeframe("all-time")}
+            variant={activeTab === "payments" ? "default" : "outline"} 
+            onClick={() => setActiveTab("payments")}
           >
-            All Time
+            Payment Methods
+          </Button>
+          <Button 
+            variant={activeTab === "skills" ? "default" : "outline"} 
+            onClick={() => setActiveTab("skills")}
+          >
+            Skills
           </Button>
         </div>
       </div>
 
-      {/* Earnings Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-3">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <Wallet className="h-6 w-6 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Total Earnings</p>
-                <p className="text-2xl font-bold">{earningsData.total.toLocaleString()} XAF</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {activeTab === "earnings" && (
+        <div className="space-y-6">
+          {/* Earnings Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Total Earnings</p>
+                    <p className="text-2xl font-bold">{totalEarnings.toLocaleString()} XAF</p>
+                  </div>
+                  <DollarSign className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Available Balance</p>
+                    <p className="text-2xl font-bold">18,000 XAF</p>
+                  </div>
+                  <DollarSign className="h-8 w-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">This Month</p>
+                    <p className="text-2xl font-bold">25,000 XAF</p>
+                  </div>
+                  <DollarSign className="h-8 w-8 text-purple-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-3">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <Calendar className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">This Month</p>
-                <p className="text-2xl font-bold">{earningsData.thisMonth.toLocaleString()} XAF</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Actions */}
+          <div className="flex space-x-4">
+            <Button onClick={handleExport}>
+              <Download className="h-4 w-4 mr-2" />
+              Export Report
+            </Button>
+            
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Request Withdrawal
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Request Withdrawal</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="amount">Amount (XAF)</Label>
+                    <Input
+                      id="amount"
+                      placeholder="Enter amount"
+                      value={withdrawalAmount}
+                      onChange={(e) => setWithdrawalAmount(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label>Payment Method</Label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select payment method" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {paymentMethods.map((method) => (
+                          <SelectItem key={method.id} value={method.id.toString()}>
+                            {method.provider} - {method.number}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button onClick={handleRequestWithdrawal} className="w-full">
+                    Request Withdrawal
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-3">
-              <div className="p-3 bg-yellow-100 rounded-lg">
-                <DollarSign className="h-6 w-6 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Pending</p>
-                <p className="text-2xl font-bold">{earningsData.pending.toLocaleString()} XAF</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Earnings List */}
+          <div className="space-y-4">
+            {earnings.map((earning) => (
+              <Card key={earning.id}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">{earning.project}</h4>
+                      <p className="text-sm text-gray-600">Client: {earning.client}</p>
+                      <p className="text-xs text-gray-500">{earning.date}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-lg">{earning.amount}</p>
+                      {getStatusBadge(earning.status)}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-3">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Growth</p>
-                <p className="text-2xl font-bold">+{earningsData.growth}%</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Transactions */}
-      <Card>
-        <CardHeader>
+      {activeTab === "payments" && (
+        <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <CardTitle>Recent Transactions</CardTitle>
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-1" />
-              Export
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {recentTransactions.map((transaction) => (
-              <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center space-x-3">
-                  {getTransactionIcon(transaction.type, transaction.amount)}
+            <h3 className="text-lg font-semibold">Payment Methods</h3>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Payment Method
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add Payment Method</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
                   <div>
-                    <h4 className="font-medium">{transaction.project}</h4>
-                    <p className="text-sm text-gray-600">{transaction.client}</p>
-                    <p className="text-xs text-gray-500">{transaction.date}</p>
+                    <Label>Payment Type</Label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select payment type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="mobile_money">Mobile Money</SelectItem>
+                        <SelectItem value="bank_account">Bank Account</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
+                  <div>
+                    <Label htmlFor="provider">Provider</Label>
+                    <Input
+                      id="provider"
+                      placeholder="Enter provider name"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="account">Account Number</Label>
+                    <Input
+                      id="account"
+                      placeholder="Enter account number"
+                    />
+                  </div>
+                  <Button className="w-full">
+                    Add Payment Method
+                  </Button>
                 </div>
-                <div className="text-right">
-                  <p className={`font-semibold ${transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {transaction.amount > 0 ? '+' : ''}{transaction.amount.toLocaleString()} XAF
-                  </p>
-                  {getStatusBadge(transaction.status)}
-                </div>
-              </div>
-            ))}
+              </DialogContent>
+            </Dialog>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Payment Methods */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment Methods</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {paymentMethods.map((method) => (
-              <div key={method.id} className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <CreditCard className="h-5 w-5 text-gray-500" />
-                  <div>
-                    <p className="font-medium">{method.type}</p>
-                    <p className="text-sm text-gray-600">{method.details}</p>
+              <Card key={method.id}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <CreditCard className="h-8 w-8 text-gray-600" />
+                      <div>
+                        <h4 className="font-medium">{method.provider}</h4>
+                        <p className="text-sm text-gray-600">{method.number}</p>
+                        {method.isDefault && (
+                          <Badge variant="outline" className="text-xs">Default</Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button variant="outline" size="sm">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" className="text-red-600">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {method.isDefault && <Badge variant="outline">Default</Badge>}
-                  <Button variant="ghost" size="sm">Edit</Button>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
-          <Button variant="outline" className="w-full mt-4">
-            Add Payment Method
-          </Button>
-        </CardContent>
-      </Card>
+        </div>
+      )}
 
-      {/* Withdraw Earnings */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Withdraw Earnings</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="p-4 bg-green-50 rounded-lg">
-              <p className="text-sm text-gray-600">Available for withdrawal</p>
-              <p className="text-2xl font-bold text-green-600">{earningsData.completed.toLocaleString()} XAF</p>
-            </div>
-            <Button className="w-full">
-              Request Withdrawal
-            </Button>
-            <p className="text-xs text-gray-500 text-center">
-              Withdrawals are processed within 1-3 business days
-            </p>
+      {activeTab === "skills" && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Your Skills</h3>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Skill
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Skill</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="new-skill">Skill Name</Label>
+                    <Input
+                      id="new-skill"
+                      placeholder="Enter skill name"
+                      value={newSkill}
+                      onChange={(e) => setNewSkill(e.target.value)}
+                    />
+                  </div>
+                  <Button onClick={handleAddSkill} className="w-full">
+                    Add Skill
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
-        </CardContent>
-      </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {skills.map((skill, index) => (
+              <Card key={index}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{skill}</span>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleDeleteSkill(skill)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

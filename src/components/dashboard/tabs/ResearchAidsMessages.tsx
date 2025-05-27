@@ -6,12 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, Send, Paperclip, MoreVertical } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const ResearchAidsMessages = () => {
   const [selectedConversation, setSelectedConversation] = useState(1);
   const [newMessage, setNewMessage] = useState("");
-
-  const conversations = [
+  const [conversations, setConversations] = useState([
     {
       id: 1,
       name: "Dr. Sarah Johnson",
@@ -39,9 +39,9 @@ const ResearchAidsMessages = () => {
       avatar: "/placeholder-avatar.jpg",
       project: "Agricultural Study"
     }
-  ];
+  ]);
 
-  const messages = [
+  const [messages, setMessages] = useState([
     {
       id: 1,
       sender: "Dr. Sarah Johnson",
@@ -77,13 +77,46 @@ const ResearchAidsMessages = () => {
       time: "2:18 PM",
       isMe: false
     }
-  ];
+  ]);
+
+  const { toast } = useToast();
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
-      // Here you would typically send the message to your backend
+      const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      // Add new message to messages
+      const newMsg = {
+        id: messages.length + 1,
+        sender: "You",
+        content: newMessage,
+        time: currentTime,
+        isMe: true
+      };
+      
+      setMessages([...messages, newMsg]);
+      
+      // Update conversation last message
+      setConversations(conversations.map(conv => 
+        conv.id === selectedConversation 
+          ? { ...conv, lastMessage: newMessage, time: "now" }
+          : conv
+      ));
+      
       setNewMessage("");
+      
+      toast({
+        title: "Message sent",
+        description: "Your message has been delivered"
+      });
     }
+  };
+
+  const handleFileAttach = () => {
+    toast({
+      title: "File attachment",
+      description: "File attachment feature will be implemented"
+    });
   };
 
   return (
@@ -179,7 +212,7 @@ const ResearchAidsMessages = () => {
         {/* Message Input */}
         <div className="p-4 border-t bg-white">
           <div className="flex space-x-2">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={handleFileAttach}>
               <Paperclip className="h-4 w-4" />
             </Button>
             <Input

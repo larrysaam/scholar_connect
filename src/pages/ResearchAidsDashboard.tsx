@@ -13,6 +13,11 @@ import ResearchAidsFilesDeliverables from "@/components/dashboard/tabs/ResearchA
 import ResearchAidsPaymentsEarnings from "@/components/dashboard/tabs/ResearchAidsPaymentsEarnings";
 import ResearchAidsProfileRatings from "@/components/dashboard/tabs/ResearchAidsProfileRatings";
 import ResearchAidsSettings from "@/components/dashboard/tabs/ResearchAidsSettings";
+import ResearchAidsPreviousWorks from "@/components/dashboard/tabs/ResearchAidsPreviousWorks";
+import ResearchAidsNotifications from "@/components/dashboard/tabs/ResearchAidsNotifications";
+import DiscussionTab from "@/components/dashboard/tabs/DiscussionTab";
+import QualityAssuranceAndFeedbackTab from "@/components/dashboard/tabs/QualityAssuranceAndFeedbackTab";
+import VerificationTab from "@/components/dashboard/tabs/VerificationTab";
 
 const ResearchAidsDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -46,6 +51,16 @@ const ResearchAidsDashboard = () => {
         return <ResearchAidsPaymentsEarnings />;
       case "profile-ratings":
         return <ResearchAidsProfileRatings />;
+      case "previous-works":
+        return <ResearchAidsPreviousWorks />;
+      case "notifications":
+        return <ResearchAidsNotifications />;
+      case "discussion":
+        return <DiscussionTab />;
+      case "quality-feedback":
+        return <QualityAssuranceAndFeedbackTab />;
+      case "verification":
+        return <VerificationTab />;
       case "settings":
         return <ResearchAidsSettings />;
       default:
