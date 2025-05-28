@@ -10,7 +10,6 @@ import PersonalDetailsSection from "@/components/register/PersonalDetailsSection
 import AcademicInterestsSection from "@/components/register/AcademicInterestsSection";
 import AccountCreationSection from "@/components/register/AccountCreationSection";
 import AgreementSection from "@/components/register/AgreementSection";
-import StudentThankYouMessage from "@/components/register/StudentThankYouMessage";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -33,8 +32,6 @@ const Register = () => {
     confirmPassword: "",
     agreedToTerms: false
   });
-
-  const [showThankYou, setShowThankYou] = useState(false);
 
   const researchAreaOptions = [
     "Education", "Health Sciences", "Engineering", "Social Sciences", "Natural Sciences",
@@ -88,7 +85,6 @@ const Register = () => {
     try {
       console.log('Attempting to sign up student with role: student');
       
-      // First, try to sign up the user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email.toLowerCase().trim(),
         password: formData.password,
@@ -113,12 +109,10 @@ const Register = () => {
       console.log('Auth successful, user created:', authData.user?.id);
 
       if (authData.user) {
-        // Wait for the trigger to create the user profile
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         console.log('Updating user profile...');
         
-        // Update the user profile with additional data
         const { error: updateError } = await supabase
           .from('users')
           .update({
@@ -144,10 +138,11 @@ const Register = () => {
 
         toast({
           title: "Registration Successful!",
-          description: "Please check your email to verify your account."
+          description: "Please check your email to verify your account, then sign in to access your dashboard."
         });
         
-        setShowThankYou(true);
+        // Redirect to sign-in page
+        navigate("/auth");
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -160,10 +155,6 @@ const Register = () => {
       setIsLoading(false);
     }
   };
-
-  if (showThankYou) {
-    return <StudentThankYouMessage />;
-  }
 
   return (
     <div className="min-h-screen flex flex-col">

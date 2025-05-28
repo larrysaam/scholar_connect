@@ -13,18 +13,29 @@ const Auth = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Login form state
   const [loginData, setLoginData] = useState({
     email: "",
     password: ""
   });
 
-  // Check if user is already logged in
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        navigate("/dashboard");
+        // Get user profile to determine role and redirect appropriately
+        const { data: profile } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if (profile?.role === 'expert') {
+          navigate("/researcher-dashboard");
+        } else if (profile?.role === 'aid') {
+          navigate("/research-aids-dashboard");
+        } else {
+          navigate("/dashboard");
+        }
       }
     };
     checkAuth();
@@ -36,7 +47,7 @@ const Auth = () => {
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: loginData.email,
+        email: loginData.email.toLowerCase().trim(),
         password: loginData.password,
       });
 

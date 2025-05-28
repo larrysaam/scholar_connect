@@ -10,7 +10,6 @@ import PersonalInfoSection from "@/components/signup/research-aid/PersonalInfoSe
 import ExpertiseSection from "@/components/signup/research-aid/ExpertiseSection";
 import CredentialsSection from "@/components/signup/research-aid/CredentialsSection";
 import AgreementSection from "@/components/signup/research-aid/AgreementSection";
-import ThankYouMessage from "@/components/signup/research-aid/ThankYouMessage";
 
 const ResearchAidSignup = () => {
   const navigate = useNavigate();
@@ -35,7 +34,6 @@ const ResearchAidSignup = () => {
 
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [certFile, setCertFile] = useState<File | null>(null);
-  const [showThankYou, setShowThankYou] = useState(false);
 
   const availableLanguages = [
     "English", "French", "Spanish", "Arabic", "Portuguese", "German", "Swahili", "Other"
@@ -118,7 +116,6 @@ const ResearchAidSignup = () => {
     try {
       console.log('Attempting to sign up research aid with role: aid');
       
-      // First, try to sign up the user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email.toLowerCase().trim(),
         password: formData.password,
@@ -143,12 +140,10 @@ const ResearchAidSignup = () => {
       console.log('Auth successful, user created:', authData.user?.id);
 
       if (authData.user) {
-        // Wait for the trigger to create the user profile
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         console.log('Updating user profile...');
         
-        // Update the user profile with additional data
         const { error: updateError } = await supabase
           .from('users')
           .update({
@@ -173,10 +168,11 @@ const ResearchAidSignup = () => {
 
         toast({
           title: "Registration Successful!",
-          description: "Please check your email to verify your account."
+          description: "Please check your email to verify your account, then sign in to access your dashboard."
         });
         
-        setShowThankYou(true);
+        // Redirect to sign-in page
+        navigate("/auth");
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -189,10 +185,6 @@ const ResearchAidSignup = () => {
       setIsLoading(false);
     }
   };
-
-  if (showThankYou) {
-    return <ThankYouMessage />;
-  }
 
   return (
     <div className="min-h-screen flex flex-col">
