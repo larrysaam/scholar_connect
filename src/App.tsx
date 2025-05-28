@@ -1,71 +1,66 @@
 
-import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index";
-import About from "./pages/AboutUs";
-import Contact from "./pages/Contact";
-import HowItWorks from "./pages/HowItWorks";
-import Register from "./pages/Register";
-import Researchers from "./pages/Researchers";
-import ResearchAids from "./pages/ResearchAids";
-import ResearcherProfile from "./pages/ResearcherProfile";
-import ResearcherDashboard from "./pages/ResearcherDashboard";
-import ResearchAidsDashboard from "./pages/ResearchAidsDashboard";
-import ResearchAidSignup from "./pages/ResearchAidSignup";
-import ResearchAideSignup from "./pages/ResearchAideSignup";
-import Dashboard from "./pages/Dashboard";
-import AdminDashboard from "./pages/AdminDashboard";
-import Blogs from "./pages/Blogs";
-import Partnerships from "./pages/Partnerships";
-import JobBoard from "./pages/JobBoard";
-import { AuthProvider } from "./hooks/useAuth";
-import { LanguageProvider } from "./contexts/LanguageContext";
-import SecureAuth from "@/pages/SecureAuth";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const queryClient = new QueryClient();
 
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/services" element={<HowItWorks />} />
-                <Route path="/how-it-works" element={<HowItWorks />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/researchers" element={<Researchers />} />
-                <Route path="/research-aids" element={<ResearchAids />} />
-                <Route path="/researcher/:id" element={<ResearcherProfile />} />
-                <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
-                <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/researcher-dashboard" element={<ResearcherDashboard />} />
-                <Route path="/research-aids-dashboard" element={<ResearchAidsDashboard />} />
-                <Route path="/admin-dashboard" element={<AdminDashboard />} />
-                <Route path="/partnerships" element={<Partnerships />} />
-                <Route path="/blogs" element={<Blogs />} />
-                <Route path="/job-board" element={<JobBoard />} />
-                
-                {/* Replace the existing auth route with secure version */}
-                <Route path="/auth" element={<SecureAuth />} />
-                <Route path="/secure-auth" element={<SecureAuth />} />
-                
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </AuthProvider>
-      </LanguageProvider>
-    </QueryClientProvider>
-  );
-}
+const Index = lazy(() => import("./pages/Index"));
+const SecureAuth = lazy(() => import("./pages/SecureAuth"));
+const Register = lazy(() => import("./pages/Register"));
+const ResearchAideSignup = lazy(() => import("./pages/ResearchAideSignup"));
+const ResearchAidSignup = lazy(() => import("./pages/ResearchAidSignup"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const ResearcherDashboard = lazy(() => import("./pages/ResearcherDashboard"));
+const ResearchAidsDashboard = lazy(() => import("./pages/ResearchAidsDashboard"));
+const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Suspense fallback={<LoadingSpinner size="lg" />}>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<SecureAuth />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
+            <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute requiredRole="student">
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/researcher-dashboard" 
+              element={
+                <ProtectedRoute requiredRole="expert">
+                  <ResearcherDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/research-aids-dashboard" 
+              element={
+                <ProtectedRoute requiredRole="aid">
+                  <ResearchAidsDashboard />
+                </ProtectedRoute>
+              } 
+            />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;

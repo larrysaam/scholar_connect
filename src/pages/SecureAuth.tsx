@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
 import { useSecureAuth } from "@/hooks/useSecureAuth";
@@ -12,14 +11,33 @@ import { Shield, AlertTriangle } from "lucide-react";
 const SecureAuth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signIn, signUp, user, loading, isRateLimited } = useSecureAuth();
+  const { signIn, user, loading, isRateLimited } = useSecureAuth();
   const [isSignUp, setIsSignUp] = useState(false);
 
-  // Check if user is already logged in
+  // Check if user is already logged in and redirect based on role
   useEffect(() => {
-    if (user && !loading) {
-      navigate("/dashboard");
-    }
+    const checkAuthAndRedirect = async () => {
+      if (user && !loading) {
+        // Get user profile to determine role
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { data: profile } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        // Redirect based on role
+        if (profile?.role === 'expert') {
+          navigate("/researcher-dashboard");
+        } else if (profile?.role === 'aid') {
+          navigate("/research-aids-dashboard");
+        } else {
+          navigate("/dashboard");
+        }
+      }
+    };
+
+    checkAuthAndRedirect();
   }, [user, loading, navigate]);
 
   const handleSignIn = async (data: Record<string, string>, csrfToken: string) => {
@@ -32,33 +50,7 @@ const SecureAuth = () => {
         title: "Welcome back!",
         description: "Successfully logged in.",
       });
-      navigate("/dashboard");
-    }
-    
-    return result;
-  };
-
-  const handleSignUp = async (data: Record<string, string>, csrfToken: string) => {
-    console.log('CSRF Token received:', csrfToken);
-    
-    if (data.password !== data.confirmPassword) {
-      return {
-        success: false,
-        error: "Passwords do not match"
-      };
-    }
-    
-    const result = await signUp(data.email, data.password, {
-      fullName: data.fullName,
-      role: 'student'
-    });
-    
-    if (result.success) {
-      toast({
-        title: "Account created!",
-        description: "Please check your email to verify your account.",
-      });
-      setIsSignUp(false);
+      // Redirect will be handled by useEffect above
     }
     
     return result;
@@ -87,42 +79,6 @@ const SecureAuth = () => {
     }
   ];
 
-  const signUpFields = [
-    {
-      name: 'fullName',
-      label: 'Full Name',
-      type: 'text' as const,
-      required: true,
-      validation: (value: string) => {
-        if (value.length < 2) {
-          return { isValid: false, error: 'Name must be at least 2 characters' };
-        }
-        if (!/^[a-zA-Z\s]+$/.test(value)) {
-          return { isValid: false, error: 'Name must contain only letters and spaces' };
-        }
-        return { isValid: true };
-      }
-    },
-    {
-      name: 'email',
-      label: 'Email Address',
-      type: 'email' as const,
-      required: true
-    },
-    {
-      name: 'password',
-      label: 'Password',
-      type: 'password' as const,
-      required: true
-    },
-    {
-      name: 'confirmPassword',
-      label: 'Confirm Password',
-      type: 'password' as const,
-      required: true
-    }
-  ];
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
@@ -136,10 +92,10 @@ const SecureAuth = () => {
             <span className="text-2xl font-bold text-blue-600">ScholarConnect</span>
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            {isSignUp ? "Create your account" : "Welcome back"}
+            Welcome back
           </h2>
           <p className="mt-2 text-gray-600">
-            {isSignUp ? "Join our secure platform" : "Sign in to access your account"}
+            Sign in to access your account
           </p>
         </div>
 
@@ -168,40 +124,38 @@ const SecureAuth = () => {
         )}
 
         <div className="bg-white p-8 shadow rounded-lg">
-          {isSignUp ? (
-            <SecureForm
-              onSubmit={handleSignUp}
-              fields={signUpFields}
-              submitLabel="Create Account"
-            />
-          ) : (
-            <SecureForm
-              onSubmit={handleSignIn}
-              fields={signInFields}
-              submitLabel="Sign In"
-            />
-          )}
+          <SecureForm
+            onSubmit={handleSignIn}
+            fields={signInFields}
+            submitLabel="Sign In"
+          />
 
-          <div className="mt-6 text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-blue-600 hover:text-blue-500 font-medium"
-            >
-              {isSignUp 
-                ? "Already have an account? Sign in" 
-                : "Don't have an account? Sign up"
-              }
-            </button>
-          </div>
-
-          {!isSignUp && (
-            <div className="mt-4 text-center">
-              <Link to="/forgot-password" className="text-sm text-gray-600 hover:text-gray-900">
-                Forgot your password?
+          <div className="mt-6 space-y-4">
+            <div className="text-center text-sm text-gray-600">
+              Don't have an account? Choose your role:
+            </div>
+            
+            <div className="grid grid-cols-1 gap-3">
+              <Link 
+                to="/register"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md text-center text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Sign up as Student
+              </Link>
+              <Link 
+                to="/research-aide-signup"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md text-center text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Sign up as Researcher
+              </Link>
+              <Link 
+                to="/research-aid-signup"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md text-center text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Sign up as Research Aid
               </Link>
             </div>
-          )}
+          </div>
         </div>
         
         <div className="mt-6 text-center">
