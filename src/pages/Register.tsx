@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -85,9 +86,11 @@ const Register = () => {
     setIsLoading(true);
 
     try {
+      console.log('Attempting to sign up student with role: student');
+      
       // First, try to sign up the user
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
+        email: formData.email.toLowerCase().trim(),
         password: formData.password,
         options: {
           data: {
@@ -107,9 +110,13 @@ const Register = () => {
         return;
       }
 
+      console.log('Auth successful, user created:', authData.user?.id);
+
       if (authData.user) {
-        // Wait a moment for the trigger to create the user profile
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Wait for the trigger to create the user profile
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        console.log('Updating user profile...');
         
         // Update the user profile with additional data
         const { error: updateError } = await supabase
@@ -131,6 +138,8 @@ const Register = () => {
 
         if (updateError) {
           console.warn('Error updating profile (non-critical):', updateError);
+        } else {
+          console.log('Profile updated successfully');
         }
 
         toast({

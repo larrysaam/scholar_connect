@@ -269,6 +269,8 @@ export type Database = {
       payment_status: "pending" | "paid" | "released" | "refunded" | "failed"
       payment_type: "consultation" | "service" | "subscription"
       payout_method: "mobile_money" | "bank_transfer"
+      sex_type: "male" | "female"
+      study_level: "undergraduate" | "masters" | "phd" | "postdoc"
       user_role: "student" | "expert" | "aid" | "admin"
     }
     CompositeTypes: {
@@ -398,6 +400,8 @@ export const Constants = {
       payment_status: ["pending", "paid", "released", "refunded", "failed"],
       payment_type: ["consultation", "service", "subscription"],
       payout_method: ["mobile_money", "bank_transfer"],
+      sex_type: ["male", "female"],
+      study_level: ["undergraduate", "masters", "phd", "postdoc"],
       user_role: ["student", "expert", "aid", "admin"],
     },
   },
