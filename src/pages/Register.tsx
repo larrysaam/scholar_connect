@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -86,37 +85,32 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      // First, try to sign up the user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
             fullName: formData.fullName,
-            role: 'student',
-            phone_number: formData.phoneNumber,
-            country: formData.country,
-            institution: formData.institution,
-            faculty: formData.faculty,
-            study_level: formData.studyLevel,
-            sex: formData.sex,
-            date_of_birth: formData.dateOfBirth,
-            research_areas: formData.researchAreas,
-            topic_title: formData.topicTitle,
-            research_stage: formData.researchStage
+            role: 'student'
           }
         }
       });
 
-      if (error) {
+      if (authError) {
+        console.error('Auth error:', authError);
         toast({
           variant: "destructive",
           title: "Registration Failed",
-          description: error.message
+          description: authError.message
         });
         return;
       }
 
-      if (data.user) {
+      if (authData.user) {
+        // Wait a moment for the trigger to create the user profile
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         // Update the user profile with additional data
         const { error: updateError } = await supabase
           .from('users')
@@ -133,10 +127,10 @@ const Register = () => {
             topic_title: formData.topicTitle,
             research_stage: formData.researchStage
           })
-          .eq('id', data.user.id);
+          .eq('id', authData.user.id);
 
         if (updateError) {
-          console.error('Error updating profile:', updateError);
+          console.warn('Error updating profile (non-critical):', updateError);
         }
 
         toast({
