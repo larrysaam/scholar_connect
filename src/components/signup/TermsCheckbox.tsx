@@ -1,24 +1,24 @@
 
-import { Link } from "react-router-dom";
+import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface TermsCheckboxProps {
-  formData: any;
-  onInputChange: (field: string, value: boolean) => void;
+  agreedToTerms: boolean;
+  onInputChange: (field: string, value: string | boolean) => void;
 }
 
-const TermsCheckbox = ({ formData, onInputChange }: TermsCheckboxProps) => {
+const TermsCheckbox = ({ agreedToTerms, onInputChange }: TermsCheckboxProps) => {
   return (
-    <div className="flex items-start">
+    <div className="flex items-start space-x-2">
       <Checkbox 
         id="terms" 
-        checked={formData.agreedToTerms}
-        onCheckedChange={(checked) => onInputChange("agreedToTerms", checked as boolean)}
+        checked={agreedToTerms}
+        onCheckedChange={(checked) => onInputChange("agreedToTerms", checked)}
         required 
       />
-      <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
-        I agree to the <Link to="/terms" className="text-blue-600 hover:text-blue-500">Terms of Service</Link> and <Link to="/privacy" className="text-blue-600 hover:text-blue-500">Privacy Policy</Link>
-      </label>
+      <Label htmlFor="terms" className="text-sm">
+        I agree to the Terms of Service and Privacy Policy *
+      </Label>
     </div>
   );
 };

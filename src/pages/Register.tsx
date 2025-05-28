@@ -1,7 +1,9 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PersonalDetailsSection from "@/components/register/PersonalDetailsSection";
@@ -11,6 +13,9 @@ import AgreementSection from "@/components/register/AgreementSection";
 import StudentThankYouMessage from "@/components/register/StudentThankYouMessage";
 
 const Register = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -57,10 +62,100 @@ const Register = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Student signup:", formData);
-    setShowThankYou(true);
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Password Mismatch",
+        description: "Passwords do not match. Please check and try again."
+      });
+      return;
+    }
+
+    if (!formData.agreedToTerms) {
+      toast({
+        variant: "destructive",
+        title: "Terms Required",
+        description: "Please agree to the terms and conditions to continue."
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            fullName: formData.fullName,
+            role: 'student',
+            phone_number: formData.phoneNumber,
+            country: formData.country,
+            institution: formData.institution,
+            faculty: formData.faculty,
+            study_level: formData.studyLevel,
+            sex: formData.sex,
+            date_of_birth: formData.dateOfBirth,
+            research_areas: formData.researchAreas,
+            topic_title: formData.topicTitle,
+            research_stage: formData.researchStage
+          }
+        }
+      });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Registration Failed",
+          description: error.message
+        });
+        return;
+      }
+
+      if (data.user) {
+        // Update the user profile with additional data
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({
+            name: formData.fullName,
+            phone_number: formData.phoneNumber,
+            country: formData.country,
+            institution: formData.institution,
+            faculty: formData.faculty,
+            study_level: formData.studyLevel,
+            sex: formData.sex,
+            date_of_birth: formData.dateOfBirth || null,
+            research_areas: formData.researchAreas,
+            topic_title: formData.topicTitle,
+            research_stage: formData.researchStage
+          })
+          .eq('id', data.user.id);
+
+        if (updateError) {
+          console.error('Error updating profile:', updateError);
+        }
+
+        toast({
+          title: "Registration Successful!",
+          description: "Please check your email to verify your account."
+        });
+        
+        setShowThankYou(true);
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: "An unexpected error occurred. Please try again."
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (showThankYou) {
@@ -120,6 +215,8 @@ const Register = () => {
                   <AgreementSection
                     agreedToTerms={formData.agreedToTerms}
                     onInputChange={handleInputChange}
+                    onSubmit={handleSubmit}
+                    isLoading={isLoading}
                   />
                 </form>
               </CardContent>
