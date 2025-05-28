@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,6 +63,22 @@ const ResearchAideSignup = () => {
     try {
       console.log('Attempting to sign up researcher with role: expert');
       
+      // Check network connectivity first
+      try {
+        await fetch('https://aigusgidjcfkhcmsghmn.supabase.co/auth/v1/health', { 
+          method: 'GET',
+          signal: AbortSignal.timeout(5000)
+        });
+      } catch (networkError) {
+        console.error('Network connectivity check failed:', networkError);
+        toast({
+          variant: "destructive",
+          title: "Connection Error",
+          description: "Unable to connect to our servers. Please check your internet connection and try again."
+        });
+        return;
+      }
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email.toLowerCase().trim(),
         password: formData.password,
@@ -77,10 +92,19 @@ const ResearchAideSignup = () => {
 
       if (authError) {
         console.error('Auth error:', authError);
+        
+        // Handle specific error types
+        let errorMessage = authError.message;
+        if (authError.message.includes('fetch')) {
+          errorMessage = "Network connection failed. Please check your internet connection and try again.";
+        } else if (authError.message.includes('email')) {
+          errorMessage = "This email address is already registered. Please use a different email or try signing in.";
+        }
+        
         toast({
           variant: "destructive",
           title: "Registration Failed",
-          description: authError.message
+          description: errorMessage
         });
         return;
       }
@@ -88,22 +112,27 @@ const ResearchAideSignup = () => {
       console.log('Auth successful, user created:', authData.user?.id);
 
       if (authData.user) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Small delay to ensure user creation is processed
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         console.log('Updating user profile...');
         
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({
-            name: `${formData.firstName} ${formData.lastName}`,
-            phone_number: formData.phone
-          })
-          .eq('id', authData.user.id);
+        try {
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({
+              name: `${formData.firstName} ${formData.lastName}`,
+              phone_number: formData.phone
+            })
+            .eq('id', authData.user.id);
 
-        if (updateError) {
-          console.warn('Error updating profile (non-critical):', updateError);
-        } else {
-          console.log('Profile updated successfully');
+          if (updateError) {
+            console.warn('Error updating profile (non-critical):', updateError);
+          } else {
+            console.log('Profile updated successfully');
+          }
+        } catch (profileError) {
+          console.warn('Profile update failed (non-critical):', profileError);
         }
 
         toast({
@@ -114,12 +143,20 @@ const ResearchAideSignup = () => {
         // Redirect to sign-in page
         navigate("/auth");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
+      
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        errorMessage = "Network connection failed. Please check your internet connection and try again.";
+      } else if (error.name === 'AbortError') {
+        errorMessage = "Request timed out. Please try again.";
+      }
+      
       toast({
         variant: "destructive",
         title: "Registration Failed",
-        description: "An unexpected error occurred. Please try again."
+        description: errorMessage
       });
     } finally {
       setIsLoading(false);
