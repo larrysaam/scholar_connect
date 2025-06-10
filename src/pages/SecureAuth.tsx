@@ -86,10 +86,10 @@ const SecureAuth = () => {
           <Link to="/" className="inline-flex items-center space-x-2">
             <img 
               src="/lovable-uploads/a2f6a2f6-b795-4e93-914c-2b58648099ff.png" 
-              alt="ScholarConnect" 
+              alt="ResearchWhao" 
               className="w-8 h-8"
             />
-            <span className="text-2xl font-bold text-blue-600">ScholarConnect</span>
+            <span className="text-2xl font-bold text-blue-600">ResearchWhao</span>
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
             Welcome back

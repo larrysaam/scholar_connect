@@ -204,13 +204,13 @@ const Register = () => {
                   <Link to="/" className="inline-flex items-center space-x-2 mb-4">
                     <img 
                       src="/lovable-uploads/a2f6a2f6-b795-4e93-914c-2b58648099ff.png" 
-                      alt="ScholarConnect" 
+                      alt="ResearchWhao" 
                       className="w-8 h-8"
                     />
-                    <span className="text-2xl font-bold text-blue-600">ScholarConnect</span>
+                    <span className="text-2xl font-bold text-blue-600">ResearchWhao</span>
                   </Link>
                   <CardTitle className="text-2xl text-center font-bold">
-                    Join ScholarConnect as a Student
+                    Join ResearchWhao as a Student
                   </CardTitle>
                   <p className="text-lg text-center font-semibold text-gray-700 mb-2">
                     Get the Right Academic Support at Every Step of Your Research Journey

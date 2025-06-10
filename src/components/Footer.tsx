@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -11,11 +10,11 @@ const Footer = () => {
               <div className="bg-white p-2 rounded-lg">
                 <img 
                   src="/lovable-uploads/83e0a07d-3527-4693-8172-d7d181156044.png" 
-                  alt="ScholarConnect Logo" 
+                  alt="ResearchWhao Logo" 
                   className="h-8 w-8"
                 />
               </div>
-              <span className="text-xl font-bold text-white">ScholarConnect</span>
+              <span className="text-xl font-bold text-white">ResearchWhao</span>
             </div>
             <p className="mt-3 text-sm">
               Connecting students with leading researchers for personalized academic consultations and collaborative research opportunities.
@@ -64,7 +63,7 @@ const Footer = () => {
         {/* About Us Section */}
         <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="mb-8">
-            <h3 className="text-lg font-semibold text-white mb-4">About ScholarConnect</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">About ResearchWhao</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-300">
               <div>
                 <h4 className="font-medium text-white mb-2">Our Mission</h4>
@@ -83,11 +82,11 @@ const Footer = () => {
             <div className="bg-white p-2 rounded-lg">
               <img 
                 src="/lovable-uploads/83e0a07d-3527-4693-8172-d7d181156044.png" 
-                alt="ScholarConnect Logo" 
+                alt="ResearchWhao Logo" 
                 className="h-6 w-6"
               />
             </div>
-            <p className="text-sm">© {new Date().getFullYear()} ScholarConnect. All rights reserved.</p>
+            <p className="text-sm">© {new Date().getFullYear()} ResearchWhao. All rights reserved.</p>
           </div>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <a href="https://facebook.com/scholarconnect" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-400" aria-label="Facebook">
