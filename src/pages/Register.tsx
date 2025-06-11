@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -56,20 +57,22 @@ const Register = () => {
   const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
 
     if (type === 'checkbox') {
       setFormData(prev => ({ ...prev, [name]: checked }));
-    } else if (name === 'researchAreas') {
-      const selectedOptions = Array.from((e.target as HTMLSelectElement).selectedOptions, option => option.value);
-      setFormData(prev => ({ ...prev, researchAreas: selectedOptions }));
-    } else if (name === 'languages') {
-      const selectedOptions = Array.from((e.target as HTMLSelectElement).selectedOptions, option => option.value);
-      setFormData(prev => ({ ...prev, languages: selectedOptions }));
-    }
-    else {
+    } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleMultiSelectChange = (name: string, values: string[]) => {
+    setFormData(prev => ({ ...prev, [name]: values }));
   };
 
   const validateStep = (step: number): boolean => {
@@ -183,7 +186,7 @@ const Register = () => {
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="accountType">Account Type</Label>
-          <Select name="accountType" value={formData.accountType} onValueChange={(value) => handleInputChange({ target: { name: 'accountType', value } } as any)}>
+          <Select value={formData.accountType} onValueChange={(value) => handleSelectChange('accountType', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Select account type" />
             </SelectTrigger>
@@ -223,12 +226,7 @@ const Register = () => {
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="researchAreas">Research Areas</Label>
-          <Select
-            multiple
-            name="researchAreas"
-            value={formData.researchAreas}
-            onValueChange={(value) => handleInputChange({ target: { name: 'researchAreas', value } } as any)}
-          >
+          <Select value={formData.researchAreas[0] || ""} onValueChange={(value) => handleMultiSelectChange('researchAreas', [value])}>
             <SelectTrigger>
               <SelectValue placeholder="Select research areas" />
             </SelectTrigger>
@@ -236,7 +234,6 @@ const Register = () => {
               <SelectItem value="Artificial Intelligence">Artificial Intelligence</SelectItem>
               <SelectItem value="Biotechnology">Biotechnology</SelectItem>
               <SelectItem value="Climate Change">Climate Change</SelectItem>
-              {/* Add more research areas as needed */}
             </SelectContent>
           </Select>
         </div>
@@ -250,7 +247,7 @@ const Register = () => {
         </div>
         <div className="space-y-2">
           <Label htmlFor="studyLevel">Study Level</Label>
-          <Select name="studyLevel" value={formData.studyLevel} onValueChange={(value) => handleInputChange({ target: { name: 'studyLevel', value } } as any)}>
+          <Select value={formData.studyLevel} onValueChange={(value) => handleSelectChange('studyLevel', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Select study level" />
             </SelectTrigger>
@@ -264,7 +261,7 @@ const Register = () => {
         </div>
         <div className="space-y-2">
           <Label htmlFor="sex">Sex</Label>
-          <Select name="sex" value={formData.sex} onValueChange={(value) => handleInputChange({ target: { name: 'sex', value } as any })}>
+          <Select value={formData.sex} onValueChange={(value) => handleSelectChange('sex', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Select sex" />
             </SelectTrigger>
@@ -284,19 +281,13 @@ const Register = () => {
         </div>
         <div className="space-y-2">
           <Label htmlFor="languages">Languages</Label>
-          <Select
-            multiple
-            name="languages"
-            value={formData.languages}
-            onValueChange={(value) => handleInputChange({ target: { name: 'languages', value } } as any)}
-          >
+          <Select value={formData.languages[0] || ""} onValueChange={(value) => handleMultiSelectChange('languages', [value])}>
             <SelectTrigger>
               <SelectValue placeholder="Select languages" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="English">English</SelectItem>
               <SelectItem value="French">French</SelectItem>
-              {/* Add more languages as needed */}
             </SelectContent>
           </Select>
         </div>
@@ -317,9 +308,8 @@ const Register = () => {
       <div className="flex items-center space-x-2">
         <Checkbox
           id="terms"
-          name="termsAccepted"
           checked={formData.termsAccepted}
-          onCheckedChange={(checked) => handleInputChange({ target: { name: 'termsAccepted', type: 'checkbox', checked } as any })}
+          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, termsAccepted: !!checked }))}
         />
         <Label htmlFor="terms" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
           I agree to the <a href="#" className="underline">terms and conditions</a>
