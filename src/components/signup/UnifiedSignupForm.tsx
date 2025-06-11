@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -11,11 +10,16 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 // Import existing field components
 import BasicInfoFields from './BasicInfoFields';
 import ContactFields from './ContactFields';
+import PasswordFields from './PasswordFields';
 import TermsCheckbox from './TermsCheckbox';
+import TabPlaceholder from './TabPlaceholder';
 
 // Import specialized sections
 import PersonalInfoSection from './research-aid/PersonalInfoSection';
 import ExpertiseSection from './research-aid/ExpertiseSection';
+
+// Import logic hooks
+import { useSignupValidation, useSignupSubmission } from './SignupFormLogic';
 
 import type { BaseFormData, StudentSignupData, ExpertSignupData, ResearchAidSignupData, UserRole } from '@/types/signup';
 
@@ -49,6 +53,9 @@ const UnifiedSignupForm = ({ defaultUserType = 'student' }: UnifiedSignupFormPro
     'English', 'French', 'Spanish', 'German', 'Portuguese', 'Arabic', 'Swahili', 'Hausa'
   ];
 
+  const { validateForm } = useSignupValidation();
+  const { handleSignup } = useSignupSubmission();
+
   const handleBaseInputChange = (field: string, value: string | boolean) => {
     setBaseFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -81,82 +88,6 @@ const UnifiedSignupForm = ({ defaultUserType = 'student' }: UnifiedSignupFormPro
     handleSpecializedInputChange('languages', updated);
   };
 
-  const validateForm = (): boolean => {
-    if (!baseFormData.firstName || !baseFormData.lastName || !baseFormData.email) {
-      toast.error('Please fill in all required fields');
-      return false;
-    }
-
-    if (baseFormData.password !== baseFormData.confirmPassword) {
-      toast.error('Passwords do not match');
-      return false;
-    }
-
-    if (!baseFormData.agreedToTerms) {
-      toast.error('Please agree to the terms and conditions');
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
-
-    setIsLoading(true);
-
-    try {
-      const userRole: UserRole = activeTab === 'aid' ? 'aid' : activeTab as UserRole;
-      
-      // Sign up the user
-      const { data, error } = await supabase.auth.signUp({
-        email: baseFormData.email,
-        password: baseFormData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            fullName: `${baseFormData.firstName} ${baseFormData.lastName}`,
-            role: userRole,
-            phone: baseFormData.phone,
-          },
-        },
-      });
-
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-
-      if (data.user) {
-        // Update user profile with additional data
-        const profileData = {
-          phone_number: baseFormData.phone,
-          role: userRole,
-          ...getSpecializedData(),
-        };
-
-        const { error: profileError } = await supabase
-          .from('users')
-          .update(profileData)
-          .eq('id', data.user.id);
-
-        if (profileError) {
-          console.error('Profile update error:', profileError);
-        }
-
-        toast.success('Account created successfully! Please check your email for verification.');
-        navigate('/dashboard');
-      }
-    } catch (error) {
-      console.error('Signup error:', error);
-      toast.error('An error occurred during signup');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const getSpecializedData = () => {
     switch (activeTab) {
       case 'student':
@@ -180,6 +111,8 @@ const UnifiedSignupForm = ({ defaultUserType = 'student' }: UnifiedSignupFormPro
           languages: expertData.languages,
           linkedin_url: expertData.linkedInUrl,
           country: expertData.country,
+          date_of_birth: expertData.dateOfBirth,
+          sex: expertData.sex,
         };
       case 'aid':
         return {
@@ -190,6 +123,8 @@ const UnifiedSignupForm = ({ defaultUserType = 'student' }: UnifiedSignupFormPro
           languages: aidData.languages,
           linkedin_url: aidData.linkedInUrl,
           country: aidData.country,
+          date_of_birth: aidData.dateOfBirth,
+          sex: aidData.sex,
         };
       default:
         return {};
@@ -233,6 +168,32 @@ const UnifiedSignupForm = ({ defaultUserType = 'student' }: UnifiedSignupFormPro
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm(baseFormData)) return;
+
+    setIsLoading(true);
+
+    try {
+      const userRole: UserRole = activeTab === 'aid' ? 'aid' : activeTab as UserRole;
+      
+      const result = await handleSignup(baseFormData, userRole, getSpecializedData);
+
+      if (result.success) {
+        toast.success('Account created successfully! Please check your email for verification.');
+        navigate('/dashboard');
+      } else {
+        toast.error(result.error || 'An error occurred during signup');
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      toast.error('An error occurred during signup');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleTabChange = (value: string) => {
     setActiveTab(value as 'student' | 'expert' | 'aid');
   };
@@ -261,18 +222,24 @@ const UnifiedSignupForm = ({ defaultUserType = 'student' }: UnifiedSignupFormPro
                 formData={baseFormData} 
                 onInputChange={handleBaseInputChange} 
               />
+              <PasswordFields 
+                formData={baseFormData} 
+                onInputChange={handleBaseInputChange} 
+              />
 
               {/* Specialized content based on user type */}
               <TabsContent value="student" className="space-y-4">
-                <div className="text-sm text-gray-600">
-                  Additional student information will be collected after account creation.
-                </div>
+                <TabPlaceholder 
+                  userType="student"
+                  message="Additional student information will be collected after account creation."
+                />
               </TabsContent>
 
               <TabsContent value="expert" className="space-y-4">
-                <div className="text-sm text-gray-600">
-                  Additional expert information will be collected after account creation.
-                </div>
+                <TabPlaceholder 
+                  userType="expert"
+                  message="Additional expert information will be collected after account creation."
+                />
               </TabsContent>
 
               <TabsContent value="aid" className="space-y-4">

@@ -33,6 +33,8 @@ export interface ExpertSignupData extends BaseFormData {
   linkedInUrl: string;
   languages: string[];
   country: string;
+  dateOfBirth: string;
+  sex: 'male' | 'female';
 }
 
 export interface ResearchAidSignupData extends BaseFormData {
@@ -47,6 +49,8 @@ export interface ResearchAidSignupData extends BaseFormData {
   country: string;
   cvFile: File | null;
   certificationFile: File | null;
+  dateOfBirth: string;
+  sex: 'male' | 'female';
 }
 
 export interface SignupFormProps {
