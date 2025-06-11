@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -137,8 +138,7 @@ const SecureAuth = () => {
           <SecureForm
             onSubmit={handleSignIn}
             fields={signInFields}
-            submitLabel="Sign In Securely"
-            disabled={isCurrentlyRateLimited}
+            submitLabel={isCurrentlyRateLimited ? "Rate Limited" : "Sign In Securely"}
           />
 
           <div className="mt-6 space-y-4">

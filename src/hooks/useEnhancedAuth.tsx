@@ -48,8 +48,8 @@ export const useEnhancedAuth = () => {
     try {
       const result = await signIn(emailValidation.sanitized, password);
       
-      if (result.success && result.user) {
-        logSuccessfulLogin(result.user.id);
+      if (result.success && user) {
+        logSuccessfulLogin(user.id);
       } else {
         logFailedLogin(email, result.error || 'Authentication failed');
       }
@@ -63,7 +63,7 @@ export const useEnhancedAuth = () => {
         error: errorMessage
       };
     }
-  }, [signIn, logFailedLogin, logSuccessfulLogin, logSuspiciousActivity]);
+  }, [signIn, user, logFailedLogin, logSuccessfulLogin, logSuspiciousActivity]);
 
   const enhancedSignUp = useCallback(async (email: string, password: string, userData: Record<string, any>) => {
     // Rate limiting check
