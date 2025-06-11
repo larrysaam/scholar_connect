@@ -20,6 +20,7 @@ export type Database = {
           expert_id: string
           meeting_link: string | null
           notes: string | null
+          status: Database["public"]["Enums"]["consultation_status"] | null
           student_id: string
           timeslot: string
           title: string
@@ -35,6 +36,7 @@ export type Database = {
           expert_id: string
           meeting_link?: string | null
           notes?: string | null
+          status?: Database["public"]["Enums"]["consultation_status"] | null
           student_id: string
           timeslot: string
           title: string
@@ -50,6 +52,7 @@ export type Database = {
           expert_id?: string
           meeting_link?: string | null
           notes?: string | null
+          status?: Database["public"]["Enums"]["consultation_status"] | null
           student_id?: string
           timeslot?: string
           title?: string
@@ -419,6 +422,7 @@ export type Database = {
           description: string | null
           files: Json | null
           job_id: string
+          status: Database["public"]["Enums"]["job_status"] | null
           student_id: string
           title: string
           updated_at: string | null
@@ -434,6 +438,7 @@ export type Database = {
           description?: string | null
           files?: Json | null
           job_id?: string
+          status?: Database["public"]["Enums"]["job_status"] | null
           student_id: string
           title: string
           updated_at?: string | null
@@ -449,6 +454,7 @@ export type Database = {
           description?: string | null
           files?: Json | null
           job_id?: string
+          status?: Database["public"]["Enums"]["job_status"] | null
           student_id?: string
           title?: string
           updated_at?: string | null
