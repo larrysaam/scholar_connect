@@ -10,6 +10,7 @@ import PersonalInfoSection from "@/components/signup/research-aid/PersonalInfoSe
 import ExpertiseSection from "@/components/signup/research-aid/ExpertiseSection";
 import CredentialsSection from "@/components/signup/research-aid/CredentialsSection";
 import AgreementSection from "@/components/signup/research-aid/AgreementSection";
+import { validatePassword } from "@/utils/security";
 
 const ResearchAidSignup = () => {
   const navigate = useNavigate();
@@ -94,6 +95,17 @@ const ResearchAidSignup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate password strength
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) {
+      toast({
+        variant: "destructive",
+        title: "Password Requirements",
+        description: passwordValidation.errors[0]
+      });
+      return;
+    }
+    
     if (formData.password !== formData.confirmPassword) {
       toast({
         variant: "destructive",
@@ -171,10 +183,10 @@ const ResearchAidSignup = () => {
                   <Link to="/" className="inline-flex items-center space-x-2 mb-4">
                     <img 
                       src="/lovable-uploads/a2f6a2f6-b795-4e93-914c-2b58648099ff.png" 
-                      alt="ScholarConnect" 
+                      alt="ResearchWhao" 
                       className="w-8 h-8"
                     />
-                    <span className="text-2xl font-bold text-blue-600">ScholarConnect</span>
+                    <span className="text-2xl font-bold text-blue-600">ResearchWhao</span>
                   </Link>
                   <CardTitle className="text-2xl text-center font-bold">
                     Join Our Network of Expert Research Aids

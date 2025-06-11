@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useSecureAuth } from "@/hooks/useSecureAuth";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BasicInfoFields from "@/components/signup/BasicInfoFields";
@@ -14,10 +15,12 @@ import TermsCheckbox from "@/components/signup/TermsCheckbox";
 import SignupFooter from "@/components/signup/SignupFooter";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
+import { validatePassword } from "@/utils/security";
 
 const ResearchAideSignup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signUp, isRateLimited } = useSecureAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -40,6 +43,17 @@ const ResearchAideSignup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate password strength
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) {
+      toast({
+        variant: "destructive",
+        title: "Password Requirements",
+        description: passwordValidation.errors[0]
+      });
+      return;
+    }
+    
     if (formData.password !== formData.confirmPassword) {
       toast({
         variant: "destructive",
@@ -58,105 +72,46 @@ const ResearchAideSignup = () => {
       return;
     }
 
+    if (isRateLimited) {
+      toast({
+        variant: "destructive",
+        title: "Too Many Attempts",
+        description: "Please wait before trying again."
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       console.log('Attempting to sign up researcher with role: expert');
       
-      // Check network connectivity first
-      try {
-        await fetch('https://aigusgidjcfkhcmsghmn.supabase.co/auth/v1/health', { 
-          method: 'GET',
-          signal: AbortSignal.timeout(5000)
-        });
-      } catch (networkError) {
-        console.error('Network connectivity check failed:', networkError);
-        toast({
-          variant: "destructive",
-          title: "Connection Error",
-          description: "Unable to connect to our servers. Please check your internet connection and try again."
-        });
-        return;
-      }
-
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email.toLowerCase().trim(),
-        password: formData.password,
-        options: {
-          data: {
-            fullName: `${formData.firstName} ${formData.lastName}`,
-            role: 'expert'
-          }
-        }
+      const result = await signUp(formData.email, formData.password, {
+        fullName: `${formData.firstName} ${formData.lastName}`,
+        role: 'expert'
       });
 
-      if (authError) {
-        console.error('Auth error:', authError);
-        
-        // Handle specific error types
-        let errorMessage = authError.message;
-        if (authError.message.includes('fetch')) {
-          errorMessage = "Network connection failed. Please check your internet connection and try again.";
-        } else if (authError.message.includes('email')) {
-          errorMessage = "This email address is already registered. Please use a different email or try signing in.";
-        }
-        
-        toast({
-          variant: "destructive",
-          title: "Registration Failed",
-          description: errorMessage
-        });
-        return;
-      }
-
-      console.log('Auth successful, user created:', authData.user?.id);
-
-      if (authData.user) {
-        // Small delay to ensure user creation is processed
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        console.log('Updating user profile...');
-        
-        try {
-          const { error: updateError } = await supabase
-            .from('users')
-            .update({
-              name: `${formData.firstName} ${formData.lastName}`,
-              phone_number: formData.phone
-            })
-            .eq('id', authData.user.id);
-
-          if (updateError) {
-            console.warn('Error updating profile (non-critical):', updateError);
-          } else {
-            console.log('Profile updated successfully');
-          }
-        } catch (profileError) {
-          console.warn('Profile update failed (non-critical):', profileError);
-        }
-
+      if (result.success) {
         toast({
           title: "Registration Successful!",
           description: "Please check your email to verify your account, then sign in to access your dashboard."
         });
         
-        // Redirect to sign-in page
         navigate("/auth");
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Registration Failed",
+          description: result.error || "An unexpected error occurred. Please try again."
+        });
       }
     } catch (error: any) {
       console.error('Registration error:', error);
       
-      let errorMessage = "An unexpected error occurred. Please try again.";
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        errorMessage = "Network connection failed. Please check your internet connection and try again.";
-      } else if (error.name === 'AbortError') {
-        errorMessage = "Request timed out. Please try again.";
-      }
-      
       toast({
         variant: "destructive",
         title: "Registration Failed",
-        description: errorMessage
+        description: "An unexpected error occurred. Please try again."
       });
     } finally {
       setIsLoading(false);
@@ -176,13 +131,13 @@ const ResearchAideSignup = () => {
                   <Link to="/" className="inline-flex items-center space-x-2 mb-4">
                     <img 
                       src="/lovable-uploads/a2f6a2f6-b795-4e93-914c-2b58648099ff.png" 
-                      alt="ScholarConnect" 
+                      alt="ResearchWhao" 
                       className="w-8 h-8"
                     />
-                    <span className="text-2xl font-bold text-blue-600">ScholarConnect</span>
+                    <span className="text-2xl font-bold text-blue-600">ResearchWhao</span>
                   </Link>
                   <CardTitle className="text-2xl text-center font-bold">
-                    Join ScholarConnect as a Researcher
+                    Join ResearchWhao as a Researcher
                   </CardTitle>
                   <p className="text-gray-600 text-center">
                     Connect with students and share your expertise to advance research across Africa.

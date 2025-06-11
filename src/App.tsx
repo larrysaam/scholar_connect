@@ -13,6 +13,7 @@ const queryClient = new QueryClient();
 const Index = lazy(() => import("./pages/Index"));
 const SecureAuth = lazy(() => import("./pages/SecureAuth"));
 const Register = lazy(() => import("./pages/Register"));
+const SecureRegister = lazy(() => import("./pages/SecureRegister"));
 const ResearchAideSignup = lazy(() => import("./pages/ResearchAideSignup"));
 const ResearchAidSignup = lazy(() => import("./pages/ResearchAidSignup"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -32,6 +33,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<SecureAuth />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/secure-register" element={<SecureRegister />} />
               <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
               <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
               <Route 
