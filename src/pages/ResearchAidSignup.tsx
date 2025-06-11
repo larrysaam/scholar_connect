@@ -115,22 +115,6 @@ const ResearchAidSignup = () => {
     try {
       console.log('Attempting to sign up research aid with role: aid');
       
-      // Check network connectivity first
-      try {
-        await fetch('https://aigusgidjcfkhcmsghmn.supabase.co/auth/v1/health', { 
-          method: 'GET',
-          signal: AbortSignal.timeout(5000)
-        });
-      } catch (networkError) {
-        console.error('Network connectivity check failed:', networkError);
-        toast({
-          variant: "destructive",
-          title: "Connection Error",
-          description: "Unable to connect to our servers. Please check your internet connection and try again."
-        });
-        return;
-      }
-      
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email.toLowerCase().trim(),
         password: formData.password,
@@ -138,7 +122,8 @@ const ResearchAidSignup = () => {
           data: {
             fullName: formData.fullName,
             role: 'aid'
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/auth`
         }
       });
 
@@ -146,9 +131,7 @@ const ResearchAidSignup = () => {
         console.error('Auth error:', authError);
         
         let errorMessage = authError.message;
-        if (authError.message.includes('fetch')) {
-          errorMessage = "Network connection failed. Please check your internet connection and try again.";
-        } else if (authError.message.includes('email')) {
+        if (authError.message.includes('User already registered')) {
           errorMessage = "This email address is already registered. Please use a different email or try signing in.";
         }
         
@@ -163,7 +146,8 @@ const ResearchAidSignup = () => {
       console.log('Auth successful, user created:', authData.user?.id);
 
       if (authData.user) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Wait a moment for the trigger to create the user profile
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
         console.log('Updating user profile...');
         
@@ -203,17 +187,10 @@ const ResearchAidSignup = () => {
     } catch (error: any) {
       console.error('Registration error:', error);
       
-      let errorMessage = "An unexpected error occurred. Please try again.";
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        errorMessage = "Network connection failed. Please check your internet connection and try again.";
-      } else if (error.name === 'AbortError') {
-        errorMessage = "Request timed out. Please try again.";
-      }
-      
       toast({
         variant: "destructive",
         title: "Registration Failed",
-        description: errorMessage
+        description: "An unexpected error occurred. Please try again."
       });
     } finally {
       setIsLoading(false);
