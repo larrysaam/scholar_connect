@@ -20,7 +20,6 @@ export type Database = {
           expert_id: string
           meeting_link: string | null
           notes: string | null
-          status: Database["public"]["Enums"]["consultation_status"] | null
           student_id: string
           timeslot: string
           title: string
@@ -36,7 +35,6 @@ export type Database = {
           expert_id: string
           meeting_link?: string | null
           notes?: string | null
-          status?: Database["public"]["Enums"]["consultation_status"] | null
           student_id: string
           timeslot: string
           title: string
@@ -52,7 +50,6 @@ export type Database = {
           expert_id?: string
           meeting_link?: string | null
           notes?: string | null
-          status?: Database["public"]["Enums"]["consultation_status"] | null
           student_id?: string
           timeslot?: string
           title?: string
@@ -422,7 +419,6 @@ export type Database = {
           description: string | null
           files: Json | null
           job_id: string
-          status: Database["public"]["Enums"]["job_status"] | null
           student_id: string
           title: string
           updated_at: string | null
@@ -438,7 +434,6 @@ export type Database = {
           description?: string | null
           files?: Json | null
           job_id?: string
-          status?: Database["public"]["Enums"]["job_status"] | null
           student_id: string
           title: string
           updated_at?: string | null
@@ -454,7 +449,6 @@ export type Database = {
           description?: string | null
           files?: Json | null
           job_id?: string
-          status?: Database["public"]["Enums"]["job_status"] | null
           student_id?: string
           title?: string
           updated_at?: string | null
@@ -468,8 +462,8 @@ export type Database = {
           created_at: string | null
           job_id: string | null
           payment_id: string
-          payment_method: Database["public"]["Enums"]["payment_method"]
-          payment_type: Database["public"]["Enums"]["payment_type"]
+          payment_method: Database["public"]["Enums"]["payment_method"] | null
+          payment_type: Database["public"]["Enums"]["payment_type"] | null
           processing_fee: number | null
           provider_id: string
           receipt_url: string | null
@@ -485,8 +479,8 @@ export type Database = {
           created_at?: string | null
           job_id?: string | null
           payment_id?: string
-          payment_method: Database["public"]["Enums"]["payment_method"]
-          payment_type: Database["public"]["Enums"]["payment_type"]
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          payment_type?: Database["public"]["Enums"]["payment_type"] | null
           processing_fee?: number | null
           provider_id: string
           receipt_url?: string | null
@@ -502,8 +496,8 @@ export type Database = {
           created_at?: string | null
           job_id?: string | null
           payment_id?: string
-          payment_method?: Database["public"]["Enums"]["payment_method"]
-          payment_type?: Database["public"]["Enums"]["payment_type"]
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          payment_type?: Database["public"]["Enums"]["payment_type"] | null
           processing_fee?: number | null
           provider_id?: string
           receipt_url?: string | null
@@ -631,43 +625,88 @@ export type Database = {
       }
       users: {
         Row: {
+          country: string | null
           created_at: string | null
+          date_of_birth: string | null
           email: string
+          experience: string | null
+          expertise: string[] | null
+          faculty: string | null
           id: string
+          institution: string | null
+          languages: string[] | null
+          linkedin_url: string | null
           name: string | null
+          other_expertise: string | null
           payout_details: Json | null
+          phone_number: string | null
           preferred_payout_method:
             | Database["public"]["Enums"]["payout_method"]
             | null
+          research_areas: string[] | null
+          research_stage: string | null
           role: Database["public"]["Enums"]["user_role"]
+          sex: Database["public"]["Enums"]["sex_type"] | null
+          study_level: Database["public"]["Enums"]["study_level"] | null
+          topic_title: string | null
           updated_at: string | null
           user_id: string | null
           wallet_balance: number | null
         }
         Insert: {
+          country?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
           email: string
-          id?: string
+          experience?: string | null
+          expertise?: string[] | null
+          faculty?: string | null
+          id: string
+          institution?: string | null
+          languages?: string[] | null
+          linkedin_url?: string | null
           name?: string | null
+          other_expertise?: string | null
           payout_details?: Json | null
+          phone_number?: string | null
           preferred_payout_method?:
             | Database["public"]["Enums"]["payout_method"]
             | null
+          research_areas?: string[] | null
+          research_stage?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          sex?: Database["public"]["Enums"]["sex_type"] | null
+          study_level?: Database["public"]["Enums"]["study_level"] | null
+          topic_title?: string | null
           updated_at?: string | null
           user_id?: string | null
           wallet_balance?: number | null
         }
         Update: {
+          country?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
           email?: string
+          experience?: string | null
+          expertise?: string[] | null
+          faculty?: string | null
           id?: string
+          institution?: string | null
+          languages?: string[] | null
+          linkedin_url?: string | null
           name?: string | null
+          other_expertise?: string | null
           payout_details?: Json | null
+          phone_number?: string | null
           preferred_payout_method?:
             | Database["public"]["Enums"]["payout_method"]
             | null
+          research_areas?: string[] | null
+          research_stage?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          sex?: Database["public"]["Enums"]["sex_type"] | null
+          study_level?: Database["public"]["Enums"]["study_level"] | null
+          topic_title?: string | null
           updated_at?: string | null
           user_id?: string | null
           wallet_balance?: number | null
@@ -679,7 +718,7 @@ export type Database = {
           amount: number
           created_at: string | null
           payout_details: Json
-          payout_method: Database["public"]["Enums"]["payout_method"]
+          payout_method: Database["public"]["Enums"]["payout_method"] | null
           processed_at: string | null
           status: Database["public"]["Enums"]["payment_status"] | null
           transaction_reference: string | null
@@ -690,7 +729,7 @@ export type Database = {
           amount: number
           created_at?: string | null
           payout_details: Json
-          payout_method: Database["public"]["Enums"]["payout_method"]
+          payout_method?: Database["public"]["Enums"]["payout_method"] | null
           processed_at?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
           transaction_reference?: string | null
@@ -701,7 +740,7 @@ export type Database = {
           amount?: number
           created_at?: string | null
           payout_details?: Json
-          payout_method?: Database["public"]["Enums"]["payout_method"]
+          payout_method?: Database["public"]["Enums"]["payout_method"] | null
           processed_at?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
           transaction_reference?: string | null
@@ -724,15 +763,14 @@ export type Database = {
       consultation_status: "pending" | "confirmed" | "completed" | "cancelled"
       job_status:
         | "pending"
-        | "confirmed"
+        | "assigned"
         | "in_progress"
         | "completed"
-        | "approved"
         | "cancelled"
-      payment_method: "mobile_money" | "card" | "wallet"
-      payment_status: "pending" | "paid" | "released" | "refunded" | "failed"
-      payment_type: "consultation" | "service" | "subscription"
-      payout_method: "mobile_money" | "bank_transfer"
+      payment_method: "stripe" | "mobile_money" | "bank_transfer"
+      payment_status: "pending" | "paid" | "failed" | "refunded" | "released"
+      payment_type: "consultation" | "service"
+      payout_method: "mobile_money" | "bank_transfer" | "paypal"
       sex_type: "male" | "female"
       study_level: "undergraduate" | "masters" | "phd" | "postdoc"
       user_role: "student" | "expert" | "aid" | "admin"
@@ -854,16 +892,15 @@ export const Constants = {
       consultation_status: ["pending", "confirmed", "completed", "cancelled"],
       job_status: [
         "pending",
-        "confirmed",
+        "assigned",
         "in_progress",
         "completed",
-        "approved",
         "cancelled",
       ],
-      payment_method: ["mobile_money", "card", "wallet"],
-      payment_status: ["pending", "paid", "released", "refunded", "failed"],
-      payment_type: ["consultation", "service", "subscription"],
-      payout_method: ["mobile_money", "bank_transfer"],
+      payment_method: ["stripe", "mobile_money", "bank_transfer"],
+      payment_status: ["pending", "paid", "failed", "refunded", "released"],
+      payment_type: ["consultation", "service"],
+      payout_method: ["mobile_money", "bank_transfer", "paypal"],
       sex_type: ["male", "female"],
       study_level: ["undergraduate", "masters", "phd", "postdoc"],
       user_role: ["student", "expert", "aid", "admin"],
