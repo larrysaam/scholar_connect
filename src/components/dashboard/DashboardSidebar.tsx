@@ -15,7 +15,9 @@ import {
   UserPlus,
   User,
   FileText,
-  Settings
+  Settings,
+  BookOpen,
+  GraduationCap
 } from "lucide-react";
 
 interface DashboardSidebarProps {
@@ -27,10 +29,11 @@ interface DashboardSidebarProps {
 const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSidebarProps) => {
   const menuItems = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
-    { id: "upcoming", label: "Upcoming", icon: Calendar },
-    { id: "past", label: "Past", icon: Clock },
+    { id: "consultation-services", label: "Consultation Service Setup", icon: MessageSquare },
+    { id: "upcoming", label: "Upcoming Consultations", icon: Calendar },
+    { id: "past", label: "Past Consultations", icon: Clock },
+    { id: "full-thesis-support", label: "Full Thesis Support", icon: GraduationCap },
     { id: "payments", label: "Payments & Earnings", icon: DollarSign },
-    { id: "consultation-services", label: "Consultation Services", icon: MessageSquare },
     { id: "performance", label: "Performance & Reputation", icon: TrendingUp },
     { id: "quality", label: "Quality & Feedback", icon: Star },
     { id: "discussion", label: "Discussion Board", icon: MessageSquare },

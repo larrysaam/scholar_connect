@@ -20,6 +20,7 @@ import NotificationsTab from "@/components/dashboard/tabs/NotificationsTab";
 import DiscussionTab from "@/components/dashboard/tabs/DiscussionTab";
 import ConsultationServicesTab from "@/components/dashboard/tabs/ConsultationServicesTab";
 import PerformanceReputationTab from "@/components/dashboard/tabs/PerformanceReputationTab";
+import FullThesisSupportTab from "@/components/dashboard/tabs/FullThesisSupportTab";
 import MisconductReportModal from "@/components/dashboard/MisconductReportModal";
 
 const ResearcherDashboard = () => {
@@ -49,6 +50,8 @@ const ResearcherDashboard = () => {
         return <UpcomingTab />;
       case "past":
         return <PastTab />;
+      case "full-thesis-support":
+        return <FullThesisSupportTab />;
       case "payments":
         return <PaymentsEarningsTab />;
       case "performance":

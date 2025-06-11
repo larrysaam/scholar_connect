@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, X, DollarSign, BookOpen, Eye, Trash2 } from "lucide-react";
+import { Plus, X, DollarSign, BookOpen, Eye, Trash2, Info } from "lucide-react";
 
 interface AcademicLevelPrice {
   level: "Undergraduate" | "Master's" | "PhD";
@@ -296,8 +295,25 @@ const ConsultationServicesTab = () => {
 
   return (
     <div className="space-y-6">
+      {/* Instructions Section */}
+      <Card className="bg-blue-50 border-blue-200">
+        <CardContent className="p-6">
+          <div className="flex items-start space-x-3">
+            <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold text-blue-900 mb-2">Instructions for Service Setup</h3>
+              <p className="text-blue-800 text-sm leading-relaxed">
+                Dear Esteemed Researcher, please refer to the price grid before setting a price that corresponds to your academic level. 
+                Note that you can add several service categories and academic levels and prices. The platform will deduct 15% of any amount 
+                paid by research students. We are passionate about supporting researchers and students.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div>
-        <h2 className="text-2xl font-bold">Consultation Services Setup</h2>
+        <h2 className="text-2xl font-bold">Consultation Service Setup</h2>
         <p className="text-gray-600">Configure your service offerings and pricing</p>
       </div>
 
