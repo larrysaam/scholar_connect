@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import SecurityMonitor from "@/components/security/SecurityMonitor";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
       <TooltipProvider>
+        <SecurityMonitor />
         <Toaster />
         <Sonner />
         <BrowserRouter>
