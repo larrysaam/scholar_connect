@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -80,7 +79,7 @@ const Register = () => {
       case 1:
         return formData.fullName !== '' && formData.email !== '' && formData.password !== '' && formData.confirmPassword !== '' && formData.password === formData.confirmPassword;
       case 2:
-        return formData.accountType !== '' && formData.country !== '' && formData.institution !== '' && formData.faculty !== '';
+        return formData.country !== '' && formData.institution !== '' && formData.faculty !== '';
       case 3:
         return formData.researchAreas.length > 0 && formData.topicTitle !== '' && formData.researchStage !== '' && formData.studyLevel !== '' && formData.sex !== '' && formData.phoneNumber !== '' && formData.dateOfBirth !== '';
       case 4:
