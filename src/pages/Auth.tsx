@@ -104,10 +104,10 @@ const Auth = () => {
           <Link to="/" className="inline-flex items-center space-x-2">
             <img 
               src="/lovable-uploads/a2f6a2f6-b795-4e93-914c-2b58648099ff.png" 
-              alt="ResearchWhao" 
+              alt="ScholarConnect" 
               className="w-8 h-8"
             />
-            <span className="text-2xl font-bold text-blue-600">ResearchWhao</span>
+            <span className="text-2xl font-bold text-blue-600">ScholarConnect</span>
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
             Welcome back
@@ -154,24 +154,27 @@ const Auth = () => {
             </div>
             
             <div className="grid grid-cols-1 gap-3">
-              <Link 
-                to="/register"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md text-center text-gray-700 hover:bg-gray-50 transition-colors"
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={() => navigate("/register")}
               >
                 Sign up as Student
-              </Link>
-              <Link 
-                to="/research-aide-signup"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md text-center text-gray-700 hover:bg-gray-50 transition-colors"
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={() => navigate("/research-aide-signup")}
               >
                 Sign up as Researcher
-              </Link>
-              <Link 
-                to="/research-aid-signup"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md text-center text-gray-700 hover:bg-gray-50 transition-colors"
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={() => navigate("/research-aid-signup")}
               >
                 Sign up as Research Aid
-              </Link>
+              </Button>
             </div>
           </div>
         </div>

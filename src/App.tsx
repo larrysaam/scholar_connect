@@ -11,7 +11,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 const queryClient = new QueryClient();
 
 const Index = lazy(() => import("./pages/Index"));
-const Auth = lazy(() => import("./pages/Auth"));
+const SecureAuth = lazy(() => import("./pages/SecureAuth"));
 const Register = lazy(() => import("./pages/Register"));
 const ResearchAideSignup = lazy(() => import("./pages/ResearchAideSignup"));
 const ResearchAidSignup = lazy(() => import("./pages/ResearchAidSignup"));
@@ -30,7 +30,7 @@ const App = () => (
           <Suspense fallback={<LoadingSpinner size="lg" />}>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
+              <Route path="/auth" element={<SecureAuth />} />
               <Route path="/register" element={<Register />} />
               <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
               <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
