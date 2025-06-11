@@ -221,38 +221,6 @@ const ResearchAidSignup = () => {
     }
   };
 
-  const toggleLanguage = (language: string) => {
-    setFormData(prev => ({
-      ...prev,
-      languages: prev.languages.includes(language)
-        ? prev.languages.filter(l => l !== language)
-        : [...prev.languages, language]
-    }));
-  };
-
-  const toggleExpertise = (expertise: string) => {
-    setFormData(prev => ({
-      ...prev,
-      expertise: prev.expertise.includes(expertise)
-        ? prev.expertise.filter(e => e !== expertise)
-        : [...prev.expertise, expertise]
-    }));
-  };
-
-  const removeLanguage = (language: string) => {
-    setFormData(prev => ({
-      ...prev,
-      languages: prev.languages.filter(l => l !== language)
-    }));
-  };
-
-  const removeExpertise = (expertise: string) => {
-    setFormData(prev => ({
-      ...prev,
-      expertise: prev.expertise.filter(e => e !== expertise)
-    }));
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
