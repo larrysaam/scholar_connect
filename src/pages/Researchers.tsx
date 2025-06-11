@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -127,6 +128,11 @@ const Researchers = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
+  const handleFiltersChange = (filters: any) => {
+    console.log("Filters changed:", filters);
+    // TODO: Implement filter logic to filter researchers based on the filters
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -150,7 +156,7 @@ const Researchers = () => {
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                  <AdvancedSearchFilters />
+                  <AdvancedSearchFilters onFiltersChange={handleFiltersChange} />
                 </DialogContent>
               </Dialog>
               
