@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,57 +5,36 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import PersonalDetailsSection from "@/components/register/PersonalDetailsSection";
-import AcademicInterestsSection from "@/components/register/AcademicInterestsSection";
-import AccountCreationSection from "@/components/register/AccountCreationSection";
-import AgreementSection from "@/components/register/AgreementSection";
+import BasicInfoFields from "@/components/signup/BasicInfoFields";
+import ContactFields from "@/components/signup/ContactFields";
+import OrganizationFields from "@/components/signup/OrganizationFields";
+import BioField from "@/components/signup/BioField";
+import ExperienceField from "@/components/signup/ExperienceField";
+import TermsCheckbox from "@/components/signup/TermsCheckbox";
+import SignupFooter from "@/components/signup/SignupFooter";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { Button } from "@/components/ui/button";
 
-const Register = () => {
+const ResearchAideSignup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     email: "",
-    phoneNumber: "",
-    country: "",
-    institution: "",
-    faculty: "",
-    studyLevel: "",
-    sex: "",
-    dateOfBirth: "",
-    researchAreas: [] as string[],
-    topicTitle: "",
-    researchStage: "",
+    phone: "",
     password: "",
     confirmPassword: "",
+    organization: "",
+    position: "",
+    bio: "",
+    experience: "",
     agreedToTerms: false
   });
 
-  const researchAreaOptions = [
-    "Education", "Health Sciences", "Engineering", "Social Sciences", "Natural Sciences",
-    "Agriculture", "Economics", "Geography", "Psychology", "Computer Science",
-    "Mathematics", "Physics", "Chemistry", "Biology", "Literature", "History"
-  ];
-
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const toggleResearchArea = (area: string) => {
-    setFormData(prev => ({
-      ...prev,
-      researchAreas: prev.researchAreas.includes(area)
-        ? prev.researchAreas.filter(a => a !== area)
-        : [...prev.researchAreas, area]
-    }));
-  };
-
-  const removeResearchArea = (area: string) => {
-    setFormData(prev => ({
-      ...prev,
-      researchAreas: prev.researchAreas.filter(a => a !== area)
-    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -83,7 +61,7 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      console.log('Attempting to sign up student with role: student');
+      console.log('Attempting to sign up researcher with role: expert');
       
       // Check network connectivity first
       try {
@@ -100,14 +78,14 @@ const Register = () => {
         });
         return;
       }
-      
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email.toLowerCase().trim(),
         password: formData.password,
         options: {
           data: {
-            fullName: formData.fullName,
-            role: 'student'
+            fullName: `${formData.firstName} ${formData.lastName}`,
+            role: 'expert'
           }
         }
       });
@@ -115,6 +93,7 @@ const Register = () => {
       if (authError) {
         console.error('Auth error:', authError);
         
+        // Handle specific error types
         let errorMessage = authError.message;
         if (authError.message.includes('fetch')) {
           errorMessage = "Network connection failed. Please check your internet connection and try again.";
@@ -133,6 +112,7 @@ const Register = () => {
       console.log('Auth successful, user created:', authData.user?.id);
 
       if (authData.user) {
+        // Small delay to ensure user creation is processed
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         console.log('Updating user profile...');
@@ -141,17 +121,8 @@ const Register = () => {
           const { error: updateError } = await supabase
             .from('users')
             .update({
-              name: formData.fullName,
-              phone_number: formData.phoneNumber,
-              country: formData.country,
-              institution: formData.institution,
-              faculty: formData.faculty,
-              study_level: formData.studyLevel,
-              sex: formData.sex,
-              date_of_birth: formData.dateOfBirth || null,
-              research_areas: formData.researchAreas,
-              topic_title: formData.topicTitle,
-              research_stage: formData.researchStage
+              name: `${formData.firstName} ${formData.lastName}`,
+              phone_number: formData.phone
             })
             .eq('id', authData.user.id);
 
@@ -169,6 +140,7 @@ const Register = () => {
           description: "Please check your email to verify your account, then sign in to access your dashboard."
         });
         
+        // Redirect to sign-in page
         navigate("/auth");
       }
     } catch (error: any) {
@@ -204,49 +176,102 @@ const Register = () => {
                   <Link to="/" className="inline-flex items-center space-x-2 mb-4">
                     <img 
                       src="/lovable-uploads/a2f6a2f6-b795-4e93-914c-2b58648099ff.png" 
-                      alt="ResearchWhao" 
+                      alt="ScholarConnect" 
                       className="w-8 h-8"
                     />
-                    <span className="text-2xl font-bold text-blue-600">ResearchWhao</span>
+                    <span className="text-2xl font-bold text-blue-600">ScholarConnect</span>
                   </Link>
                   <CardTitle className="text-2xl text-center font-bold">
-                    Join ResearchWhao as a Student
+                    Join ScholarConnect as a Researcher
                   </CardTitle>
-                  <p className="text-lg text-center font-semibold text-gray-700 mb-2">
-                    Get the Right Academic Support at Every Step of Your Research Journey
-                  </p>
                   <p className="text-gray-600 text-center">
-                    Connect with top scholars, get expert assistance, and elevate your thesis or dissertation.
+                    Connect with students and share your expertise to advance research across Africa.
                   </p>
                 </div>
               </CardHeader>
               
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-8">
-                  <PersonalDetailsSection
-                    formData={formData}
-                    onInputChange={handleInputChange}
-                  />
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold border-b pb-2">Personal Information</h3>
+                    <BasicInfoFields
+                      formData={formData}
+                      onInputChange={handleInputChange}
+                    />
+                    <ContactFields
+                      formData={formData}
+                      onInputChange={handleInputChange}
+                    />
+                  </div>
 
-                  <AcademicInterestsSection
-                    formData={formData}
-                    researchAreaOptions={researchAreaOptions}
-                    onInputChange={handleInputChange}
-                    onToggleResearchArea={toggleResearchArea}
-                    onRemoveResearchArea={removeResearchArea}
-                  />
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold border-b pb-2">Professional Information</h3>
+                    <OrganizationFields
+                      formData={formData}
+                      onInputChange={handleInputChange}
+                    />
+                    <BioField
+                      formData={formData}
+                      onInputChange={handleInputChange}
+                    />
+                    <ExperienceField
+                      formData={formData}
+                      onInputChange={handleInputChange}
+                    />
+                  </div>
 
-                  <AccountCreationSection
-                    formData={formData}
-                    onInputChange={handleInputChange}
-                  />
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold border-b pb-2">Account Security</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label htmlFor="password" className="text-sm font-medium">Password *</label>
+                        <input 
+                          type="password"
+                          id="password"
+                          value={formData.password}
+                          onChange={(e) => handleInputChange("password", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password *</label>
+                        <input 
+                          type="password"
+                          id="confirmPassword"
+                          value={formData.confirmPassword}
+                          onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required 
+                        />
+                      </div>
+                    </div>
+                  </div>
 
-                  <AgreementSection
-                    agreedToTerms={formData.agreedToTerms}
-                    onInputChange={handleInputChange}
-                    onSubmit={handleSubmit}
-                    isLoading={isLoading}
-                  />
+                  <div className="space-y-4">
+                    <TermsCheckbox
+                      agreedToTerms={formData.agreedToTerms}
+                      onInputChange={handleInputChange}
+                    />
+                    
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      size="lg" 
+                      disabled={isLoading || !formData.agreedToTerms}
+                    >
+                      {isLoading ? (
+                        <>
+                          <LoadingSpinner size="sm" className="mr-2" />
+                          Creating Account...
+                        </>
+                      ) : (
+                        "Create My Researcher Account"
+                      )}
+                    </Button>
+                    
+                    <SignupFooter />
+                  </div>
                 </form>
               </CardContent>
             </Card>
@@ -259,4 +284,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default ResearchAideSignup;

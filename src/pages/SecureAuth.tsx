@@ -18,32 +18,20 @@ const SecureAuth = () => {
   useEffect(() => {
     const checkAuthAndRedirect = async () => {
       if (user && !loading) {
-        try {
-          // Get user profile to determine role
-          const { supabase } = await import("@/integrations/supabase/client");
-          const { data: profile, error } = await supabase
-            .from('users')
-            .select('role')
-            .eq('id', user.id)
-            .single();
+        // Get user profile to determine role
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { data: profile } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single();
 
-          if (error) {
-            console.error('Error fetching user profile:', error);
-            // Default to student dashboard if profile fetch fails
-            navigate("/dashboard");
-            return;
-          }
-
-          // Redirect based on role
-          if (profile?.role === 'expert') {
-            navigate("/researcher-dashboard");
-          } else if (profile?.role === 'aid') {
-            navigate("/research-aids-dashboard");
-          } else {
-            navigate("/dashboard");
-          }
-        } catch (error) {
-          console.error('Redirect error:', error);
+        // Redirect based on role
+        if (profile?.role === 'expert') {
+          navigate("/researcher-dashboard");
+        } else if (profile?.role === 'aid') {
+          navigate("/research-aids-dashboard");
+        } else {
           navigate("/dashboard");
         }
       }
@@ -55,39 +43,17 @@ const SecureAuth = () => {
   const handleSignIn = async (data: Record<string, string>, csrfToken: string) => {
     console.log('CSRF Token received:', csrfToken);
     
-    try {
-      const result = await signIn(data.email, data.password);
-      
-      if (result.success) {
-        toast({
-          title: "Welcome back!",
-          description: "Successfully logged in.",
-        });
-        // Redirect will be handled by useEffect above
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Login Failed",
-          description: result.error || "Please check your credentials and try again.",
-        });
-      }
-      
-      return result;
-    } catch (error) {
-      console.error('Login error:', error);
-      const errorResult = { 
-        success: false, 
-        error: "An unexpected error occurred. Please try again." 
-      };
-      
+    const result = await signIn(data.email, data.password);
+    
+    if (result.success) {
       toast({
-        variant: "destructive",
-        title: "Login Error",
-        description: errorResult.error,
+        title: "Welcome back!",
+        description: "Successfully logged in.",
       });
-      
-      return errorResult;
+      // Redirect will be handled by useEffect above
     }
+    
+    return result;
   };
 
   if (loading) {

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,56 +5,87 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import PersonalDetailsSection from "@/components/register/PersonalDetailsSection";
-import AcademicInterestsSection from "@/components/register/AcademicInterestsSection";
-import AccountCreationSection from "@/components/register/AccountCreationSection";
-import AgreementSection from "@/components/register/AgreementSection";
+import PersonalInfoSection from "@/components/signup/research-aid/PersonalInfoSection";
+import ExpertiseSection from "@/components/signup/research-aid/ExpertiseSection";
+import CredentialsSection from "@/components/signup/research-aid/CredentialsSection";
+import AgreementSection from "@/components/signup/research-aid/AgreementSection";
 
-const Register = () => {
+const ResearchAidSignup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
-    email: "",
-    phoneNumber: "",
-    country: "",
-    institution: "",
-    faculty: "",
-    studyLevel: "",
     sex: "",
     dateOfBirth: "",
-    researchAreas: [] as string[],
-    topicTitle: "",
-    researchStage: "",
+    email: "",
     password: "",
     confirmPassword: "",
+    phoneNumber: "",
+    country: "",
+    languages: [] as string[],
+    expertise: [] as string[],
+    otherExpertise: "",
+    experience: "",
+    linkedInUrl: "",
     agreedToTerms: false
   });
 
-  const researchAreaOptions = [
-    "Education", "Health Sciences", "Engineering", "Social Sciences", "Natural Sciences",
-    "Agriculture", "Economics", "Geography", "Psychology", "Computer Science",
-    "Mathematics", "Physics", "Chemistry", "Biology", "Literature", "History"
+  const [cvFile, setCvFile] = useState<File | null>(null);
+  const [certFile, setCertFile] = useState<File | null>(null);
+
+  const availableLanguages = [
+    "English", "French", "Spanish", "Arabic", "Portuguese", "German", "Swahili", "Other"
+  ];
+
+  const expertiseAreas = [
+    "Statistician",
+    "GIS Specialist", 
+    "Academic Editor",
+    "Publisher or Journal Consultant",
+    "Data Analyst",
+    "Field Data Collector",
+    "Thesis Formatter / Reference Stylist",
+    "Research Assistants",
+    "Transcribers",
+    "Survey Tool Experts",
+    "Design & Visualization",
+    "Translators"
   ];
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const toggleResearchArea = (area: string) => {
+  const toggleLanguage = (language: string) => {
     setFormData(prev => ({
       ...prev,
-      researchAreas: prev.researchAreas.includes(area)
-        ? prev.researchAreas.filter(a => a !== area)
-        : [...prev.researchAreas, area]
+      languages: prev.languages.includes(language)
+        ? prev.languages.filter(l => l !== language)
+        : [...prev.languages, language]
     }));
   };
 
-  const removeResearchArea = (area: string) => {
+  const toggleExpertise = (expertise: string) => {
     setFormData(prev => ({
       ...prev,
-      researchAreas: prev.researchAreas.filter(a => a !== area)
+      expertise: prev.expertise.includes(expertise)
+        ? prev.expertise.filter(e => e !== expertise)
+        : [...prev.expertise, expertise]
+    }));
+  };
+
+  const removeLanguage = (language: string) => {
+    setFormData(prev => ({
+      ...prev,
+      languages: prev.languages.filter(l => l !== language)
+    }));
+  };
+
+  const removeExpertise = (expertise: string) => {
+    setFormData(prev => ({
+      ...prev,
+      expertise: prev.expertise.filter(e => e !== expertise)
     }));
   };
 
@@ -83,7 +113,7 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      console.log('Attempting to sign up student with role: student');
+      console.log('Attempting to sign up research aid with role: aid');
       
       // Check network connectivity first
       try {
@@ -107,7 +137,7 @@ const Register = () => {
         options: {
           data: {
             fullName: formData.fullName,
-            role: 'student'
+            role: 'aid'
           }
         }
       });
@@ -142,16 +172,15 @@ const Register = () => {
             .from('users')
             .update({
               name: formData.fullName,
-              phone_number: formData.phoneNumber,
-              country: formData.country,
-              institution: formData.institution,
-              faculty: formData.faculty,
-              study_level: formData.studyLevel,
               sex: formData.sex,
               date_of_birth: formData.dateOfBirth || null,
-              research_areas: formData.researchAreas,
-              topic_title: formData.topicTitle,
-              research_stage: formData.researchStage
+              phone_number: formData.phoneNumber,
+              country: formData.country,
+              languages: formData.languages,
+              expertise: formData.expertise,
+              other_expertise: formData.otherExpertise,
+              experience: formData.experience,
+              linkedin_url: formData.linkedInUrl
             })
             .eq('id', authData.user.id);
 
@@ -204,41 +233,43 @@ const Register = () => {
                   <Link to="/" className="inline-flex items-center space-x-2 mb-4">
                     <img 
                       src="/lovable-uploads/a2f6a2f6-b795-4e93-914c-2b58648099ff.png" 
-                      alt="ResearchWhao" 
+                      alt="ScholarConnect" 
                       className="w-8 h-8"
                     />
-                    <span className="text-2xl font-bold text-blue-600">ResearchWhao</span>
+                    <span className="text-2xl font-bold text-blue-600">ScholarConnect</span>
                   </Link>
                   <CardTitle className="text-2xl text-center font-bold">
-                    Join ResearchWhao as a Student
+                    Join Our Network of Expert Research Aids
                   </CardTitle>
-                  <p className="text-lg text-center font-semibold text-gray-700 mb-2">
-                    Get the Right Academic Support at Every Step of Your Research Journey
-                  </p>
                   <p className="text-gray-600 text-center">
-                    Connect with top scholars, get expert assistance, and elevate your thesis or dissertation.
+                    Support scholars across Africa with your skills in editing, data analysis, publication, and more.
                   </p>
                 </div>
               </CardHeader>
               
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-8">
-                  <PersonalDetailsSection
+                  <PersonalInfoSection
                     formData={formData}
+                    availableLanguages={availableLanguages}
                     onInputChange={handleInputChange}
+                    onToggleLanguage={toggleLanguage}
+                    onRemoveLanguage={removeLanguage}
                   />
 
-                  <AcademicInterestsSection
+                  <ExpertiseSection
                     formData={formData}
-                    researchAreaOptions={researchAreaOptions}
+                    expertiseAreas={expertiseAreas}
                     onInputChange={handleInputChange}
-                    onToggleResearchArea={toggleResearchArea}
-                    onRemoveResearchArea={removeResearchArea}
+                    onToggleExpertise={toggleExpertise}
+                    onRemoveExpertise={removeExpertise}
                   />
 
-                  <AccountCreationSection
+                  <CredentialsSection
                     formData={formData}
                     onInputChange={handleInputChange}
+                    onSetCvFile={setCvFile}
+                    onSetCertFile={setCertFile}
                   />
 
                   <AgreementSection
@@ -259,4 +290,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default ResearchAidSignup;
