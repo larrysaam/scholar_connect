@@ -1,268 +1,306 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import PersonalInfoSection from "@/components/signup/research-aid/PersonalInfoSection";
-import ExpertiseSection from "@/components/signup/research-aid/ExpertiseSection";
-import CredentialsSection from "@/components/signup/research-aid/CredentialsSection";
-import AgreementSection from "@/components/signup/research-aid/AgreementSection";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/components/ui/use-toast';
+import { useSecureAuth } from '@/hooks/useSecureAuth';
+
+interface FormData {
+  fullName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  country: string;
+  institution: string;
+  faculty: string;
+  expertise: string[];
+  otherExpertise: string;
+  experience: string;
+  linkedinUrl: string;
+  sex: string;
+  phoneNumber: string;
+  dateOfBirth: string;
+  languages: string[];
+  termsAccepted: boolean;
+}
 
 const ResearchAidSignup = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: "",
-    sex: "",
-    dateOfBirth: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    phoneNumber: "",
-    country: "",
-    languages: [] as string[],
-    expertise: [] as string[],
-    otherExpertise: "",
-    experience: "",
-    linkedInUrl: "",
-    agreedToTerms: false
+  const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState<FormData>({
+    fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    country: '',
+    institution: '',
+    faculty: '',
+    expertise: [],
+    otherExpertise: '',
+    experience: '',
+    linkedinUrl: '',
+    sex: '',
+    phoneNumber: '',
+    dateOfBirth: '',
+    languages: [],
+    termsAccepted: false,
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const { signUp } = useSecureAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const [cvFile, setCvFile] = useState<File | null>(null);
-  const [certFile, setCertFile] = useState<File | null>(null);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type, checked } = e.target;
 
-  const availableLanguages = [
-    "English", "French", "Spanish", "Arabic", "Portuguese", "German", "Swahili", "Other"
-  ];
-
-  const expertiseAreas = [
-    "Statistician",
-    "GIS Specialist", 
-    "Academic Editor",
-    "Publisher or Journal Consultant",
-    "Data Analyst",
-    "Field Data Collector",
-    "Thesis Formatter / Reference Stylist",
-    "Research Assistants",
-    "Transcribers",
-    "Survey Tool Experts",
-    "Design & Visualization",
-    "Translators"
-  ];
-
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      if (type === 'checkbox') {
+        return { ...prev, [name]: checked };
+      } else if (name === 'expertise') {
+        const selectedOptions = Array.from((e.target as HTMLSelectElement).selectedOptions, option => option.value);
+        return { ...prev, [name]: selectedOptions };
+      } else if (name === 'languages') {
+        const selectedOptions = Array.from((e.target as HTMLSelectElement).selectedOptions, option => option.value);
+        return { ...prev, [name]: selectedOptions };
+      } else {
+        return { ...prev, [name]: value };
+      }
+    });
   };
 
-  const toggleLanguage = (language: string) => {
-    setFormData(prev => ({
-      ...prev,
-      languages: prev.languages.includes(language)
-        ? prev.languages.filter(l => l !== language)
-        : [...prev.languages, language]
-    }));
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 1:
+        return formData.fullName !== '' && formData.email !== '' && formData.password !== '' && formData.confirmPassword !== '' && formData.password === formData.confirmPassword;
+      case 2:
+        return formData.country !== '' && formData.institution !== '' && formData.faculty !== '';
+      case 3:
+        return formData.expertise.length > 0 && formData.experience !== '';
+      case 4:
+        return formData.termsAccepted;
+      default:
+        return false;
+    }
   };
 
-  const toggleExpertise = (expertise: string) => {
-    setFormData(prev => ({
-      ...prev,
-      expertise: prev.expertise.includes(expertise)
-        ? prev.expertise.filter(e => e !== expertise)
-        : [...prev.expertise, expertise]
-    }));
+  const nextStep = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(prev => prev + 1);
+    } else {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const removeLanguage = (language: string) => {
-    setFormData(prev => ({
-      ...prev,
-      languages: prev.languages.filter(l => l !== language)
-    }));
-  };
-
-  const removeExpertise = (expertise: string) => {
-    setFormData(prev => ({
-      ...prev,
-      expertise: prev.expertise.filter(e => e !== expertise)
-    }));
+  const prevStep = () => {
+    setCurrentStep(prev => prev - 1);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        variant: "destructive",
-        title: "Password Mismatch",
-        description: "Passwords do not match. Please check and try again."
-      });
-      return;
-    }
-
-    if (!formData.agreedToTerms) {
-      toast({
-        variant: "destructive",
-        title: "Terms Required",
-        description: "Please agree to the terms and conditions to continue."
-      });
-      return;
-    }
+    if (!validateStep(4)) return;
 
     setIsLoading(true);
-
     try {
-      console.log('Attempting to sign up research aid with role: aid');
-      
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email.toLowerCase().trim(),
-        password: formData.password,
-        options: {
-          data: {
-            fullName: formData.fullName,
-            role: 'aid'
-          },
-          emailRedirectTo: `${window.location.origin}/auth`
-        }
-      });
+      const userData = {
+        fullName: formData.fullName,
+        role: 'aid',
+        country: formData.country,
+        institution: formData.institution,
+        faculty: formData.faculty,
+        expertise: formData.expertise,
+        otherExpertise: formData.otherExpertise,
+        experience: formData.experience,
+        linkedinUrl: formData.linkedinUrl,
+        sex: formData.sex as "male" | "female",
+        phoneNumber: formData.phoneNumber,
+        dateOfBirth: formData.dateOfBirth,
+        languages: formData.languages,
+      };
 
-      if (authError) {
-        console.error('Auth error:', authError);
-        
-        let errorMessage = authError.message;
-        if (authError.message.includes('User already registered')) {
-          errorMessage = "This email address is already registered. Please use a different email or try signing in.";
-        }
-        
-        toast({
-          variant: "destructive",
-          title: "Registration Failed",
-          description: errorMessage
-        });
-        return;
-      }
+      const { success, error } = await signUp(formData.email, formData.password, userData);
 
-      console.log('Auth successful, user created:', authData.user?.id);
-
-      if (authData.user) {
-        // Wait a moment for the trigger to create the user profile
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        console.log('Updating user profile...');
-        
-        try {
-          const { error: updateError } = await supabase
-            .from('users')
-            .update({
-              name: formData.fullName,
-              sex: formData.sex,
-              date_of_birth: formData.dateOfBirth || null,
-              phone_number: formData.phoneNumber,
-              country: formData.country,
-              languages: formData.languages,
-              expertise: formData.expertise,
-              other_expertise: formData.otherExpertise,
-              experience: formData.experience,
-              linkedin_url: formData.linkedInUrl
-            })
-            .eq('id', authData.user.id);
-
-          if (updateError) {
-            console.warn('Error updating profile (non-critical):', updateError);
-          } else {
-            console.log('Profile updated successfully');
-          }
-        } catch (profileError) {
-          console.warn('Profile update failed (non-critical):', profileError);
-        }
-
+      if (success) {
         toast({
           title: "Registration Successful!",
-          description: "Please check your email to verify your account, then sign in to access your dashboard."
+          description: "Please check your email to verify your account.",
         });
-        
-        navigate("/auth");
+        navigate('/auth');
+      } else {
+        toast({
+          title: "Registration Failed",
+          description: error || "Please try again.",
+          variant: "destructive",
+        });
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Registration error:', error);
-      
       toast({
-        variant: "destructive",
         title: "Registration Failed",
-        description: "An unexpected error occurred. Please try again."
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
+  const renderStep1 = () => (
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="fullName">Full Name</Label>
+        <Input type="text" id="fullName" name="fullName" value={formData.fullName} onChange={handleInputChange} />
+      </div>
+      <div>
+        <Label htmlFor="email">Email</Label>
+        <Input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} />
+      </div>
+      <div>
+        <Label htmlFor="password">Password</Label>
+        <Input type="password" id="password" name="password" value={formData.password} onChange={handleInputChange} />
+      </div>
+      <div>
+        <Label htmlFor="confirmPassword">Confirm Password</Label>
+        <Input type="password" id="confirmPassword" name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} />
+      </div>
+    </div>
+  );
+
+  const renderStep2 = () => (
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="country">Country</Label>
+        <Input type="text" id="country" name="country" value={formData.country} onChange={handleInputChange} />
+      </div>
+      <div>
+        <Label htmlFor="institution">Institution</Label>
+        <Input type="text" id="institution" name="institution" value={formData.institution} onChange={handleInputChange} />
+      </div>
+      <div>
+        <Label htmlFor="faculty">Faculty</Label>
+        <Input type="text" id="faculty" name="faculty" value={formData.faculty} onChange={handleInputChange} />
+      </div>
+    </div>
+  );
+
+  const renderStep3 = () => (
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="expertise">Areas of Expertise</Label>
+        <Select multiple onValueChange={(values) => setFormData(prev => ({ ...prev, expertise: values }))}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select expertise" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="AI">Artificial Intelligence</SelectItem>
+            <SelectItem value="ML">Machine Learning</SelectItem>
+            <SelectItem value="DL">Deep Learning</SelectItem>
+            <SelectItem value="NLP">Natural Language Processing</SelectItem>
+            <SelectItem value="CV">Computer Vision</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <Label htmlFor="otherExpertise">Other Expertise</Label>
+        <Textarea id="otherExpertise" name="otherExpertise" value={formData.otherExpertise} onChange={handleInputChange} />
+      </div>
+      <div>
+        <Label htmlFor="experience">Years of Experience</Label>
+        <Input type="text" id="experience" name="experience" value={formData.experience} onChange={handleInputChange} />
+      </div>
+      <div>
+        <Label htmlFor="linkedinUrl">LinkedIn Profile URL</Label>
+        <Input type="url" id="linkedinUrl" name="linkedinUrl" value={formData.linkedinUrl} onChange={handleInputChange} />
+      </div>
+    </div>
+  );
+
+  const renderStep4 = () => (
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="sex">Sex</Label>
+        <Select onValueChange={(value) => setFormData(prev => ({ ...prev, sex: value }))}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select sex" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="male">Male</SelectItem>
+            <SelectItem value="female">Female</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <Label htmlFor="phoneNumber">Phone Number</Label>
+        <Input type="tel" id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} />
+      </div>
+      <div>
+        <Label htmlFor="dateOfBirth">Date of Birth</Label>
+        <Input type="date" id="dateOfBirth" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleInputChange} />
+      </div>
+      <div>
+        <Label htmlFor="languages">Languages Spoken</Label>
+        <Select multiple onValueChange={(values) => setFormData(prev => ({ ...prev, languages: values }))}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select languages" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="english">English</SelectItem>
+            <SelectItem value="french">French</SelectItem>
+            <SelectItem value="spanish">Spanish</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <Label htmlFor="termsAccepted">
+          <Checkbox id="termsAccepted" name="termsAccepted" checked={formData.termsAccepted} onCheckedChange={(checked) => setFormData(prev => ({ ...prev, termsAccepted: !!checked }))} />
+          I agree to the terms and conditions
+        </Label>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
-      <main className="flex-grow py-16 bg-gray-50">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="max-w-2xl mx-auto">
-            <Card>
-              <CardHeader>
-                <div className="flex flex-col items-center mb-6">
-                  <Link to="/" className="inline-flex items-center space-x-2 mb-4">
-                    <img 
-                      src="/lovable-uploads/a2f6a2f6-b795-4e93-914c-2b58648099ff.png" 
-                      alt="ScholarConnect" 
-                      className="w-8 h-8"
-                    />
-                    <span className="text-2xl font-bold text-blue-600">ScholarConnect</span>
-                  </Link>
-                  <CardTitle className="text-2xl text-center font-bold">
-                    Join Our Network of Expert Research Aids
-                  </CardTitle>
-                  <p className="text-gray-600 text-center">
-                    Support scholars across Africa with your skills in editing, data analysis, publication, and more.
-                  </p>
-                </div>
-              </CardHeader>
-              
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-8">
-                  <PersonalInfoSection
-                    formData={formData}
-                    availableLanguages={availableLanguages}
-                    onInputChange={handleInputChange}
-                    onToggleLanguage={toggleLanguage}
-                    onRemoveLanguage={removeLanguage}
-                  />
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md space-y-8">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">Research Aid Signup</CardTitle>
+          <CardDescription className="text-muted-foreground text-center">
+            {`Step ${currentStep} of 4`}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <form onSubmit={handleSubmit}>
+            {currentStep === 1 && renderStep1()}
+            {currentStep === 2 && renderStep2()}
+            {currentStep === 3 && renderStep3()}
+            {currentStep === 4 && renderStep4()}
 
-                  <ExpertiseSection
-                    formData={formData}
-                    expertiseAreas={expertiseAreas}
-                    onInputChange={handleInputChange}
-                    onToggleExpertise={toggleExpertise}
-                    onRemoveExpertise={removeExpertise}
-                  />
-
-                  <CredentialsSection
-                    formData={formData}
-                    onInputChange={handleInputChange}
-                    onSetCvFile={setCvFile}
-                    onSetCertFile={setCertFile}
-                  />
-
-                  <AgreementSection
-                    agreedToTerms={formData.agreedToTerms}
-                    onInputChange={handleInputChange}
-                    onSubmit={handleSubmit}
-                    isLoading={isLoading}
-                  />
-                </form>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </main>
-      
-      <Footer />
+            <div className="flex justify-between">
+              {currentStep > 1 && (
+                <Button variant="outline" onClick={prevStep}>
+                  Previous
+                </Button>
+              )}
+              {currentStep < 4 ? (
+                <Button type="button" onClick={nextStep} disabled={isLoading}>
+                  Next
+                </Button>
+              ) : (
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? "Submitting..." : "Submit"}
+                </Button>
+              )}
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };
