@@ -1,8 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ChevronDown } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Menu, X } from "lucide-react";
 import { useSecureAuth } from "@/hooks/useSecureAuth";
 
 const Navbar = () => {
@@ -48,38 +47,7 @@ const Navbar = () => {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            {!user ? (
-              <>
-                <Button variant="outline" asChild>
-                  <a href="/auth">Sign In</a>
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button className="flex items-center gap-2">
-                      Sign Up
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem asChild>
-                      <a href="/register" className="w-full cursor-pointer">
-                        Sign up as Student
-                      </a>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <a href="/research-aide-signup" className="w-full cursor-pointer">
-                        Sign up as Researcher
-                      </a>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <a href="/research-aid-signup" className="w-full cursor-pointer">
-                        Sign up as Research Aid
-                      </a>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
-            ) : (
+            {user && (
               <Button variant="outline" asChild>
                 <a href="/dashboard">Dashboard</a>
               </Button>
@@ -126,24 +94,7 @@ const Navbar = () => {
               )}
               
               <div className="flex flex-col space-y-2 pt-4">
-                {!user ? (
-                  <>
-                    <Button variant="outline" asChild className="w-full">
-                      <a href="/auth">Sign In</a>
-                    </Button>
-                    <div className="space-y-2">
-                      <Button asChild className="w-full">
-                        <a href="/register">Sign up as Student</a>
-                      </Button>
-                      <Button variant="outline" asChild className="w-full">
-                        <a href="/research-aide-signup">Sign up as Researcher</a>
-                      </Button>
-                      <Button variant="outline" asChild className="w-full">
-                        <a href="/research-aid-signup">Sign up as Research Aid</a>
-                      </Button>
-                    </div>
-                  </>
-                ) : (
+                {user && (
                   <Button variant="outline" asChild className="w-full">
                     <a href="/dashboard">Dashboard</a>
                   </Button>
