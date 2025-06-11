@@ -14,12 +14,25 @@ const ResearcherProfile = () => {
     id: id || "1",
     name: "Dr. Marie Ngono Abega",
     title: "Senior Research Fellow in Geographic Information Systems",
+    affiliation: "University of Yaoundé I",
+    location: "Yaoundé, Cameroon",
+    rating: 4.9,
+    totalReviews: 45,
+    studentsSupervised: 25,
+    yearsExperience: 15,
+    expertise: ["Remote Sensing", "Spatial Analysis", "Environmental Modeling", "Cartography", "Urban Planning", "Climate Change Analysis"],
+    bio: "Dr. Marie Ngono Abega is a distinguished researcher with over 15 years of experience in Geographic Information Systems and Remote Sensing. She has published extensively in international journals and has worked on numerous projects involving spatial analysis, environmental modeling, and urban planning. Her expertise spans across multiple domains including climate change analysis, land use planning, and disaster risk assessment. She is passionate about using GIS technology to solve real-world problems and has collaborated with various international organizations including the UN and World Bank.",
+    imageUrl: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
+    isOnline: true,
+    responseTime: "Usually responds within 2 hours",
+    languages: ["English", "French", "German"],
+    
+    // Additional data for ProfileTabs
     institution: "University of Yaoundé I",
     department: "Department of Geography",
     field: "Geographic Information Systems",
     specialties: ["Remote Sensing", "Spatial Analysis", "Environmental Modeling", "Cartography", "Urban Planning", "Climate Change Analysis"],
     hourlyRate: 15000,
-    rating: 4.9,
     reviews: [
       {
         id: "1",
@@ -43,7 +56,6 @@ const ResearcherProfile = () => {
         comment: "Very knowledgeable researcher with deep understanding of cartographic principles. Great collaboration experience."
       }
     ],
-    bio: "Dr. Marie Ngono Abega is a distinguished researcher with over 15 years of experience in Geographic Information Systems and Remote Sensing. She has published extensively in international journals and has worked on numerous projects involving spatial analysis, environmental modeling, and urban planning. Her expertise spans across multiple domains including climate change analysis, land use planning, and disaster risk assessment. She is passionate about using GIS technology to solve real-world problems and has collaborated with various international organizations including the UN and World Bank.",
     education: [
       {
         degree: "PhD in Geography (Geographic Information Systems)",
@@ -170,7 +182,6 @@ const ResearcherProfile = () => {
         count: 8
       }
     ],
-    imageUrl: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
     availableTimes: [
       {
         date: new Date("2024-01-20"),

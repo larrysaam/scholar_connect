@@ -110,14 +110,15 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
               researcherName={researcher.name}
             />
             
-            <BookingModal researcher={researcher} />
-            
             <Button variant="outline" className="w-full">
               <MessageSquare className="h-4 w-4 mr-2" />
               Send Message
             </Button>
             
-            <CoAuthorModal researcher={researcher} />
+            <Button variant="outline" className="w-full">
+              <Users className="h-4 w-4 mr-2" />
+              Invite to Co-Author
+            </Button>
           </div>
         </div>
 
