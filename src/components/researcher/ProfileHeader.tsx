@@ -5,8 +5,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Star, Users, Calendar, MessageSquare } from "lucide-react";
 import StatusIndicator from "./StatusIndicator";
 import BookingModal from "./BookingModal";
-import CoAuthorModal from "./CoAuthorModal";
-import ConsultationServicesDisplay from "./ConsultationServicesDisplay";
 
 interface ProfileHeaderProps {
   researcher: {
@@ -25,6 +23,7 @@ interface ProfileHeaderProps {
     isOnline: boolean;
     responseTime: string;
     languages: string[];
+    hourlyRate: number;
   };
 }
 
@@ -101,14 +100,16 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
             <div className="text-sm text-gray-600">
               <span className="font-medium">Response time:</span> {researcher.responseTime}
             </div>
+
+            {/* Hourly Rate */}
+            <div className="text-lg font-bold text-green-600">
+              {researcher.hourlyRate.toLocaleString()} XAF/hour
+            </div>
           </div>
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-3 md:w-64">
-            <ConsultationServicesDisplay 
-              researcherId={researcher.id}
-              researcherName={researcher.name}
-            />
+            <BookingModal researcher={researcher} />
             
             <Button variant="outline" className="w-full">
               <MessageSquare className="h-4 w-4 mr-2" />

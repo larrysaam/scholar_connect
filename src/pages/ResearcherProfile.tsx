@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -26,13 +25,13 @@ const ResearcherProfile = () => {
     isOnline: true,
     responseTime: "Usually responds within 2 hours",
     languages: ["English", "French", "German"],
+    hourlyRate: 15000,
     
     // Additional data for ProfileTabs
     institution: "University of Yaoundé I",
     department: "Department of Geography",
     field: "Geographic Information Systems",
     specialties: ["Remote Sensing", "Spatial Analysis", "Environmental Modeling", "Cartography", "Urban Planning", "Climate Change Analysis"],
-    hourlyRate: 15000,
     reviews: [
       {
         id: "1",

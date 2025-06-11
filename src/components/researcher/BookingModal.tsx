@@ -5,6 +5,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Calendar as CalendarIcon } from "lucide-react";
 
 interface BookingModalProps {
   researcher: {
@@ -24,6 +26,33 @@ interface BookingModalProps {
     }[];
   };
 }
+
+const consultationServices = [
+  {
+    name: "General Consultation",
+    description: "Get expert guidance on your research questions",
+    duration: "1 hour",
+    price: "hourlyRate"
+  },
+  {
+    name: "Proposal Writing Support",
+    description: "Help with structuring and writing research proposals",
+    duration: "1 hour",
+    price: "hourlyRate"
+  },
+  {
+    name: "Literature Review Assistance",
+    description: "Guidance on conducting comprehensive literature reviews",
+    duration: "1 hour", 
+    price: "hourlyRate"
+  },
+  {
+    name: "Methodology Consultation",
+    description: "Expert advice on research design and methodology",
+    duration: "1 hour",
+    price: "hourlyRate"
+  }
+];
 
 const challenges = [
   "Generate a research idea",
@@ -42,6 +71,7 @@ const challenges = [
 const BookingModal = ({ researcher }: BookingModalProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedService, setSelectedService] = useState<string | null>("General Consultation");
   const [selectedChallenges, setSelectedChallenges] = useState<string[]>([]);
   const [comment, setComment] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
@@ -76,6 +106,7 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
   // Handle booking
   const handleBooking = () => {
     console.log("Booking with", researcher.name);
+    console.log("Service:", selectedService);
     console.log("Date:", selectedDate);
     console.log("Time:", selectedTime);
     console.log("Challenges:", selectedChallenges);
@@ -86,19 +117,49 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-white text-blue-700 hover:bg-blue-50">
+        <Button className="w-full">
+          <CalendarIcon className="h-4 w-4 mr-2" />
           Book Consultation
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Book a Consultation</DialogTitle>
+          <DialogTitle>Book a Consultation with {researcher.name}</DialogTitle>
           <DialogDescription>
-            Select a date and time to schedule your consultation with {researcher.name}.
+            Select a consultation service, date and time to schedule your session.
           </DialogDescription>
         </DialogHeader>
         
         <div className="grid gap-6 py-4">
+          {/* Consultation Services */}
+          <div>
+            <h3 className="mb-3 font-medium">Select Consultation Service:</h3>
+            <div className="grid gap-3">
+              {consultationServices.map((service) => (
+                <div
+                  key={service.name}
+                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                    selectedService === service.name
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  onClick={() => setSelectedService(service.name)}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h4 className="font-medium">{service.name}</h4>
+                      <p className="text-sm text-gray-600 mt-1">{service.description}</p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant="outline">{service.duration}</Badge>
+                        <Badge variant="secondary">{researcher.hourlyRate.toLocaleString()} XAF</Badge>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div>
             <h3 className="mb-2 font-medium">Select a Date:</h3>
             <Calendar
@@ -165,13 +226,13 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
           
           <div className="pt-4 border-t">
             <div className="flex justify-between items-center mb-4">
-              <span>Consultation Fee:</span>
-              <span className="font-semibold">{researcher.hourlyRate} XAF</span>
+              <span>Total Fee:</span>
+              <span className="font-semibold">{researcher.hourlyRate.toLocaleString()} XAF/hour</span>
             </div>
             
             <Button 
               className="w-full" 
-              disabled={!selectedDate || !selectedTime || selectedChallenges.length === 0}
+              disabled={!selectedDate || !selectedTime || !selectedService || selectedChallenges.length === 0}
               onClick={handleBooking}
             >
               Complete Booking
