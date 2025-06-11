@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +17,7 @@ const ResearchAidSignup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
-    sex: "",
+    sex: "" as "male" | "female" | "",
     dateOfBirth: "",
     email: "",
     password: "",
@@ -172,7 +173,7 @@ const ResearchAidSignup = () => {
             .from('users')
             .update({
               name: formData.fullName,
-              sex: formData.sex,
+              sex: formData.sex as "male" | "female" | null,
               date_of_birth: formData.dateOfBirth || null,
               phone_number: formData.phoneNumber,
               country: formData.country,
@@ -218,6 +219,38 @@ const ResearchAidSignup = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const toggleLanguage = (language: string) => {
+    setFormData(prev => ({
+      ...prev,
+      languages: prev.languages.includes(language)
+        ? prev.languages.filter(l => l !== language)
+        : [...prev.languages, language]
+    }));
+  };
+
+  const toggleExpertise = (expertise: string) => {
+    setFormData(prev => ({
+      ...prev,
+      expertise: prev.expertise.includes(expertise)
+        ? prev.expertise.filter(e => e !== expertise)
+        : [...prev.expertise, expertise]
+    }));
+  };
+
+  const removeLanguage = (language: string) => {
+    setFormData(prev => ({
+      ...prev,
+      languages: prev.languages.filter(l => l !== language)
+    }));
+  };
+
+  const removeExpertise = (expertise: string) => {
+    setFormData(prev => ({
+      ...prev,
+      expertise: prev.expertise.filter(e => e !== expertise)
+    }));
   };
 
   return (

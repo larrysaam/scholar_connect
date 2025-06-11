@@ -36,7 +36,7 @@ const PaymentCheckout = ({
   onPaymentSuccess, 
   onCancel 
 }: PaymentCheckoutProps) => {
-  const [paymentMethod, setPaymentMethod] = useState<"mobile_money" | "card" | "wallet">("mobile_money");
+  const [paymentMethod, setPaymentMethod] = useState<"stripe" | "mobile_money" | "bank_transfer">("mobile_money");
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
@@ -144,17 +144,17 @@ const PaymentCheckout = ({
                 </Label>
               </div>
               <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                <RadioGroupItem value="card" id="card" />
-                <Label htmlFor="card" className="flex items-center space-x-2 flex-1 cursor-pointer">
+                <RadioGroupItem value="stripe" id="stripe" />
+                <Label htmlFor="stripe" className="flex items-center space-x-2 flex-1 cursor-pointer">
                   <CreditCard className="h-4 w-4 text-blue-600" />
                   <span>Credit/Debit Card</span>
                 </Label>
               </div>
               <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                <RadioGroupItem value="wallet" id="wallet" />
-                <Label htmlFor="wallet" className="flex items-center space-x-2 flex-1 cursor-pointer">
+                <RadioGroupItem value="bank_transfer" id="bank_transfer" />
+                <Label htmlFor="bank_transfer" className="flex items-center space-x-2 flex-1 cursor-pointer">
                   <Wallet className="h-4 w-4 text-green-600" />
-                  <span>ScholarConnect Wallet</span>
+                  <span>Bank Transfer</span>
                 </Label>
               </div>
             </RadioGroup>
