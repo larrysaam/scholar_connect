@@ -46,7 +46,14 @@ const UnifiedSignupForm = ({ defaultUserType = 'student' }: UnifiedSignupFormPro
   // Specialized form data for different user types
   const [studentData, setStudentData] = useState<Partial<StudentSignupData>>({});
   const [expertData, setExpertData] = useState<Partial<ExpertSignupData>>({});
-  const [aidData, setAidData] = useState<Partial<ResearchAidSignupData>>({});
+  const [aidData, setAidData] = useState<Partial<ResearchAidSignupData>>({
+    sex: '',
+    dateOfBirth: '',
+    country: '',
+    languages: [],
+    expertise: [],
+    otherExpertise: '',
+  });
 
   // Available languages for the PersonalInfoSection
   const availableLanguages = [
@@ -122,9 +129,9 @@ const UnifiedSignupForm = ({ defaultUserType = 'student' }: UnifiedSignupFormPro
           other_expertise: aidData.otherExpertise,
           languages: aidData.languages,
           linkedin_url: aidData.linkedInUrl,
-          country: aidData.country,
-          date_of_birth: aidData.dateOfBirth,
-          sex: aidData.sex,
+          country: aidData.country || '',
+          date_of_birth: aidData.dateOfBirth || '',
+          sex: aidData.sex || '',
         };
       default:
         return {};
