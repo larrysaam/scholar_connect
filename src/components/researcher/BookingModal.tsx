@@ -1,12 +1,8 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +11,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Calendar as CalendarIcon, DollarSign } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
+import ServiceSelector from "./booking/ServiceSelector";
+import AcademicLevelSelector from "./booking/AcademicLevelSelector";
+import AddOnSelector from "./booking/AddOnSelector";
+import DateTimeSelector from "./booking/DateTimeSelector";
+import ChallengeSelector from "./booking/ChallengeSelector";
+import BookingSummary from "./booking/BookingSummary";
 
 interface BookingModalProps {
   researcher: {
@@ -41,20 +43,6 @@ interface ConsultationService {
     price: number;
   }>;
 }
-
-const challenges = [
-  "Generate a research idea",
-  "Proposal writing", 
-  "Literature review",
-  "Conceptual and theoretical frameworks",
-  "Methodology",
-  "Report writing",
-  "Live document review",
-  "General research guidance",
-  "Expert knowledge",
-  "Interview a researcher",
-  "Media visibility"
-];
 
 const BookingModal = ({ researcher }: BookingModalProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -126,24 +114,6 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
     }
   ];
 
-  // Function to check if a date has available slots
-  const hasSlots = (date: Date) => {
-    return researcher.availableTimes.some(
-      item => item.date.toDateString() === date.toDateString()
-    );
-  };
-
-  // Get available time slots for the selected date
-  const getAvailableSlots = () => {
-    if (!selectedDate) return [];
-    
-    const dateInfo = researcher.availableTimes.find(
-      item => item.date.toDateString() === selectedDate.toDateString()
-    );
-    
-    return dateInfo ? dateInfo.slots : [];
-  };
-
   // Get selected service details
   const getSelectedServiceDetails = () => {
     return consultationServices.find(service => service.id === selectedService);
@@ -171,6 +141,14 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
     }, 0);
     
     return basePrice + addOnsPrice;
+  };
+
+  const getAddOnsPrice = () => {
+    return selectedAddOns.reduce((total, addonName) => {
+      const service = getSelectedServiceDetails();
+      const addon = service?.addOns.find(a => a.name === addonName);
+      return total + (addon ? addon.price : 0);
+    }, 0);
   };
 
   // Handle challenge selection (multi-select)
@@ -222,130 +200,36 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
         </DialogHeader>
         
         <div className="grid gap-6 py-4">
-          {/* Consultation Services */}
-          <div>
-            <h3 className="mb-3 font-medium">Select Consultation Service:</h3>
-            <div className="space-y-3">
-              <Select value={selectedService || ""} onValueChange={setSelectedService}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose a consultation service" />
-                </SelectTrigger>
-                <SelectContent>
-                  {consultationServices.map((service) => (
-                    <SelectItem key={service.id} value={service.id}>
-                      {service.category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              {selectedService && (
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600">
-                    {getSelectedServiceDetails()?.description}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
+          <ServiceSelector
+            services={consultationServices}
+            selectedService={selectedService}
+            onServiceChange={setSelectedService}
+          />
 
-          {/* Academic Level Selection */}
-          {selectedService && (
-            <div>
-              <h3 className="mb-3 font-medium">Select Academic Level:</h3>
-              <Select value={selectedAcademicLevel || ""} onValueChange={setSelectedAcademicLevel}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose your academic level" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getSelectedServiceDetails()?.academicLevelPrices.map((levelPrice) => (
-                    <SelectItem key={levelPrice.level} value={levelPrice.level}>
-                      {levelPrice.level} - {levelPrice.price.toLocaleString()} XAF
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          <AcademicLevelSelector
+            selectedService={getSelectedServiceDetails()}
+            selectedAcademicLevel={selectedAcademicLevel}
+            onAcademicLevelChange={setSelectedAcademicLevel}
+          />
 
-          {/* Add-ons Selection */}
-          {selectedService && getSelectedServiceDetails()?.addOns.length > 0 && (
-            <div>
-              <h3 className="mb-3 font-medium">Optional Add-ons:</h3>
-              <div className="space-y-3">
-                {getSelectedServiceDetails()?.addOns.map((addon) => (
-                  <div key={addon.name} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        id={addon.name}
-                        checked={selectedAddOns.includes(addon.name)}
-                        onCheckedChange={() => handleAddOnToggle(addon.name)}
-                      />
-                      <Label htmlFor={addon.name} className="cursor-pointer">
-                        {addon.name}
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <DollarSign className="h-3 w-3" />
-                      <span className="text-sm font-medium">{addon.price.toLocaleString()} XAF</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <AddOnSelector
+            selectedService={getSelectedServiceDetails()}
+            selectedAddOns={selectedAddOns}
+            onAddOnToggle={handleAddOnToggle}
+          />
 
-          <div>
-            <h3 className="mb-2 font-medium">Select a Date:</h3>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              className="rounded-md border"
-              disabled={date => 
-                !hasSlots(date) || 
-                date < new Date() || 
-                date > new Date(2025, 6, 31)
-              }
-            />
-          </div>
-          
-          {selectedDate && (
-            <div>
-              <h3 className="mb-2 font-medium">Select a Time:</h3>
-              <div className="grid grid-cols-3 gap-2">
-                {getAvailableSlots().map((time) => (
-                  <Button
-                    key={time}
-                    variant={selectedTime === time ? "default" : "outline"}
-                    onClick={() => setSelectedTime(time)}
-                    className="text-sm"
-                  >
-                    {time}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
+          <DateTimeSelector
+            selectedDate={selectedDate}
+            selectedTime={selectedTime}
+            availableTimes={researcher.availableTimes}
+            onDateSelect={setSelectedDate}
+            onTimeSelect={setSelectedTime}
+          />
 
-          <div>
-            <h3 className="mb-3 font-medium">What's your challenge? (Select all that apply)</h3>
-            <div className="grid grid-cols-1 gap-3">
-              {challenges.map((challenge) => (
-                <div key={challenge} className="flex items-center space-x-3">
-                  <Checkbox
-                    id={challenge}
-                    checked={selectedChallenges.includes(challenge)}
-                    onCheckedChange={() => handleChallengeToggle(challenge)}
-                    className="h-5 w-5"
-                  />
-                  <Label htmlFor={challenge} className="cursor-pointer text-sm">
-                    {challenge}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
+          <ChallengeSelector
+            selectedChallenges={selectedChallenges}
+            onChallengeToggle={handleChallengeToggle}
+          />
 
           <div>
             <Label htmlFor="comment" className="font-medium">Leave a comment:</Label>
@@ -359,38 +243,19 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
             />
           </div>
           
-          <div className="pt-4 border-t">
-            <div className="space-y-2 mb-4">
-              {selectedService && selectedAcademicLevel && (
-                <div className="flex justify-between items-center">
-                  <span>Service Fee:</span>
-                  <span className="font-medium">{getServicePrice().toLocaleString()} XAF</span>
-                </div>
-              )}
-              
-              {selectedAddOns.length > 0 && (
-                <div className="flex justify-between items-center">
-                  <span>Add-ons:</span>
-                  <span className="font-medium">
-                    {(calculateTotalPrice() - getServicePrice()).toLocaleString()} XAF
-                  </span>
-                </div>
-              )}
-              
-              <div className="flex justify-between items-center text-lg font-bold border-t pt-2">
-                <span>Total Fee:</span>
-                <span>{calculateTotalPrice().toLocaleString()} XAF</span>
-              </div>
-            </div>
-            
-            <Button 
-              className="w-full" 
-              disabled={!selectedDate || !selectedTime || !selectedService || !selectedAcademicLevel || selectedChallenges.length === 0}
-              onClick={handleBooking}
-            >
-              Complete Booking
-            </Button>
-          </div>
+          <BookingSummary
+            servicePrice={getServicePrice()}
+            addOnsPrice={getAddOnsPrice()}
+            totalPrice={calculateTotalPrice()}
+          />
+          
+          <Button 
+            className="w-full" 
+            disabled={!selectedDate || !selectedTime || !selectedService || !selectedAcademicLevel || selectedChallenges.length === 0}
+            onClick={handleBooking}
+          >
+            Complete Booking
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
