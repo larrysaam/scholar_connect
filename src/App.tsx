@@ -20,6 +20,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const ResearcherDashboard = lazy(() => import("./pages/ResearcherDashboard"));
 const ResearchAidsDashboard = lazy(() => import("./pages/ResearchAidsDashboard"));
 const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
+const ResearcherProfile = lazy(() => import("./pages/ResearcherProfile"));
 
 // Import other pages that should be accessible without auth
 const AboutUs = lazy(() => import("./pages/AboutUs"));
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/blogs" element={<Blogs />} />
               <Route path="/researchers" element={<Researchers />} />
               <Route path="/research-aids" element={<ResearchAides />} />
+              <Route path="/researcher/:id" element={<ResearcherProfile />} />
               
               {/* Authentication routes */}
               <Route path="/auth" element={<SecureAuth />} />
