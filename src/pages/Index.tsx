@@ -1,3 +1,4 @@
+
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import SearchBar from "@/components/SearchBar";
@@ -146,16 +147,15 @@ const Index = () => {
               
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                 {fields.map((field, index) => (
-                  <Link 
+                  <div 
                     key={index} 
-                    to={`/researchers?field=${encodeURIComponent(field.name)}`} 
-                    className="bg-white border rounded-lg p-6 text-center hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="bg-white border rounded-lg p-6 text-center hover:shadow-md transition-shadow cursor-pointer"
                     aria-label={`Browse ${field.name} experts - ${field.count} available`}
                   >
                     <div className="text-3xl mb-3" role="img" aria-label={field.name}>{field.icon}</div>
                     <h3 className="font-medium mb-1">{field.name}</h3>
                     <p className="text-sm text-gray-500">{field.count} experts</p>
-                  </Link>
+                  </div>
                 ))}
               </div>
             </div>
@@ -188,7 +188,7 @@ const Index = () => {
                 </div>
                 
                 <Button asChild className="mt-12">
-                  <Link to="/how-it-works">Learn More</Link>
+                  <Link to="/auth">Get Started</Link>
                 </Button>
               </div>
             </div>

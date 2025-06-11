@@ -7,12 +7,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import SecurityMonitor from "@/components/security/SecurityMonitor";
 
 const queryClient = new QueryClient();
 
 const Index = lazy(() => import("./pages/Index"));
-const SecureAuth = lazy(() => import("./pages/SecureAuth"));
+const Auth = lazy(() => import("./pages/Auth"));
 const Register = lazy(() => import("./pages/Register"));
 const ResearchAideSignup = lazy(() => import("./pages/ResearchAideSignup"));
 const ResearchAidSignup = lazy(() => import("./pages/ResearchAidSignup"));
@@ -25,14 +24,13 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
       <TooltipProvider>
-        <SecurityMonitor />
         <Toaster />
         <Sonner />
         <BrowserRouter>
           <Suspense fallback={<LoadingSpinner size="lg" />}>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<SecureAuth />} />
+              <Route path="/auth" element={<Auth />} />
               <Route path="/register" element={<Register />} />
               <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
               <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
