@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, DollarSign } from "lucide-react";
 
 interface BookingModalProps {
   researcher: {
@@ -27,36 +28,23 @@ interface BookingModalProps {
   };
 }
 
-const consultationServices = [
-  {
-    name: "General Consultation",
-    description: "Get expert guidance on your research questions",
-    duration: "1 hour",
-    price: "hourlyRate"
-  },
-  {
-    name: "Proposal Writing Support",
-    description: "Help with structuring and writing research proposals",
-    duration: "1 hour",
-    price: "hourlyRate"
-  },
-  {
-    name: "Literature Review Assistance",
-    description: "Guidance on conducting comprehensive literature reviews",
-    duration: "1 hour", 
-    price: "hourlyRate"
-  },
-  {
-    name: "Methodology Consultation",
-    description: "Expert advice on research design and methodology",
-    duration: "1 hour",
-    price: "hourlyRate"
-  }
-];
+interface ConsultationService {
+  id: string;
+  category: "General Consultation" | "Chapter Review" | "Full Thesis Cycle Support" | "Full Thesis Review";
+  academicLevelPrices: Array<{
+    level: "Undergraduate" | "Master's" | "PhD";
+    price: number;
+  }>;
+  description: string;
+  addOns: Array<{
+    name: string;
+    price: number;
+  }>;
+}
 
 const challenges = [
   "Generate a research idea",
-  "Proposal writing",
+  "Proposal writing", 
   "Literature review",
   "Conceptual and theoretical frameworks",
   "Methodology",
@@ -71,10 +59,72 @@ const challenges = [
 const BookingModal = ({ researcher }: BookingModalProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [selectedService, setSelectedService] = useState<string | null>("General Consultation");
+  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [selectedAcademicLevel, setSelectedAcademicLevel] = useState<string | null>(null);
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
   const [selectedChallenges, setSelectedChallenges] = useState<string[]>([]);
   const [comment, setComment] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
+
+  // Mock consultation services - in real app, this would come from the researcher's profile
+  const consultationServices: ConsultationService[] = [
+    {
+      id: "1",
+      category: "General Consultation",
+      academicLevelPrices: [
+        { level: "Undergraduate", price: 8000 },
+        { level: "Master's", price: 8000 },
+        { level: "PhD", price: 8000 }
+      ],
+      description: "General research guidance and consultation",
+      addOns: []
+    },
+    {
+      id: "2", 
+      category: "Chapter Review",
+      academicLevelPrices: [
+        { level: "Undergraduate", price: 15000 },
+        { level: "Master's", price: 20000 },
+        { level: "PhD", price: 25000 }
+      ],
+      description: "Comprehensive review of individual thesis chapters",
+      addOns: [
+        { name: "Formatting & Language Polishing", price: 7500 },
+        { name: "Citation & Reference Check", price: 3500 },
+        { name: "Express Review (24–72 hours)", price: 5000 }
+      ]
+    },
+    {
+      id: "3",
+      category: "Full Thesis Review", 
+      academicLevelPrices: [
+        { level: "Undergraduate", price: 75000 },
+        { level: "Master's", price: 120000 },
+        { level: "PhD", price: 200000 }
+      ],
+      description: "Complete thesis review with comprehensive feedback",
+      addOns: [
+        { name: "Formatting & Language Polishing", price: 15000 },
+        { name: "Citation & Reference Check", price: 10000 },
+        { name: "Express Review (72 hours)", price: 25000 }
+      ]
+    },
+    {
+      id: "4",
+      category: "Full Thesis Cycle Support",
+      academicLevelPrices: [
+        { level: "Undergraduate", price: 100000 },
+        { level: "Master's", price: 180000 },
+        { level: "PhD", price: 300000 }
+      ],
+      description: "Complete thesis guidance from topic development to defense",
+      addOns: [
+        { name: "Formatting & Language Polishing", price: 20000 },
+        { name: "Citation & Reference Check", price: 15000 },
+        { name: "Express Review", price: 30000 }
+      ]
+    }
+  ];
 
   // Function to check if a date has available slots
   const hasSlots = (date: Date) => {
@@ -94,6 +144,35 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
     return dateInfo ? dateInfo.slots : [];
   };
 
+  // Get selected service details
+  const getSelectedServiceDetails = () => {
+    return consultationServices.find(service => service.id === selectedService);
+  };
+
+  // Get price for selected service and academic level
+  const getServicePrice = () => {
+    const service = getSelectedServiceDetails();
+    if (!service || !selectedAcademicLevel) return 0;
+    
+    const levelPrice = service.academicLevelPrices.find(
+      price => price.level === selectedAcademicLevel
+    );
+    
+    return levelPrice ? levelPrice.price : 0;
+  };
+
+  // Calculate total price including add-ons
+  const calculateTotalPrice = () => {
+    const basePrice = getServicePrice();
+    const addOnsPrice = selectedAddOns.reduce((total, addonName) => {
+      const service = getSelectedServiceDetails();
+      const addon = service?.addOns.find(a => a.name === addonName);
+      return total + (addon ? addon.price : 0);
+    }, 0);
+    
+    return basePrice + addOnsPrice;
+  };
+
   // Handle challenge selection (multi-select)
   const handleChallengeToggle = (challenge: string) => {
     setSelectedChallenges(prev => 
@@ -103,14 +182,26 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
     );
   };
 
+  // Handle add-on selection
+  const handleAddOnToggle = (addonName: string) => {
+    setSelectedAddOns(prev => 
+      prev.includes(addonName)
+        ? prev.filter(a => a !== addonName)
+        : [...prev, addonName]
+    );
+  };
+
   // Handle booking
   const handleBooking = () => {
     console.log("Booking with", researcher.name);
     console.log("Service:", selectedService);
+    console.log("Academic Level:", selectedAcademicLevel);
     console.log("Date:", selectedDate);
     console.log("Time:", selectedTime);
+    console.log("Add-ons:", selectedAddOns);
     console.log("Challenges:", selectedChallenges);
     console.log("Comment:", comment);
+    console.log("Total Price:", calculateTotalPrice());
     setIsOpen(false);
   };
 
@@ -134,31 +225,75 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
           {/* Consultation Services */}
           <div>
             <h3 className="mb-3 font-medium">Select Consultation Service:</h3>
-            <div className="grid gap-3">
-              {consultationServices.map((service) => (
-                <div
-                  key={service.name}
-                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                    selectedService === service.name
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                  onClick={() => setSelectedService(service.name)}
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h4 className="font-medium">{service.name}</h4>
-                      <p className="text-sm text-gray-600 mt-1">{service.description}</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Badge variant="outline">{service.duration}</Badge>
-                        <Badge variant="secondary">{researcher.hourlyRate.toLocaleString()} XAF</Badge>
-                      </div>
-                    </div>
-                  </div>
+            <div className="space-y-3">
+              <Select value={selectedService || ""} onValueChange={setSelectedService}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a consultation service" />
+                </SelectTrigger>
+                <SelectContent>
+                  {consultationServices.map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {service.category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {selectedService && (
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">
+                    {getSelectedServiceDetails()?.description}
+                  </p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
+
+          {/* Academic Level Selection */}
+          {selectedService && (
+            <div>
+              <h3 className="mb-3 font-medium">Select Academic Level:</h3>
+              <Select value={selectedAcademicLevel || ""} onValueChange={setSelectedAcademicLevel}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose your academic level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getSelectedServiceDetails()?.academicLevelPrices.map((levelPrice) => (
+                    <SelectItem key={levelPrice.level} value={levelPrice.level}>
+                      {levelPrice.level} - {levelPrice.price.toLocaleString()} XAF
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Add-ons Selection */}
+          {selectedService && getSelectedServiceDetails()?.addOns.length > 0 && (
+            <div>
+              <h3 className="mb-3 font-medium">Optional Add-ons:</h3>
+              <div className="space-y-3">
+                {getSelectedServiceDetails()?.addOns.map((addon) => (
+                  <div key={addon.name} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id={addon.name}
+                        checked={selectedAddOns.includes(addon.name)}
+                        onCheckedChange={() => handleAddOnToggle(addon.name)}
+                      />
+                      <Label htmlFor={addon.name} className="cursor-pointer">
+                        {addon.name}
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <DollarSign className="h-3 w-3" />
+                      <span className="text-sm font-medium">{addon.price.toLocaleString()} XAF</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div>
             <h3 className="mb-2 font-medium">Select a Date:</h3>
@@ -225,14 +360,32 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
           </div>
           
           <div className="pt-4 border-t">
-            <div className="flex justify-between items-center mb-4">
-              <span>Total Fee:</span>
-              <span className="font-semibold">{researcher.hourlyRate.toLocaleString()} XAF/hour</span>
+            <div className="space-y-2 mb-4">
+              {selectedService && selectedAcademicLevel && (
+                <div className="flex justify-between items-center">
+                  <span>Service Fee:</span>
+                  <span className="font-medium">{getServicePrice().toLocaleString()} XAF</span>
+                </div>
+              )}
+              
+              {selectedAddOns.length > 0 && (
+                <div className="flex justify-between items-center">
+                  <span>Add-ons:</span>
+                  <span className="font-medium">
+                    {(calculateTotalPrice() - getServicePrice()).toLocaleString()} XAF
+                  </span>
+                </div>
+              )}
+              
+              <div className="flex justify-between items-center text-lg font-bold border-t pt-2">
+                <span>Total Fee:</span>
+                <span>{calculateTotalPrice().toLocaleString()} XAF</span>
+              </div>
             </div>
             
             <Button 
               className="w-full" 
-              disabled={!selectedDate || !selectedTime || !selectedService || selectedChallenges.length === 0}
+              disabled={!selectedDate || !selectedTime || !selectedService || !selectedAcademicLevel || selectedChallenges.length === 0}
               onClick={handleBooking}
             >
               Complete Booking

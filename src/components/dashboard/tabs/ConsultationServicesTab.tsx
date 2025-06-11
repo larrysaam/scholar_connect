@@ -15,11 +15,17 @@ interface AcademicLevelPrice {
   price: number;
 }
 
+interface AddOn {
+  name: string;
+  price: number;
+}
+
 interface ServiceType {
   id: string;
   category: "General Consultation" | "Chapter Review" | "Full Thesis Cycle Support" | "Full Thesis Review";
   academicLevelPrices: AcademicLevelPrice[];
   description: string;
+  addOns: AddOn[];
 }
 
 const ConsultationServicesTab = () => {
@@ -28,18 +34,22 @@ const ConsultationServicesTab = () => {
       id: "1",
       category: "General Consultation",
       academicLevelPrices: [{ level: "Undergraduate", price: 8000 }],
-      description: "General research guidance and consultation"
+      description: "General research guidance and consultation",
+      addOns: []
     }
   ]);
 
   const [newService, setNewService] = useState<Partial<ServiceType>>({
     category: "General Consultation",
     academicLevelPrices: [],
-    description: ""
+    description: "",
+    addOns: []
   });
 
   const [tempAcademicLevel, setTempAcademicLevel] = useState<"Undergraduate" | "Master's" | "PhD">("Undergraduate");
   const [tempPrice, setTempPrice] = useState<number>(0);
+  const [tempAddOnName, setTempAddOnName] = useState<string>("");
+  const [tempAddOnPrice, setTempAddOnPrice] = useState<number>(0);
 
   const serviceCategories = [
     "General Consultation",
@@ -49,6 +59,31 @@ const ConsultationServicesTab = () => {
   ];
 
   const academicLevels = ["Undergraduate", "Master's", "PhD"];
+
+  const getAvailableAddOns = (category: string) => {
+    switch (category) {
+      case "Chapter Review":
+        return [
+          "Formatting & Language Polishing",
+          "Citation & Reference Check",
+          "Express Review (24–72 hours)"
+        ];
+      case "Full Thesis Review":
+        return [
+          "Formatting & Language Polishing",
+          "Citation & Reference Check",
+          "Express Review (72 hours)"
+        ];
+      case "Full Thesis Cycle Support":
+        return [
+          "Formatting & Language Polishing",
+          "Citation & Reference Check",
+          "Express Review"
+        ];
+      default:
+        return [];
+    }
+  };
 
   const addAcademicLevelPrice = () => {
     if (tempAcademicLevel && tempPrice > 0) {
@@ -73,10 +108,41 @@ const ConsultationServicesTab = () => {
     }
   };
 
+  const addAddOn = () => {
+    if (tempAddOnName && tempAddOnPrice > 0) {
+      const existingIndex = newService.addOns?.findIndex(
+        addon => addon.name === tempAddOnName
+      );
+      
+      if (existingIndex !== undefined && existingIndex >= 0) {
+        // Update existing add-on
+        const updatedAddOns = [...(newService.addOns || [])];
+        updatedAddOns[existingIndex] = { name: tempAddOnName, price: tempAddOnPrice };
+        setNewService(prev => ({ ...prev, addOns: updatedAddOns }));
+      } else {
+        // Add new add-on
+        setNewService(prev => ({
+          ...prev,
+          addOns: [...(prev.addOns || []), { name: tempAddOnName, price: tempAddOnPrice }]
+        }));
+      }
+      
+      setTempAddOnName("");
+      setTempAddOnPrice(0);
+    }
+  };
+
   const removeAcademicLevelPrice = (level: string) => {
     setNewService(prev => ({
       ...prev,
       academicLevelPrices: prev.academicLevelPrices?.filter(item => item.level !== level) || []
+    }));
+  };
+
+  const removeAddOn = (name: string) => {
+    setNewService(prev => ({
+      ...prev,
+      addOns: prev.addOns?.filter(addon => addon.name !== name) || []
     }));
   };
 
@@ -89,7 +155,8 @@ const ConsultationServicesTab = () => {
       setNewService({
         category: "General Consultation",
         academicLevelPrices: [],
-        description: ""
+        description: "",
+        addOns: []
       });
     }
   };
@@ -304,7 +371,9 @@ const ConsultationServicesTab = () => {
               <h3 className="font-semibold text-blue-900 mb-2">Instructions for Service Setup</h3>
               <p className="text-blue-800 text-sm leading-relaxed">
                 Dear Esteemed Researcher, please refer to the price grid before setting a price that corresponds to your academic level. 
-                Note that you can add several service categories and academic levels and prices. The platform will deduct 15% of any amount 
+                Note that you can add several service categories and academic levels and prices. The duration of the contract delivery depends on the type of service. 
+                For instance, 1 hour for General Research Consultation, 7 days for Chapter Review, 30 days for Full Thesis Review and up to 18 months for Full Thesis Cycle Support 
+                (typically 3–6 months undergraduate, 6–9 months Master's, 9–18 months PhD). The platform will deduct 15% of any amount 
                 paid by research students. We are passionate about supporting researchers and students.
               </p>
             </div>
@@ -358,6 +427,24 @@ const ConsultationServicesTab = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Add-ons */}
+              {service.addOns.length > 0 && (
+                <div className="space-y-2">
+                  <h5 className="font-medium text-sm">Add-ons:</h5>
+                  <div className="flex flex-wrap gap-2">
+                    {service.addOns.map((addon, index) => (
+                      <div key={index} className="flex items-center space-x-2 bg-green-50 rounded-lg p-2">
+                        <span className="text-sm">{addon.name}</span>
+                        <div className="flex items-center space-x-1">
+                          <DollarSign className="h-3 w-3" />
+                          <span className="text-sm font-medium">{addon.price.toLocaleString()} XAF</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ))}
 
@@ -470,6 +557,80 @@ const ConsultationServicesTab = () => {
                 </div>
               )}
             </div>
+
+            {/* Add-ons Section */}
+            {newService.category && getAvailableAddOns(newService.category).length > 0 && (
+              <div className="space-y-3">
+                <Label>Optional Add-ons</Label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <Label htmlFor="addonName">Add-on Service</Label>
+                    <Select
+                      value={tempAddOnName}
+                      onValueChange={setTempAddOnName}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select add-on" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {getAvailableAddOns(newService.category).map((addon) => (
+                          <SelectItem key={addon} value={addon}>
+                            {addon}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="addonPrice">Add-on Price (XAF)</Label>
+                    <Input
+                      id="addonPrice"
+                      type="number"
+                      placeholder="Enter price"
+                      value={tempAddOnPrice || ''}
+                      onChange={(e) => setTempAddOnPrice(parseInt(e.target.value) || 0)}
+                    />
+                  </div>
+                  
+                  <div className="flex items-end">
+                    <Button 
+                      type="button" 
+                      onClick={addAddOn}
+                      disabled={!tempAddOnName || tempAddOnPrice <= 0}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Display added add-ons */}
+                {newService.addOns && newService.addOns.length > 0 && (
+                  <div className="space-y-2">
+                    <Label>Added Add-ons:</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {newService.addOns.map((addon, index) => (
+                        <div key={index} className="flex items-center space-x-2 bg-green-50 rounded-lg p-2">
+                          <span className="text-sm">{addon.name}</span>
+                          <div className="flex items-center space-x-1">
+                            <DollarSign className="h-3 w-3" />
+                            <span className="text-sm font-medium">{addon.price.toLocaleString()} XAF</span>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => removeAddOn(addon.name)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             
             <Button 
               onClick={addService} 
