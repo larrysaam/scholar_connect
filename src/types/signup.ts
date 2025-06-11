@@ -20,7 +20,7 @@ export interface StudentSignupData extends BaseFormData {
   researchStage: string;
   country: string;
   dateOfBirth: string;
-  sex: 'male' | 'female';
+  sex: 'male' | 'female' | '';
 }
 
 export interface ExpertSignupData extends BaseFormData {
@@ -34,7 +34,7 @@ export interface ExpertSignupData extends BaseFormData {
   languages: string[];
   country: string;
   dateOfBirth: string;
-  sex: 'male' | 'female';
+  sex: 'male' | 'female' | '';
 }
 
 export interface ResearchAidSignupData extends BaseFormData {
@@ -50,7 +50,7 @@ export interface ResearchAidSignupData extends BaseFormData {
   cvFile: File | null;
   certificationFile: File | null;
   dateOfBirth: string;
-  sex: 'male' | 'female';
+  sex: 'male' | 'female' | '';
 }
 
 export interface SignupFormProps {
