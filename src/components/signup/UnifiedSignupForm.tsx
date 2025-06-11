@@ -16,8 +16,6 @@ import TermsCheckbox from './TermsCheckbox';
 // Import specialized sections
 import PersonalInfoSection from './research-aid/PersonalInfoSection';
 import ExpertiseSection from './research-aid/ExpertiseSection';
-import CredentialsSection from './research-aid/CredentialsSection';
-import AgreementSection from './research-aid/AgreementSection';
 
 import type { BaseFormData, StudentSignupData, ExpertSignupData, ResearchAidSignupData, UserRole } from '@/types/signup';
 
@@ -27,7 +25,7 @@ interface UnifiedSignupFormProps {
 
 const UnifiedSignupForm = ({ defaultUserType = 'student' }: UnifiedSignupFormProps) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(defaultUserType);
+  const [activeTab, setActiveTab] = useState<'student' | 'expert' | 'aid'>(defaultUserType);
   const [isLoading, setIsLoading] = useState(false);
   
   // Base form data that all user types share
@@ -180,16 +178,44 @@ const UnifiedSignupForm = ({ defaultUserType = 'student' }: UnifiedSignupFormPro
   };
 
   const getCurrentFormData = () => {
+    const baseData = {
+      ...baseFormData,
+      fullName: `${baseFormData.firstName} ${baseFormData.lastName}`,
+      sex: '',
+      dateOfBirth: '',
+      phoneNumber: baseFormData.phone,
+      country: '',
+      languages: [] as string[],
+    };
+
     switch (activeTab) {
       case 'student':
-        return { ...baseFormData, ...studentData };
+        return { ...baseData, ...studentData };
       case 'expert':
-        return { ...baseFormData, ...expertData };
+        return { 
+          ...baseData, 
+          ...expertData,
+          expertise: expertData.expertise || [],
+          otherExpertise: expertData.otherExpertise || '',
+        };
       case 'aid':
-        return { ...baseFormData, ...aidData };
+        return { 
+          ...baseData, 
+          ...aidData,
+          expertise: aidData.expertise || [],
+          otherExpertise: aidData.otherExpertise || '',
+        };
       default:
-        return baseFormData;
+        return { 
+          ...baseData,
+          expertise: [],
+          otherExpertise: '',
+        };
     }
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as 'student' | 'expert' | 'aid');
   };
 
   return (
@@ -199,7 +225,7 @@ const UnifiedSignupForm = ({ defaultUserType = 'student' }: UnifiedSignupFormPro
           <CardTitle className="text-2xl text-center">Create Your Account</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="student">Student</TabsTrigger>
               <TabsTrigger value="expert">Expert</TabsTrigger>

@@ -111,7 +111,7 @@ const ServiceBookingModal = ({ isOpen, onClose, provider, serviceType }: Service
             timeslot: serviceDetails.deadline?.toISOString() || new Date(Date.now() + 24*60*60*1000).toISOString(),
             duration_hours: parseFloat(serviceDetails.duration),
             amount: calculateAmount(),
-            status: "confirmed"
+            status: "pending"
           });
 
         if (error) throw error;
@@ -120,13 +120,12 @@ const ServiceBookingModal = ({ isOpen, onClose, provider, serviceType }: Service
         const { error } = await supabase
           .from("jobs")
           .insert({
-            title: serviceDetails.title,
             description: serviceDetails.description,
             amount: calculateAmount(),
             deadline: serviceDetails.deadline?.toISOString(),
             student_id: user.id,
             aid_id: provider.id,
-            status: "confirmed"
+            status: "pending"
           });
 
         if (error) throw error;
