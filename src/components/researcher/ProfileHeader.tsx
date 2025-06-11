@@ -24,6 +24,10 @@ interface ProfileHeaderProps {
     responseTime: string;
     languages: string[];
     hourlyRate: number;
+    availableTimes: {
+      date: Date;
+      slots: string[];
+    }[];
   };
 }
 
