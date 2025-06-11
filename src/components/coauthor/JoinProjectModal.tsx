@@ -4,9 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Users, FileText, User } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Mail, Link } from "lucide-react";
 
 interface JoinProjectModalProps {
   open: boolean;
@@ -14,151 +13,130 @@ interface JoinProjectModalProps {
 }
 
 const JoinProjectModal = ({ open, onOpenChange }: JoinProjectModalProps) => {
+  const { toast } = useToast();
+  const [joinMethod, setJoinMethod] = useState<"invite" | "link">("invite");
   const [inviteCode, setInviteCode] = useState("");
-  const [projectInfo, setProjectInfo] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [projectLink, setProjectLink] = useState("");
 
-  // Mock project lookup - in real app this would query the database
-  const lookupProject = async (code: string) => {
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      if (code === "DEMO123") {
-        setProjectInfo({
-          id: "proj_demo",
-          title: "Climate Change Research Initiative",
-          type: "Journal Article",
-          primaryAuthor: "Dr. Sarah Johnson",
-          collaborators: 4,
-          description: "A comprehensive study on climate change impacts in West Africa",
-          visibility: "Private"
-        });
-      } else {
-        setProjectInfo(null);
-      }
-      setIsLoading(false);
-    }, 1000);
-  };
-
-  const handleCodeChange = (value: string) => {
-    setInviteCode(value);
-    setProjectInfo(null);
-    
-    if (value.length >= 6) {
-      lookupProject(value);
+  const handleJoinByInvite = () => {
+    if (!inviteCode.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter an invitation code",
+        variant: "destructive"
+      });
+      return;
     }
-  };
 
-  const handleJoinProject = () => {
-    if (projectInfo) {
-      // In real app, this would add the user to the project
-      console.log("Joining project:", projectInfo.id);
-      window.location.href = `/workspace/${projectInfo.id}`;
-    }
-  };
+    // In real app, this would validate and join the project
+    console.log("Joining project with invite code:", inviteCode);
+    
+    toast({
+      title: "Joining Project",
+      description: "Processing your invitation code..."
+    });
 
-  const handleClose = () => {
     setInviteCode("");
-    setProjectInfo(null);
+    onOpenChange(false);
+  };
+
+  const handleJoinByLink = () => {
+    if (!projectLink.trim()) {
+      toast({
+        title: "Error", 
+        description: "Please enter a project link",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // In real app, this would validate and join the project
+    console.log("Joining project with link:", projectLink);
+    
+    toast({
+      title: "Joining Project",
+      description: "Processing project link..."
+    });
+
+    setProjectLink("");
     onOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Join a Co-Author Project</DialogTitle>
+          <DialogTitle>Join Collaboration Project</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6">
-          {/* Invite Code Input */}
-          <div className="space-y-2">
-            <Label htmlFor="inviteCode">Project Invite Code</Label>
-            <Input
-              id="inviteCode"
-              value={inviteCode}
-              onChange={(e) => handleCodeChange(e.target.value)}
-              placeholder="Enter 6-character invite code"
-              className="uppercase"
-              maxLength={6}
-            />
-            <p className="text-xs text-gray-600">
-              Enter the invite code shared by the project creator
-            </p>
-          </div>
-
-          {/* Loading State */}
-          {isLoading && (
-            <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="text-sm text-gray-600 mt-2">Looking up project...</p>
-            </div>
-          )}
-
-          {/* Project Not Found */}
-          {inviteCode.length >= 6 && !isLoading && !projectInfo && (
-            <div className="text-center py-4">
-              <FileText className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-600">
-                Project not found. Please check the invite code.
-              </p>
-            </div>
-          )}
-
-          {/* Project Info Card */}
-          {projectInfo && (
-            <Card>
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-medium line-clamp-2">{projectInfo.title}</h3>
-                    <Badge variant="outline" className="text-xs ml-2">
-                      {projectInfo.type}
-                    </Badge>
-                  </div>
-                  
-                  <p className="text-sm text-gray-600 line-clamp-2">
-                    {projectInfo.description}
-                  </p>
-                  
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <User className="h-4 w-4" />
-                      <span>{projectInfo.primaryAuthor}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-1">
-                      <Users className="h-4 w-4" />
-                      <span>{projectInfo.collaborators} members</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-between items-center pt-2 border-t">
-                    <Badge variant="secondary" className="text-xs">
-                      {projectInfo.visibility}
-                    </Badge>
-                    
-                    <Button onClick={handleJoinProject} size="sm">
-                      Join Project
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Demo Hint */}
-          <div className="text-center text-xs text-gray-500 pt-2 border-t">
-            Demo: Try code "DEMO123" to see project preview
-          </div>
-
-          {/* Form Actions */}
-          <div className="flex justify-end">
-            <Button variant="outline" onClick={handleClose}>
-              Cancel
+        <div className="space-y-4">
+          {/* Method Selection */}
+          <div className="flex gap-2">
+            <Button
+              variant={joinMethod === "invite" ? "default" : "outline"}
+              onClick={() => setJoinMethod("invite")}
+              className="flex-1"
+            >
+              <Mail className="h-4 w-4 mr-2" />
+              Invitation Code
+            </Button>
+            <Button
+              variant={joinMethod === "link" ? "default" : "outline"}
+              onClick={() => setJoinMethod("link")}
+              className="flex-1"
+            >
+              <Link className="h-4 w-4 mr-2" />
+              Project Link
             </Button>
           </div>
+
+          {/* Join by Invitation Code */}
+          {joinMethod === "invite" && (
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="invite-code">Invitation Code</Label>
+                <Input
+                  id="invite-code"
+                  value={inviteCode}
+                  onChange={(e) => setInviteCode(e.target.value)}
+                  placeholder="Enter 6-digit code (e.g., ABC123)"
+                  className="mt-1"
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => onOpenChange(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleJoinByInvite}>
+                  Join Project
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Join by Project Link */}
+          {joinMethod === "link" && (
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="project-link">Project Link</Label>
+                <Input
+                  id="project-link"
+                  value={projectLink}
+                  onChange={(e) => setProjectLink(e.target.value)}
+                  placeholder="Paste project sharing link..."
+                  className="mt-1"
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => onOpenChange(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleJoinByLink}>
+                  Join Project
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

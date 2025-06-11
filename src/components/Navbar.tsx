@@ -29,6 +29,9 @@ const Navbar = () => {
               <a href="/research-aids" className="text-gray-600 hover:text-blue-600">
                 Research Aids
               </a>
+              <a href="/co-author-workspace" className="text-gray-600 hover:text-blue-600">
+                Co-Author Workspace
+              </a>
               <a href="/how-it-works" className="text-gray-600 hover:text-blue-600">
                 How It Works
               </a>
@@ -106,6 +109,9 @@ const Navbar = () => {
               </a>
               <a href="/research-aids" className="text-gray-600 hover:text-blue-600">
                 Research Aids
+              </a>
+              <a href="/co-author-workspace" className="text-gray-600 hover:text-blue-600">
+                Co-Author Workspace
               </a>
               <a href="/how-it-works" className="text-gray-600 hover:text-blue-600">
                 How It Works
