@@ -44,6 +44,11 @@ const UnifiedSignupForm = ({ defaultUserType = 'student' }: UnifiedSignupFormPro
   const [expertData, setExpertData] = useState<Partial<ExpertSignupData>>({});
   const [aidData, setAidData] = useState<Partial<ResearchAidSignupData>>({});
 
+  // Available languages for the PersonalInfoSection
+  const availableLanguages = [
+    'English', 'French', 'Spanish', 'German', 'Portuguese', 'Arabic', 'Swahili', 'Hausa'
+  ];
+
   const handleBaseInputChange = (field: string, value: string | boolean) => {
     setBaseFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -60,6 +65,20 @@ const UnifiedSignupForm = ({ defaultUserType = 'student' }: UnifiedSignupFormPro
         setAidData(prev => ({ ...prev, [field]: value }));
         break;
     }
+  };
+
+  const handleToggleLanguage = (language: string) => {
+    const currentLanguages = aidData.languages || [];
+    const updated = currentLanguages.includes(language)
+      ? currentLanguages.filter(l => l !== language)
+      : [...currentLanguages, language];
+    handleSpecializedInputChange('languages', updated);
+  };
+
+  const handleRemoveLanguage = (language: string) => {
+    const currentLanguages = aidData.languages || [];
+    const updated = currentLanguages.filter(l => l !== language);
+    handleSpecializedInputChange('languages', updated);
   };
 
   const validateForm = (): boolean => {
@@ -181,11 +200,11 @@ const UnifiedSignupForm = ({ defaultUserType = 'student' }: UnifiedSignupFormPro
     const baseData = {
       ...baseFormData,
       fullName: `${baseFormData.firstName} ${baseFormData.lastName}`,
-      sex: '',
-      dateOfBirth: '',
+      sex: aidData.sex || '',
+      dateOfBirth: aidData.dateOfBirth || '',
       phoneNumber: baseFormData.phone,
-      country: '',
-      languages: [] as string[],
+      country: aidData.country || '',
+      languages: aidData.languages || [],
     };
 
     switch (activeTab) {
@@ -259,10 +278,16 @@ const UnifiedSignupForm = ({ defaultUserType = 'student' }: UnifiedSignupFormPro
               <TabsContent value="aid" className="space-y-4">
                 <PersonalInfoSection 
                   formData={getCurrentFormData()}
+                  availableLanguages={availableLanguages}
                   onInputChange={handleSpecializedInputChange}
+                  onToggleLanguage={handleToggleLanguage}
+                  onRemoveLanguage={handleRemoveLanguage}
                 />
                 <ExpertiseSection
-                  formData={getCurrentFormData()}
+                  formData={{
+                    expertise: aidData.expertise || [],
+                    otherExpertise: aidData.otherExpertise || ''
+                  }}
                   expertiseAreas={[
                     'Data Collection',
                     'Data Analysis',

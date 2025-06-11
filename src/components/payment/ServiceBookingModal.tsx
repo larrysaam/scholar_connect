@@ -116,10 +116,11 @@ const ServiceBookingModal = ({ isOpen, onClose, provider, serviceType }: Service
 
         if (error) throw error;
       } else {
-        // Create job record
+        // Create job record - add the missing title field
         const { error } = await supabase
           .from("jobs")
           .insert({
+            title: serviceDetails.title,
             description: serviceDetails.description,
             amount: calculateAmount(),
             deadline: serviceDetails.deadline?.toISOString(),
