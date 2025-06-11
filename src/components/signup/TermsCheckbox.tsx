@@ -4,7 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 interface TermsCheckboxProps {
   agreedToTerms: boolean;
-  onInputChange: (field: string, value: string | boolean) => void;
+  onInputChange: (field: string, value: boolean) => void;
 }
 
 const TermsCheckbox = ({ agreedToTerms, onInputChange }: TermsCheckboxProps) => {
@@ -13,7 +13,7 @@ const TermsCheckbox = ({ agreedToTerms, onInputChange }: TermsCheckboxProps) => 
       <Checkbox 
         id="terms" 
         checked={agreedToTerms}
-        onCheckedChange={(checked) => onInputChange("agreedToTerms", checked)}
+        onCheckedChange={(checked) => onInputChange("agreedToTerms", checked as boolean)}
         required 
       />
       <Label htmlFor="terms" className="text-sm">

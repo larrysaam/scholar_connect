@@ -1,13 +1,9 @@
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import type { FormFieldProps } from '@/types/signup';
 
-interface ContactFieldsProps {
-  formData: any;
-  onInputChange: (field: string, value: string) => void;
-}
-
-const ContactFields = ({ formData, onInputChange }: ContactFieldsProps) => {
+const ContactFields = ({ formData, onInputChange }: FormFieldProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="space-y-2">
@@ -15,7 +11,7 @@ const ContactFields = ({ formData, onInputChange }: ContactFieldsProps) => {
         <Input 
           id="email" 
           type="email" 
-          value={formData.email}
+          value={formData.email || ''}
           onChange={(e) => onInputChange("email", e.target.value)}
           required 
         />
@@ -25,7 +21,7 @@ const ContactFields = ({ formData, onInputChange }: ContactFieldsProps) => {
         <Input 
           id="phone" 
           type="tel" 
-          value={formData.phone}
+          value={formData.phone || ''}
           onChange={(e) => onInputChange("phone", e.target.value)}
           required 
         />

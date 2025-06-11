@@ -2,13 +2,7 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-
-interface UserProfile {
-  id: string;
-  email: string;
-  name: string;
-  role: 'student' | 'expert' | 'aid' | 'admin';
-}
+import type { UserProfile } from '@/types/signup';
 
 interface AuthContextType {
   user: User | null;
@@ -52,16 +46,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user profile
+          // Fetch user profile using setTimeout to avoid auth callback issues
           setTimeout(async () => {
             try {
-              const { data: profileData } = await supabase
+              const { data: profileData, error } = await supabase
                 .from('users')
                 .select('*')
                 .eq('id', session.user.id)
                 .single();
               
-              setProfile(profileData);
+              if (error) {
+                console.error('Error fetching profile:', error);
+              } else {
+                setProfile(profileData as UserProfile);
+              }
             } catch (error) {
               console.error('Error fetching profile:', error);
             }
@@ -82,13 +80,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       if (session?.user) {
         setTimeout(async () => {
           try {
-            const { data: profileData } = await supabase
+            const { data: profileData, error } = await supabase
               .from('users')
               .select('*')
               .eq('id', session.user.id)
               .single();
             
-            setProfile(profileData);
+            if (error) {
+              console.error('Error fetching profile:', error);
+            } else {
+              setProfile(profileData as UserProfile);
+            }
           } catch (error) {
             console.error('Error fetching profile:', error);
           }
