@@ -5,9 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { LanguageProvider } from "@/contexts/LanguageContext";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import SecurityMonitor from "@/components/security/SecurityMonitor";
 
 const queryClient = new QueryClient();
 
@@ -23,48 +21,45 @@ const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-      <TooltipProvider>
-        <SecurityMonitor />
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Suspense fallback={<LoadingSpinner size="lg" />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<SecureAuth />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
-              <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
-              <Route 
-                path="/dashboard" 
-                element={
-                  <ProtectedRoute requiredRole="student">
-                    <Dashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/researcher-dashboard" 
-                element={
-                  <ProtectedRoute requiredRole="expert">
-                    <ResearcherDashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/research-aids-dashboard" 
-                element={
-                  <ProtectedRoute requiredRole="aid">
-                    <ResearchAidsDashboard />
-                  </ProtectedRoute>
-                } 
-              />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
-    </LanguageProvider>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Suspense fallback={<LoadingSpinner size="lg" />}>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<SecureAuth />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
+            <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute requiredRole="student">
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/researcher-dashboard" 
+              element={
+                <ProtectedRoute requiredRole="expert">
+                  <ResearcherDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/research-aids-dashboard" 
+              element={
+                <ProtectedRoute requiredRole="aid">
+                  <ResearchAidsDashboard />
+                </ProtectedRoute>
+              } 
+            />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
