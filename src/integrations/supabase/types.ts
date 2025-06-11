@@ -462,9 +462,12 @@ export type Database = {
           created_at: string | null
           job_id: string | null
           payment_id: string
+          payment_method: Database["public"]["Enums"]["payment_method"] | null
+          payment_type: Database["public"]["Enums"]["payment_type"] | null
           processing_fee: number | null
           provider_id: string
           receipt_url: string | null
+          status: Database["public"]["Enums"]["payment_status"] | null
           stripe_payment_intent_id: string | null
           student_id: string
           total_amount: number
@@ -476,9 +479,12 @@ export type Database = {
           created_at?: string | null
           job_id?: string | null
           payment_id?: string
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          payment_type?: Database["public"]["Enums"]["payment_type"] | null
           processing_fee?: number | null
           provider_id: string
           receipt_url?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
           stripe_payment_intent_id?: string | null
           student_id: string
           total_amount: number
@@ -490,9 +496,12 @@ export type Database = {
           created_at?: string | null
           job_id?: string | null
           payment_id?: string
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          payment_type?: Database["public"]["Enums"]["payment_type"] | null
           processing_fee?: number | null
           provider_id?: string
           receipt_url?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
           stripe_payment_intent_id?: string | null
           student_id?: string
           total_amount?: number
@@ -709,7 +718,9 @@ export type Database = {
           amount: number
           created_at: string | null
           payout_details: Json
+          payout_method: Database["public"]["Enums"]["payout_method"] | null
           processed_at: string | null
+          status: Database["public"]["Enums"]["payment_status"] | null
           transaction_reference: string | null
           user_id: string
           withdrawal_id: string
@@ -718,7 +729,9 @@ export type Database = {
           amount: number
           created_at?: string | null
           payout_details: Json
+          payout_method?: Database["public"]["Enums"]["payout_method"] | null
           processed_at?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
           transaction_reference?: string | null
           user_id: string
           withdrawal_id?: string
@@ -727,7 +740,9 @@ export type Database = {
           amount?: number
           created_at?: string | null
           payout_details?: Json
+          payout_method?: Database["public"]["Enums"]["payout_method"] | null
           processed_at?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
           transaction_reference?: string | null
           user_id?: string
           withdrawal_id?: string
