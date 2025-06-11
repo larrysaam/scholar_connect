@@ -7,14 +7,15 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: 'student' | 'expert' | 'aid' | 'admin';
+  requireAuth?: boolean; // New prop to make auth optional
 }
 
-const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, requiredRole, requireAuth = true }: ProtectedRouteProps) => {
   const { user, profile, loading } = useSecureAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading) {
+    if (!loading && requireAuth) {
       if (!user) {
         navigate('/auth');
         return;
@@ -31,9 +32,9 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
         }
       }
     }
-  }, [user, profile, loading, navigate, requiredRole]);
+  }, [user, profile, loading, navigate, requiredRole, requireAuth]);
 
-  if (loading) {
+  if (loading && requireAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" />
@@ -41,11 +42,11 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     );
   }
 
-  if (!user) {
+  if (!user && requireAuth) {
     return null;
   }
 
-  if (requiredRole && profile?.role !== requiredRole) {
+  if (requiredRole && profile?.role !== requiredRole && requireAuth) {
     return null;
   }
 

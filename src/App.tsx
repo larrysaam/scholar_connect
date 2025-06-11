@@ -21,6 +21,15 @@ const ResearcherDashboard = lazy(() => import("./pages/ResearcherDashboard"));
 const ResearchAidsDashboard = lazy(() => import("./pages/ResearchAidsDashboard"));
 const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
 
+// Import other pages that should be accessible without auth
+const AboutUs = lazy(() => import("./pages/AboutUs"));
+const Contact = lazy(() => import("./pages/Contact"));
+const HowItWorks = lazy(() => import("./pages/HowItWorks"));
+const Partnerships = lazy(() => import("./pages/Partnerships"));
+const Blogs = lazy(() => import("./pages/Blogs"));
+const Researchers = lazy(() => import("./pages/Researchers"));
+const ResearchAides = lazy(() => import("./pages/ResearchAides"));
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
@@ -30,12 +39,24 @@ const App = () => (
         <BrowserRouter>
           <Suspense fallback={<LoadingSpinner size="lg" />}>
             <Routes>
+              {/* Public routes - no authentication required */}
               <Route path="/" element={<Index />} />
+              <Route path="/about" element={<AboutUs />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/how-it-works" element={<HowItWorks />} />
+              <Route path="/partnerships" element={<Partnerships />} />
+              <Route path="/blogs" element={<Blogs />} />
+              <Route path="/researchers" element={<Researchers />} />
+              <Route path="/research-aids" element={<ResearchAides />} />
+              
+              {/* Authentication routes */}
               <Route path="/auth" element={<SecureAuth />} />
               <Route path="/register" element={<Register />} />
               <Route path="/secure-register" element={<SecureRegister />} />
               <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
               <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
+              
+              {/* Protected dashboard routes */}
               <Route 
                 path="/dashboard" 
                 element={
