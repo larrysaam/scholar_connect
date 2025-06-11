@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
-import { useSecureAuth } from "@/hooks/useSecureAuth";
+import { useEnhancedAuth } from "@/hooks/useEnhancedAuth";
 import SecureForm from "@/components/security/SecureForm";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Shield, AlertTriangle } from "lucide-react";
@@ -11,8 +11,8 @@ import { Shield, AlertTriangle } from "lucide-react";
 const SecureAuth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signIn, user, loading, isRateLimited } = useSecureAuth();
-  const [isSignUp, setIsSignUp] = useState(false);
+  const { enhancedSignIn, user, loading, isRateLimited, getRemainingTime } = useEnhancedAuth();
+  const [email, setEmail] = useState("");
 
   // Check if user is already logged in and redirect based on role
   useEffect(() => {
@@ -42,15 +42,22 @@ const SecureAuth = () => {
 
   const handleSignIn = async (data: Record<string, string>, csrfToken: string) => {
     console.log('CSRF Token received:', csrfToken);
+    setEmail(data.email);
     
-    const result = await signIn(data.email, data.password);
+    const result = await enhancedSignIn(data.email, data.password);
     
     if (result.success) {
       toast({
         title: "Welcome back!",
-        description: "Successfully logged in.",
+        description: "Successfully logged in with enhanced security.",
       });
       // Redirect will be handled by useEffect above
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Authentication Failed",
+        description: result.error,
+      });
     }
     
     return result;
@@ -79,6 +86,9 @@ const SecureAuth = () => {
     }
   ];
 
+  const isCurrentlyRateLimited = email && isRateLimited('login', email);
+  const remainingTime = email ? getRemainingTime('login', email) : 0;
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
@@ -99,26 +109,27 @@ const SecureAuth = () => {
           </p>
         </div>
 
-        {/* Security features indicator */}
+        {/* Enhanced security features indicator */}
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <div className="flex items-center space-x-2 text-blue-800">
             <Shield className="h-5 w-5" />
             <span className="font-medium">Enhanced Security Features</span>
           </div>
           <ul className="mt-2 text-sm text-blue-700 space-y-1">
-            <li>• End-to-end encryption</li>
-            <li>• Advanced input validation</li>
-            <li>• Rate limiting protection</li>
-            <li>• CSRF protection</li>
+            <li>• Advanced threat detection</li>
+            <li>• Real-time security monitoring</li>
+            <li>• Intelligent rate limiting</li>
+            <li>• Session integrity validation</li>
+            <li>• Comprehensive audit logging</li>
           </ul>
         </div>
 
-        {/* Rate limiting warning */}
-        {isRateLimited && (
+        {/* Enhanced rate limiting warning */}
+        {isCurrentlyRateLimited && (
           <Alert variant="destructive" className="mb-6">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Too many attempts detected. Please wait before trying again.
+              Too many login attempts detected. Please wait {Math.ceil(remainingTime / 60000)} minutes before trying again.
             </AlertDescription>
           </Alert>
         )}
@@ -127,7 +138,7 @@ const SecureAuth = () => {
           <SecureForm
             onSubmit={handleSignIn}
             fields={signInFields}
-            submitLabel="Sign In"
+            submitLabel={isCurrentlyRateLimited ? "Rate Limited" : "Sign In Securely"}
           />
 
           <div className="mt-6 space-y-4">
