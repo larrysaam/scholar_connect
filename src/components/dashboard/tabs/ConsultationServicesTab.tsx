@@ -9,19 +9,17 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, X, Clock, DollarSign, Globe, BookOpen, Eye, Info } from "lucide-react";
+import { Plus, X, DollarSign, BookOpen, Eye, Trash2 } from "lucide-react";
+
+interface AcademicLevelPrice {
+  level: "Undergraduate" | "Master's" | "PhD";
+  price: number;
+}
 
 interface ServiceType {
   id: string;
   category: "General Consultation" | "Chapter Review" | "Full Thesis Cycle Support" | "Full Thesis Review";
-  academicLevel?: "Undergraduate" | "Master's" | "PhD";
-  price: number;
-  description: string;
-}
-
-interface PaymentMilestone {
-  phase: string;
-  percentage: number;
+  academicLevelPrices: AcademicLevelPrice[];
   description: string;
 }
 
@@ -30,22 +28,19 @@ const ConsultationServicesTab = () => {
     {
       id: "1",
       category: "General Consultation",
-      price: 8000,
+      academicLevelPrices: [{ level: "Undergraduate", price: 8000 }],
       description: "General research guidance and consultation"
     }
   ]);
 
   const [newService, setNewService] = useState<Partial<ServiceType>>({
     category: "General Consultation",
-    price: 0,
+    academicLevelPrices: [],
     description: ""
   });
 
-  const [paymentMilestones, setPaymentMilestones] = useState<PaymentMilestone[]>([
-    { phase: "Phase 1: Topic Approval & Proposal", percentage: 30, description: "Initial consultation and topic development" },
-    { phase: "Phase 2: Midway (Data Collection & Analysis)", percentage: 40, description: "Research methodology and data analysis support" },
-    { phase: "Phase 3: Final Submission & Defense Prep", percentage: 30, description: "Final review and defense preparation" }
-  ]);
+  const [tempAcademicLevel, setTempAcademicLevel] = useState<"Undergraduate" | "Master's" | "PhD">("Undergraduate");
+  const [tempPrice, setTempPrice] = useState<number>(0);
 
   const serviceCategories = [
     "General Consultation",
@@ -56,15 +51,45 @@ const ConsultationServicesTab = () => {
 
   const academicLevels = ["Undergraduate", "Master's", "PhD"];
 
+  const addAcademicLevelPrice = () => {
+    if (tempAcademicLevel && tempPrice > 0) {
+      const existingIndex = newService.academicLevelPrices?.findIndex(
+        item => item.level === tempAcademicLevel
+      );
+      
+      if (existingIndex !== undefined && existingIndex >= 0) {
+        // Update existing level
+        const updatedPrices = [...(newService.academicLevelPrices || [])];
+        updatedPrices[existingIndex] = { level: tempAcademicLevel, price: tempPrice };
+        setNewService(prev => ({ ...prev, academicLevelPrices: updatedPrices }));
+      } else {
+        // Add new level
+        setNewService(prev => ({
+          ...prev,
+          academicLevelPrices: [...(prev.academicLevelPrices || []), { level: tempAcademicLevel, price: tempPrice }]
+        }));
+      }
+      
+      setTempPrice(0);
+    }
+  };
+
+  const removeAcademicLevelPrice = (level: string) => {
+    setNewService(prev => ({
+      ...prev,
+      academicLevelPrices: prev.academicLevelPrices?.filter(item => item.level !== level) || []
+    }));
+  };
+
   const addService = () => {
-    if (newService.category && newService.price) {
+    if (newService.category && newService.academicLevelPrices && newService.academicLevelPrices.length > 0) {
       setServices(prev => [...prev, {
         ...newService as ServiceType,
         id: Date.now().toString()
       }]);
       setNewService({
         category: "General Consultation",
-        price: 0,
+        academicLevelPrices: [],
         description: ""
       });
     }
@@ -290,9 +315,6 @@ const ConsultationServicesTab = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <h4 className="font-medium">{service.category}</h4>
-                  {service.academicLevel && (
-                    <Badge variant="secondary">{service.academicLevel}</Badge>
-                  )}
                   <PriceGridModal category={service.category} />
                 </div>
                 <Button
@@ -304,9 +326,21 @@ const ConsultationServicesTab = () => {
                 </Button>
               </div>
               <p className="text-sm text-gray-600">{service.description}</p>
-              <div className="flex items-center space-x-1">
-                <DollarSign className="h-4 w-4" />
-                <span>{service.price.toLocaleString()} XAF</span>
+              
+              {/* Academic Level Prices */}
+              <div className="space-y-2">
+                <h5 className="font-medium text-sm">Academic Level Pricing:</h5>
+                <div className="flex flex-wrap gap-2">
+                  {service.academicLevelPrices.map((levelPrice, index) => (
+                    <div key={index} className="flex items-center space-x-2 bg-gray-50 rounded-lg p-2">
+                      <Badge variant="secondary">{levelPrice.level}</Badge>
+                      <div className="flex items-center space-x-1">
+                        <DollarSign className="h-3 w-3" />
+                        <span className="text-sm">{levelPrice.price.toLocaleString()} XAF</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           ))}
@@ -314,51 +348,29 @@ const ConsultationServicesTab = () => {
           {/* Add New Service */}
           <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 space-y-4">
             <h4 className="font-medium">Add New Service</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="category">Service Category</Label>
-                <div className="flex items-center space-x-2">
-                  <Select
-                    value={newService.category}
-                    onValueChange={(value) => setNewService(prev => ({ ...prev, category: value as any }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {serviceCategories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {newService.category && (
-                    <PriceGridModal category={newService.category} />
-                  )}
-                </div>
+            
+            <div>
+              <Label htmlFor="category">Service Category</Label>
+              <div className="flex items-center space-x-2">
+                <Select
+                  value={newService.category}
+                  onValueChange={(value) => setNewService(prev => ({ ...prev, category: value as any }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {serviceCategories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {newService.category && (
+                  <PriceGridModal category={newService.category} />
+                )}
               </div>
-              
-              {newService.category !== "General Consultation" && (
-                <div>
-                  <Label htmlFor="academicLevel">Academic Level</Label>
-                  <Select
-                    value={newService.academicLevel}
-                    onValueChange={(value) => setNewService(prev => ({ ...prev, academicLevel: value as any }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select academic level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {academicLevels.map((level) => (
-                        <SelectItem key={level} value={level}>
-                          {level}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
             </div>
             
             <div>
@@ -370,49 +382,87 @@ const ConsultationServicesTab = () => {
                 onChange={(e) => setNewService(prev => ({ ...prev, description: e.target.value }))}
               />
             </div>
-            
-            <div>
-              <Label htmlFor="price">Price (XAF)</Label>
-              <Input
-                id="price"
-                type="number"
-                placeholder="Enter your price"
-                value={newService.price || ''}
-                onChange={(e) => setNewService(prev => ({ ...prev, price: parseInt(e.target.value) || 0 }))}
-              />
+
+            {/* Academic Level and Price Input */}
+            <div className="space-y-3">
+              <Label>Academic Level Pricing</Label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <Label htmlFor="academicLevel">Academic Level</Label>
+                  <Select
+                    value={tempAcademicLevel}
+                    onValueChange={(value) => setTempAcademicLevel(value as any)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {academicLevels.map((level) => (
+                        <SelectItem key={level} value={level}>
+                          {level}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="price">Price (XAF)</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    placeholder="Enter price"
+                    value={tempPrice || ''}
+                    onChange={(e) => setTempPrice(parseInt(e.target.value) || 0)}
+                  />
+                </div>
+                
+                <div className="flex items-end">
+                  <Button 
+                    type="button" 
+                    onClick={addAcademicLevelPrice}
+                    disabled={!tempAcademicLevel || tempPrice <= 0}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add
+                  </Button>
+                </div>
+              </div>
+
+              {/* Display added academic level prices */}
+              {newService.academicLevelPrices && newService.academicLevelPrices.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Added Pricing:</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {newService.academicLevelPrices.map((levelPrice, index) => (
+                      <div key={index} className="flex items-center space-x-2 bg-blue-50 rounded-lg p-2">
+                        <Badge variant="secondary">{levelPrice.level}</Badge>
+                        <div className="flex items-center space-x-1">
+                          <DollarSign className="h-3 w-3" />
+                          <span className="text-sm">{levelPrice.price.toLocaleString()} XAF</span>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => removeAcademicLevelPrice(levelPrice.level)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             
-            <Button onClick={addService} className="w-full">
+            <Button 
+              onClick={addService} 
+              className="w-full"
+              disabled={!newService.category || !newService.academicLevelPrices || newService.academicLevelPrices.length === 0}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Service
             </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Payment Milestones for Full Thesis Support */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Clock className="h-5 w-5" />
-            <span>Payment Milestones (Full Thesis Support)</span>
-            <div className="flex items-center text-sm text-gray-500">
-              <Info className="h-4 w-4 mr-1" />
-              <span>Three-phase payment structure</span>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {paymentMilestones.map((milestone, index) => (
-              <div key={index} className="flex items-center justify-between p-3 border rounded">
-                <div>
-                  <p className="font-medium">{milestone.phase}</p>
-                  <p className="text-sm text-gray-600">{milestone.description}</p>
-                </div>
-                <Badge variant="outline">{milestone.percentage}%</Badge>
-              </div>
-            ))}
           </div>
         </CardContent>
       </Card>

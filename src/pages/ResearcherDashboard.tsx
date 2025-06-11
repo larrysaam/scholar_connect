@@ -43,14 +43,14 @@ const ResearcherDashboard = () => {
     switch (activeTab) {
       case "overview":
         return <WelcomeOverviewTab />;
+      case "consultation-services":
+        return <ConsultationServicesTab />;
       case "upcoming":
         return <UpcomingTab />;
       case "past":
         return <PastTab />;
       case "payments":
         return <PaymentsEarningsTab />;
-      case "consultation-services":
-        return <ConsultationServicesTab />;
       case "performance":
         return <PerformanceReputationTab />;
       case "quality":
