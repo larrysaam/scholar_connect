@@ -2,7 +2,19 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import type { UserProfile } from '@/types/signup';
+import { useToast } from '@/components/ui/use-toast';
+
+interface UserProfile {
+  id: string;
+  email: string;
+  name: string | null;
+  role: 'student' | 'expert' | 'aid' | 'admin';
+  phone_number?: string;
+  country?: string;
+  institution?: string;
+  faculty?: string;
+  wallet_balance?: number;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -37,15 +49,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
+    let mounted = true;
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
+
+        console.log('Auth state change:', event);
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (session?.user) {
+        if (session?.user && event !== 'SIGNED_OUT') {
           // Fetch user profile using setTimeout to avoid auth callback issues
           setTimeout(async () => {
             try {
@@ -57,23 +75,35 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
               
               if (error) {
                 console.error('Error fetching profile:', error);
-              } else {
+                toast({
+                  variant: "destructive",
+                  title: "Profile Error",
+                  description: "Failed to load user profile. Please try again.",
+                });
+              } else if (mounted) {
                 setProfile(profileData as UserProfile);
               }
             } catch (error) {
-              console.error('Error fetching profile:', error);
+              console.error('Profile fetch error:', error);
+            } finally {
+              if (mounted) {
+                setLoading(false);
+              }
             }
           }, 0);
         } else {
           setProfile(null);
+          if (mounted) {
+            setLoading(false);
+          }
         }
-        
-        setLoading(false);
       }
     );
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -88,27 +118,42 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             
             if (error) {
               console.error('Error fetching profile:', error);
-            } else {
+            } else if (mounted) {
               setProfile(profileData as UserProfile);
             }
           } catch (error) {
             console.error('Error fetching profile:', error);
+          } finally {
+            if (mounted) {
+              setLoading(false);
+            }
           }
-          setLoading(false);
         }, 0);
-      } else {
+      } else if (mounted) {
         setLoading(false);
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [toast]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
-    setSession(null);
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+    } catch (error) {
+      console.error('Sign out error:', error);
+      toast({
+        variant: "destructive",
+        title: "Sign Out Error",
+        description: "Failed to sign out. Please try again.",
+      });
+    }
   };
 
   const value = {
