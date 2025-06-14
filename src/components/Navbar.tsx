@@ -1,91 +1,158 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { User, LogOut } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useSecureAuth } from "@/hooks/useSecureAuth";
 
 const Navbar = () => {
-  const { user, profile, signOut } = useAuth();
-  const navigate = useNavigate();
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
-
-  const getDashboardLink = () => {
-    switch (profile?.role) {
-      case 'expert':
-        return '/researcher-dashboard';
-      case 'aid':
-        return '/research-aids-dashboard';
-      case 'admin':
-        return '/admin-dashboard';
-      default:
-        return '/dashboard';
-    }
-  };
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useSecureAuth();
 
   return (
     <nav className="bg-white shadow-sm border-b">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center space-x-2">
-            <img 
-              src="/lovable-uploads/a2f6a2f6-b795-4e93-914c-2b58648099ff.png" 
-              alt="ResearchWhao" 
-              className="w-8 h-8"
-            />
-            <span className="text-xl font-bold text-blue-600">ResearchWhao</span>
-          </Link>
-          
-          <div className="hidden md:flex items-center space-x-8">
-            <Link to="/about" className="text-gray-700 hover:text-blue-600">About</Link>
-            <Link to="/researchers" className="text-gray-700 hover:text-blue-600">Researchers</Link>
-            <Link to="/research-aids" className="text-gray-700 hover:text-blue-600">Research Aids</Link>
-            <Link to="/how-it-works" className="text-gray-700 hover:text-blue-600">How It Works</Link>
-            <Link to="/contact" className="text-gray-700 hover:text-blue-600">Contact</Link>
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center space-x-8">
+            <a href="/" className="text-xl font-bold text-blue-600">
+              ResearchWhao
+            </a>
+            
+            {/* Desktop Menu - Always show navigation links */}
+            <div className="hidden md:flex items-center space-x-6">
+              <a href="/" className="text-gray-600 hover:text-blue-600">
+                Home
+              </a>
+              <a href="/researchers" className="text-gray-600 hover:text-blue-600">
+                Researchers
+              </a>
+              <a href="/research-aids" className="text-gray-600 hover:text-blue-600">
+                Research Aids
+              </a>
+              <a href="/co-author-workspace" className="text-gray-600 hover:text-blue-600">
+                Co-Author Workspace
+              </a>
+              <a href="/how-it-works" className="text-gray-600 hover:text-blue-600">
+                How It Works
+              </a>
+              <a href="/about" className="text-gray-600 hover:text-blue-600">
+                About Us
+              </a>
+              <a href="/partnerships" className="text-gray-600 hover:text-blue-600">
+                Partnerships
+              </a>
+              <a href="/blogs" className="text-gray-600 hover:text-blue-600">
+                Blogs
+              </a>
+            </div>
           </div>
-          
-          <div className="flex items-center space-x-4">
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-2">
-                    <User className="h-4 w-4" />
-                    <span className="hidden md:inline">{profile?.name || user.email}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link to={getDashboardLink()}>Dashboard</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
+
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center space-x-4">
+            {!user ? (
               <>
-                <Button variant="ghost" asChild>
-                  <Link to="/auth">Login</Link>
+                <Button variant="outline" asChild>
+                  <a href="/auth">Sign In</a>
                 </Button>
-                <Button asChild>
-                  <Link to="/auth">Get Started</Link>
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button className="flex items-center gap-2">
+                      Sign Up
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <a href="/register" className="w-full cursor-pointer">
+                        Sign up as Student
+                      </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <a href="/research-aide-signup" className="w-full cursor-pointer">
+                        Sign up as Researcher
+                      </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <a href="/research-aid-signup" className="w-full cursor-pointer">
+                        Sign up as Research Aid
+                      </a>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
+            ) : (
+              <Button variant="outline" asChild>
+                <a href="/dashboard">Dashboard</a>
+              </Button>
             )}
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
         </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden py-4 border-t">
+            <div className="flex flex-col space-y-4">
+              {/* Always show navigation links in mobile */}
+              <a href="/" className="text-gray-600 hover:text-blue-600">
+                Home
+              </a>
+              <a href="/researchers" className="text-gray-600 hover:text-blue-600">
+                Researchers
+              </a>
+              <a href="/research-aids" className="text-gray-600 hover:text-blue-600">
+                Research Aids
+              </a>
+              <a href="/co-author-workspace" className="text-gray-600 hover:text-blue-600">
+                Co-Author Workspace
+              </a>
+              <a href="/how-it-works" className="text-gray-600 hover:text-blue-600">
+                How It Works
+              </a>
+              <a href="/about" className="text-gray-600 hover:text-blue-600">
+                About Us
+              </a>
+              <a href="/partnerships" className="text-gray-600 hover:text-blue-600">
+                Partnerships
+              </a>
+              <a href="/blogs" className="text-gray-600 hover:text-blue-600">
+                Blogs
+              </a>
+              
+              <div className="flex flex-col space-y-2 pt-4">
+                {!user ? (
+                  <>
+                    <Button variant="outline" asChild className="w-full">
+                      <a href="/auth">Sign In</a>
+                    </Button>
+                    <div className="space-y-2">
+                      <Button asChild className="w-full">
+                        <a href="/register">Sign up as Student</a>
+                      </Button>
+                      <Button variant="outline" asChild className="w-full">
+                        <a href="/research-aide-signup">Sign up as Researcher</a>
+                      </Button>
+                      <Button variant="outline" asChild className="w-full">
+                        <a href="/research-aid-signup">Sign up as Research Aid</a>
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <Button variant="outline" asChild className="w-full">
+                    <a href="/dashboard">Dashboard</a>
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );

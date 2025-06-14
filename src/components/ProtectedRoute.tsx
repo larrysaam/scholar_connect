@@ -1,51 +1,40 @@
 
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useSecureAuth } from '@/hooks/useSecureAuth';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: 'student' | 'expert' | 'aid' | 'admin';
-  requireAuth?: boolean;
+  requireAuth?: boolean; // New prop to make auth optional
 }
 
-const ProtectedRoute = ({ 
-  children, 
-  requiredRole, 
-  requireAuth = true 
-}: ProtectedRouteProps) => {
-  const { user, profile, loading } = useAuth();
+const ProtectedRoute = ({ children, requiredRole, requireAuth = true }: ProtectedRouteProps) => {
+  const { user, profile, loading } = useSecureAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading) {
-      if (requireAuth && !user) {
+    if (!loading && requireAuth) {
+      if (!user) {
         navigate('/auth');
         return;
       }
 
       if (requiredRole && profile?.role !== requiredRole) {
         // Redirect to appropriate dashboard based on role
-        switch (profile?.role) {
-          case 'expert':
-            navigate('/researcher-dashboard');
-            break;
-          case 'aid':
-            navigate('/research-aids-dashboard');
-            break;
-          case 'admin':
-            navigate('/admin-dashboard');
-            break;
-          default:
-            navigate('/dashboard');
+        if (profile?.role === 'expert') {
+          navigate('/researcher-dashboard');
+        } else if (profile?.role === 'aid') {
+          navigate('/research-aids-dashboard');
+        } else {
+          navigate('/dashboard');
         }
-        return;
       }
     }
   }, [user, profile, loading, navigate, requiredRole, requireAuth]);
 
-  if (loading) {
+  if (loading && requireAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" />
@@ -53,11 +42,11 @@ const ProtectedRoute = ({
     );
   }
 
-  if (requireAuth && !user) {
+  if (!user && requireAuth) {
     return null;
   }
 
-  if (requiredRole && profile?.role !== requiredRole) {
+  if (requiredRole && profile?.role !== requiredRole && requireAuth) {
     return null;
   }
 
