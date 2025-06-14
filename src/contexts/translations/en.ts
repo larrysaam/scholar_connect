@@ -1,110 +1,5 @@
+
 export const enTranslations = {
-  nav: {
-    home: "Home",
-    researchers: "Researchers",
-    researchAids: "Research Aids",
-    howItWorks: "How It Works",
-    aboutUs: "About Us",
-    contact: "Contact",
-    account: "Account",
-    signIn: "Sign In",
-    signUp: "Sign Up",
-    dashboard: "Dashboard",
-    about: "About",
-    login: "Login",
-    register: "Register"
-  },
-  hero: {
-    joinAsResearcher: "Join as a Researcher"
-  },
-  researchAids: {
-    title: "Research Aids",
-    subtitle: "Find specialized assistance for your research projects",
-    searchPlaceholder: "Search for research aids...",
-    categories: {
-      all: "All Categories",
-      gis: "GIS Specialist",
-      statistics: "Statistics",
-      cartography: "Cartography",
-      dataCollection: "Data Collection",
-      journalPublishing: "Journal Publishing",
-      academicEditing: "Academic Editing"
-    },
-    results: {
-      title: "Available Research Aids",
-      found: "Found",
-      specialists: "specialists"
-    },
-    card: {
-      skills: "Skills",
-      experience: "experience",
-      available: "Available",
-      busy: "Busy",
-      contact: "Contact",
-      verified: "Verified",
-      credentials: "Credentials Verified",
-      publications: "Publications Verified",
-      institution: "Institution Verified"
-    },
-    noResults: "No research aids found matching your criteria.",
-    cta: {
-      title: "Become a Research Aid",
-      description: "Share your expertise and help students with their research projects",
-      joinButton: "Join as Research Aid"
-    },
-    verification: {
-      academic: "Academic Credentials",
-      publication: "Publication History", 
-      institutional: "Institution Partnership",
-      verified: "Verified",
-      pending: "Pending",
-      unverified: "Unverified"
-    }
-  },
-  researchAides: {
-    title: "Research Aids & Support Services",
-    subtitle: "Connect with qualified research assistants and academic support specialists",
-    searchPlaceholder: "Search by name, expertise, or skills...",
-    categories: {
-      all: "All Categories",
-      gis: "GIS",
-      statistics: "Statistics",
-      cartography: "Cartography",
-      dataCollection: "Data Collection",
-      journalPublishing: "Journal Publishing",
-      academicEditing: "Academic Editing"
-    },
-    results: {
-      title: "Available Research Aids",
-      found: "Found",
-      specialists: "specialists"
-    },
-    card: {
-      skills: "Skills",
-      experience: "experience",
-      available: "Available",
-      busy: "Busy",
-      contact: "Contact",
-      verified: "Verified",
-      credentials: "Credentials Verified",
-      publications: "Publications Verified",
-      institution: "Institution Verified"
-    },
-    noResults: "No research aids found matching your criteria.",
-    cta: {
-      title: "Join Our Research Aid Network",
-      description: "Become a research aid and help researchers achieve their goals",
-      joinButton: "Join as Research Aid"
-    },
-    verification: {
-      academic: "Academic Credentials",
-      publication: "Publication History",
-      institutional: "Institution Partnership",
-      verified: "Verified",
-      pending: "Pending",
-      unverified: "Unverified"
-    }
-  },
   contact: {
     title: "Contact Us",
     subtitle: "Get in touch with our team",
@@ -112,7 +7,7 @@ export const enTranslations = {
       title: "Send us a message",
       firstName: "First Name",
       firstNamePlaceholder: "Enter your first name",
-      lastName: "Last Name", 
+      lastName: "Last Name",
       lastNamePlaceholder: "Enter your last name",
       email: "Email",
       emailPlaceholder: "Enter your email",
@@ -126,8 +21,8 @@ export const enTranslations = {
       title: "Contact Information",
       email: {
         title: "Email",
-        general: "info@scholarconnect.com",
-        support: "support@scholarconnect.com"
+        general: "info@researchwhao.com",
+        support: "support@researchwhao.com"
       },
       phone: {
         title: "Phone",
@@ -146,33 +41,31 @@ export const enTranslations = {
       }
     },
     faqs: {
-      title: "Frequently Asked Questions",
-      questions: [
-        {
-          question: "How do I sign up as a researcher?",
-          answer: "Click on 'Join as a Researcher' and fill out the registration form with your academic credentials and expertise."
-        },
-        {
-          question: "What are the fees for using ScholarConnect?",
-          answer: "Basic membership is free. Premium features and consultations have varying rates set by individual researchers and research aids."
-        },
-        {
-          question: "How do I book a consultation?",
-          answer: "Browse researcher profiles, select your preferred expert, and use the 'Book Consultation' button to schedule a session."
-        },
-        {
-          question: "Can I collaborate on research projects?",
-          answer: "Yes! You can send co-author invitations and collaborate on various types of publications through our platform."
-        },
-        {
-          question: "What types of research support are available?",
-          answer: "We offer various services including literature review, methodology guidance, data analysis, academic writing, and publication support."
-        },
-        {
-          question: "Is my data secure on ScholarConnect?",
-          answer: "Yes, we use industry-standard security measures to protect all user data and communications on our platform."
-        }
-      ]
+      title: "Frequently Asked Questions"
+    }
+  },
+  about: {
+    title: "About Us",
+    subtitle: "Learn more about our platform"
+  },
+  partnerships: {
+    title: "Partnerships",
+    subtitle: "Partner with us"
+  },
+  home: {
+    title: "Welcome to ResearchWhao",
+    subtitle: "Connect with experts and advance your research"
+  },
+  researchAids: {
+    verification: {
+      academic: "Academic Credentials",
+      publication: "Publications",
+      institutional: "Institutional Affiliation"
+    }
+  },
+  researcher: {
+    verification: {
+      title: "Verification Status"
     }
   }
 };

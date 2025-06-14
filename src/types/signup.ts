@@ -19,3 +19,56 @@ export interface UserProfile {
   created_at?: string;
   updated_at?: string;
 }
+
+export type UserRole = 'student' | 'expert' | 'aid' | 'admin';
+
+export interface BaseFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  password: string;
+  confirmPassword: string;
+  agreedToTerms: boolean;
+}
+
+export interface StudentSignupData extends BaseFormData {
+  institution?: string;
+  faculty?: string;
+  studyLevel?: string;
+  researchAreas?: string[];
+  topicTitle?: string;
+  researchStage?: string;
+  country?: string;
+  dateOfBirth?: string;
+  sex?: string;
+}
+
+export interface ExpertSignupData extends BaseFormData {
+  organization?: string;
+  experience?: string;
+  expertise?: string[];
+  otherExpertise?: string;
+  languages?: string[];
+  linkedInUrl?: string;
+  country?: string;
+  dateOfBirth?: string;
+  sex?: string;
+}
+
+export interface ResearchAidSignupData extends BaseFormData {
+  organization?: string;
+  experience?: string;
+  expertise: string[];
+  otherExpertise: string;
+  languages: string[];
+  linkedInUrl?: string;
+  country: string;
+  dateOfBirth: string;
+  sex: string;
+}
+
+export interface FormFieldProps {
+  formData: any;
+  onInputChange: (field: string, value: string | boolean) => void;
+}
