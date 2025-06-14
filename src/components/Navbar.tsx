@@ -3,11 +3,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useSecureAuth } from "@/hooks/useSecureAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user } = useSecureAuth();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -81,9 +85,14 @@ const Navbar = () => {
                 </DropdownMenu>
               </>
             ) : (
-              <Button variant="outline" asChild>
-                <a href="/dashboard">Dashboard</a>
-              </Button>
+              <div className="flex items-center space-x-4">
+                <Button variant="outline" asChild>
+                  <a href="/dashboard">Dashboard</a>
+                </Button>
+                <Button variant="ghost" onClick={handleSignOut}>
+                  Sign Out
+                </Button>
+              </div>
             )}
           </div>
 
@@ -145,9 +154,14 @@ const Navbar = () => {
                     </div>
                   </>
                 ) : (
-                  <Button variant="outline" asChild className="w-full">
-                    <a href="/dashboard">Dashboard</a>
-                  </Button>
+                  <div className="space-y-2">
+                    <Button variant="outline" asChild className="w-full">
+                      <a href="/dashboard">Dashboard</a>
+                    </Button>
+                    <Button variant="ghost" onClick={handleSignOut} className="w-full">
+                      Sign Out
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>

@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { useSecureAuth } from "@/hooks/useSecureAuth";
+import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PersonalDetailsSection from "@/components/register/PersonalDetailsSection";
@@ -14,7 +13,7 @@ import AgreementSection from "@/components/register/AgreementSection";
 const Register = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signUp, isRateLimited } = useSecureAuth();
+  const { signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -77,15 +76,6 @@ const Register = () => {
         variant: "destructive",
         title: "Terms Required",
         description: "Please agree to the terms and conditions to continue."
-      });
-      return;
-    }
-
-    if (isRateLimited) {
-      toast({
-        variant: "destructive",
-        title: "Too Many Attempts",
-        description: "Please wait before trying again."
       });
       return;
     }

@@ -9,6 +9,8 @@ interface AuthContextType {
   profile: UserProfile | null;
   session: Session | null;
   loading: boolean;
+  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signUp: (email: string, password: string, userData: any) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
 }
 
@@ -17,6 +19,8 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   session: null,
   loading: true,
+  signIn: async () => ({ success: false }),
+  signUp: async () => ({ success: false }),
   signOut: async () => {},
 });
 
@@ -104,6 +108,58 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.toLowerCase().trim(),
+        password,
+      });
+
+      if (error) {
+        return {
+          success: false,
+          error: error.message
+        };
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: 'An unexpected error occurred. Please try again.'
+      };
+    }
+  };
+
+  const signUp = async (email: string, password: string, userData: any): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.toLowerCase().trim(),
+        password,
+        options: {
+          data: {
+            name: userData.fullName || userData.name,
+            role: userData.role || 'student'
+          }
+        }
+      });
+
+      if (error) {
+        return {
+          success: false,
+          error: error.message
+        };
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: 'An unexpected error occurred. Please try again.'
+      };
+    }
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -116,6 +172,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     profile,
     session,
     loading,
+    signIn,
+    signUp,
     signOut,
   };
 

@@ -3,16 +3,22 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
-import { useSecureAuth } from "@/hooks/useSecureAuth";
-import SecureForm from "@/components/security/SecureForm";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Shield, AlertTriangle } from "lucide-react";
 
 const SecureAuth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signIn, user, loading, isRateLimited } = useSecureAuth();
-  const [isSignUp, setIsSignUp] = useState(false);
+  const { signIn, user, loading } = useAuth();
+  const [loginData, setLoginData] = useState({
+    email: "",
+    password: ""
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
   // Check if user is already logged in and redirect based on role
   useEffect(() => {
@@ -40,20 +46,30 @@ const SecureAuth = () => {
     checkAuthAndRedirect();
   }, [user, loading, navigate]);
 
-  const handleSignIn = async (data: Record<string, string>, csrfToken: string) => {
-    console.log('CSRF Token received:', csrfToken);
-    
-    const result = await signIn(data.email, data.password);
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const result = await signIn(loginData.email, loginData.password);
     
     if (result.success) {
       toast({
         title: "Welcome back!",
         description: "Successfully logged in.",
       });
-      // Redirect will be handled by useEffect above
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: result.error || "An unexpected error occurred."
+      });
     }
-    
-    return result;
+
+    setIsLoading(false);
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setLoginData(prev => ({ ...prev, [field]: value }));
   };
 
   if (loading) {
@@ -63,21 +79,6 @@ const SecureAuth = () => {
       </div>
     );
   }
-
-  const signInFields = [
-    {
-      name: 'email',
-      label: 'Email Address',
-      type: 'email' as const,
-      required: true
-    },
-    {
-      name: 'password',
-      label: 'Password',
-      type: 'password' as const,
-      required: true
-    }
-  ];
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -113,22 +114,36 @@ const SecureAuth = () => {
           </ul>
         </div>
 
-        {/* Rate limiting warning */}
-        {isRateLimited && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              Too many attempts detected. Please wait before trying again.
-            </AlertDescription>
-          </Alert>
-        )}
-
         <div className="bg-white p-8 shadow rounded-lg">
-          <SecureForm
-            onSubmit={handleSignIn}
-            fields={signInFields}
-            submitLabel="Sign In"
-          />
+          <form onSubmit={handleSignIn} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="name@example.com"
+                value={loginData.email}
+                onChange={(e) => handleInputChange("email", e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input 
+                id="password" 
+                type="password"
+                value={loginData.password}
+                onChange={(e) => handleInputChange("password", e.target.value)}
+                required
+              />
+            </div>
+            
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
+              {isLoading ? "Signing in..." : "Sign In"}
+            </Button>
+          </form>
 
           <div className="mt-6 space-y-4">
             <div className="text-center text-sm text-gray-600">
