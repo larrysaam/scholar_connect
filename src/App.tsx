@@ -1,4 +1,3 @@
-
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -8,6 +7,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/hooks/useAuth";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import SignIn from "./pages/SignIn";
+import StudentSignUp from "./pages/StudentSignUp";
+import ExpertSignUp from "./pages/ExpertSignUp";
+import AideSignUp from "./pages/AideSignUp";
 
 const queryClient = new QueryClient();
 
@@ -91,6 +94,10 @@ const App = () => (
                     </ProtectedRoute>
                   } 
                 />
+                <Route path="/sign-in" element={<SignIn />} />
+                <Route path="/student-signup" element={<StudentSignUp />} />
+                <Route path="/expert-signup" element={<ExpertSignUp />} />
+                <Route path="/aide-signup" element={<AideSignUp />} />
               </Routes>
             </Suspense>
           </BrowserRouter>
