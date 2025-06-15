@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -227,8 +226,15 @@ export const useSecureAuth = (): AuthContextType => {
         }
       });
 
+      // Add detailed logging for debugging:
       if (error) {
-        console.warn('Failed signup attempt:', { email: email.toLowerCase(), error: error.message });
+        console.error('Supabase signUp error:', error);
+        if (error.message) {
+          // Show detailed error to user for copying
+          alert("Signup error (please copy this for support):\n" + error.message);
+        } else {
+          alert("Signup failed with unknown error.");
+        }
         return {
           success: false,
           error: error.message
@@ -246,6 +252,7 @@ export const useSecureAuth = (): AuthContextType => {
       };
     } catch (error: any) {
       console.error('Sign up error:', error);
+      alert("Signup error (unexpected, please copy this text for support):\n" + (error.message || error));
       return {
         success: false,
         error: 'An unexpected error occurred. Please try again.'
