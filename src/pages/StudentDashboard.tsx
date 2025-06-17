@@ -32,6 +32,19 @@ const StudentDashboard = () => {
     }
   }, []);
 
+  // Listen for tab change events from child components
+  useEffect(() => {
+    const handleSetActiveTab = (event: CustomEvent) => {
+      setActiveTab(event.detail);
+    };
+
+    window.addEventListener('setActiveTab', handleSetActiveTab as EventListener);
+    
+    return () => {
+      window.removeEventListener('setActiveTab', handleSetActiveTab as EventListener);
+    };
+  }, []);
+
   const handleOnboardingComplete = () => {
     localStorage.setItem('student_onboarding_complete', 'true');
     setShowOnboarding(false);

@@ -61,20 +61,23 @@ const StudentWelcomeOverviewTab = () => {
   };
 
   const handleCheckMessages = () => {
-    // Navigate to messages section
-    window.location.hash = '#messages';
+    // Navigate to messages tab in the dashboard
+    const event = new CustomEvent('setActiveTab', { detail: 'messages' });
+    window.dispatchEvent(event);
     console.log('Opening messages...');
   };
 
   const handleMyProgress = () => {
-    // Navigate to performance section
-    window.location.hash = '#performance';
+    // Navigate to performance tab in the dashboard
+    const event = new CustomEvent('setActiveTab', { detail: 'performance' });
+    window.dispatchEvent(event);
     console.log('Opening progress tracking...');
   };
 
   const handleFullThesisSupport = () => {
-    // This would open full thesis support
+    // Navigate to a full thesis support page or modal
     console.log('Opening full thesis support...');
+    alert('Full Thesis Support feature coming soon!');
   };
 
   return (
