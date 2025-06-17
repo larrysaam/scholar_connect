@@ -21,7 +21,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
       }
 
       if (requiredRole && profile?.role !== requiredRole) {
-        // Redirect to appropriate dashboard based on role
+        // Redirect to appropriate dashboard based on actual user role
         if (profile?.role === 'expert') {
           navigate('/researcher-dashboard');
         } else if (profile?.role === 'aid') {

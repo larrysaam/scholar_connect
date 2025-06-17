@@ -35,21 +35,31 @@ const Login = () => {
       } else {
         toast.success('Login successful!');
         
-        // Get user profile to determine redirect
-        const { data: profile } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', data.user.id)
-          .single();
+        // Get user profile to determine redirect - wait a bit for the user to be created
+        setTimeout(async () => {
+          try {
+            const { data: profile } = await supabase
+              .from('users')
+              .select('role')
+              .eq('id', data.user.id)
+              .single();
 
-        // Redirect based on user role
-        if (profile?.role === 'expert') {
-          navigate('/researcher-dashboard');
-        } else if (profile?.role === 'aid') {
-          navigate('/research-aids-dashboard');
-        } else {
-          navigate('/dashboard');
-        }
+            console.log('User profile:', profile);
+            
+            // Redirect based on user role
+            if (profile?.role === 'expert') {
+              navigate('/researcher-dashboard');
+            } else if (profile?.role === 'aid') {
+              navigate('/research-aids-dashboard');
+            } else {
+              navigate('/dashboard');
+            }
+          } catch (profileError) {
+            console.error('Error fetching profile:', profileError);
+            // Default to dashboard if profile fetch fails
+            navigate('/dashboard');
+          }
+        }, 1000);
       }
     } catch (error) {
       toast.error('An error occurred during login');
