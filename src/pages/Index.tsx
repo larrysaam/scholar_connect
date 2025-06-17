@@ -109,7 +109,7 @@ const Index = () => {
           <Navbar />
           
           <main id="main-content" className="flex-grow">
-            {/* Hero Section with Image Restored */}
+            {/* Hero Section */}
             <section className="hero-gradient text-white py-20 lg:py-32 relative overflow-hidden">
               <div className="absolute right-0 top-0 h-full w-1/2 z-10">
                 <div className="relative h-full w-full">
@@ -141,7 +141,7 @@ const Index = () => {
               </div>
             </section>
             
-            {/* Call to action section for unauthenticated users */}
+            {/* Join ResearchWhao Today Section */}
             <section className="py-16 bg-blue-50">
               <div className="container mx-auto px-4 md:px-6">
                 <div className="max-w-4xl mx-auto text-center">
@@ -188,7 +188,7 @@ const Index = () => {
               </div>
             </section>
 
-            {/* New Why Should You Join ResearchWhao Section */}
+            {/* Why Should You Join ResearchWhao Section */}
             <section className="py-16 bg-white">
               <div className="container mx-auto px-4 md:px-6">
                 <div className="max-w-6xl mx-auto">
@@ -267,7 +267,7 @@ const Index = () => {
             </section>
           </main>
           
-          {/* Footer with limited content for unauthenticated users */}
+          {/* Footer */}
           <footer className="bg-gray-900 text-white py-12">
             <div className="container mx-auto px-4 md:px-6">
               <div className="max-w-4xl mx-auto">
