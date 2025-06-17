@@ -10,14 +10,15 @@ import {
   MessageSquare,
   TrendingUp,
   Star,
-  Shield,
   Bell,
   UserPlus,
   User,
   FileText,
   Settings,
   BookOpen,
-  GraduationCap
+  GraduationCap,
+  Search,
+  Shield
 } from "lucide-react";
 
 interface DashboardSidebarProps {
@@ -27,7 +28,24 @@ interface DashboardSidebarProps {
 }
 
 const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSidebarProps) => {
-  const menuItems = [
+  const studentMenuItems = [
+    { id: "overview", label: "Overview", icon: LayoutDashboard },
+    { id: "ai-assistant", label: "AI Assistant", icon: MessageSquare },
+    { id: "find-researcher", label: "Find Researcher", icon: Search },
+    { id: "session-booking", label: "Book a Session", icon: Calendar },
+    { id: "upcoming", label: "Upcoming Sessions", icon: Calendar },
+    { id: "past", label: "Past Sessions", icon: Clock },
+    { id: "full-thesis-support", label: "Full Thesis Support", icon: GraduationCap },
+    { id: "payments", label: "Payments", icon: DollarSign },
+    { id: "messages", label: "Messages", icon: MessageSquare },
+    { id: "performance", label: "My Progress", icon: TrendingUp },
+    { id: "notifications", label: "Notifications", icon: Bell, badge: 3 },
+    { id: "thesis-information", label: "Thesis Information", icon: BookOpen },
+    { id: "documents", label: "Documents", icon: FileText },
+    { id: "settings", label: "Account Settings", icon: Settings },
+  ];
+
+  const researcherMenuItems = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "consultation-services", label: "Consultation Service Setup", icon: MessageSquare },
     { id: "upcoming", label: "Upcoming Consultations", icon: Calendar },
@@ -44,6 +62,8 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
     { id: "profile", label: "Profile Information", icon: User },
     { id: "settings", label: "Account Settings", icon: Settings },
   ];
+
+  const menuItems = userType === "student" ? studentMenuItems : researcherMenuItems;
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-4">

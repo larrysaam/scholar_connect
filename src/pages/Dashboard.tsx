@@ -13,13 +13,17 @@ import StudentWelcomeOverviewTab from "@/components/dashboard/tabs/StudentWelcom
 import StudentPerformanceTab from "@/components/dashboard/tabs/StudentPerformanceTab";
 import FindResearcherTab from "@/components/dashboard/tabs/FindResearcherTab";
 import PaymentsTab from "@/components/dashboard/tabs/PaymentsTab";
-import ProfileTab from "@/components/dashboard/tabs/ProfileTab";
 import DocumentsTab from "@/components/dashboard/tabs/DocumentsTab";
 import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
 import QualityFeedbackTab from "@/components/dashboard/tabs/QualityFeedbackTab";
 import NotificationsTab from "@/components/dashboard/tabs/NotificationsTab";
 import ResearchSummaryTab from "@/components/dashboard/tabs/ResearchSummaryTab";
 import DiscussionTab from "@/components/dashboard/tabs/DiscussionTab";
+import StudentMessagesTab from "@/components/dashboard/tabs/StudentMessagesTab";
+import StudentAIAssistantTab from "@/components/dashboard/tabs/StudentAIAssistantTab";
+import SessionBookingTab from "@/components/dashboard/tabs/SessionBookingTab";
+import FullThesisSupportTab from "@/components/dashboard/tabs/FullThesisSupportTab";
+import ThesisInformationTab from "@/components/dashboard/tabs/ThesisInformationTab";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -33,6 +37,18 @@ const Dashboard = () => {
     }
   }, []);
 
+  // Listen for tab change events from child components
+  useEffect(() => {
+    const handleSetActiveTab = (event: CustomEvent) => {
+      setActiveTab(event.detail);
+    };
+
+    window.addEventListener('setActiveTab', handleSetActiveTab as EventListener);
+    return () => {
+      window.removeEventListener('setActiveTab', handleSetActiveTab as EventListener);
+    };
+  }, []);
+
   const handleOnboardingComplete = () => {
     localStorage.setItem('student_onboarding_complete', 'true');
     setShowOnboarding(false);
@@ -42,16 +58,24 @@ const Dashboard = () => {
     switch (activeTab) {
       case "overview":
         return <StudentWelcomeOverviewTab />;
+      case "ai-assistant":
+        return <StudentAIAssistantTab />;
       case "find-researcher":
         return <FindResearcherTab />;
+      case "session-booking":
+        return <SessionBookingTab />;
       case "performance":
         return <StudentPerformanceTab />;
       case "upcoming":
         return <StudentUpcomingTab />;
       case "past":
         return <StudentPastTab />;
+      case "full-thesis-support":
+        return <FullThesisSupportTab />;
       case "payments":
         return <PaymentsTab />;
+      case "messages":
+        return <StudentMessagesTab />;
       case "quality":
         return <QualityFeedbackTab />;
       case "discussion":
@@ -60,8 +84,8 @@ const Dashboard = () => {
         return <NotificationsTab />;
       case "research-summary":
         return <ResearchSummaryTab />;
-      case "profile":
-        return <ProfileTab />;
+      case "thesis-information":
+        return <ThesisInformationTab />;
       case "documents":
         return <DocumentsTab />;
       case "settings":
@@ -85,7 +109,7 @@ const Dashboard = () => {
             <div className="mb-8">
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-2">Welcome to ScholarConnect!</h3>
+                  <h3 className="text-lg font-semibold mb-2">Welcome to ResearchWhao!</h3>
                   <p className="text-gray-600 mb-4">Complete your profile to start connecting with researchers.</p>
                   <button 
                     onClick={handleOnboardingComplete}
