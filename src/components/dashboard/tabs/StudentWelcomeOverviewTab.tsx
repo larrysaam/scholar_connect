@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, MessageCircle, BookOpen, AlertTriangle, CheckCircle, Video, Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface QuickStats {
   upcomingSessions: number;
@@ -21,6 +22,8 @@ interface UpcomingSession {
 }
 
 const StudentWelcomeOverviewTab = () => {
+  const navigate = useNavigate();
+  
   const [stats, setStats] = useState<QuickStats>({
     upcomingSessions: 2,
     completedSessions: 5,
@@ -53,14 +56,31 @@ const StudentWelcomeOverviewTab = () => {
     }
   ]);
 
+  const handleFindResearcher = () => {
+    navigate('/researchers');
+  };
+
+  const handleCheckMessages = () => {
+    // This would typically open messages or navigate to messages tab
+    console.log('Opening messages...');
+  };
+
+  const handleMyProgress = () => {
+    // This would typically show progress tracking
+    console.log('Opening progress tracking...');
+  };
+
   return (
     <div className="space-y-6">
-      {/* Welcome Greeting */}
+      {/* Welcome Greeting - Moved to top */}
       <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white p-6 rounded-lg">
         <h1 className="text-2xl font-bold mb-2">Welcome back, John!</h1>
         <p className="opacity-90">Ready to advance your research journey?</p>
         <div className="mt-4">
-          <Button className="bg-white text-green-600 hover:bg-gray-100">
+          <Button 
+            className="bg-white text-green-600 hover:bg-gray-100"
+            onClick={handleFindResearcher}
+          >
             <Search className="h-4 w-4 mr-2" />
             Book a Session
           </Button>
@@ -176,22 +196,33 @@ const StudentWelcomeOverviewTab = () => {
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
+      {/* Quick Actions - Updated with active buttons */}
       <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button className="h-20 flex flex-col space-y-2">
+            <Button 
+              className="h-20 flex flex-col space-y-2"
+              onClick={handleFindResearcher}
+            >
               <Search className="h-6 w-6" />
               <span>Find Researcher</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col space-y-2">
+            <Button 
+              variant="outline" 
+              className="h-20 flex flex-col space-y-2"
+              onClick={handleCheckMessages}
+            >
               <MessageCircle className="h-6 w-6" />
               <span>Check Messages</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col space-y-2">
+            <Button 
+              variant="outline" 
+              className="h-20 flex flex-col space-y-2"
+              onClick={handleMyProgress}
+            >
               <BookOpen className="h-6 w-6" />
               <span>My Progress</span>
             </Button>
