@@ -9,11 +9,11 @@ const StudentUpcomingTab = () => {
 
   const handleJoinMeet = (consultationId: string) => {
     toast({
-      title: "Joining Meeting",
-      description: "Opening Google Meet...",
+      title: "Joining Google Meet",
+      description: "Opening Google Meet session...",
     });
-    // In a real app, this would open the Google Meet link
-    console.log(`Joining meet for consultation ${consultationId}`);
+    // Open Google Meet
+    window.open('https://meet.google.com/new', '_blank');
   };
 
   const handleUploadDocument = (consultationId: string) => {
@@ -34,10 +34,11 @@ const StudentUpcomingTab = () => {
 
   const handleContactResearcher = (researcherId: string, consultationId: string) => {
     toast({
-      title: "Contact Researcher",
-      description: "Opening contact dialog...",
+      title: "Opening Messages",
+      description: "Redirecting to messages...",
     });
-    console.log(`Contacting researcher ${researcherId} for consultation ${consultationId}`);
+    // Trigger tab change to messages
+    window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'messages' }));
   };
 
   const handleAccessDocument = (documentLink: string) => {

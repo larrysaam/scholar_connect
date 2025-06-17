@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, Clock, DollarSign, FileText, CreditCard } from "lucide-react";
 import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 interface SessionType {
   id: string;
@@ -25,6 +26,7 @@ interface BookingStep {
 }
 
 const SessionBookingTab = () => {
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedResearcher] = useState({
     name: "Dr. Marie Ngono Abega",
@@ -40,6 +42,7 @@ const SessionBookingTab = () => {
   const [currentProgress, setCurrentProgress] = useState("");
   const [specificQuestions, setSpecificQuestions] = useState("");
   const [promoCode, setPromoCode] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
 
   const sessionTypes: SessionType[] = [
     {
@@ -99,8 +102,60 @@ const SessionBookingTab = () => {
   };
 
   const handleBooking = () => {
-    // Implementation for completing booking
-    console.log("Booking completed");
+    // Get thesis information from localStorage or context
+    const thesisInfo = {
+      title: "Machine Learning Applications in Healthcare Data Analysis",
+      problemStatement: "The healthcare industry generates vast amounts of data daily, but lacks efficient automated systems to analyze and extract meaningful insights that can improve patient outcomes and reduce operational costs.",
+      researchQuestions: [
+        "How can machine learning algorithms be optimized for healthcare data analysis?",
+        "What are the most effective ML models for predicting patient outcomes?",
+        "How can data privacy be maintained while enabling comprehensive analysis?"
+      ],
+      researchObjectives: [
+        "Develop and implement ML algorithms for healthcare data processing",
+        "Evaluate the effectiveness of different ML models in healthcare contexts",
+        "Create a framework for privacy-preserving healthcare data analysis",
+        "Validate the system through real-world healthcare datasets"
+      ],
+      researchHypothesis: "Implementation of optimized machine learning algorithms in healthcare data analysis will significantly improve diagnostic accuracy and treatment recommendations while maintaining patient data privacy.",
+      expectedOutcomes: [
+        "A comprehensive ML framework for healthcare data analysis",
+        "Improved diagnostic accuracy by 15-20%",
+        "Reduced data processing time by 40%",
+        "Published research papers in peer-reviewed journals",
+        "Potential patent applications for novel algorithms"
+      ]
+    };
+
+    const bookingData = {
+      researcher: selectedResearcher,
+      session: selectedSession,
+      date: selectedDate,
+      time: selectedTime,
+      topic,
+      currentProgress,
+      specificQuestions,
+      paymentMethod,
+      totalPrice,
+      studentThesisInfo: thesisInfo
+    };
+
+    console.log("Booking completed with thesis information:", bookingData);
+    
+    toast({
+      title: "Booking Confirmed!",
+      description: `Your consultation with ${selectedResearcher.name} has been booked for ${selectedDate ? format(selectedDate, "PPP") : ""} at ${selectedTime}. The researcher can now see your thesis information.`,
+    });
+
+    // Reset form or redirect
+    setCurrentStep(1);
+    setSelectedSessionType("");
+    setSelectedDate(undefined);
+    setSelectedTime("");
+    setTopic("");
+    setCurrentProgress("");
+    setSpecificQuestions("");
+    setPaymentMethod("");
   };
 
   return (
@@ -208,7 +263,7 @@ const SessionBookingTab = () => {
                       selected={selectedDate}
                       onSelect={setSelectedDate}
                       disabled={(date) => date < new Date()}
-                      className="rounded-md border"
+                      className="rounded-md border pointer-events-auto"
                     />
                   </div>
                   <div>
@@ -218,7 +273,7 @@ const SessionBookingTab = () => {
                         <button
                           key={time}
                           onClick={() => setSelectedTime(time)}
-                          className={`p-2 text-sm border rounded ${
+                          className={`p-2 text-sm border rounded transition-colors ${
                             selectedTime === time
                               ? 'border-blue-500 bg-blue-50 text-blue-700'
                               : 'border-gray-200 hover:border-gray-300'
@@ -313,7 +368,7 @@ const SessionBookingTab = () => {
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Payment Method</label>
-                  <Select>
+                  <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select payment method" />
                     </SelectTrigger>
@@ -351,7 +406,11 @@ const SessionBookingTab = () => {
                 Next
               </Button>
             ) : (
-              <Button onClick={handleBooking} className="bg-green-600 hover:bg-green-700">
+              <Button 
+                onClick={handleBooking} 
+                className="bg-green-600 hover:bg-green-700"
+                disabled={!paymentMethod}
+              >
                 <CreditCard className="h-4 w-4 mr-2" />
                 Complete Booking
               </Button>

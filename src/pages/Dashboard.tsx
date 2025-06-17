@@ -101,8 +101,12 @@ const Dashboard = () => {
       
       <main className="flex-grow bg-gray-50 py-12">
         <div className="container mx-auto px-4 md:px-6">
-          <h1 className="text-3xl font-bold mb-2">Student Dashboard</h1>
-          <p className="text-gray-600 mb-8">Manage your consultations and academic profile</p>
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">Welcome back, Emmanuel!</h1>
+              <p className="text-gray-600">Ready to advance your research journey?</p>
+            </div>
+          </div>
           
           {/* Show onboarding for new users */}
           {showOnboarding && (
