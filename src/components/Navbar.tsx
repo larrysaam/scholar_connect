@@ -6,11 +6,35 @@ import { useAuth } from "@/hooks/useAuth";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();
   };
+
+  const getNavigationItems = () => {
+    if (!user || !profile) return [];
+
+    const baseItems = [
+      { href: "/dashboard", label: "My Dashboard" }
+    ];
+
+    if (profile.role === 'aid') {
+      return [
+        ...baseItems,
+        { href: "/job-board", label: "Job Board" }
+      ];
+    }
+
+    // For students and researchers
+    return [
+      ...baseItems,
+      { href: "/researchers", label: "Researchers" },
+      { href: "/research-aids", label: "Research Aids" }
+    ];
+  };
+
+  const navigationItems = getNavigationItems();
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -24,15 +48,15 @@ const Navbar = () => {
             {/* Desktop Menu - Only show if user is authenticated */}
             {user && (
               <div className="hidden md:flex items-center space-x-6">
-                <a href="/researchers" className="text-gray-600 hover:text-blue-600">
-                  Researchers
-                </a>
-                <a href="/research-aids" className="text-gray-600 hover:text-blue-600">
-                  Research Aids
-                </a>
-                <a href="/dashboard" className="text-gray-600 hover:text-blue-600">
-                  Dashboard
-                </a>
+                {navigationItems.map((item) => (
+                  <a 
+                    key={item.href}
+                    href={item.href} 
+                    className="text-gray-600 hover:text-blue-600"
+                  >
+                    {item.label}
+                  </a>
+                ))}
               </div>
             )}
           </div>
@@ -85,15 +109,15 @@ const Navbar = () => {
             <div className="flex flex-col space-y-4">
               {user ? (
                 <>
-                  <a href="/researchers" className="text-gray-600 hover:text-blue-600">
-                    Researchers
-                  </a>
-                  <a href="/research-aids" className="text-gray-600 hover:text-blue-600">
-                    Research Aids
-                  </a>
-                  <a href="/dashboard" className="text-gray-600 hover:text-blue-600">
-                    Dashboard
-                  </a>
+                  {navigationItems.map((item) => (
+                    <a 
+                      key={item.href}
+                      href={item.href} 
+                      className="text-gray-600 hover:text-blue-600"
+                    >
+                      {item.label}
+                    </a>
+                  ))}
                   <Button onClick={handleSignOut} variant="outline" className="w-full">
                     Sign Out
                   </Button>
