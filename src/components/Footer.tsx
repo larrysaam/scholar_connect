@@ -1,6 +1,10 @@
+
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Footer = () => {
+  const { user } = useAuth();
+
   return (
     <footer className="bg-gray-900 text-gray-300">
       <div className="container mx-auto px-4 md:px-6 py-12">
@@ -24,58 +28,89 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold text-white mb-4">Platform</h3>
             <ul className="space-y-2">
-              <li><Link to="/researchers" className="text-sm hover:text-blue-400 transition-colors">Find Researchers</Link></li>
-              <li><Link to="/research-aids" className="text-sm hover:text-blue-400 transition-colors">Research Aids</Link></li>
-              <li><Link to="/co-author-workspace" className="text-sm hover:text-blue-400 transition-colors">Co-Author Workspace</Link></li>
-              <li><Link to="/blogs" className="text-sm hover:text-blue-400 transition-colors">Blogs</Link></li>
-              <li><Link to="/partnerships" className="text-sm hover:text-blue-400 transition-colors">Partnerships</Link></li>
+              {user ? (
+                <>
+                  <li><Link to="/researchers" className="text-sm hover:text-blue-400 transition-colors">Find Researchers</Link></li>
+                  <li><Link to="/research-aids" className="text-sm hover:text-blue-400 transition-colors">Research Aids</Link></li>
+                  <li><Link to="/co-author-workspace" className="text-sm hover:text-blue-400 transition-colors">Co-Author Workspace</Link></li>
+                  <li><Link to="/blogs" className="text-sm hover:text-blue-400 transition-colors">Blogs</Link></li>
+                  <li><Link to="/partnerships" className="text-sm hover:text-blue-400 transition-colors">Partnerships</Link></li>
+                </>
+              ) : (
+                <>
+                  <li><span className="text-sm text-gray-500">Find Researchers (Sign in required)</span></li>
+                  <li><span className="text-sm text-gray-500">Research Aids (Sign in required)</span></li>
+                  <li><span className="text-sm text-gray-500">Co-Author Workspace (Sign in required)</span></li>
+                  <li><span className="text-sm text-gray-500">Blogs (Sign in required)</span></li>
+                  <li><span className="text-sm text-gray-500">Partnerships (Sign in required)</span></li>
+                </>
+              )}
             </ul>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">How It Works</h3>
-            <div className="space-y-2 text-sm">
-              <p className="text-gray-400">1. Search for expert researchers</p>
-              <p className="text-gray-400">2. Book personalized consultations</p>
-              <p className="text-gray-400">3. Collaborate on research projects</p>
-              <p className="text-gray-400">4. Get guidance and support</p>
-            </div>
-            <Link to="/register" className="inline-block mt-3 text-blue-400 hover:text-blue-300 transition-colors text-sm">
-              Get Started →
-            </Link>
+            <h3 className="text-lg font-semibold text-white mb-4">Quick Links</h3>
+            <ul className="space-y-2">
+              {user ? (
+                <>
+                  <li><Link to="/about" className="text-sm hover:text-blue-400 transition-colors">About Us</Link></li>
+                  <li><Link to="/how-it-works" className="text-sm hover:text-blue-400 transition-colors">How It Works</Link></li>
+                </>
+              ) : (
+                <>
+                  <li><span className="text-sm text-gray-500">About Us (Sign in required)</span></li>
+                  <li><span className="text-sm text-gray-500">How It Works (Sign in required)</span></li>
+                </>
+              )}
+            </ul>
+            {!user && (
+              <div className="mt-4">
+                <Link to="/login" className="inline-block text-blue-400 hover:text-blue-300 transition-colors text-sm">
+                  Sign In to Access →
+                </Link>
+              </div>
+            )}
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Support & Info</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">Support</h3>
             <ul className="space-y-2">
-              <li><Link to="/register" className="text-sm hover:text-blue-400 transition-colors">Sign Up</Link></li>
-              <li><Link to="/login" className="text-sm hover:text-blue-400 transition-colors">Log In</Link></li>
-              <li><Link to="/dashboard" className="text-sm hover:text-blue-400 transition-colors">Dashboard</Link></li>
-              <li>
-                <a href="mailto:support@scholarconnect.com" className="text-sm hover:text-blue-400 transition-colors">
-                  Contact Us
-                </a>
-              </li>
+              {user ? (
+                <>
+                  <li><Link to="/contact" className="text-sm hover:text-blue-400 transition-colors">Contact Us</Link></li>
+                  <li><Link to="/dashboard" className="text-sm hover:text-blue-400 transition-colors">Dashboard</Link></li>
+                </>
+              ) : (
+                <>
+                  <li><span className="text-sm text-gray-500">Contact Us (Sign in required)</span></li>
+                  <li><Link to="/login" className="text-sm hover:text-blue-400 transition-colors">Sign In</Link></li>
+                  <li><Link to="/student-signup" className="text-sm hover:text-blue-400 transition-colors">Join as Student</Link></li>
+                  <li><Link to="/researcher-signup" className="text-sm hover:text-blue-400 transition-colors">Join as Researcher</Link></li>
+                  <li><Link to="/research-aid-signup" className="text-sm hover:text-blue-400 transition-colors">Join as Research Aid</Link></li>
+                </>
+              )}
             </ul>
           </div>
         </div>
 
-        {/* About Us Section */}
-        <div className="mt-12 pt-8 border-t border-gray-800">
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold text-white mb-4">About ResearchWhao</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-300">
-              <div>
-                <h4 className="font-medium text-white mb-2">Our Mission</h4>
-                <p>To democratize access to research expertise, foster academic collaboration, and accelerate knowledge creation through innovative technology and community building.</p>
-              </div>
-              <div>
-                <h4 className="font-medium text-white mb-2">Our Vision</h4>
-                <p>To create a thriving academic ecosystem where knowledge flows freely, research barriers are eliminated, and every student has access to expert guidance regardless of their location or institution.</p>
+        {/* About Us Section - Only show if user is authenticated */}
+        {user && (
+          <div className="mt-12 pt-8 border-t border-gray-800">
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-white mb-4">About ResearchWhao</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-300">
+                <div>
+                  <h4 className="font-medium text-white mb-2">Our Mission</h4>
+                  <p>To democratize access to research expertise, foster academic collaboration, and accelerate knowledge creation through innovative technology and community building.</p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-white mb-2">Our Vision</h4>
+                  <p>To create a thriving academic ecosystem where knowledge flows freely, research barriers are eliminated, and every student has access to expert guidance regardless of their location or institution.</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
         
         <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-3">

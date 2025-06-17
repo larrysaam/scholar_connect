@@ -49,7 +49,9 @@ const Navbar = () => {
                   <a href="/login">Sign In</a>
                 </Button>
                 <div className="relative group">
-                  <Button>Join Platform</Button>
+                  <Button asChild>
+                    <a href="/student-signup">Join Platform</a>
+                  </Button>
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                     <div className="py-1">
                       <a href="/student-signup" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">

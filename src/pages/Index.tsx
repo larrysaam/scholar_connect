@@ -109,7 +109,19 @@ const Index = () => {
           <Navbar />
           
           <main id="main-content" className="flex-grow">
-            <Hero />
+            {/* Hero Section - Updated to remove find researchers and join platform buttons */}
+            <section className="bg-gradient-to-r from-blue-600 to-purple-700 text-white py-20">
+              <div className="container mx-auto px-4 md:px-6">
+                <div className="max-w-4xl mx-auto text-center">
+                  <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                    Connect with Research Experts Worldwide
+                  </h1>
+                  <p className="text-xl md:text-2xl text-blue-100 mb-8">
+                    Book one-on-one consultations with research experts across various fields. Get personalized guidance for your research projects and accelerate your academic success.
+                  </p>
+                </div>
+              </div>
+            </section>
             
             {/* Call to action section for unauthenticated users */}
             <section className="py-16 bg-blue-50">
@@ -163,7 +175,7 @@ const Index = () => {
           <footer className="bg-gray-900 text-white py-12">
             <div className="container mx-auto px-4 md:px-6">
               <div className="max-w-4xl mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                   <div>
                     <h3 className="font-semibold mb-4">About ResearchWhao</h3>
                     <p className="text-gray-400 text-sm">
@@ -172,26 +184,12 @@ const Index = () => {
                   </div>
                   
                   <div>
-                    <h3 className="font-semibold mb-4">Quick Links</h3>
+                    <h3 className="font-semibold mb-4">Get Started</h3>
                     <ul className="space-y-2 text-sm">
-                      <li><Link to="/about" className="text-gray-400 hover:text-white">About Us</Link></li>
-                      <li><Link to="/how-it-works" className="text-gray-400 hover:text-white">How It Works</Link></li>
-                      <li><Link to="/partnerships" className="text-gray-400 hover:text-white">Partnerships</Link></li>
-                      <li><Link to="/blogs" className="text-gray-400 hover:text-white">Blogs</Link></li>
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-semibold mb-4">Workspace</h3>
-                    <ul className="space-y-2 text-sm">
-                      <li><Link to="/co-author-workspace" className="text-gray-400 hover:text-white">Co-Author Workspace</Link></li>
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-semibold mb-4">Support</h3>
-                    <ul className="space-y-2 text-sm">
-                      <li><Link to="/contact" className="text-gray-400 hover:text-white">Contact Us</Link></li>
+                      <li><Link to="/login" className="text-gray-400 hover:text-white">Sign In</Link></li>
+                      <li><Link to="/student-signup" className="text-gray-400 hover:text-white">Join as Student</Link></li>
+                      <li><Link to="/researcher-signup" className="text-gray-400 hover:text-white">Join as Researcher</Link></li>
+                      <li><Link to="/research-aid-signup" className="text-gray-400 hover:text-white">Join as Research Aid</Link></li>
                     </ul>
                   </div>
                 </div>
