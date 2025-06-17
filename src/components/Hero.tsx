@@ -12,6 +12,10 @@ const Hero = () => {
             alt="Student consulting with researcher" 
             className="h-full w-full object-cover object-center"
             loading="eager"
+            style={{
+              filter: 'brightness(0.85) contrast(1.15) saturate(1.1)',
+              objectPosition: '25% center'
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-l from-blue-600/10 via-blue-600/30 to-blue-600/70"></div>
         </div>
@@ -24,7 +28,6 @@ const Hero = () => {
               Connecting students with research experts
             </h1>
             <p className="text-lg mb-8 text-blue-100 leading-relaxed">
-              Book one-on-one consultations with research experts across various fields.
               Get personalized guidance for your research projects and accelerate your academic success.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">

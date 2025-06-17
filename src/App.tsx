@@ -50,6 +50,12 @@ const App = () => (
               <Routes>
                 {/* Public routes - accessible without authentication */}
                 <Route path="/" element={<Index />} />
+                <Route path="/about" element={<AboutUs />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/how-it-works" element={<HowItWorks />} />
+                <Route path="/partnerships" element={<Partnerships />} />
+                <Route path="/blogs" element={<Blogs />} />
+                <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
                 
                 {/* Authentication routes */}
                 <Route path="/login" element={<Login />} />
@@ -58,36 +64,6 @@ const App = () => (
                 <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
                 
                 {/* Protected routes - require authentication */}
-                <Route path="/about" element={
-                  <ProtectedRoute>
-                    <AboutUs />
-                  </ProtectedRoute>
-                } />
-                <Route path="/contact" element={
-                  <ProtectedRoute>
-                    <Contact />
-                  </ProtectedRoute>
-                } />
-                <Route path="/how-it-works" element={
-                  <ProtectedRoute>
-                    <HowItWorks />
-                  </ProtectedRoute>
-                } />
-                <Route path="/partnerships" element={
-                  <ProtectedRoute>
-                    <Partnerships />
-                  </ProtectedRoute>
-                } />
-                <Route path="/blogs" element={
-                  <ProtectedRoute>
-                    <Blogs />
-                  </ProtectedRoute>
-                } />
-                <Route path="/co-author-workspace" element={
-                  <ProtectedRoute>
-                    <CoAuthorWorkspace />
-                  </ProtectedRoute>
-                } />
                 <Route path="/researchers" element={
                   <ProtectedRoute>
                     <Researchers />
@@ -109,7 +85,7 @@ const App = () => (
                   </ProtectedRoute>
                 } />
                 <Route path="/job-board" element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredRole="aid">
                     <JobBoard />
                   </ProtectedRoute>
                 } />
