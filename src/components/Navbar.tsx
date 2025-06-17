@@ -14,21 +14,30 @@ const Navbar = () => {
 
   // Define navigation items based on user role
   const getNavigationItems = () => {
-    if (!user || !profile) return [];
+    if (!user) return [];
     
-    if (profile.role === 'aid') {
-      return [
-        { href: "/research-aids-dashboard", label: "My Dashboard" },
-        { href: "/job-board", label: "Job Board" }
-      ];
-    } else {
-      // For students and researchers
+    // If profile is not loaded or doesn't exist, default to student/researcher navigation
+    if (!profile || profile.role === 'student' || profile.role === 'expert') {
       return [
         { href: "/dashboard", label: "My Dashboard" },
         { href: "/researchers", label: "Researchers" },
         { href: "/research-aids", label: "Research Aids" }
       ];
     }
+    
+    if (profile.role === 'aid') {
+      return [
+        { href: "/research-aids-dashboard", label: "My Dashboard" },
+        { href: "/job-board", label: "Job Board" }
+      ];
+    }
+    
+    // Default fallback for any other role
+    return [
+      { href: "/dashboard", label: "My Dashboard" },
+      { href: "/researchers", label: "Researchers" },
+      { href: "/research-aids", label: "Research Aids" }
+    ];
   };
 
   const navigationItems = getNavigationItems();
