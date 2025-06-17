@@ -12,23 +12,26 @@ const Navbar = () => {
     await signOut();
   };
 
-  // Define navigation items based on user role
   const getNavigationItems = () => {
     if (!user || !profile) return [];
-    
+
+    const baseItems = [
+      { href: "/dashboard", label: "My Dashboard" }
+    ];
+
     if (profile.role === 'aid') {
       return [
-        { href: "/research-aids-dashboard", label: "My Dashboard" },
+        ...baseItems,
         { href: "/job-board", label: "Job Board" }
       ];
-    } else {
-      // For students and researchers
-      return [
-        { href: "/dashboard", label: "My Dashboard" },
-        { href: "/researchers", label: "Researchers" },
-        { href: "/research-aids", label: "Research Aids" }
-      ];
     }
+
+    // For students and researchers
+    return [
+      ...baseItems,
+      { href: "/researchers", label: "Researchers" },
+      { href: "/research-aids", label: "Research Aids" }
+    ];
   };
 
   const navigationItems = getNavigationItems();
@@ -47,7 +50,7 @@ const Navbar = () => {
               <div className="hidden md:flex items-center space-x-6">
                 {navigationItems.map((item) => (
                   <a 
-                    key={item.href} 
+                    key={item.href}
                     href={item.href} 
                     className="text-gray-600 hover:text-blue-600"
                   >
@@ -108,7 +111,7 @@ const Navbar = () => {
                 <>
                   {navigationItems.map((item) => (
                     <a 
-                      key={item.href} 
+                      key={item.href}
                       href={item.href} 
                       className="text-gray-600 hover:text-blue-600"
                     >
