@@ -1,8 +1,8 @@
 
-import { useState, useEffect, createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import type { UserProfile } from '@/types/signup';
+import { UserProfile } from '@/types/signup';
 
 interface AuthContextType {
   user: User | null;
@@ -14,43 +14,27 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  profile: null,
-  session: null,
-  loading: true,
-  signIn: async () => ({ success: false }),
-  signUp: async () => ({ success: false }),
-  signOut: async () => {},
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-interface AuthProviderProps {
-  children: React.ReactNode;
-}
-
-export const AuthProvider = ({ children }: AuthProviderProps) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
+    let mounted = true;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
+
+        console.log('Auth state change:', event);
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (session?.user) {
-          // Fetch user profile using setTimeout to avoid auth callback issues
+        if (session?.user && event !== 'SIGNED_OUT') {
+          // Fetch user profile
           setTimeout(async () => {
             try {
               const { data: profileData, error } = await supabase
@@ -61,69 +45,92 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
               
               if (error) {
                 console.error('Error fetching profile:', error);
-              } else {
-                setProfile(profileData as UserProfile);
+              } else if (mounted) {
+                setProfile(profileData);
               }
             } catch (error) {
-              console.error('Error fetching profile:', error);
+              console.error('Profile fetch error:', error);
+            } finally {
+              if (mounted) {
+                setLoading(false);
+              }
             }
           }, 0);
         } else {
           setProfile(null);
+          if (mounted) {
+            setLoading(false);
+          }
         }
-        
-        setLoading(false);
       }
     );
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
         setTimeout(async () => {
           try {
-            const { data: profileData, error } = await supabase
+            const { data: profileData } = await supabase
               .from('users')
               .select('*')
               .eq('id', session.user.id)
               .single();
             
-            if (error) {
-              console.error('Error fetching profile:', error);
-            } else {
-              setProfile(profileData as UserProfile);
+            if (mounted) {
+              setProfile(profileData);
             }
           } catch (error) {
             console.error('Error fetching profile:', error);
+          } finally {
+            if (mounted) {
+              setLoading(false);
+            }
           }
-          setLoading(false);
         }, 0);
-      } else {
+      } else if (mounted) {
         setLoading(false);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.toLowerCase().trim(),
-        password,
+        password: password,
       });
 
       if (error) {
+        console.warn('Failed login attempt:', { email: email.toLowerCase(), error: error.message });
         return {
           success: false,
-          error: error.message
+          error: error.message === 'Invalid login credentials' 
+            ? 'Invalid email or password. Please check your credentials and try again.'
+            : error.message
         };
       }
 
-      return { success: true };
+      if (data.user) {
+        console.log('Successful login:', { userId: data.user.id, email: data.user.email });
+        return { success: true };
+      }
+
+      return {
+        success: false,
+        error: 'Login failed. Please try again.'
+      };
     } catch (error: any) {
+      console.error('Sign in error:', error);
       return {
         success: false,
         error: 'An unexpected error occurred. Please try again.'
@@ -135,24 +142,32 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email: email.toLowerCase().trim(),
-        password,
+        password: password,
         options: {
-          data: {
-            name: userData.fullName || userData.name,
-            role: userData.role || 'student'
-          }
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: userData
         }
       });
 
       if (error) {
+        console.error('Supabase signUp error:', error);
         return {
           success: false,
           error: error.message
         };
       }
 
-      return { success: true };
+      if (data.user) {
+        console.log('Successful signup:', { userId: data.user.id, email: data.user.email });
+        return { success: true };
+      }
+
+      return {
+        success: false,
+        error: 'Signup failed. Please try again.'
+      };
     } catch (error: any) {
+      console.error('Sign up error:', error);
       return {
         success: false,
         error: 'An unexpected error occurred. Please try again.'
@@ -161,25 +176,35 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
-    setSession(null);
-  };
-
-  const value = {
-    user,
-    profile,
-    session,
-    loading,
-    signIn,
-    signUp,
-    signOut,
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{
+      user,
+      profile,
+      session,
+      loading,
+      signIn,
+      signUp,
+      signOut,
+    }}>
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };
