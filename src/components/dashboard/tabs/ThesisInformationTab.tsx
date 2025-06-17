@@ -8,10 +8,19 @@ import { Label } from "@/components/ui/label";
 import { BookOpen, Save, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+interface ThesisData {
+  title: string;
+  problemStatement: string;
+  researchQuestions: string[];
+  researchObjectives: string[];
+  researchHypothesis: string;
+  expectedOutcomes: string[];
+}
+
 const ThesisInformationTab = () => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
-  const [thesisData, setThesisData] = useState({
+  const [thesisData, setThesisData] = useState<ThesisData>({
     title: "Machine Learning Applications in Healthcare Data Analysis",
     problemStatement: "The healthcare industry generates vast amounts of data daily, but lacks efficient automated systems to analyze and extract meaningful insights that can improve patient outcomes and reduce operational costs.",
     researchQuestions: [
@@ -36,7 +45,6 @@ const ThesisInformationTab = () => {
   });
 
   const handleSave = () => {
-    // Save thesis information
     toast({
       title: "Thesis Information Saved",
       description: "Your thesis information has been successfully updated.",
@@ -44,26 +52,26 @@ const ThesisInformationTab = () => {
     setIsEditing(false);
   };
 
-  const handleArrayChange = (field: string, index: number, value: string) => {
+  const handleArrayChange = (field: keyof Pick<ThesisData, 'researchQuestions' | 'researchObjectives' | 'expectedOutcomes'>, index: number, value: string) => {
     setThesisData(prev => ({
       ...prev,
-      [field]: prev[field as keyof typeof prev].map((item: string, i: number) => 
+      [field]: (prev[field] as string[]).map((item, i) => 
         i === index ? value : item
       )
     }));
   };
 
-  const addArrayItem = (field: string) => {
+  const addArrayItem = (field: keyof Pick<ThesisData, 'researchQuestions' | 'researchObjectives' | 'expectedOutcomes'>) => {
     setThesisData(prev => ({
       ...prev,
-      [field]: [...prev[field as keyof typeof prev], ""]
+      [field]: [...(prev[field] as string[]), ""]
     }));
   };
 
-  const removeArrayItem = (field: string, index: number) => {
+  const removeArrayItem = (field: keyof Pick<ThesisData, 'researchQuestions' | 'researchObjectives' | 'expectedOutcomes'>, index: number) => {
     setThesisData(prev => ({
       ...prev,
-      [field]: prev[field as keyof typeof prev].filter((_: any, i: number) => i !== index)
+      [field]: (prev[field] as string[]).filter((_, i) => i !== index)
     }));
   };
 
