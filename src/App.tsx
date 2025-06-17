@@ -1,3 +1,4 @@
+
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -7,19 +8,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/hooks/useAuth";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import SignIn from "./pages/SignIn";
-import StudentSignUp from "./pages/StudentSignUp";
-import ExpertSignUp from "./pages/ExpertSignUp";
-import AideSignUp from "./pages/AideSignUp";
 
 const queryClient = new QueryClient();
 
 const Index = lazy(() => import("./pages/Index"));
-const SecureAuth = lazy(() => import("./pages/SecureAuth"));
-const Register = lazy(() => import("./pages/Register"));
-const SecureRegister = lazy(() => import("./pages/SecureRegister"));
-const ResearchAideSignup = lazy(() => import("./pages/ResearchAideSignup"));
-const ResearchAidSignup = lazy(() => import("./pages/ResearchAidSignup"));
+const Auth = lazy(() => import("./pages/Auth"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const ResearcherDashboard = lazy(() => import("./pages/ResearcherDashboard"));
 const ResearchAidsDashboard = lazy(() => import("./pages/ResearchAidsDashboard"));
@@ -62,12 +55,8 @@ const App = () => (
                 <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
                 <Route path="/workspace/:projectId" element={<WorkspaceDetails />} />
                 
-                {/* Authentication routes */}
-                <Route path="/auth" element={<SecureAuth />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/secure-register" element={<SecureRegister />} />
-                <Route path="/research-aide-signup" element={<ResearchAideSignup />} />
-                <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
+                {/* Authentication route */}
+                <Route path="/auth" element={<Auth />} />
                 
                 {/* Protected dashboard routes */}
                 <Route 
@@ -94,10 +83,6 @@ const App = () => (
                     </ProtectedRoute>
                   } 
                 />
-                <Route path="/sign-in" element={<SignIn />} />
-                <Route path="/student-signup" element={<StudentSignUp />} />
-                <Route path="/expert-signup" element={<ExpertSignUp />} />
-                <Route path="/aide-signup" element={<AideSignUp />} />
               </Routes>
             </Suspense>
           </BrowserRouter>
