@@ -140,12 +140,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string, userData: any): Promise<{ success: boolean; error?: string }> => {
     try {
+      console.log('Starting signup with data:', userData);
+      
+      // Clean and format the user data
+      const cleanedData = {
+        fullName: userData.fullName,
+        role: userData.role || 'student',
+        phoneNumber: userData.phoneNumber,
+        country: userData.country,
+        universityInstitution: userData.universityInstitution,
+        fieldOfStudy: userData.fieldOfStudy,
+        levelOfStudy: userData.levelOfStudy,
+        sex: userData.sex,
+        dateOfBirth: userData.dateOfBirth,
+        researchTopic: userData.researchTopic,
+        researchStage: userData.researchStage,
+        academicRank: userData.academicRank || null,
+        highestEducation: userData.highestEducation || null,
+        linkedinAccount: userData.linkedinAccount || null,
+        researchgateAccount: userData.researchgateAccount || null,
+        academiaEduAccount: userData.academiaEduAccount || null,
+        orcidId: userData.orcidId || null,
+        preferredLanguage: userData.preferredLanguage || null,
+        fieldsOfExpertise: userData.fieldsOfExpertise || null
+      };
+
+      console.log('Cleaned data for signup:', cleanedData);
+
       const { data, error } = await supabase.auth.signUp({
         email: email.toLowerCase().trim(),
         password: password,
         options: {
           emailRedirectTo: `${window.location.origin}/dashboard`,
-          data: userData
+          data: cleanedData
         }
       });
 

@@ -62,17 +62,18 @@ const StudentSignup = () => {
     try {
       console.log('Starting signup process for student...');
       
+      // Ensure proper data formatting
       const userData = {
-        fullName: formData.fullName,
+        fullName: formData.fullName.trim(),
         role: 'student',
-        phoneNumber: `${formData.countryCode}${formData.phoneNumber}`,
-        country: formData.country === 'other' ? formData.otherCountry : formData.country,
-        universityInstitution: formData.university === 'other' ? formData.otherUniversity : formData.university,
-        fieldOfStudy: formData.fieldOfStudy === 'other' ? formData.otherFieldOfStudy : formData.fieldOfStudy,
+        phoneNumber: `${formData.countryCode}${formData.phoneNumber}`.trim(),
+        country: formData.country === 'other' ? formData.otherCountry.trim() : formData.country,
+        universityInstitution: formData.university === 'other' ? formData.otherUniversity.trim() : formData.university,
+        fieldOfStudy: formData.fieldOfStudy === 'other' ? formData.otherFieldOfStudy.trim() : formData.fieldOfStudy,
         levelOfStudy: formData.levelOfStudy,
         sex: formData.sex,
         dateOfBirth: formData.dateOfBirth,
-        researchTopic: formData.researchTopic,
+        researchTopic: formData.researchTopic.trim(),
         researchStage: formData.researchStage
       };
 
