@@ -687,8 +687,6 @@ export type Database = {
           research_topic: string | null
           researchgate_account: string | null
           role: Database["public"]["Enums"]["user_role"]
-          sex: Database["public"]["Enums"]["sex_type"] | null
-          study_level: Database["public"]["Enums"]["study_level"] | null
           topic_title: string | null
           university_institution: string | null
           updated_at: string | null
@@ -728,8 +726,6 @@ export type Database = {
           research_topic?: string | null
           researchgate_account?: string | null
           role?: Database["public"]["Enums"]["user_role"]
-          sex?: Database["public"]["Enums"]["sex_type"] | null
-          study_level?: Database["public"]["Enums"]["study_level"] | null
           topic_title?: string | null
           university_institution?: string | null
           updated_at?: string | null
@@ -769,8 +765,6 @@ export type Database = {
           research_topic?: string | null
           researchgate_account?: string | null
           role?: Database["public"]["Enums"]["user_role"]
-          sex?: Database["public"]["Enums"]["sex_type"] | null
-          study_level?: Database["public"]["Enums"]["study_level"] | null
           topic_title?: string | null
           university_institution?: string | null
           updated_at?: string | null
@@ -838,7 +832,13 @@ export type Database = {
       payment_type: "consultation" | "service"
       payout_method: "mobile_money" | "bank_transfer" | "paypal"
       sex_type: "male" | "female"
-      study_level: "undergraduate" | "masters" | "phd" | "postdoc"
+      study_level:
+        | "hnd"
+        | "state_diploma"
+        | "bachelors"
+        | "masters"
+        | "phd"
+        | "post_doctorate"
       user_role: "student" | "expert" | "aid" | "admin"
     }
     CompositeTypes: {
@@ -968,7 +968,14 @@ export const Constants = {
       payment_type: ["consultation", "service"],
       payout_method: ["mobile_money", "bank_transfer", "paypal"],
       sex_type: ["male", "female"],
-      study_level: ["undergraduate", "masters", "phd", "postdoc"],
+      study_level: [
+        "hnd",
+        "state_diploma",
+        "bachelors",
+        "masters",
+        "phd",
+        "post_doctorate",
+      ],
       user_role: ["student", "expert", "aid", "admin"],
     },
   },
