@@ -120,17 +120,17 @@ const UnifiedSignupForm = ({ defaultUserType }: UnifiedSignupFormProps) => {
                 <OrganizationFields formData={formData} onInputChange={handleInputChange} />
                 <PasswordFields formData={formData} onInputChange={handleInputChange} />
                 <TermsCheckbox 
-                  checked={formData.agreedToTerms}
-                  onChange={(checked) => handleInputChange('agreedToTerms', checked)}
+                  agreedToTerms={formData.agreedToTerms}
+                  onInputChange={handleInputChange}
                 />
               </TabsContent>
 
               <TabsContent value="expert" className="space-y-4">
-                <TabPlaceholder userType="expert" />
+                <TabPlaceholder userType="expert" message="Expert registration form coming soon. Please use the contact form to register as an expert." />
               </TabsContent>
 
               <TabsContent value="aid" className="space-y-4">
-                <TabPlaceholder userType="aid" />
+                <TabPlaceholder userType="aid" message="Research Aid registration form coming soon. Please use the contact form to register as a research aid." />
               </TabsContent>
             </Tabs>
 
