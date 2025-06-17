@@ -1,10 +1,11 @@
+
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Star, Users, Calendar, MessageSquare } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { MapPin, Star, Users, Calendar } from "lucide-react";
 import StatusIndicator from "./StatusIndicator";
 import BookingModal from "./BookingModal";
+import MessageModal from "./MessageModal";
+import CoAuthorInvitationModal from "./CoAuthorInvitationModal";
 
 interface ProfileHeaderProps {
   researcher: {
@@ -32,54 +33,6 @@ interface ProfileHeaderProps {
 }
 
 const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
-  const { toast } = useToast();
-
-  const handleSendMessage = () => {
-    toast({
-      title: "Opening Messages",
-      description: `Starting conversation with ${researcher.name}...`,
-    });
-    
-    // In a real app, this would navigate to the messages page or open a chat
-    console.log("Opening message interface with researcher:", researcher.id);
-    
-    // Navigate to messages (you can implement actual navigation here)
-    // For now, we'll simulate opening a message interface
-    window.dispatchEvent(new CustomEvent('openMessages', { 
-      detail: { researcherId: researcher.id, researcherName: researcher.name }
-    }));
-  };
-
-  const handleInviteCoAuthor = () => {
-    toast({
-      title: "Co-Author Invitation",
-      description: `Sending co-author invitation to ${researcher.name}...`,
-    });
-    
-    // In a real app, this would open a modal or form to send co-author invitation
-    console.log("Sending co-author invitation to researcher:", researcher.id);
-    
-    // Simulate sending invitation with thesis information
-    const invitationData = {
-      researcherId: researcher.id,
-      researcherName: researcher.name,
-      projectTitle: "Machine Learning Applications in Healthcare Data Analysis",
-      invitationMessage: "I would like to invite you to collaborate as a co-author on my research project.",
-      estimatedDuration: "3-6 months",
-      collaborationType: "Co-authorship"
-    };
-    
-    console.log("Invitation data:", invitationData);
-    
-    // Show success message
-    setTimeout(() => {
-      toast({
-        title: "Invitation Sent!",
-        description: `Your co-author invitation has been sent to ${researcher.name}. They will receive a notification with your project details.`,
-      });
-    }, 1000);
-  };
-
   return (
     <Card>
       <CardContent className="p-6">
@@ -163,15 +116,9 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
           <div className="flex flex-col gap-3 md:w-64">
             <BookingModal researcher={researcher} />
             
-            <Button variant="outline" className="w-full" onClick={handleSendMessage}>
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Send Message
-            </Button>
+            <MessageModal researcher={researcher} />
             
-            <Button variant="outline" className="w-full" onClick={handleInviteCoAuthor}>
-              <Users className="h-4 w-4 mr-2" />
-              Invite to Co-Author
-            </Button>
+            <CoAuthorInvitationModal researcher={researcher} />
           </div>
         </div>
 
