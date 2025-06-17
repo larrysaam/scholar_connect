@@ -515,6 +515,30 @@ export type Database = {
         }
         Relationships: []
       }
+      Profile: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          password: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          password?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          password?: string | null
+        }
+        Relationships: []
+      }
       search_analytics: {
         Row: {
           clicked_content_ids: string[] | null

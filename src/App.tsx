@@ -6,17 +6,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { AuthProvider } from "@/hooks/useAuth";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 const queryClient = new QueryClient();
 
 const Index = lazy(() => import("./pages/Index"));
-const Auth = lazy(() => import("./pages/Auth"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const ResearcherDashboard = lazy(() => import("./pages/ResearcherDashboard"));
 const ResearchAidsDashboard = lazy(() => import("./pages/ResearchAidsDashboard"));
-const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
 const ResearcherProfile = lazy(() => import("./pages/ResearcherProfile"));
 const CoAuthorWorkspace = lazy(() => import("./pages/CoAuthorWorkspace"));
 const WorkspaceDetails = lazy(() => import("./pages/WorkspaceDetails"));
@@ -32,63 +29,37 @@ const ResearchAides = lazy(() => import("./pages/ResearchAides"));
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <LanguageProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Suspense fallback={<LoadingSpinner size="lg" />}>
-              <Routes>
-                {/* Public routes - no authentication required */}
-                <Route path="/" element={<Index />} />
-                <Route path="/about" element={<AboutUs />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/how-it-works" element={<HowItWorks />} />
-                <Route path="/partnerships" element={<Partnerships />} />
-                <Route path="/blogs" element={<Blogs />} />
-                <Route path="/researchers" element={<Researchers />} />
-                <Route path="/research-aids" element={<ResearchAides />} />
-                <Route path="/researcher/:id" element={<ResearcherProfile />} />
-                
-                {/* Co-author workspace routes */}
-                <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
-                <Route path="/workspace/:projectId" element={<WorkspaceDetails />} />
-                
-                {/* Authentication route */}
-                <Route path="/auth" element={<Auth />} />
-                
-                {/* Protected dashboard routes */}
-                <Route 
-                  path="/dashboard" 
-                  element={
-                    <ProtectedRoute requiredRole="student">
-                      <Dashboard />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/researcher-dashboard" 
-                  element={
-                    <ProtectedRoute requiredRole="expert">
-                      <ResearcherDashboard />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/research-aids-dashboard" 
-                  element={
-                    <ProtectedRoute requiredRole="aid">
-                      <ResearchAidsDashboard />
-                    </ProtectedRoute>
-                  } 
-                />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </TooltipProvider>
-      </LanguageProvider>
-    </AuthProvider>
+    <LanguageProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Suspense fallback={<LoadingSpinner size="lg" />}>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/about" element={<AboutUs />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/how-it-works" element={<HowItWorks />} />
+              <Route path="/partnerships" element={<Partnerships />} />
+              <Route path="/blogs" element={<Blogs />} />
+              <Route path="/researchers" element={<Researchers />} />
+              <Route path="/research-aids" element={<ResearchAides />} />
+              <Route path="/researcher/:id" element={<ResearcherProfile />} />
+              
+              {/* Co-author workspace routes */}
+              <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
+              <Route path="/workspace/:projectId" element={<WorkspaceDetails />} />
+              
+              {/* Dashboard routes - now accessible without authentication */}
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/researcher-dashboard" element={<ResearcherDashboard />} />
+              <Route path="/research-aids-dashboard" element={<ResearchAidsDashboard />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </TooltipProvider>
+    </LanguageProvider>
   </QueryClientProvider>
 );
 
