@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Calendar as CalendarIcon } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import ServiceSelector from "./booking/ServiceSelector";
 import AcademicLevelSelector from "./booking/AcademicLevelSelector";
 import AddOnSelector from "./booking/AddOnSelector";
@@ -45,6 +45,7 @@ interface ConsultationService {
 }
 
 const BookingModal = ({ researcher }: BookingModalProps) => {
+  const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<string | null>(null);
@@ -55,25 +56,25 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   // Mock consultation services - in real app, this would come from the researcher's profile
-  const consultationServices: ConsultationService[] = [
+  const consultationServices = [
     {
       id: "1",
-      category: "General Consultation",
+      category: "General Consultation" as const,
       academicLevelPrices: [
-        { level: "Undergraduate", price: 8000 },
-        { level: "Master's", price: 8000 },
-        { level: "PhD", price: 8000 }
+        { level: "Undergraduate" as const, price: 8000 },
+        { level: "Master's" as const, price: 8000 },
+        { level: "PhD" as const, price: 8000 }
       ],
       description: "General research guidance and consultation",
       addOns: []
     },
     {
       id: "2", 
-      category: "Chapter Review",
+      category: "Chapter Review" as const,
       academicLevelPrices: [
-        { level: "Undergraduate", price: 15000 },
-        { level: "Master's", price: 20000 },
-        { level: "PhD", price: 25000 }
+        { level: "Undergraduate" as const, price: 15000 },
+        { level: "Master's" as const, price: 20000 },
+        { level: "PhD" as const, price: 25000 }
       ],
       description: "Comprehensive review of individual thesis chapters",
       addOns: [
@@ -84,11 +85,11 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
     },
     {
       id: "3",
-      category: "Full Thesis Review", 
+      category: "Full Thesis Review" as const, 
       academicLevelPrices: [
-        { level: "Undergraduate", price: 75000 },
-        { level: "Master's", price: 120000 },
-        { level: "PhD", price: 200000 }
+        { level: "Undergraduate" as const, price: 75000 },
+        { level: "Master's" as const, price: 120000 },
+        { level: "PhD" as const, price: 200000 }
       ],
       description: "Complete thesis review with comprehensive feedback",
       addOns: [
@@ -99,11 +100,11 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
     },
     {
       id: "4",
-      category: "Full Thesis Cycle Support",
+      category: "Full Thesis Cycle Support" as const,
       academicLevelPrices: [
-        { level: "Undergraduate", price: 100000 },
-        { level: "Master's", price: 180000 },
-        { level: "PhD", price: 300000 }
+        { level: "Undergraduate" as const, price: 100000 },
+        { level: "Master's" as const, price: 180000 },
+        { level: "PhD" as const, price: 300000 }
       ],
       description: "Complete thesis guidance from topic development to defense",
       addOns: [
@@ -169,18 +170,63 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
     );
   };
 
-  // Handle booking
+  // Handle booking with thesis information integration
   const handleBooking = () => {
-    console.log("Booking with", researcher.name);
-    console.log("Service:", selectedService);
-    console.log("Academic Level:", selectedAcademicLevel);
-    console.log("Date:", selectedDate);
-    console.log("Time:", selectedTime);
-    console.log("Add-ons:", selectedAddOns);
-    console.log("Challenges:", selectedChallenges);
-    console.log("Comment:", comment);
-    console.log("Total Price:", calculateTotalPrice());
+    // Get thesis information from localStorage
+    const thesisInfo = {
+      title: "Machine Learning Applications in Healthcare Data Analysis",
+      problemStatement: "The healthcare industry generates vast amounts of data daily, but lacks efficient automated systems to analyze and extract meaningful insights that can improve patient outcomes and reduce operational costs.",
+      researchQuestions: [
+        "How can machine learning algorithms be optimized for healthcare data analysis?",
+        "What are the most effective ML models for predicting patient outcomes?",
+        "How can data privacy be maintained while enabling comprehensive analysis?"
+      ],
+      researchObjectives: [
+        "Develop and implement ML algorithms for healthcare data processing",
+        "Evaluate the effectiveness of different ML models in healthcare contexts",
+        "Create a framework for privacy-preserving healthcare data analysis",
+        "Validate the system through real-world healthcare datasets"
+      ],
+      researchHypothesis: "Implementation of optimized machine learning algorithms in healthcare data analysis will significantly improve diagnostic accuracy and treatment recommendations while maintaining patient data privacy.",
+      expectedOutcomes: [
+        "A comprehensive ML framework for healthcare data analysis",
+        "Improved diagnostic accuracy by 15-20%",
+        "Reduced data processing time by 40%",
+        "Published research papers in peer-reviewed journals",
+        "Potential patent applications for novel algorithms"
+      ]
+    };
+
+    const bookingData = {
+      researcher: researcher.name,
+      service: getSelectedServiceDetails(),
+      academicLevel: selectedAcademicLevel,
+      date: selectedDate,
+      time: selectedTime,
+      addOns: selectedAddOns,
+      challenges: selectedChallenges,
+      comment,
+      totalPrice: calculateTotalPrice(),
+      studentThesisInfo: thesisInfo
+    };
+
+    console.log("Booking with thesis information:", bookingData);
+    
+    toast({
+      title: "Consultation Booked Successfully!",
+      description: `Your consultation with ${researcher.name} has been scheduled. The researcher can now access your thesis information.`,
+    });
+    
     setIsOpen(false);
+    
+    // Reset form
+    setSelectedDate(undefined);
+    setSelectedTime(null);
+    setSelectedService(null);
+    setSelectedAcademicLevel(null);
+    setSelectedAddOns([]);
+    setSelectedChallenges([]);
+    setComment("");
   };
 
   return (
