@@ -47,8 +47,24 @@ const Navbar = () => {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
             <Button variant="outline" asChild>
-              <a href="/dashboard">Dashboard</a>
+              <a href="/login">Sign In</a>
             </Button>
+            <div className="relative group">
+              <Button>Join Now</Button>
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                <div className="py-1">
+                  <a href="/student-signup" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    Join as Student
+                  </a>
+                  <a href="/researcher-signup" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    Join as Researcher
+                  </a>
+                  <a href="/research-aid-signup" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    Join as Research Aid
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Mobile Menu Button */}
@@ -89,9 +105,18 @@ const Navbar = () => {
                 Blogs
               </a>
               
-              <div className="pt-4">
+              <div className="pt-4 space-y-2">
+                <Button variant="outline" asChild className="w-full">
+                  <a href="/login">Sign In</a>
+                </Button>
                 <Button asChild className="w-full">
-                  <a href="/dashboard">Dashboard</a>
+                  <a href="/student-signup">Join as Student</a>
+                </Button>
+                <Button variant="outline" asChild className="w-full">
+                  <a href="/researcher-signup">Join as Researcher</a>
+                </Button>
+                <Button variant="outline" asChild className="w-full">
+                  <a href="/research-aid-signup">Join as Research Aid</a>
                 </Button>
               </div>
             </div>

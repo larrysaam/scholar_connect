@@ -655,6 +655,8 @@ export type Database = {
       }
       users: {
         Row: {
+          academia_edu_account: string | null
+          academic_rank: string | null
           country: string | null
           created_at: string | null
           date_of_birth: string | null
@@ -662,28 +664,40 @@ export type Database = {
           experience: string | null
           expertise: string[] | null
           faculty: string | null
+          field_of_study: string | null
+          fields_of_expertise: string | null
+          highest_education: string | null
           id: string
           institution: string | null
           languages: string[] | null
+          level_of_study: string | null
+          linkedin_account: string | null
           linkedin_url: string | null
           name: string | null
+          orcid_id: string | null
           other_expertise: string | null
           payout_details: Json | null
           phone_number: string | null
+          preferred_language: string | null
           preferred_payout_method:
             | Database["public"]["Enums"]["payout_method"]
             | null
           research_areas: string[] | null
           research_stage: string | null
+          research_topic: string | null
+          researchgate_account: string | null
           role: Database["public"]["Enums"]["user_role"]
           sex: Database["public"]["Enums"]["sex_type"] | null
           study_level: Database["public"]["Enums"]["study_level"] | null
           topic_title: string | null
+          university_institution: string | null
           updated_at: string | null
           user_id: string | null
           wallet_balance: number | null
         }
         Insert: {
+          academia_edu_account?: string | null
+          academic_rank?: string | null
           country?: string | null
           created_at?: string | null
           date_of_birth?: string | null
@@ -691,28 +705,40 @@ export type Database = {
           experience?: string | null
           expertise?: string[] | null
           faculty?: string | null
+          field_of_study?: string | null
+          fields_of_expertise?: string | null
+          highest_education?: string | null
           id: string
           institution?: string | null
           languages?: string[] | null
+          level_of_study?: string | null
+          linkedin_account?: string | null
           linkedin_url?: string | null
           name?: string | null
+          orcid_id?: string | null
           other_expertise?: string | null
           payout_details?: Json | null
           phone_number?: string | null
+          preferred_language?: string | null
           preferred_payout_method?:
             | Database["public"]["Enums"]["payout_method"]
             | null
           research_areas?: string[] | null
           research_stage?: string | null
+          research_topic?: string | null
+          researchgate_account?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           sex?: Database["public"]["Enums"]["sex_type"] | null
           study_level?: Database["public"]["Enums"]["study_level"] | null
           topic_title?: string | null
+          university_institution?: string | null
           updated_at?: string | null
           user_id?: string | null
           wallet_balance?: number | null
         }
         Update: {
+          academia_edu_account?: string | null
+          academic_rank?: string | null
           country?: string | null
           created_at?: string | null
           date_of_birth?: string | null
@@ -720,23 +746,33 @@ export type Database = {
           experience?: string | null
           expertise?: string[] | null
           faculty?: string | null
+          field_of_study?: string | null
+          fields_of_expertise?: string | null
+          highest_education?: string | null
           id?: string
           institution?: string | null
           languages?: string[] | null
+          level_of_study?: string | null
+          linkedin_account?: string | null
           linkedin_url?: string | null
           name?: string | null
+          orcid_id?: string | null
           other_expertise?: string | null
           payout_details?: Json | null
           phone_number?: string | null
+          preferred_language?: string | null
           preferred_payout_method?:
             | Database["public"]["Enums"]["payout_method"]
             | null
           research_areas?: string[] | null
           research_stage?: string | null
+          research_topic?: string | null
+          researchgate_account?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           sex?: Database["public"]["Enums"]["sex_type"] | null
           study_level?: Database["public"]["Enums"]["study_level"] | null
           topic_title?: string | null
+          university_institution?: string | null
           updated_at?: string | null
           user_id?: string | null
           wallet_balance?: number | null
