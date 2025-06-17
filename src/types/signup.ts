@@ -1,25 +1,4 @@
 
-export interface UserProfile {
-  id: string;
-  email: string;
-  name: string;
-  role: 'student' | 'expert' | 'aid' | 'admin';
-  phone_number?: string;
-  country?: string;
-  institution?: string;
-  faculty?: string;
-  study_level?: string;
-  research_areas?: string[];
-  topic_title?: string;
-  research_stage?: string;
-  linkedin_url?: string;
-  experience?: string;
-  expertise?: string[];
-  languages?: string[];
-  created_at?: string;
-  updated_at?: string;
-}
-
 export type UserRole = 'student' | 'expert' | 'aid' | 'admin';
 
 export interface BaseFormData {
@@ -32,7 +11,7 @@ export interface BaseFormData {
   agreedToTerms: boolean;
 }
 
-export interface StudentSignupData extends BaseFormData {
+export interface StudentSignupData {
   institution?: string;
   faculty?: string;
   studyLevel?: string;
@@ -44,7 +23,7 @@ export interface StudentSignupData extends BaseFormData {
   sex?: string;
 }
 
-export interface ExpertSignupData extends BaseFormData {
+export interface ExpertSignupData {
   organization?: string;
   experience?: string;
   expertise?: string[];
@@ -56,19 +35,45 @@ export interface ExpertSignupData extends BaseFormData {
   sex?: string;
 }
 
-export interface ResearchAidSignupData extends BaseFormData {
+export interface ResearchAidSignupData {
   organization?: string;
   experience?: string;
-  expertise: string[];
-  otherExpertise: string;
-  languages: string[];
+  expertise?: string[];
+  otherExpertise?: string;
+  languages?: string[];
   linkedInUrl?: string;
-  country: string;
-  dateOfBirth: string;
-  sex: string;
+  country?: string;
+  dateOfBirth?: string;
+  sex?: string;
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  phone_number?: string;
+  country?: string;
+  university_institution?: string;
+  field_of_study?: string;
+  level_of_study?: string;
+  sex?: 'male' | 'female';
+  date_of_birth?: string;
+  research_topic?: string;
+  research_stage?: string;
+  academic_rank?: string;
+  highest_education?: string;
+  linkedin_account?: string;
+  researchgate_account?: string;
+  academia_edu_account?: string;
+  orcid_id?: string;
+  preferred_language?: string;
+  fields_of_expertise?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface FormFieldProps {
-  formData: any;
+  formData: BaseFormData | any;
   onInputChange: (field: string, value: string | boolean) => void;
 }

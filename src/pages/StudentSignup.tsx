@@ -1,17 +1,17 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import AuthHeader from '@/components/auth/AuthHeader';
 import FormField from '@/components/auth/FormField';
 import { countries, cameroonAfricaUniversities, fieldsOfStudy, studyLevels, researchStages, countryCodes } from '@/data/authData';
 
 const StudentSignup = () => {
   const navigate = useNavigate();
+  const { signUp } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
@@ -59,34 +59,35 @@ const StudentSignup = () => {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-          data: {
-            fullName: formData.fullName,
-            role: 'student',
-            phoneNumber: `${formData.countryCode}${formData.phoneNumber}`,
-            country: formData.country === 'other' ? formData.otherCountry : formData.country,
-            universityInstitution: formData.university === 'other' ? formData.otherUniversity : formData.university,
-            fieldOfStudy: formData.fieldOfStudy === 'other' ? formData.otherFieldOfStudy : formData.fieldOfStudy,
-            levelOfStudy: formData.levelOfStudy,
-            sex: formData.sex,
-            dateOfBirth: formData.dateOfBirth,
-            researchTopic: formData.researchTopic,
-            researchStage: formData.researchStage
-          }
-        }
-      });
+      console.log('Starting signup process for student...');
+      
+      const userData = {
+        fullName: formData.fullName,
+        role: 'student',
+        phoneNumber: `${formData.countryCode}${formData.phoneNumber}`,
+        country: formData.country === 'other' ? formData.otherCountry : formData.country,
+        universityInstitution: formData.university === 'other' ? formData.otherUniversity : formData.university,
+        fieldOfStudy: formData.fieldOfStudy === 'other' ? formData.otherFieldOfStudy : formData.fieldOfStudy,
+        levelOfStudy: formData.levelOfStudy,
+        sex: formData.sex,
+        dateOfBirth: formData.dateOfBirth,
+        researchTopic: formData.researchTopic,
+        researchStage: formData.researchStage
+      };
 
-      if (error) {
-        toast.error(error.message);
-      } else {
+      console.log('User data to be sent:', userData);
+
+      const result = await signUp(formData.email, formData.password, userData);
+
+      if (result.success) {
         toast.success('Account created successfully! Please check your email for verification.');
         navigate('/dashboard');
+      } else {
+        console.error('Signup failed:', result.error);
+        toast.error(result.error || 'An error occurred during signup');
       }
     } catch (error) {
+      console.error('Signup error:', error);
       toast.error('An error occurred during signup');
     } finally {
       setLoading(false);
@@ -107,6 +108,7 @@ const StudentSignup = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              
               <FormField
                 label="Full Name"
                 required
