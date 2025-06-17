@@ -28,11 +28,15 @@ const Hero = () => {
               Connecting students with research experts
             </h1>
             <p className="text-lg mb-8 text-blue-100 leading-relaxed">
+              Book one-on-one consultations with research experts across various fields.
               Get personalized guidance for your research projects and accelerate your academic success.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button asChild size="lg" className="bg-white text-blue-700 hover:bg-blue-50 shadow-lg transition-all duration-300 hover:shadow-xl">
                 <Link to="/researchers">Find Researchers</Link>
+              </Button>
+              <Button asChild size="lg" className="bg-purple-600 text-white hover:bg-purple-700 shadow-lg transition-all duration-300 hover:shadow-xl border-2 border-purple-500">
+                <Link to="/register">Join Platform</Link>
               </Button>
             </div>
           </div>

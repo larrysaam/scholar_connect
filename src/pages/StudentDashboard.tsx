@@ -13,6 +13,7 @@ import SessionBookingTab from "@/components/dashboard/tabs/SessionBookingTab";
 import StudentUpcomingTab from "@/components/dashboard/tabs/StudentUpcomingTab";
 import StudentPastTab from "@/components/dashboard/tabs/StudentPastTab";
 import PaymentsTab from "@/components/dashboard/tabs/PaymentsTab";
+import ProfileTab from "@/components/dashboard/tabs/ProfileTab";
 import DocumentsTab from "@/components/dashboard/tabs/DocumentsTab";
 import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
 import NotificationsTab from "@/components/dashboard/tabs/NotificationsTab";
@@ -30,19 +31,6 @@ const StudentDashboard = () => {
     if (!hasCompletedOnboarding) {
       setShowOnboarding(true);
     }
-  }, []);
-
-  // Listen for tab change events from child components
-  useEffect(() => {
-    const handleSetActiveTab = (event: CustomEvent) => {
-      setActiveTab(event.detail);
-    };
-
-    window.addEventListener('setActiveTab', handleSetActiveTab as EventListener);
-    
-    return () => {
-      window.removeEventListener('setActiveTab', handleSetActiveTab as EventListener);
-    };
   }, []);
 
   const handleOnboardingComplete = () => {
@@ -72,6 +60,8 @@ const StudentDashboard = () => {
         return <StudentPerformanceTab />;
       case "notifications":
         return <NotificationsTab />;
+      case "profile":
+        return <ProfileTab />;
       case "documents":
         return <DocumentsTab />;
       case "settings":
@@ -87,7 +77,8 @@ const StudentDashboard = () => {
       
       <main className="flex-grow bg-gray-50 py-12">
         <div className="container mx-auto px-4 md:px-6">
-          <h1 className="text-3xl font-bold mb-8">Student Dashboard</h1>
+          <h1 className="text-3xl font-bold mb-2">Student Dashboard</h1>
+          <p className="text-gray-600 mb-8">Manage your research consultations and learning journey</p>
           
           {/* Show onboarding for new users */}
           {showOnboarding && (

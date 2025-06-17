@@ -19,7 +19,6 @@ const ResearchAidsDashboard = lazy(() => import("./pages/ResearchAidsDashboard")
 const ResearcherProfile = lazy(() => import("./pages/ResearcherProfile"));
 const CoAuthorWorkspace = lazy(() => import("./pages/CoAuthorWorkspace"));
 const WorkspaceDetails = lazy(() => import("./pages/WorkspaceDetails"));
-const JobBoard = lazy(() => import("./pages/JobBoard"));
 
 // Public pages accessible to unauthenticated users
 const AboutUs = lazy(() => import("./pages/AboutUs"));
@@ -82,11 +81,6 @@ const App = () => (
                 <Route path="/workspace/:projectId" element={
                   <ProtectedRoute>
                     <WorkspaceDetails />
-                  </ProtectedRoute>
-                } />
-                <Route path="/job-board" element={
-                  <ProtectedRoute requiredRole="aid">
-                    <JobBoard />
                   </ProtectedRoute>
                 } />
                 

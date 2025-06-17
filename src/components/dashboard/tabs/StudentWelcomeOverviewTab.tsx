@@ -3,8 +3,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MessageCircle, BookOpen, AlertTriangle, CheckCircle, Video, Search, TrendingUp } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Calendar, Clock, MessageCircle, BookOpen, AlertTriangle, CheckCircle, Video, Search } from "lucide-react";
 
 interface QuickStats {
   upcomingSessions: number;
@@ -22,8 +21,6 @@ interface UpcomingSession {
 }
 
 const StudentWelcomeOverviewTab = () => {
-  const navigate = useNavigate();
-  
   const [stats, setStats] = useState<QuickStats>({
     upcomingSessions: 2,
     completedSessions: 5,
@@ -56,41 +53,14 @@ const StudentWelcomeOverviewTab = () => {
     }
   ]);
 
-  const handleFindResearcher = () => {
-    navigate('/researchers');
-  };
-
-  const handleCheckMessages = () => {
-    // Navigate to messages tab in the dashboard
-    const event = new CustomEvent('setActiveTab', { detail: 'messages' });
-    window.dispatchEvent(event);
-    console.log('Opening messages...');
-  };
-
-  const handleMyProgress = () => {
-    // Navigate to performance tab in the dashboard
-    const event = new CustomEvent('setActiveTab', { detail: 'performance' });
-    window.dispatchEvent(event);
-    console.log('Opening progress tracking...');
-  };
-
-  const handleFullThesisSupport = () => {
-    // Navigate to a full thesis support page or modal
-    console.log('Opening full thesis support...');
-    alert('Full Thesis Support feature coming soon!');
-  };
-
   return (
     <div className="space-y-6">
-      {/* Welcome Section - Moved to top */}
+      {/* Welcome Greeting */}
       <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white p-6 rounded-lg">
         <h1 className="text-2xl font-bold mb-2">Welcome back, John!</h1>
-        <p className="opacity-90 mb-4">Ready to advance your research journey?</p>
+        <p className="opacity-90">Ready to advance your research journey?</p>
         <div className="mt-4">
-          <Button 
-            className="bg-white text-green-600 hover:bg-gray-100"
-            onClick={handleFindResearcher}
-          >
+          <Button className="bg-white text-green-600 hover:bg-gray-100">
             <Search className="h-4 w-4 mr-2" />
             Book a Session
           </Button>
@@ -206,43 +176,24 @@ const StudentWelcomeOverviewTab = () => {
         </CardContent>
       </Card>
 
-      {/* Quick Actions - Updated with functional buttons */}
+      {/* Quick Actions */}
       <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Button 
-              className="h-20 flex flex-col space-y-2"
-              onClick={handleFindResearcher}
-            >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Button className="h-20 flex flex-col space-y-2">
               <Search className="h-6 w-6" />
               <span>Find Researcher</span>
             </Button>
-            <Button 
-              variant="outline" 
-              className="h-20 flex flex-col space-y-2"
-              onClick={handleCheckMessages}
-            >
+            <Button variant="outline" className="h-20 flex flex-col space-y-2">
               <MessageCircle className="h-6 w-6" />
               <span>Check Messages</span>
             </Button>
-            <Button 
-              variant="outline" 
-              className="h-20 flex flex-col space-y-2"
-              onClick={handleMyProgress}
-            >
-              <TrendingUp className="h-6 w-6" />
-              <span>My Progress</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="h-20 flex flex-col space-y-2"
-              onClick={handleFullThesisSupport}
-            >
+            <Button variant="outline" className="h-20 flex flex-col space-y-2">
               <BookOpen className="h-6 w-6" />
-              <span>Full Thesis Support</span>
+              <span>My Progress</span>
             </Button>
           </div>
         </CardContent>
