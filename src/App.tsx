@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/hooks/useAuth";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -19,16 +20,18 @@ const ResearcherProfile = lazy(() => import("./pages/ResearcherProfile"));
 const CoAuthorWorkspace = lazy(() => import("./pages/CoAuthorWorkspace"));
 const WorkspaceDetails = lazy(() => import("./pages/WorkspaceDetails"));
 
-// Import other pages that should be accessible without auth
+// Public pages accessible to unauthenticated users
 const AboutUs = lazy(() => import("./pages/AboutUs"));
 const Contact = lazy(() => import("./pages/Contact"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks"));
 const Partnerships = lazy(() => import("./pages/Partnerships"));
 const Blogs = lazy(() => import("./pages/Blogs"));
+
+// Protected pages that require authentication
 const Researchers = lazy(() => import("./pages/Researchers"));
 const ResearchAides = lazy(() => import("./pages/ResearchAides"));
 
-// Import authentication pages
+// Authentication pages
 const Login = lazy(() => import("./pages/Login"));
 const StudentSignup = lazy(() => import("./pages/StudentSignup"));
 const ResearcherSignup = lazy(() => import("./pages/ResearcherSignup"));
@@ -44,16 +47,14 @@ const App = () => (
           <BrowserRouter>
             <Suspense fallback={<LoadingSpinner size="lg" />}>
               <Routes>
-                {/* Public routes */}
+                {/* Public routes - accessible without authentication */}
                 <Route path="/" element={<Index />} />
                 <Route path="/about" element={<AboutUs />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
                 <Route path="/partnerships" element={<Partnerships />} />
                 <Route path="/blogs" element={<Blogs />} />
-                <Route path="/researchers" element={<Researchers />} />
-                <Route path="/research-aids" element={<ResearchAides />} />
-                <Route path="/researcher/:id" element={<ResearcherProfile />} />
+                <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
                 
                 {/* Authentication routes */}
                 <Route path="/login" element={<Login />} />
@@ -61,14 +62,44 @@ const App = () => (
                 <Route path="/researcher-signup" element={<ResearcherSignup />} />
                 <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
                 
-                {/* Co-author workspace routes */}
-                <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
-                <Route path="/workspace/:projectId" element={<WorkspaceDetails />} />
+                {/* Protected routes - require authentication */}
+                <Route path="/researchers" element={
+                  <ProtectedRoute>
+                    <Researchers />
+                  </ProtectedRoute>
+                } />
+                <Route path="/research-aids" element={
+                  <ProtectedRoute>
+                    <ResearchAides />
+                  </ProtectedRoute>
+                } />
+                <Route path="/researcher/:id" element={
+                  <ProtectedRoute>
+                    <ResearcherProfile />
+                  </ProtectedRoute>
+                } />
+                <Route path="/workspace/:projectId" element={
+                  <ProtectedRoute>
+                    <WorkspaceDetails />
+                  </ProtectedRoute>
+                } />
                 
-                {/* Dashboard routes */}
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/researcher-dashboard" element={<ResearcherDashboard />} />
-                <Route path="/research-aids-dashboard" element={<ResearchAidsDashboard />} />
+                {/* Dashboard routes - require authentication */}
+                <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/researcher-dashboard" element={
+                  <ProtectedRoute>
+                    <ResearcherDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/research-aids-dashboard" element={
+                  <ProtectedRoute>
+                    <ResearchAidsDashboard />
+                  </ProtectedRoute>
+                } />
               </Routes>
             </Suspense>
           </BrowserRouter>

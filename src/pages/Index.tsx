@@ -1,3 +1,7 @@
+
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import SearchBar from "@/components/SearchBar";
@@ -12,7 +16,6 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useState, useEffect } from "react";
 
 const featuredResearchers = [
   {
@@ -79,18 +82,11 @@ const fields = [
 
 const Index = () => {
   const { t } = useLanguage();
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    // Simulate initial loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
+  // Show loading spinner while checking authentication
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" />
@@ -98,6 +94,122 @@ const Index = () => {
     );
   }
 
+  // If user is not authenticated, show sign-in/sign-up focused homepage
+  if (!user) {
+    return (
+      <ErrorBoundary>
+        <div className="min-h-screen flex flex-col">
+          <SEOHead />
+          <AccessibilityFeatures />
+          
+          <div className="absolute top-4 right-4 z-50">
+            <LanguageToggle />
+          </div>
+          
+          <Navbar />
+          
+          <main id="main-content" className="flex-grow">
+            <Hero />
+            
+            {/* Call to action section for unauthenticated users */}
+            <section className="py-16 bg-blue-50">
+              <div className="container mx-auto px-4 md:px-6">
+                <div className="max-w-4xl mx-auto text-center">
+                  <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                    Join ResearchWhao Today
+                  </h2>
+                  <p className="text-xl text-gray-600 mb-8">
+                    Connect with top researchers, get expert guidance, and accelerate your research journey.
+                  </p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="bg-white p-6 rounded-lg shadow-sm">
+                      <h3 className="font-semibold mb-2">For Students</h3>
+                      <p className="text-gray-600 text-sm mb-4">Get expert help and guidance for your research projects</p>
+                      <Button asChild className="w-full">
+                        <Link to="/student-signup">Join as Student</Link>
+                      </Button>
+                    </div>
+                    
+                    <div className="bg-white p-6 rounded-lg shadow-sm">
+                      <h3 className="font-semibold mb-2">For Researchers</h3>
+                      <p className="text-gray-600 text-sm mb-4">Share your expertise and earn additional income</p>
+                      <Button asChild className="w-full">
+                        <Link to="/researcher-signup">Join as Researcher</Link>
+                      </Button>
+                    </div>
+                    
+                    <div className="bg-white p-6 rounded-lg shadow-sm">
+                      <h3 className="font-semibold mb-2">For Research Aids</h3>
+                      <p className="text-gray-600 text-sm mb-4">Provide professional research assistance</p>
+                      <Button asChild className="w-full">
+                        <Link to="/research-aid-signup">Join as Research Aid</Link>
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-600">
+                    Already have an account?{' '}
+                    <Link to="/login" className="text-blue-600 hover:underline font-medium">
+                      Sign In
+                    </Link>
+                  </p>
+                </div>
+              </div>
+            </section>
+          </main>
+          
+          {/* Footer with limited content for unauthenticated users */}
+          <footer className="bg-gray-900 text-white py-12">
+            <div className="container mx-auto px-4 md:px-6">
+              <div className="max-w-4xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                  <div>
+                    <h3 className="font-semibold mb-4">About ResearchWhao</h3>
+                    <p className="text-gray-400 text-sm">
+                      Connecting researchers with students and research aids worldwide.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-semibold mb-4">Quick Links</h3>
+                    <ul className="space-y-2 text-sm">
+                      <li><Link to="/about" className="text-gray-400 hover:text-white">About Us</Link></li>
+                      <li><Link to="/how-it-works" className="text-gray-400 hover:text-white">How It Works</Link></li>
+                      <li><Link to="/partnerships" className="text-gray-400 hover:text-white">Partnerships</Link></li>
+                      <li><Link to="/blogs" className="text-gray-400 hover:text-white">Blogs</Link></li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-semibold mb-4">Workspace</h3>
+                    <ul className="space-y-2 text-sm">
+                      <li><Link to="/co-author-workspace" className="text-gray-400 hover:text-white">Co-Author Workspace</Link></li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-semibold mb-4">Support</h3>
+                    <ul className="space-y-2 text-sm">
+                      <li><Link to="/contact" className="text-gray-400 hover:text-white">Contact Us</Link></li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div className="border-t border-gray-800 pt-8 text-center">
+                  <p className="text-gray-400 text-sm">
+                    © 2024 ResearchWhao. All rights reserved.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </footer>
+        </div>
+      </ErrorBoundary>
+    );
+  }
+
+  // If user is authenticated, show the full platform
   return (
     <ErrorBoundary>
       <div className="min-h-screen flex flex-col">
@@ -161,54 +273,7 @@ const Index = () => {
             </div>
           </section>
           
-          <section className="py-16 bg-blue-50" aria-label="How it works">
-            <div className="container mx-auto px-4 md:px-6">
-              <div className="max-w-3xl mx-auto text-center">
-                <h2 className="text-2xl md:text-3xl font-semibold mb-4">How It Works</h2>
-                <p className="text-gray-600 mb-12">Connect with top researchers in just a few steps</p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <div className="bg-white p-6 rounded-lg shadow-sm">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-4 text-xl font-semibold">1</div>
-                    <h3 className="font-semibold mb-2">Search</h3>
-                    <p className="text-gray-600 text-sm">Find researchers by field, expertise, or institution</p>
-                  </div>
-                  
-                  <div className="bg-white p-6 rounded-lg shadow-sm">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-4 text-xl font-semibold">2</div>
-                    <h3 className="font-semibold mb-2">Book</h3>
-                    <p className="text-gray-600 text-sm">Schedule a consultation at your preferred time</p>
-                  </div>
-                  
-                  <div className="bg-white p-6 rounded-lg shadow-sm">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-4 text-xl font-semibold">3</div>
-                    <h3 className="font-semibold mb-2">Connect</h3>
-                    <p className="text-gray-600 text-sm">Meet virtually and get expert guidance for your research</p>
-                  </div>
-                </div>
-                
-                <Button asChild className="mt-12">
-                  <Link to="/how-it-works">Learn More</Link>
-                </Button>
-              </div>
-            </div>
-          </section>
-          
           <Testimonials />
-          
-          <section className="py-16" aria-label="Join as researcher">
-            <div className="container mx-auto px-4 md:px-6">
-              <div className="max-w-4xl mx-auto bg-blue-600 rounded-xl text-white p-8 md:p-12 text-center">
-                <h2 className="text-2xl md:text-3xl font-semibold mb-4">Are You a Researcher?</h2>
-                <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
-                  Join our platform to share your expertise, connect with students, and earn additional income through consultations.
-                </p>
-                <Button asChild size="lg" className="bg-white text-blue-700 hover:bg-blue-50">
-                  <Link to="/register">{t('hero.joinAsResearcher') || 'Join as a Researcher'}</Link>
-                </Button>
-              </div>
-            </div>
-          </section>
         </main>
         
         <Footer />
