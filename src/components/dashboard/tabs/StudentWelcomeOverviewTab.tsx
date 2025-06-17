@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, MessageCircle, BookOpen, AlertTriangle, CheckCircle, Video, Search } from "lucide-react";
+import { Calendar, Clock, MessageCircle, BookOpen, AlertTriangle, CheckCircle, Video, Search, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface QuickStats {
@@ -61,21 +61,28 @@ const StudentWelcomeOverviewTab = () => {
   };
 
   const handleCheckMessages = () => {
-    // This would typically open messages or navigate to messages tab
+    // Navigate to messages section
+    window.location.hash = '#messages';
     console.log('Opening messages...');
   };
 
   const handleMyProgress = () => {
-    // This would typically show progress tracking
+    // Navigate to performance section
+    window.location.hash = '#performance';
     console.log('Opening progress tracking...');
+  };
+
+  const handleFullThesisSupport = () => {
+    // This would open full thesis support
+    console.log('Opening full thesis support...');
   };
 
   return (
     <div className="space-y-6">
-      {/* Welcome Greeting - Moved to top */}
+      {/* Welcome Section - Moved to top */}
       <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white p-6 rounded-lg">
         <h1 className="text-2xl font-bold mb-2">Welcome back, John!</h1>
-        <p className="opacity-90">Ready to advance your research journey?</p>
+        <p className="opacity-90 mb-4">Ready to advance your research journey?</p>
         <div className="mt-4">
           <Button 
             className="bg-white text-green-600 hover:bg-gray-100"
@@ -196,13 +203,13 @@ const StudentWelcomeOverviewTab = () => {
         </CardContent>
       </Card>
 
-      {/* Quick Actions - Updated with active buttons */}
+      {/* Quick Actions - Updated with functional buttons */}
       <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Button 
               className="h-20 flex flex-col space-y-2"
               onClick={handleFindResearcher}
@@ -223,8 +230,16 @@ const StudentWelcomeOverviewTab = () => {
               className="h-20 flex flex-col space-y-2"
               onClick={handleMyProgress}
             >
-              <BookOpen className="h-6 w-6" />
+              <TrendingUp className="h-6 w-6" />
               <span>My Progress</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-20 flex flex-col space-y-2"
+              onClick={handleFullThesisSupport}
+            >
+              <BookOpen className="h-6 w-6" />
+              <span>Full Thesis Support</span>
             </Button>
           </div>
         </CardContent>

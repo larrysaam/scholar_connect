@@ -19,7 +19,6 @@ import NotificationsTab from "@/components/dashboard/tabs/NotificationsTab";
 import StudentPerformanceTab from "@/components/dashboard/tabs/StudentPerformanceTab";
 import StudentMessagesTab from "@/components/dashboard/tabs/StudentMessagesTab";
 import StudentAIAssistantTab from "@/components/dashboard/tabs/StudentAIAssistantTab";
-import FullThesisSupportTab from "@/components/dashboard/tabs/FullThesisSupportTab";
 
 const StudentDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -58,8 +57,6 @@ const StudentDashboard = () => {
         return <StudentMessagesTab />;
       case "performance":
         return <StudentPerformanceTab />;
-      case "full-thesis-support":
-        return <FullThesisSupportTab />;
       case "notifications":
         return <NotificationsTab />;
       case "documents":
@@ -77,8 +74,7 @@ const StudentDashboard = () => {
       
       <main className="flex-grow bg-gray-50 py-12">
         <div className="container mx-auto px-4 md:px-6">
-          <h1 className="text-3xl font-bold mb-2">Student Dashboard</h1>
-          <p className="text-gray-600 mb-8">Ready to advance your research journey?</p>
+          <h1 className="text-3xl font-bold mb-8">Student Dashboard</h1>
           
           {/* Show onboarding for new users */}
           {showOnboarding && (
