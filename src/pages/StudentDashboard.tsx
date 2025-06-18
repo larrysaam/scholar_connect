@@ -28,7 +28,6 @@ const StudentDashboard = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
 
-  // Check if user needs onboarding (simulate with localStorage)
   useEffect(() => {
     const hasCompletedOnboarding = localStorage.getItem('student_onboarding_complete');
     if (!hasCompletedOnboarding) {
@@ -51,7 +50,7 @@ const StudentDashboard = () => {
       return;
     }
     
-    // Handle internal tab changes
+    // Handle internal tab changes - make sure Post a Job works
     setActiveTab(tab);
   };
 
@@ -99,7 +98,6 @@ const StudentDashboard = () => {
           <h1 className="text-3xl font-bold mb-2">Student Dashboard</h1>
           <p className="text-gray-600 mb-8">Manage your research consultations and learning journey</p>
           
-          {/* Show onboarding for new users */}
           {showOnboarding && (
             <div className="mb-8">
               <Card>
@@ -118,7 +116,6 @@ const StudentDashboard = () => {
           )}
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Sidebar */}
             <div className="md:col-span-1">
               <DashboardSidebar 
                 activeTab={activeTab} 
@@ -127,9 +124,7 @@ const StudentDashboard = () => {
               />
             </div>
             
-            {/* Main content */}
             <div className="md:col-span-3">
-              {/* Notifications Banner - appears on all tabs */}
               <NotificationsBanner />
               
               <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
@@ -142,7 +137,6 @@ const StudentDashboard = () => {
         </div>
       </main>
       
-      {/* AI Chat Assistant */}
       <IntelligentChatAssistant userType="student" currentTab={activeTab} />
       
       <Footer />

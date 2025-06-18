@@ -32,11 +32,9 @@ const Navbar = () => {
 
   const getNavigationItems = () => {
     if (!user || !profile) {
-      // No navigation menu for unauthenticated users on home page
       return null;
     }
 
-    // Navigation based on user role - exactly as requested
     switch (profile.role) {
       case 'student':
         return (
@@ -71,11 +69,14 @@ const Navbar = () => {
       case 'aid':
         return (
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/research-aids-dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Dashboard
+            <Link to="/job-board" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Browse Job Board
             </Link>
             <Link to="/job-board" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Job Board
+              View All Jobs
+            </Link>
+            <Link to="/research-aids-dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Dashboard
             </Link>
           </div>
         );
