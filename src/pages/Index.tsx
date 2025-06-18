@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
@@ -15,19 +15,48 @@ import HomeFooter from "@/components/home/HomeFooter";
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  // Add timeout for loading state to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.log('Loading timeout reached, forcing render');
+      }
+    }, 5000); // 5 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [loading]);
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
-    if (user && !loading) {
+    if (user && !loading && !isRedirecting) {
+      console.log('Redirecting authenticated user to dashboard');
+      setIsRedirecting(true);
       navigate("/dashboard");
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, isRedirecting]);
 
-  // Show loading spinner while checking authentication
-  if (loading) {
+  // Show loading spinner while checking authentication (with timeout)
+  if (loading && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
+        <div className="text-center">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4 text-gray-600">Loading application...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while redirecting
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4 text-gray-600">Redirecting to dashboard...</p>
+        </div>
       </div>
     );
   }
