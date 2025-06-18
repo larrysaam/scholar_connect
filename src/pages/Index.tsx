@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,6 +10,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import HeroSection from "@/components/home/HeroSection";
 import JoinSection from "@/components/home/JoinSection";
 import BenefitsSection from "@/components/home/BenefitsSection";
+import HomeFooter from "@/components/home/HomeFooter";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Index = () => {
