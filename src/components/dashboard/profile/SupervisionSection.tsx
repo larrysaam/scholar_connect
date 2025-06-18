@@ -52,21 +52,8 @@ const SupervisionSection = ({
     return null;
   }
 
-  // Get supervision data from user profile if available (make property optional)
-  const profileSupervisionData = (profile as any)?.student_supervision || [];
-  
-  // Calculate statistics from profile data
-  const totalStudents = profileSupervisionData.reduce((sum: number, level: any) => sum + (level.count || 0), 0);
-  const currentStudents = Math.ceil(totalStudents * 0.4); // Assuming 40% are current
-  const completedSupervisions = totalStudents - currentStudents;
-
-  const effectiveSupervisionData = {
-    currentStudents: totalStudents > 0 ? currentStudents : supervisionData.currentStudents,
-    completedSupervisions: totalStudents > 0 ? completedSupervisions : supervisionData.completedSupervisions,
-    totalPublications: supervisionData.totalPublications,
-    averageRating: supervisionData.averageRating,
-    recentSupervisions: supervisionData.recentSupervisions
-  };
+  // Use default supervision data for now
+  const effectiveSupervisionData = supervisionData;
 
   return (
     <Card>
@@ -96,24 +83,6 @@ const SupervisionSection = ({
             <div className="text-sm text-gray-600">Avg Rating</div>
           </div>
         </div>
-
-        {/* Profile Supervision Levels */}
-        {profileSupervisionData.length > 0 && (
-          <div>
-            <h4 className="font-medium mb-3 flex items-center">
-              <BookOpen className="h-4 w-4 mr-2" />
-              Supervision by Academic Level
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {profileSupervisionData.map((level: any, index: number) => (
-                <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                  <span className="font-medium">{level.level}</span>
-                  <Badge variant="secondary">{level.count} students</Badge>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Recent Supervisions */}
         <div>
