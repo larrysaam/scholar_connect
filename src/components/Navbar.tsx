@@ -31,23 +31,8 @@ const Navbar = () => {
 
   const getNavigationItems = () => {
     if (!user || !profile) {
-      // Show default navigation for unauthenticated users
-      return (
-        <div className="hidden md:flex items-center space-x-8">
-          <Link to="/research-aids" className="text-gray-600 hover:text-gray-900 transition-colors">
-            Research Aids
-          </Link>
-          <Link to="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">
-            How It Works
-          </Link>
-          <Link to="/about" className="text-gray-600 hover:text-gray-900 transition-colors">
-            About Us
-          </Link>
-          <Link to="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">
-            Contact
-          </Link>
-        </div>
-      );
+      // No navigation menu for unauthenticated users on home page
+      return null;
     }
 
     // Navigation based on user role

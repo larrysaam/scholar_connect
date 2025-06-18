@@ -11,6 +11,7 @@ import LanguageToggle from "@/components/LanguageToggle";
 import SEOHead from "@/components/SEOHead";
 import AccessibilityFeatures from "@/components/AccessibilityFeatures";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import GetStartedModal from "@/components/GetStartedModal";
 
 const Index = () => {
   const { t } = useLanguage();
@@ -114,6 +115,14 @@ const Index = () => {
                       <Link to="/research-aid-signup">Join as Research Aid</Link>
                     </Button>
                   </div>
+                </div>
+                
+                <div className="mb-8">
+                  <GetStartedModal>
+                    <Button size="lg" className="text-lg px-8 py-3">
+                      Get Started
+                    </Button>
+                  </GetStartedModal>
                 </div>
                 
                 <p className="text-gray-600">
