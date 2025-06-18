@@ -32,7 +32,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "ai-assistant", label: "AI Assistant", icon: MessageSquare },
     { id: "find-researcher", label: "Find Researcher", icon: Search },
-    { id: "session-booking", label: "Book a Session", icon: Calendar },
+    { id: "find-research-aid", label: "Find Research Aid", icon: Users },
     { id: "upcoming", label: "Upcoming Sessions", icon: Calendar },
     { id: "past", label: "Past Sessions", icon: Clock },
     { id: "full-thesis-support", label: "Full Thesis Support", icon: GraduationCap },

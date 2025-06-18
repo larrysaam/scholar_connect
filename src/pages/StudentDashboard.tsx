@@ -46,6 +46,8 @@ const StudentDashboard = () => {
         return <StudentAIAssistantTab />;
       case "find-researcher":
         return <FindResearcherTab />;
+      case "find-research-aid":
+        return <FindResearcherTab />; // Reuse the same component for now
       case "session-booking":
         return <SessionBookingTab />;
       case "upcoming":
@@ -85,7 +87,7 @@ const StudentDashboard = () => {
             <div className="mb-8">
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-2">Welcome to ScholarConnect!</h3>
+                  <h3 className="text-lg font-semibold mb-2">Welcome to ResearchWhoa!</h3>
                   <p className="text-gray-600 mb-4">Complete your profile to start connecting with expert researchers.</p>
                   <button 
                     onClick={handleOnboardingComplete}

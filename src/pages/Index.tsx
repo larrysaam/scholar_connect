@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,10 +39,6 @@ const Index = () => {
       <div className="min-h-screen flex flex-col">
         <SEOHead />
         <AccessibilityFeatures />
-        
-        <div className="absolute top-4 right-4 z-50">
-          <LanguageToggle />
-        </div>
         
         <Navbar />
         
