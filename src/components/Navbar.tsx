@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import LanguageToggle from './LanguageToggle';
+import GetStartedModal from './GetStartedModal';
 
 const Navbar = () => {
   const { user, profile, signOut } = useAuth();
@@ -35,7 +36,7 @@ const Navbar = () => {
       return null;
     }
 
-    // Navigation based on user role
+    // Navigation based on user role - exactly as requested
     switch (profile.role) {
       case 'student':
         return (
@@ -80,19 +81,7 @@ const Navbar = () => {
         );
       
       default:
-        return (
-          <div className="hidden md:flex items-center space-x-8">
-            <Link to="/researchers" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Researchers
-            </Link>
-            <Link to="/research-aids" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Research Aids
-            </Link>
-            <Link to="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Dashboard
-            </Link>
-          </div>
-        );
+        return null;
     }
   };
 
@@ -125,9 +114,9 @@ const Navbar = () => {
                 <Link to="/login">
                   <Button variant="outline">Sign In</Button>
                 </Link>
-                <Link to="/student-signup">
+                <GetStartedModal>
                   <Button>Get Started</Button>
-                </Link>
+                </GetStartedModal>
               </div>
             )}
           </div>
