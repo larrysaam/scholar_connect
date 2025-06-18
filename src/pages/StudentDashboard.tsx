@@ -1,5 +1,5 @@
-
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
@@ -24,6 +24,7 @@ import StudentAIAssistantTab from "@/components/dashboard/tabs/StudentAIAssistan
 const StudentDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const navigate = useNavigate();
 
   // Check if user needs onboarding (simulate with localStorage)
   useEffect(() => {
@@ -38,6 +39,14 @@ const StudentDashboard = () => {
     setShowOnboarding(false);
   };
 
+  const handleTabChange = (tab: string) => {
+    if (tab === "find-research-aid") {
+      navigate("/research-aids");
+      return;
+    }
+    setActiveTab(tab);
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "overview":
@@ -46,8 +55,6 @@ const StudentDashboard = () => {
         return <StudentAIAssistantTab />;
       case "find-researcher":
         return <FindResearcherTab />;
-      case "find-research-aid":
-        return <FindResearcherTab />; // Reuse the same component for now
       case "session-booking":
         return <SessionBookingTab />;
       case "upcoming":
@@ -105,7 +112,7 @@ const StudentDashboard = () => {
             <div className="md:col-span-1">
               <DashboardSidebar 
                 activeTab={activeTab} 
-                setActiveTab={setActiveTab} 
+                setActiveTab={handleTabChange} 
                 userType="student"
               />
             </div>
@@ -115,7 +122,7 @@ const StudentDashboard = () => {
               {/* Notifications Banner - appears on all tabs */}
               <NotificationsBanner />
               
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 <TabsContent value={activeTab} className="mt-0">
                   {renderTabContent()}
                 </TabsContent>
