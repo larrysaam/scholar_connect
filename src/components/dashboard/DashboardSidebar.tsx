@@ -65,6 +65,11 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
 
   const menuItems = userType === "student" ? studentMenuItems : researcherMenuItems;
 
+  const handleMenuClick = (itemId: string) => {
+    console.log("Sidebar menu item clicked:", itemId);
+    setActiveTab(itemId);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-4">
       <div className="space-y-2">
@@ -73,7 +78,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
             key={item.id}
             variant={activeTab === item.id ? "default" : "ghost"}
             className="w-full justify-start"
-            onClick={() => setActiveTab(item.id)}
+            onClick={() => handleMenuClick(item.id)}
           >
             <item.icon className="mr-2 h-4 w-4" />
             <span className="flex-1 text-left">{item.label}</span>
