@@ -1,5 +1,9 @@
 
+import { useLanguage } from "@/contexts/LanguageContext";
+
 const HeroSection = () => {
+  const { t } = useLanguage();
+
   return (
     <section className="hero-gradient text-white py-20 lg:py-32 relative overflow-hidden">
       <div className="absolute right-0 top-0 h-full w-1/2 z-10">
@@ -22,10 +26,10 @@ const HeroSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <div className="text-left">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-              Connect with Research Experts Worldwide
+              {t("home.title")}
             </h1>
             <p className="text-lg mb-8 text-blue-100 leading-relaxed">
-              Get personalized guidance for your research projects and accelerate your academic success.
+              {t("home.subtitle")}
             </p>
           </div>
         </div>
