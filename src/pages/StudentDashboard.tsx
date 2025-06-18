@@ -43,11 +43,15 @@ const StudentDashboard = () => {
 
   const handleTabChange = (tab: string) => {
     console.log("Dashboard tab change requested:", tab);
+    
+    // Handle navigation to external pages
     if (tab === "find-research-aid") {
       console.log("Navigating to research aids page...");
       navigate("/research-aids");
       return;
     }
+    
+    // Handle internal tab changes
     setActiveTab(tab);
   };
 
