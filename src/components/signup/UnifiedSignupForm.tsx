@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { useAuth } from '@/hooks/useAuth';
+import { useSecureAuth } from '@/hooks/useSecureAuth';
 import { useNavigate } from 'react-router-dom';
 import BasicInfoFields from './BasicInfoFields';
 import ContactFields from './ContactFields';
@@ -20,7 +20,7 @@ interface UnifiedSignupFormProps {
 
 const UnifiedSignupForm = ({ defaultUserType }: UnifiedSignupFormProps) => {
   const navigate = useNavigate();
-  const { signUp } = useAuth();
+  const { signUp } = useSecureAuth();
   const [loading, setLoading] = useState(false);
   const [userType, setUserType] = useState<UserRole>(defaultUserType);
   const [formData, setFormData] = useState({

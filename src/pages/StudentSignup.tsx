@@ -1,18 +1,17 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useSecureAuth } from '@/hooks/useSecureAuth';
 import AuthHeader from '@/components/auth/AuthHeader';
 import FormField from '@/components/auth/FormField';
 import { countries, cameroonAfricaUniversities, fieldsOfStudy, studyLevels, researchStages, countryCodes } from '@/data/authData';
 
 const StudentSignup = () => {
   const navigate = useNavigate();
-  const { signUp } = useAuth();
+  const { signUp } = useSecureAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
