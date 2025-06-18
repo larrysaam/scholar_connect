@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import IntelligentChatAssistant from "@/components/ai/IntelligentChatAssistant";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -27,7 +27,6 @@ const ResearcherDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
 
-  // Check if user needs onboarding (simulate with localStorage)
   useEffect(() => {
     const hasCompletedOnboarding = localStorage.getItem('researcher_onboarding_complete');
     if (!hasCompletedOnboarding) {
@@ -83,10 +82,8 @@ const ResearcherDashboard = () => {
       
       <main className="flex-grow bg-gray-50 py-12">
         <div className="container mx-auto px-4 md:px-6">
-          <h1 className="text-3xl font-bold mb-2">Researcher Dashboard</h1>
-          <p className="text-gray-600 mb-8">Manage your consultations and account</p>
+          <DashboardHeader userType="researcher" />
           
-          {/* Show onboarding for new users */}
           {showOnboarding && (
             <div className="mb-8">
               <Card>
@@ -105,7 +102,6 @@ const ResearcherDashboard = () => {
           )}
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Sidebar */}
             <div className="md:col-span-1">
               <DashboardSidebar 
                 activeTab={activeTab} 
@@ -114,7 +110,6 @@ const ResearcherDashboard = () => {
               />
             </div>
             
-            {/* Main content */}
             <div className="md:col-span-3">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsContent value={activeTab} className="mt-0">
@@ -126,7 +121,6 @@ const ResearcherDashboard = () => {
         </div>
       </main>
       
-      {/* AI Chat Assistant */}
       <IntelligentChatAssistant userType="researcher" currentTab={activeTab} />
       
       <Footer />

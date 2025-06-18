@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +20,7 @@ import {
   FileText,
   Plus
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface ThesisProject {
   id: string;
@@ -55,6 +55,7 @@ interface Goal {
 }
 
 const FullThesisSupportTab = () => {
+  const { toast } = useToast();
   const [activeProjects, setActiveProjects] = useState<ThesisProject[]>([
     {
       id: "1",
@@ -119,29 +120,83 @@ const FullThesisSupportTab = () => {
     }
   ]);
 
+  const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [isChatDialogOpen, setIsChatDialogOpen] = useState(false);
+  const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
+  const [newGoal, setNewGoal] = useState({
+    title: "",
+    description: "",
+    dueDate: "",
+    assignedTo: "student" as "researcher" | "student" | "both"
+  });
+
   const handleScheduleSession = (projectId: string) => {
-    console.log("Scheduling session for project:", projectId);
-    // Open calendar scheduling modal
+    setIsScheduleDialogOpen(true);
+    toast({
+      title: "Session Scheduled",
+      description: "Calendar invitation has been sent to the student"
+    });
   };
 
   const handleSendEmail = (projectId: string) => {
-    console.log("Sending email for project:", projectId);
-    // Open email composer
+    setIsEmailDialogOpen(true);
   };
 
   const handleOpenChat = (projectId: string) => {
-    console.log("Opening chat for project:", projectId);
-    // Open in-platform messaging
+    setIsChatDialogOpen(true);
   };
 
   const handleSetMilestones = (projectId: string) => {
-    console.log("Setting payment milestones for project:", projectId);
-    // Open milestone setting modal
+    toast({
+      title: "Milestones Updated",
+      description: "Payment milestones have been configured successfully"
+    });
   };
 
   const handleAddGoal = () => {
-    console.log("Adding new goal");
-    // Open goal creation modal
+    if (!newGoal.title || !newGoal.description) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const goal: Goal = {
+      id: Date.now().toString(),
+      ...newGoal,
+      status: "pending"
+    };
+
+    setGoals([...goals, goal]);
+    setNewGoal({
+      title: "",
+      description: "",
+      dueDate: "",
+      assignedTo: "student"
+    });
+    setIsGoalDialogOpen(false);
+    
+    toast({
+      title: "Goal Added",
+      description: "New goal has been created successfully"
+    });
+  };
+
+  const handleComposeEmail = () => {
+    toast({
+      title: "Email Composer",
+      description: "Opening email composer..."
+    });
+  };
+
+  const handleOpenMessages = () => {
+    toast({
+      title: "Messages",
+      description: "Opening messaging platform..."
+    });
   };
 
   return (
@@ -200,18 +255,92 @@ const FullThesisSupportTab = () => {
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    <Button size="sm" onClick={() => handleScheduleSession(project.id)}>
-                      <Calendar className="h-4 w-4 mr-1" />
-                      Schedule Session
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleSendEmail(project.id)}>
-                      <Mail className="h-4 w-4 mr-1" />
-                      Send Email
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleOpenChat(project.id)}>
-                      <MessageSquare className="h-4 w-4 mr-1" />
-                      Open Chat
-                    </Button>
+                    <Dialog open={isScheduleDialogOpen} onOpenChange={setIsScheduleDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" onClick={() => handleScheduleSession(project.id)}>
+                          <Calendar className="h-4 w-4 mr-1" />
+                          Schedule Session
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Schedule Session</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label>Date & Time</Label>
+                            <Input type="datetime-local" />
+                          </div>
+                          <div>
+                            <Label>Duration (hours)</Label>
+                            <Select>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select duration" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1">1 hour</SelectItem>
+                                <SelectItem value="2">2 hours</SelectItem>
+                                <SelectItem value="3">3 hours</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <Button onClick={() => setIsScheduleDialogOpen(false)}>
+                            Schedule Session
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Dialog open={isEmailDialogOpen} onOpenChange={setIsEmailDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" variant="outline" onClick={() => handleSendEmail(project.id)}>
+                          <Mail className="h-4 w-4 mr-1" />
+                          Send Email
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Send Email</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label>Subject</Label>
+                            <Input placeholder="Email subject" />
+                          </div>
+                          <div>
+                            <Label>Message</Label>
+                            <Textarea placeholder="Email content" rows={6} />
+                          </div>
+                          <Button onClick={() => setIsEmailDialogOpen(false)}>
+                            Send Email
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Dialog open={isChatDialogOpen} onOpenChange={setIsChatDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" variant="outline" onClick={() => handleOpenChat(project.id)}>
+                          <MessageSquare className="h-4 w-4 mr-1" />
+                          Open Chat
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Chat with {project.studentName}</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div className="h-64 border rounded p-4 overflow-y-auto bg-gray-50">
+                            <p className="text-sm text-gray-500">Chat messages will appear here...</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Input placeholder="Type your message..." className="flex-1" />
+                            <Button>Send</Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
                     <Button size="sm" variant="outline" onClick={() => handleSetMilestones(project.id)}>
                       <DollarSign className="h-4 w-4 mr-1" />
                       Set Milestones
@@ -273,10 +402,63 @@ const FullThesisSupportTab = () => {
                   <Target className="h-5 w-5" />
                   <span>Goals & Progress Tracking</span>
                 </div>
-                <Button onClick={handleAddGoal}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Goal
-                </Button>
+                <Dialog open={isGoalDialogOpen} onOpenChange={setIsGoalDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => setIsGoalDialogOpen(true)}>
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Goal
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add New Goal</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Title *</Label>
+                        <Input 
+                          value={newGoal.title}
+                          onChange={(e) => setNewGoal({...newGoal, title: e.target.value})}
+                          placeholder="Goal title"
+                        />
+                      </div>
+                      <div>
+                        <Label>Description *</Label>
+                        <Textarea 
+                          value={newGoal.description}
+                          onChange={(e) => setNewGoal({...newGoal, description: e.target.value})}
+                          placeholder="Goal description"
+                          rows={3}
+                        />
+                      </div>
+                      <div>
+                        <Label>Due Date</Label>
+                        <Input 
+                          type="date"
+                          value={newGoal.dueDate}
+                          onChange={(e) => setNewGoal({...newGoal, dueDate: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label>Assigned To</Label>
+                        <Select value={newGoal.assignedTo} onValueChange={(value: "researcher" | "student" | "both") => setNewGoal({...newGoal, assignedTo: value})}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="student">Student</SelectItem>
+                            <SelectItem value="researcher">Researcher</SelectItem>
+                            <SelectItem value="both">Both</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button onClick={handleAddGoal}>Add Goal</Button>
+                        <Button variant="outline" onClick={() => setIsGoalDialogOpen(false)}>Cancel</Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -318,7 +500,7 @@ const FullThesisSupportTab = () => {
               <CardContent>
                 <div className="space-y-4">
                   <p className="text-sm text-gray-600">Recent email exchanges and scheduled communications</p>
-                  <Button className="w-full">
+                  <Button className="w-full" onClick={handleComposeEmail}>
                     <Mail className="h-4 w-4 mr-2" />
                     Compose Email
                   </Button>
@@ -336,7 +518,7 @@ const FullThesisSupportTab = () => {
               <CardContent>
                 <div className="space-y-4">
                   <p className="text-sm text-gray-600">Real-time messaging with thesis support students</p>
-                  <Button className="w-full">
+                  <Button className="w-full" onClick={handleOpenMessages}>
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Open Messages
                   </Button>

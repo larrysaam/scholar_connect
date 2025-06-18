@@ -1,124 +1,81 @@
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import LanguageToggle from './LanguageToggle';
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await signOut();
+    navigate('/');
+  };
+
+  const getDashboardLink = () => {
+    if (!profile?.role) return '/dashboard';
+    
+    switch (profile.role) {
+      case 'expert':
+        return '/researcher-dashboard';
+      case 'aid':
+        return '/research-aids-dashboard';
+      default:
+        return '/dashboard';
+    }
   };
 
   return (
     <nav className="bg-white shadow-sm border-b">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-8">
-            <a href="/" className="text-xl font-bold text-blue-600">
-              ResearchWhao
-            </a>
-            
-            {/* Desktop Menu - Only show if user is authenticated */}
-            {user && (
-              <div className="hidden md:flex items-center space-x-6">
-                <a href="/researchers" className="text-gray-600 hover:text-blue-600">
-                  Researchers
-                </a>
-                <a href="/research-aids" className="text-gray-600 hover:text-blue-600">
-                  Research Aids
-                </a>
-                <a href="/dashboard" className="text-gray-600 hover:text-blue-600">
-                  Dashboard
-                </a>
+        <div className="flex items-center justify-between h-16">
+          <Link to="/" className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">S</span>
+            </div>
+            <span className="font-bold text-xl text-gray-900">ScholarConnect</span>
+          </Link>
+
+          <div className="hidden md:flex items-center space-x-8">
+            <Link to="/research-aids" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Research Aids
+            </Link>
+            <Link to="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">
+              How It Works
+            </Link>
+            <Link to="/about" className="text-gray-600 hover:text-gray-900 transition-colors">
+              About Us
+            </Link>
+            <Link to="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Contact
+            </Link>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            <LanguageToggle />
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <Link to={getDashboardLink()}>
+                  <Button variant="outline">Dashboard</Button>
+                </Link>
+                <Button onClick={handleSignOut} variant="ghost">
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link to="/login">
+                  <Button variant="outline">Sign In</Button>
+                </Link>
+                <Link to="/student-signup">
+                  <Button>Get Started</Button>
+                </Link>
               </div>
             )}
           </div>
-
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-4">
-            {user ? (
-              <Button onClick={handleSignOut} variant="outline">
-                Sign Out
-              </Button>
-            ) : (
-              <>
-                <Button variant="outline" asChild>
-                  <a href="/login">Sign In</a>
-                </Button>
-                <div className="relative group">
-                  <Button asChild>
-                    <a href="/student-signup">Join Platform</a>
-                  </Button>
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                    <div className="py-1">
-                      <a href="/student-signup" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        Join as Student
-                      </a>
-                      <a href="/researcher-signup" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        Join as Researcher
-                      </a>
-                      <a href="/research-aid-signup" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        Join as Research Aid
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
         </div>
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden py-4 border-t">
-            <div className="flex flex-col space-y-4">
-              {user ? (
-                <>
-                  <a href="/researchers" className="text-gray-600 hover:text-blue-600">
-                    Researchers
-                  </a>
-                  <a href="/research-aids" className="text-gray-600 hover:text-blue-600">
-                    Research Aids
-                  </a>
-                  <a href="/dashboard" className="text-gray-600 hover:text-blue-600">
-                    Dashboard
-                  </a>
-                  <Button onClick={handleSignOut} variant="outline" className="w-full">
-                    Sign Out
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <div className="pt-4 space-y-2">
-                    <Button variant="outline" asChild className="w-full">
-                      <a href="/login">Sign In</a>
-                    </Button>
-                    <Button asChild className="w-full">
-                      <a href="/student-signup">Join as Student</a>
-                    </Button>
-                    <Button variant="outline" asChild className="w-full">
-                      <a href="/researcher-signup">Join as Researcher</a>
-                    </Button>
-                    <Button variant="outline" asChild className="w-full">
-                      <a href="/research-aid-signup">Join as Research Aid</a>
-                    </Button>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        )}
       </div>
     </nav>
   );
