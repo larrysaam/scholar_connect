@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -20,6 +21,7 @@ import NotificationsTab from "@/components/dashboard/tabs/NotificationsTab";
 import StudentPerformanceTab from "@/components/dashboard/tabs/StudentPerformanceTab";
 import StudentMessagesTab from "@/components/dashboard/tabs/StudentMessagesTab";
 import StudentAIAssistantTab from "@/components/dashboard/tabs/StudentAIAssistantTab";
+import PostJobTab from "@/components/dashboard/tabs/PostJobTab";
 
 const StudentDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -40,7 +42,9 @@ const StudentDashboard = () => {
   };
 
   const handleTabChange = (tab: string) => {
+    console.log("Dashboard tab change requested:", tab);
     if (tab === "find-research-aid") {
+      console.log("Navigating to research aids page...");
       navigate("/research-aids");
       return;
     }
@@ -75,6 +79,8 @@ const StudentDashboard = () => {
         return <DocumentsTab />;
       case "settings":
         return <SettingsTab />;
+      case "post-job":
+        return <PostJobTab />;
       default:
         return <StudentWelcomeOverviewTab />;
     }
