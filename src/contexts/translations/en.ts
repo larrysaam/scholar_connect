@@ -1,63 +1,5 @@
 
 export const enTranslations = {
-  // Navigation
-  nav: {
-    home: "Home",
-    about: "About",
-    contact: "Contact",
-    login: "Sign In",
-    signup: "Sign Up",
-    dashboard: "Dashboard",
-    researchers: "Researchers",
-    researchAids: "Research Aids",
-    partnerships: "Partnerships"
-  },
-  
-  // Authentication
-  auth: {
-    signIn: "Sign In",
-    signUp: "Sign Up",
-    signOut: "Sign Out",
-    email: "Email",
-    password: "Password",
-    confirmPassword: "Confirm Password",
-    forgotPassword: "Forgot Password?",
-    rememberMe: "Remember me",
-    createAccount: "Create Account",
-    alreadyHaveAccount: "Already have an account?",
-    dontHaveAccount: "Don't have an account?",
-    loading: "Loading...",
-    creatingAccount: "Creating Account...",
-    signingIn: "Signing In..."
-  },
-
-  // Home page
-  home: {
-    title: "Connect with Research Experts Worldwide",
-    subtitle: "Get personalized guidance for your research projects and accelerate your academic success.",
-    getStarted: "Get Started",
-    learnMore: "Learn More",
-    joinAsStudent: "Join as Student",
-    joinAsResearcher: "Join as Researcher",
-    joinAsResearchAid: "Join as Research Aid",
-    benefits: {
-      title: "Why Choose ResearchWhao?",
-      expert: {
-        title: "Expert Guidance",
-        description: "Connect with verified experts in your field"
-      },
-      flexible: {
-        title: "Flexible Scheduling",
-        description: "Book consultations at your convenience"
-      },
-      affordable: {
-        title: "Affordable Rates",
-        description: "Quality research support at competitive prices"
-      }
-    }
-  },
-
-  // Contact page
   contact: {
     title: "Contact Us",
     subtitle: "Get in touch with our team",
@@ -102,60 +44,18 @@ export const enTranslations = {
       title: "Frequently Asked Questions"
     }
   },
-
-  // About page
   about: {
-    title: "About ResearchWhao",
-    subtitle: "Empowering research excellence through expert connections",
-    description: "ResearchWhao is a platform dedicated to connecting students and researchers with qualified experts and research aids to enhance academic success."
+    title: "About Us",
+    subtitle: "Learn more about our platform"
   },
-
-  // Partnerships
   partnerships: {
     title: "Partnerships",
-    subtitle: "Partner with us to advance research excellence",
-    description: "Join our network of academic institutions and research organizations."
+    subtitle: "Partner with us"
   },
-
-  // Common UI elements
-  common: {
-    loading: "Loading...",
-    loadingApplication: "Loading application...",
-    redirecting: "Redirecting...",
-    redirectingToDashboard: "Redirecting to dashboard...",
-    error: "Error",
-    success: "Success",
-    cancel: "Cancel",
-    save: "Save",
-    edit: "Edit",
-    delete: "Delete",
-    close: "Close",
-    back: "Back",
-    next: "Next",
-    previous: "Previous",
-    submit: "Submit",
-    search: "Search",
-    filter: "Filter",
-    sort: "Sort",
-    required: "Required",
-    optional: "Optional"
+  home: {
+    title: "Welcome to ResearchWhao",
+    subtitle: "Connect with experts and advance your research"
   },
-
-  // Footer
-  footer: {
-    about: "About ResearchWhao",
-    description: "Connecting researchers with students and research aids worldwide.",
-    getStarted: "Get Started",
-    links: {
-      signIn: "Sign In",
-      studentSignup: "Join as Student",
-      researcherSignup: "Join as Researcher",
-      researchAidSignup: "Join as Research Aid"
-    },
-    copyright: "© 2024 ResearchWhao. All rights reserved."
-  },
-
-  // Research aids verification
   researchAids: {
     verification: {
       academic: "Academic Credentials",
@@ -163,8 +63,6 @@ export const enTranslations = {
       institutional: "Institutional Affiliation"
     }
   },
-
-  // Researcher verification
   researcher: {
     verification: {
       title: "Verification Status"

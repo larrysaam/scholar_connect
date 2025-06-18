@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 import { translations } from '@/contexts/translations';
 
 export type Language = 'en' | 'fr';
@@ -25,26 +25,7 @@ interface LanguageProviderProps {
 }
 
 export const LanguageProvider = ({ children }: LanguageProviderProps) => {
-  const [language, setLanguageState] = useState<Language>(() => {
-    // Check localStorage for saved preference
-    const saved = localStorage.getItem('preferred-language');
-    if (saved === 'en' || saved === 'fr') {
-      return saved;
-    }
-    
-    // Check browser language
-    const browserLang = navigator.language.toLowerCase();
-    if (browserLang.startsWith('fr')) {
-      return 'fr';
-    }
-    
-    return 'en'; // Default to English
-  });
-
-  const setLanguage = (lang: Language) => {
-    setLanguageState(lang);
-    localStorage.setItem('preferred-language', lang);
-  };
+  const [language, setLanguage] = useState<Language>('en');
 
   const t = (key: string): string => {
     const keys = key.split('.');
@@ -60,7 +41,6 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
           if (value && typeof value === 'object' && fallbackKey in value) {
             value = value[fallbackKey];
           } else {
-            console.warn(`Translation key not found: ${key}`);
             return key; // Return key if not found anywhere
           }
         }
