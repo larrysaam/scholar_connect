@@ -29,31 +29,100 @@ const Navbar = () => {
     }
   };
 
+  const getNavigationItems = () => {
+    if (!user || !profile) {
+      // Show default navigation for unauthenticated users
+      return (
+        <div className="hidden md:flex items-center space-x-8">
+          <Link to="/research-aids" className="text-gray-600 hover:text-gray-900 transition-colors">
+            Research Aids
+          </Link>
+          <Link to="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">
+            How It Works
+          </Link>
+          <Link to="/about" className="text-gray-600 hover:text-gray-900 transition-colors">
+            About Us
+          </Link>
+          <Link to="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">
+            Contact
+          </Link>
+        </div>
+      );
+    }
+
+    // Navigation based on user role
+    switch (profile.role) {
+      case 'student':
+        return (
+          <div className="hidden md:flex items-center space-x-8">
+            <Link to="/researchers" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Researchers
+            </Link>
+            <Link to="/research-aids" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Research Aids
+            </Link>
+            <Link to="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Dashboard
+            </Link>
+          </div>
+        );
+      
+      case 'expert':
+        return (
+          <div className="hidden md:flex items-center space-x-8">
+            <Link to="/researchers" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Researchers
+            </Link>
+            <Link to="/research-aids" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Research Aids
+            </Link>
+            <Link to="/researcher-dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Dashboard
+            </Link>
+          </div>
+        );
+      
+      case 'aid':
+        return (
+          <div className="hidden md:flex items-center space-x-8">
+            <Link to="/research-aids-dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Dashboard
+            </Link>
+            <Link to="/job-board" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Job Board
+            </Link>
+          </div>
+        );
+      
+      default:
+        return (
+          <div className="hidden md:flex items-center space-x-8">
+            <Link to="/researchers" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Researchers
+            </Link>
+            <Link to="/research-aids" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Research Aids
+            </Link>
+            <Link to="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Dashboard
+            </Link>
+          </div>
+        );
+    }
+  };
+
   return (
     <nav className="bg-white shadow-sm border-b">
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">S</span>
+              <span className="text-white font-bold text-sm">R</span>
             </div>
-            <span className="font-bold text-xl text-gray-900">ScholarConnect</span>
+            <span className="font-bold text-xl text-gray-900">ResearchWhoa</span>
           </Link>
 
-          <div className="hidden md:flex items-center space-x-8">
-            <Link to="/research-aids" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Research Aids
-            </Link>
-            <Link to="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">
-              How It Works
-            </Link>
-            <Link to="/about" className="text-gray-600 hover:text-gray-900 transition-colors">
-              About Us
-            </Link>
-            <Link to="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Contact
-            </Link>
-          </div>
+          {getNavigationItems()}
 
           <div className="flex items-center space-x-4">
             <LanguageToggle />

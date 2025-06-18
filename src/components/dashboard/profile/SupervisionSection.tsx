@@ -52,8 +52,8 @@ const SupervisionSection = ({
     return null;
   }
 
-  // Get supervision data from user profile if available
-  const profileSupervisionData = profile?.student_supervision || [];
+  // Get supervision data from user profile if available (make property optional)
+  const profileSupervisionData = (profile as any)?.student_supervision || [];
   
   // Calculate statistics from profile data
   const totalStudents = profileSupervisionData.reduce((sum: number, level: any) => sum + (level.count || 0), 0);

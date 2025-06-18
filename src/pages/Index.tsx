@@ -79,12 +79,12 @@ const Index = () => {
             </div>
           </section>
           
-          {/* Join ResearchWhao Today Section */}
+          {/* Join ResearchWhoa Today Section */}
           <section className="py-16 bg-blue-50">
             <div className="container mx-auto px-4 md:px-6">
               <div className="max-w-4xl mx-auto text-center">
                 <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                  Join ResearchWhao Today
+                  Join ResearchWhoa Today
                 </h2>
                 <p className="text-xl text-gray-600 mb-8">
                   Connect with top researchers, get expert guidance, and accelerate your research journey.
@@ -126,13 +126,13 @@ const Index = () => {
             </div>
           </section>
 
-          {/* Why Should You Join ResearchWhao Section */}
+          {/* Why Should You Join ResearchWhoa Section */}
           <section className="py-16 bg-white">
             <div className="container mx-auto px-4 md:px-6">
               <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-12">
                   <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                    Why Should You Join ResearchWhao?
+                    Why Should You Join ResearchWhoa?
                   </h2>
                   <p className="text-xl text-gray-600">
                     Discover the benefits of being part of our global research community
@@ -211,7 +211,7 @@ const Index = () => {
             <div className="max-w-4xl mx-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <div>
-                  <h3 className="font-semibold mb-4">About ResearchWhao</h3>
+                  <h3 className="font-semibold mb-4">About ResearchWhoa</h3>
                   <p className="text-gray-400 text-sm">
                     Connecting researchers with students and research aids worldwide.
                   </p>
@@ -230,7 +230,7 @@ const Index = () => {
               
               <div className="border-t border-gray-800 pt-8 text-center">
                 <p className="text-gray-400 text-sm">
-                  © 2024 ResearchWhao. All rights reserved.
+                  © 2024 ResearchWhoa. All rights reserved.
                 </p>
               </div>
             </div>
