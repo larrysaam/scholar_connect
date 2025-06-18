@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, BookOpen, Calendar, Award } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface SupervisionSectionProps {
   userType?: "student" | "researcher";
@@ -45,10 +46,27 @@ const SupervisionSection = ({
     ]
   }
 }: SupervisionSectionProps) => {
+  const { profile } = useAuth();
 
   if (userType === "student") {
-    return null; // Students don't have supervision sections
+    return null;
   }
+
+  // Get supervision data from user profile if available
+  const profileSupervisionData = profile?.student_supervision || [];
+  
+  // Calculate statistics from profile data
+  const totalStudents = profileSupervisionData.reduce((sum: number, level: any) => sum + (level.count || 0), 0);
+  const currentStudents = Math.ceil(totalStudents * 0.4); // Assuming 40% are current
+  const completedSupervisions = totalStudents - currentStudents;
+
+  const effectiveSupervisionData = {
+    currentStudents: totalStudents > 0 ? currentStudents : supervisionData.currentStudents,
+    completedSupervisions: totalStudents > 0 ? completedSupervisions : supervisionData.completedSupervisions,
+    totalPublications: supervisionData.totalPublications,
+    averageRating: supervisionData.averageRating,
+    recentSupervisions: supervisionData.recentSupervisions
+  };
 
   return (
     <Card>
@@ -62,22 +80,40 @@ const SupervisionSection = ({
         {/* Summary Statistics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">{supervisionData.currentStudents}</div>
+            <div className="text-2xl font-bold text-blue-600">{effectiveSupervisionData.currentStudents}</div>
             <div className="text-sm text-gray-600">Current Students</div>
           </div>
           <div className="text-center p-4 bg-green-50 rounded-lg">
-            <div className="text-2xl font-bold text-green-600">{supervisionData.completedSupervisions}</div>
+            <div className="text-2xl font-bold text-green-600">{effectiveSupervisionData.completedSupervisions}</div>
             <div className="text-sm text-gray-600">Completed</div>
           </div>
           <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <div className="text-2xl font-bold text-purple-600">{supervisionData.totalPublications}</div>
+            <div className="text-2xl font-bold text-purple-600">{effectiveSupervisionData.totalPublications}</div>
             <div className="text-sm text-gray-600">Co-Publications</div>
           </div>
           <div className="text-center p-4 bg-yellow-50 rounded-lg">
-            <div className="text-2xl font-bold text-yellow-600">{supervisionData.averageRating}</div>
+            <div className="text-2xl font-bold text-yellow-600">{effectiveSupervisionData.averageRating}</div>
             <div className="text-sm text-gray-600">Avg Rating</div>
           </div>
         </div>
+
+        {/* Profile Supervision Levels */}
+        {profileSupervisionData.length > 0 && (
+          <div>
+            <h4 className="font-medium mb-3 flex items-center">
+              <BookOpen className="h-4 w-4 mr-2" />
+              Supervision by Academic Level
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {profileSupervisionData.map((level: any, index: number) => (
+                <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                  <span className="font-medium">{level.level}</span>
+                  <Badge variant="secondary">{level.count} students</Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Recent Supervisions */}
         <div>
@@ -86,7 +122,7 @@ const SupervisionSection = ({
             Recent Supervisions
           </h4>
           <div className="space-y-3">
-            {supervisionData.recentSupervisions?.map((supervision, index) => (
+            {effectiveSupervisionData.recentSupervisions?.map((supervision, index) => (
               <div key={index} className="border rounded-lg p-3">
                 <div className="flex justify-between items-start mb-2">
                   <div>
@@ -117,7 +153,7 @@ const SupervisionSection = ({
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="flex items-center p-3 bg-gray-50 rounded">
-              <Award className="h-8 w-8 text-gold-500 mr-3" />
+              <Award className="h-8 w-8 text-yellow-500 mr-3" />
               <div>
                 <div className="font-medium">Excellence in Supervision</div>
                 <div className="text-sm text-gray-600">2023</div>

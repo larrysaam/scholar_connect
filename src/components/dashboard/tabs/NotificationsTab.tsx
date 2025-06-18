@@ -50,26 +50,32 @@ const NotificationsTab = () => {
 
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
 
-  const handleMarkAsRead = (id: string) => {
-    setNotifications(notifications.map(notif => 
-      notif.id === id ? { ...notif, isRead: true } : notif
-    ));
+  const markAsRead = (id: string) => {
+    setNotifications(prevNotifications => 
+      prevNotifications.map(notif => 
+        notif.id === id ? { ...notif, isRead: true } : notif
+      )
+    );
     toast({
       title: "Notification marked as read",
       description: "The notification has been marked as read"
     });
   };
 
-  const handleMarkAllAsRead = () => {
-    setNotifications(notifications.map(notif => ({ ...notif, isRead: true })));
+  const markAllAsRead = () => {
+    setNotifications(prevNotifications => 
+      prevNotifications.map(notif => ({ ...notif, isRead: true }))
+    );
     toast({
       title: "All notifications marked as read",
       description: "All notifications have been marked as read"
     });
   };
 
-  const handleDeleteNotification = (id: string) => {
-    setNotifications(notifications.filter(notif => notif.id !== id));
+  const deleteNotification = (id: string) => {
+    setNotifications(prevNotifications => 
+      prevNotifications.filter(notif => notif.id !== id)
+    );
     toast({
       title: "Notification deleted",
       description: "The notification has been deleted"
@@ -85,7 +91,7 @@ const NotificationsTab = () => {
   const unreadCount = notifications.filter(notif => !notif.isRead).length;
 
   const getTypeColor = (type: string) => {
-    const colors = {
+    const colors =    {
       info: "bg-blue-100 text-blue-800",
       success: "bg-green-100 text-green-800",
       warning: "bg-yellow-100 text-yellow-800",
@@ -111,7 +117,7 @@ const NotificationsTab = () => {
             {unreadCount} unread
           </Badge>
           {unreadCount > 0 && (
-            <Button onClick={handleMarkAllAsRead} variant="outline" size="sm">
+            <Button onClick={markAllAsRead} variant="outline" size="sm">
               <CheckCheck className="h-4 w-4 mr-2" />
               Mark all as read
             </Button>
@@ -180,7 +186,7 @@ const NotificationsTab = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleMarkAsRead(notification.id)}
+                        onClick={() => markAsRead(notification.id)}
                       >
                         <Check className="h-4 w-4" />
                         Mark as read
@@ -189,7 +195,7 @@ const NotificationsTab = () => {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleDeleteNotification(notification.id)}
+                      onClick={() => deleteNotification(notification.id)}
                       className="text-red-600 hover:text-red-800"
                     >
                       <Trash2 className="h-4 w-4" />

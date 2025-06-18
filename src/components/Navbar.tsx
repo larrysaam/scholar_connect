@@ -22,6 +22,8 @@ const Navbar = () => {
         return '/researcher-dashboard';
       case 'aid':
         return '/research-aids-dashboard';
+      case 'student':
+        return '/dashboard';
       default:
         return '/dashboard';
     }

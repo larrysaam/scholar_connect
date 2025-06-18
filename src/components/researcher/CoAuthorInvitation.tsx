@@ -40,7 +40,6 @@ const CoAuthorInvitation = ({ invitation, onAccept, onDecline }: CoAuthorInvitat
   };
 
   const handleGoToWorkspace = () => {
-    // Navigate to co-author workspace
     window.location.href = "/co-author-workspace";
   };
 
