@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -65,7 +64,34 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
     { id: "settings", label: "Account Settings", icon: Settings },
   ];
 
-  const menuItems = userType === "student" ? studentMenuItems : researcherMenuItems;
+  const researchAideMenuItems = [
+    { id: "overview", label: "Overview", icon: LayoutDashboard },
+    { id: "job-requests", label: "Job Requests", icon: Briefcase },
+    { id: "active-tasks", label: "Active Tasks", icon: Clock },
+    { id: "appointments", label: "Appointments", icon: Calendar },
+    { id: "files-deliverables", label: "Files & Deliverables", icon: FileText },
+    { id: "payments-earnings", label: "Payments & Earnings", icon: DollarSign },
+    { id: "messages", label: "Messages", icon: MessageSquare },
+    { id: "previous-works", label: "Previous Works", icon: Star },
+    { id: "profile-ratings", label: "Profile & Ratings", icon: User },
+    { id: "notifications", label: "Notifications", icon: Bell, badge: 3 },
+    { id: "settings", label: "Settings", icon: Settings },
+  ];
+
+  const getMenuItems = () => {
+    switch (userType) {
+      case "student":
+        return studentMenuItems;
+      case "researcher":
+        return researcherMenuItems;
+      case "research-aide":
+        return researchAideMenuItems;
+      default:
+        return studentMenuItems;
+    }
+  };
+
+  const menuItems = getMenuItems();
 
   const handleMenuClick = (itemId: string) => {
     console.log("Sidebar menu item clicked:", itemId);
