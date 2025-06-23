@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -9,6 +8,10 @@ import { useNavigate } from 'react-router-dom';
 import AuthHeader from '@/components/auth/AuthHeader';
 import FormField from '@/components/auth/FormField';
 import { countries, cameroonAfricaUniversities, studyLevels, countryCodes, languages } from '@/data/authData';
+import { useSecurityValidation } from '@/hooks/useSecurityValidation';
+import { useEnhancedAuth } from '@/hooks/useEnhancedAuth';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle, Shield } from 'lucide-react';
 
 const ResearchAidSignup = () => {
   const navigate = useNavigate();
@@ -36,8 +39,12 @@ const ResearchAidSignup = () => {
     agreeToTerms: false
   });
 
+  const { validateFormData, validationErrors, clearValidationErrors } = useSecurityValidation();
+  const { logSecurityEvent } = useEnhancedAuth();
+
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    clearValidationErrors();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,14 +60,16 @@ const ResearchAidSignup = () => {
       return;
     }
 
-    if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters long');
+    // Validate all form data
+    if (!validateFormData(formData)) {
       return;
     }
 
     setLoading(true);
 
     try {
+      logSecurityEvent(`Research Aid signup attempt for ${formData.email}`);
+      
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -86,12 +95,15 @@ const ResearchAidSignup = () => {
       });
 
       if (error) {
+        logSecurityEvent(`Research Aid signup failed for ${formData.email}: ${error.message}`);
         toast.error(error.message);
       } else {
+        logSecurityEvent(`Research Aid signup successful for ${formData.email}`);
         toast.success('Account created successfully! Please check your email for verification.');
         navigate('/research-aids-dashboard');
       }
     } catch (error) {
+      logSecurityEvent(`Research Aid signup error: ${error.message}`);
       toast.error('An error occurred during signup');
     } finally {
       setLoading(false);
@@ -102,15 +114,34 @@ const ResearchAidSignup = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-2xl">
         <AuthHeader
-          title="Join ResearchWhao as a Research Aid"
+          title="Join ResearchWhoa as a Research Aid"
           subtitle="Give Students the Right Academic Support at Every Step of their Research Journey. Connect with students at all academic levels, give expert assistance, and elevate their thesis or dissertation."
         />
         
         <Card>
           <CardHeader>
+            {/* Security indicator */}
+            <div className="flex items-center space-x-2 text-sm text-green-600 bg-green-50 p-2 rounded mb-4">
+              <Shield className="h-4 w-4" />
+              <span>Secure registration with data protection</span>
+            </div>
             <h3 className="text-xl font-semibold">Personal Details</h3>
           </CardHeader>
           <CardContent>
+            {/* Validation errors */}
+            {validationErrors.length > 0 && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  <ul className="list-disc list-inside">
+                    {validationErrors.map((error, index) => (
+                      <li key={index}>{error.message}</li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <FormField
                 label="Full Name"

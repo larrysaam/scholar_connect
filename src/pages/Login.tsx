@@ -7,24 +7,47 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import AuthHeader from '@/components/auth/AuthHeader';
 import FormField from '@/components/auth/FormField';
+import { useSecurityValidation } from '@/hooks/useSecurityValidation';
+import { useEnhancedAuth } from '@/hooks/useEnhancedAuth';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle, Shield } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [loginAttempts, setLoginAttempts] = useState(0);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
 
+  const { validateFormData, validationErrors, clearValidationErrors } = useSecurityValidation();
+  const { logSecurityEvent } = useEnhancedAuth();
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    clearValidationErrors();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Rate limiting on client side
+    if (loginAttempts >= 5) {
+      toast.error('Too many login attempts. Please wait before trying again.');
+      logSecurityEvent(`Rate limited login attempt for ${formData.email}`);
+      return;
+    }
+
+    // Validate form data
+    if (!validateFormData(formData)) {
+      return;
+    }
+
     setLoading(true);
+    setLoginAttempts(prev => prev + 1);
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -33,11 +56,16 @@ const Login = () => {
       });
 
       if (error) {
+        logSecurityEvent(`Failed login: ${error.message}`);
         toast.error(error.message);
       } else {
+        logSecurityEvent(`Successful login for ${formData.email}`);
         toast.success('Login successful!');
         
-        // Get user profile to determine redirect - wait a bit for the user to be created
+        // Reset login attempts on success
+        setLoginAttempts(0);
+        
+        // Get user profile to determine redirect
         setTimeout(async () => {
           try {
             const { data: profile } = await supabase
@@ -58,12 +86,12 @@ const Login = () => {
             }
           } catch (profileError) {
             console.error('Error fetching profile:', profileError);
-            // Default to dashboard if profile fetch fails
             navigate('/dashboard');
           }
         }, 1000);
       }
     } catch (error) {
+      logSecurityEvent(`Login system error: ${error.message}`);
       toast.error('An error occurred during login');
     } finally {
       setLoading(false);
@@ -77,6 +105,10 @@ const Login = () => {
       return;
     }
 
+    if (!validateFormData({ email: formData.email })) {
+      return;
+    }
+
     setResetLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
@@ -84,12 +116,15 @@ const Login = () => {
       });
 
       if (error) {
+        logSecurityEvent(`Password reset failed for ${formData.email}: ${error.message}`);
         toast.error(error.message);
       } else {
+        logSecurityEvent(`Password reset requested for ${formData.email}`);
         toast.success('Password reset email sent! Check your inbox.');
         setShowForgotPassword(false);
       }
     } catch (error) {
+      logSecurityEvent(`Password reset error: ${error.message}`);
       toast.error('An error occurred while sending reset email');
     } finally {
       setResetLoading(false);
@@ -100,17 +135,44 @@ const Login = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-md">
         <AuthHeader
-          title="Welcome Back to ResearchWhao"
+          title="Welcome Back to ResearchWhoa"
           subtitle="Sign in to your account to continue your research journey"
         />
         
         <Card>
           <CardHeader>
+            {/* Security indicator */}
+            <div className="flex items-center space-x-2 text-sm text-green-600 bg-green-50 p-2 rounded mb-4">
+              <Shield className="h-4 w-4" />
+              <span>Secure login with enhanced protection</span>
+            </div>
             <h3 className="text-xl font-semibold text-center">
               {showForgotPassword ? 'Reset Password' : 'Sign In'}
             </h3>
           </CardHeader>
           <CardContent>
+            {/* Rate limiting warning */}
+            {loginAttempts >= 3 && (
+              <Alert className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Multiple login attempts detected. {5 - loginAttempts} attempts remaining.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Validation errors */}
+            {validationErrors.length > 0 && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  {validationErrors.map((error, index) => (
+                    <div key={index}>{error.message}</div>
+                  ))}
+                </AlertDescription>
+              </Alert>
+            )}
+
             {!showForgotPassword ? (
               <form onSubmit={handleSubmit} className="space-y-6">
                 <FormField
@@ -139,7 +201,11 @@ const Login = () => {
                   </button>
                 </div>
 
-                <Button type="submit" disabled={loading} className="w-full">
+                <Button 
+                  type="submit" 
+                  disabled={loading || loginAttempts >= 5} 
+                  className="w-full"
+                >
                   {loading ? 'Signing In...' : 'Sign In'}
                 </Button>
 

@@ -1,6 +1,6 @@
-
 import { useState, useEffect, createContext, useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 import type { User, Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
@@ -19,6 +19,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<any | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Initialize session timeout monitoring
+  useSessionTimeout();
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -144,6 +147,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(null);
       setProfile(null);
       setSession(null);
+      
+      // Clear any sensitive data from localStorage
+      const keysToRemove = Object.keys(localStorage).filter(key => 
+        key.includes('sensitive') || key.includes('session') || key.includes('token')
+      );
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      
     } catch (error) {
       console.error('Error signing out:', error);
     }

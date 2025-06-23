@@ -885,6 +885,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_session_valid: {
+        Args: { session_created_at: string }
+        Returns: boolean
+      }
+      validate_file_upload: {
+        Args: { file_name: string; file_size: number; content_type: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "student" | "expert" | "aid"
