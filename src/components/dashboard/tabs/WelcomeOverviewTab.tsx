@@ -3,14 +3,43 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, DollarSign, Users, TrendingUp, MessageSquare } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const WelcomeOverviewTab = () => {
+  const { profile } = useAuth();
+
+  const getWelcomeMessage = () => {
+    if (!profile?.name) return "Welcome!";
+    
+    const nameParts = profile.name.split(' ');
+    const lastName = nameParts[nameParts.length - 1];
+    
+    // Check for academic rank first (Professor takes precedence)
+    if (profile.academic_rank && 
+        (profile.academic_rank.includes('Professor') || 
+         profile.academic_rank.includes('Prof'))) {
+      return `Welcome, Prof. ${lastName}!`;
+    }
+    
+    // Check for PhD/Postdoc in level_of_study or highest_education
+    const hasPhD = profile.level_of_study?.toLowerCase().includes('phd') ||
+                   profile.level_of_study?.toLowerCase().includes('postdoc') ||
+                   profile.highest_education?.toLowerCase().includes('phd') ||
+                   profile.highest_education?.toLowerCase().includes('postdoc');
+    
+    if (hasPhD) {
+      return `Welcome, Dr. ${lastName}!`;
+    }
+    
+    return `Welcome, ${lastName}!`;
+  };
+
   return (
     <div className="space-y-6">
       {/* Welcome Message */}
       <Card>
         <CardContent className="p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back, Dr. John!</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{getWelcomeMessage()}</h2>
           <p className="text-gray-600">
             You have <span className="font-semibold text-blue-600">3 upcoming consultations</span> and 
             <span className="font-semibold text-green-600"> 2 new messages</span> waiting for you.

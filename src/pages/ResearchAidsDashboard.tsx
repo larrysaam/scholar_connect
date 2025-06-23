@@ -11,6 +11,7 @@ import DashboardLayout from "@/components/dashboard/research-aids/DashboardLayou
 import DashboardTabRenderer from "@/components/dashboard/research-aids/DashboardTabRenderer";
 import { notificationService } from "@/services/notificationService";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const ResearchAidsDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -18,6 +19,33 @@ const ResearchAidsDashboard = () => {
   const [showNDA, setShowNDA] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { profile } = useAuth();
+
+  const getWelcomeMessage = () => {
+    if (!profile?.name) return "Welcome!";
+    
+    const nameParts = profile.name.split(' ');
+    const lastName = nameParts[nameParts.length - 1];
+    
+    // Check for academic rank first (Professor takes precedence)
+    if (profile.academic_rank && 
+        (profile.academic_rank.includes('Professor') || 
+         profile.academic_rank.includes('Prof'))) {
+      return `Welcome, Prof. ${lastName}!`;
+    }
+    
+    // Check for PhD/Postdoc in level_of_study or highest_education
+    const hasPhD = profile.level_of_study?.toLowerCase().includes('phd') ||
+                   profile.level_of_study?.toLowerCase().includes('postdoc') ||
+                   profile.highest_education?.toLowerCase().includes('phd') ||
+                   profile.highest_education?.toLowerCase().includes('postdoc');
+    
+    if (hasPhD) {
+      return `Welcome, Dr. ${lastName}!`;
+    }
+    
+    return `Welcome, ${lastName}!`;
+  };
 
   useEffect(() => {
     const hasCompletedOnboarding = localStorage.getItem('research_aids_onboarding_complete');
@@ -66,7 +94,7 @@ const ResearchAidsDashboard = () => {
       
       <main className="flex-grow bg-gray-50 py-12">
         <div className="container mx-auto px-4 md:px-6">
-          <h1 className="text-3xl font-bold mb-2">Welcome, Dr. Neba!</h1>
+          <h1 className="text-3xl font-bold mb-2">{getWelcomeMessage()}</h1>
           <p className="text-gray-600 mb-8">Manage your jobs, clients, and earnings</p>
           
           {showOnboarding && (

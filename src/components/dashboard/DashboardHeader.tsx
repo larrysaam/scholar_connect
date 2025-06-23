@@ -11,14 +11,15 @@ const DashboardHeader = ({ userType }: DashboardHeaderProps) => {
   const getGreeting = () => {
     if (!profile?.name) return `${userType.charAt(0).toUpperCase() + userType.slice(1)} Dashboard`;
     
-    const firstName = profile.name.split(' ')[0];
+    const nameParts = profile.name.split(' ');
+    const lastName = nameParts[nameParts.length - 1];
     
     if (userType === "researcher") {
       // Check for academic rank first (Professor takes precedence)
       if (profile.academic_rank && 
           (profile.academic_rank.includes('Professor') || 
            profile.academic_rank.includes('Prof'))) {
-        return `Welcome back, Prof. ${firstName}!`;
+        return `Welcome, Prof. ${lastName}!`;
       }
       
       // Check for PhD/Postdoc in level_of_study or highest_education
@@ -28,11 +29,11 @@ const DashboardHeader = ({ userType }: DashboardHeaderProps) => {
                      profile.highest_education?.toLowerCase().includes('postdoc');
       
       if (hasPhD) {
-        return `Welcome back, Dr. ${firstName}!`;
+        return `Welcome, Dr. ${lastName}!`;
       }
     }
     
-    return `Welcome back, ${firstName}!`;
+    return `Welcome, ${lastName}!`;
   };
 
   return (

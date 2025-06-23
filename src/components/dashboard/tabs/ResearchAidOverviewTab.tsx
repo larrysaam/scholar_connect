@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,9 +5,37 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star, TrendingUp, MessageSquare, Clock, DollarSign } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const ResearchAidOverviewTab = () => {
   const [isAvailable, setIsAvailable] = useState(true);
+  const { profile } = useAuth();
+
+  const getWelcomeMessage = () => {
+    if (!profile?.name) return "Welcome!";
+    
+    const nameParts = profile.name.split(' ');
+    const lastName = nameParts[nameParts.length - 1];
+    
+    // Check for academic rank first (Professor takes precedence)
+    if (profile.academic_rank && 
+        (profile.academic_rank.includes('Professor') || 
+         profile.academic_rank.includes('Prof'))) {
+      return `Welcome, Prof. ${lastName}!`;
+    }
+    
+    // Check for PhD/Postdoc in level_of_study or highest_education
+    const hasPhD = profile.level_of_study?.toLowerCase().includes('phd') ||
+                   profile.level_of_study?.toLowerCase().includes('postdoc') ||
+                   profile.highest_education?.toLowerCase().includes('phd') ||
+                   profile.highest_education?.toLowerCase().includes('postdoc');
+    
+    if (hasPhD) {
+      return `Welcome, Dr. ${lastName}!`;
+    }
+    
+    return `Welcome, ${lastName}!`;
+  };
 
   return (
     <div className="space-y-6">
@@ -17,7 +44,7 @@ const ResearchAidOverviewTab = () => {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Welcome, Dr. Neba!</h2>
+              <h2 className="text-2xl font-bold text-gray-900">{getWelcomeMessage()}</h2>
               <p className="text-gray-600 mt-1">
                 You have <span className="font-semibold text-blue-600">3 new job requests</span> and 
                 <span className="font-semibold text-orange-600"> 1 pending delivery</span>.

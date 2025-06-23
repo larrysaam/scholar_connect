@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { useAuth } from "@/hooks/useAuth";
 import UpcomingTab from "@/components/dashboard/tabs/UpcomingTab";
 import PastTab from "@/components/dashboard/tabs/PastTab";
 import PaymentsTab from "@/components/dashboard/tabs/PaymentsTab";
@@ -22,6 +22,33 @@ import ResearchAidPaymentsTab from "@/components/dashboard/tabs/ResearchAidPayme
 const ResearchAideDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const { profile } = useAuth();
+
+  const getWelcomeMessage = () => {
+    if (!profile?.name) return "Research Aid Dashboard";
+    
+    const nameParts = profile.name.split(' ');
+    const lastName = nameParts[nameParts.length - 1];
+    
+    // Check for academic rank first (Professor takes precedence)
+    if (profile.academic_rank && 
+        (profile.academic_rank.includes('Professor') || 
+         profile.academic_rank.includes('Prof'))) {
+      return `Welcome, Prof. ${lastName}!`;
+    }
+    
+    // Check for PhD/Postdoc in level_of_study or highest_education
+    const hasPhD = profile.level_of_study?.toLowerCase().includes('phd') ||
+                   profile.level_of_study?.toLowerCase().includes('postdoc') ||
+                   profile.highest_education?.toLowerCase().includes('phd') ||
+                   profile.highest_education?.toLowerCase().includes('postdoc');
+    
+    if (hasPhD) {
+      return `Welcome, Dr. ${lastName}!`;
+    }
+    
+    return `Welcome, ${lastName}!`;
+  };
 
   useEffect(() => {
     const hasCompletedOnboarding = localStorage.getItem('research_aide_onboarding_complete');
@@ -82,7 +109,7 @@ const ResearchAideDashboard = () => {
       
       <main className="flex-grow bg-gray-50 py-12">
         <div className="container mx-auto px-4 md:px-6">
-          <h1 className="text-3xl font-bold mb-2">Research Aid Dashboard</h1>
+          <h1 className="text-3xl font-bold mb-2">{getWelcomeMessage()}</h1>
           <p className="text-gray-600 mb-8">Manage your jobs, clients, and earnings</p>
           
           {showOnboarding && (

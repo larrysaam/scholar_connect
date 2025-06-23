@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -8,6 +7,7 @@ import NotificationsBanner from "@/components/dashboard/NotificationsBanner";
 import IntelligentChatAssistant from "@/components/ai/IntelligentChatAssistant";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { useAuth } from "@/hooks/useAuth";
 import StudentWelcomeOverviewTab from "@/components/dashboard/tabs/StudentWelcomeOverviewTab";
 import FindResearcherTab from "@/components/dashboard/tabs/FindResearcherTab";
 import FindResearchAidTab from "@/components/dashboard/tabs/FindResearchAidTab";
@@ -28,6 +28,16 @@ const StudentDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
+  const { profile } = useAuth();
+
+  const getWelcomeMessage = () => {
+    if (!profile?.name) return "Student Dashboard";
+    
+    const nameParts = profile.name.split(' ');
+    const lastName = nameParts[nameParts.length - 1];
+    
+    return `Welcome, ${lastName}!`;
+  };
 
   useEffect(() => {
     const hasCompletedOnboarding = localStorage.getItem('student_onboarding_complete');
@@ -92,7 +102,7 @@ const StudentDashboard = () => {
       
       <main className="flex-grow bg-gray-50 py-12">
         <div className="container mx-auto px-4 md:px-6">
-          <h1 className="text-3xl font-bold mb-2">Student Dashboard</h1>
+          <h1 className="text-3xl font-bold mb-2">{getWelcomeMessage()}</h1>
           <p className="text-gray-600 mb-8">Manage your research consultations and learning journey</p>
           
           {showOnboarding && (
