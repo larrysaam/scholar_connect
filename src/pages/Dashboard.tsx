@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import DashboardContent from "@/components/dashboard/DashboardContent";
 import NotificationsBanner from "@/components/dashboard/NotificationsBanner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -12,6 +11,8 @@ import StudentPastTab from "@/components/dashboard/tabs/StudentPastTab";
 import StudentWelcomeOverviewTab from "@/components/dashboard/tabs/StudentWelcomeOverviewTab";
 import StudentPerformanceTab from "@/components/dashboard/tabs/StudentPerformanceTab";
 import FindResearcherTab from "@/components/dashboard/tabs/FindResearcherTab";
+import FindResearchAidTab from "@/components/dashboard/tabs/FindResearchAidTab";
+import PostJobTab from "@/components/dashboard/tabs/PostJobTab";
 import PaymentsTab from "@/components/dashboard/tabs/PaymentsTab";
 import DocumentsTab from "@/components/dashboard/tabs/DocumentsTab";
 import SettingsTab from "@/components/dashboard/tabs/SettingsTab";
@@ -54,7 +55,14 @@ const Dashboard = () => {
     setShowOnboarding(false);
   };
 
+  const handleTabChange = (tab: string) => {
+    console.log("Dashboard tab change requested:", tab);
+    setActiveTab(tab);
+  };
+
   const renderTabContent = () => {
+    console.log("Rendering tab content for:", activeTab);
+    
     switch (activeTab) {
       case "overview":
         return <StudentWelcomeOverviewTab />;
@@ -62,6 +70,10 @@ const Dashboard = () => {
         return <StudentAIAssistantTab />;
       case "find-researcher":
         return <FindResearcherTab />;
+      case "find-research-aid":
+        return <FindResearchAidTab />;
+      case "post-job":
+        return <PostJobTab />;
       case "session-booking":
         return <SessionBookingTab />;
       case "performance":
@@ -91,6 +103,7 @@ const Dashboard = () => {
       case "settings":
         return <SettingsTab />;
       default:
+        console.log("Unknown tab, defaulting to overview:", activeTab);
         return <StudentWelcomeOverviewTab />;
     }
   };
@@ -131,7 +144,7 @@ const Dashboard = () => {
             <div className="md:col-span-1">
               <DashboardSidebar 
                 activeTab={activeTab} 
-                setActiveTab={setActiveTab} 
+                setActiveTab={handleTabChange} 
                 userType="student"
               />
             </div>
@@ -141,11 +154,11 @@ const Dashboard = () => {
               {/* Notifications Banner */}
               <NotificationsBanner />
               
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsContent value={activeTab} className="mt-0">
+              <div className="mt-4">
+                <div className="bg-white rounded-lg shadow-sm p-6">
                   {renderTabContent()}
-                </TabsContent>
-              </Tabs>
+                </div>
+              </div>
             </div>
           </div>
         </div>

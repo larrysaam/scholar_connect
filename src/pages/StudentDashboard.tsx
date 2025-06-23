@@ -47,6 +47,8 @@ const StudentDashboard = () => {
   };
 
   const renderTabContent = () => {
+    console.log("Rendering tab content for:", activeTab);
+    
     switch (activeTab) {
       case "overview":
         return <StudentWelcomeOverviewTab />;
@@ -79,6 +81,7 @@ const StudentDashboard = () => {
       case "settings":
         return <SettingsTab />;
       default:
+        console.log("Unknown tab, defaulting to overview:", activeTab);
         return <StudentWelcomeOverviewTab />;
     }
   };
@@ -121,11 +124,11 @@ const StudentDashboard = () => {
             <div className="md:col-span-3">
               <NotificationsBanner />
               
-              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <TabsContent value={activeTab} className="mt-0">
+              <div className="mt-4">
+                <div className="bg-white rounded-lg shadow-sm p-6">
                   {renderTabContent()}
-                </TabsContent>
-              </Tabs>
+                </div>
+              </div>
             </div>
           </div>
         </div>
