@@ -23,7 +23,7 @@ export const useSessionTimeout = () => {
 
   const showWarning = useCallback(() => {
     toast({
-      title: "Session Warning",
+      title: "Session Warning", 
       description: "Your session will expire in 5 minutes. Please save your work.",
       variant: "destructive"
     });

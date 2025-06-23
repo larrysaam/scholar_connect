@@ -1,6 +1,7 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+
+import { useState, useEffect, createContext, useContext, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useSessionTimeout } from '@/hooks/useSessionTimeout';
+import { useToast } from '@/hooks/use-toast';
 import type { User, Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
@@ -14,14 +15,19 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const WARNING_TIME = 5 * 60 * 1000; // 5 minutes before timeout
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Initialize session timeout monitoring
-  useSessionTimeout();
+  const { toast } = useToast();
+  
+  // Session timeout refs
+  const timeoutRef = useRef<NodeJS.Timeout>();
+  const warningRef = useRef<NodeJS.Timeout>();
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -64,6 +70,66 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setProfile(profileData);
     }
   };
+
+  const signOut = async () => {
+    try {
+      // Clear session timeout timers
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      if (warningRef.current) {
+        clearTimeout(warningRef.current);
+      }
+
+      await supabase.auth.signOut();
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+      
+      // Clear any sensitive data from localStorage
+      const keysToRemove = Object.keys(localStorage).filter(key => 
+        key.includes('sensitive') || key.includes('session') || key.includes('token')
+      );
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const handleSessionTimeout = useCallback(async () => {
+    await signOut();
+    toast({
+      title: "Session Expired",
+      description: "Your session has expired. Please sign in again.",
+      variant: "destructive"
+    });
+  }, [toast]);
+
+  const showWarning = useCallback(() => {
+    toast({
+      title: "Session Warning",
+      description: "Your session will expire in 5 minutes. Please save your work.",
+      variant: "destructive"
+    });
+  }, [toast]);
+
+  const resetSessionTimeout = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    if (warningRef.current) {
+      clearTimeout(warningRef.current);
+    }
+
+    if (user) {
+      // Set warning timeout
+      warningRef.current = setTimeout(showWarning, SESSION_TIMEOUT - WARNING_TIME);
+      
+      // Set logout timeout
+      timeoutRef.current = setTimeout(handleSessionTimeout, SESSION_TIMEOUT);
+    }
+  }, [user, handleSessionTimeout, showWarning]);
 
   useEffect(() => {
     let mounted = true;
@@ -138,26 +204,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (warningRef.current) clearTimeout(warningRef.current);
     };
   }, []);
 
-  const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      setUser(null);
-      setProfile(null);
-      setSession(null);
-      
-      // Clear any sensitive data from localStorage
-      const keysToRemove = Object.keys(localStorage).filter(key => 
-        key.includes('sensitive') || key.includes('session') || key.includes('token')
-      );
-      keysToRemove.forEach(key => localStorage.removeItem(key));
-      
-    } catch (error) {
-      console.error('Error signing out:', error);
+  // Set up session timeout monitoring when user changes
+  useEffect(() => {
+    if (user) {
+      resetSessionTimeout();
+
+      // Reset timeout on user activity
+      const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+      const resetTimeoutThrottled = (() => {
+        let timeoutId: NodeJS.Timeout;
+        return () => {
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(resetSessionTimeout, 1000); // Throttle to once per second
+        };
+      })();
+
+      events.forEach(event => {
+        document.addEventListener(event, resetTimeoutThrottled, true);
+      });
+
+      return () => {
+        events.forEach(event => {
+          document.removeEventListener(event, resetTimeoutThrottled, true);
+        });
+      };
+    } else {
+      // Clear timeouts when user logs out
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (warningRef.current) clearTimeout(warningRef.current);
     }
-  };
+  }, [user, resetSessionTimeout]);
 
   const value = {
     user,
