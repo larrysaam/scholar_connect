@@ -2,7 +2,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin, Award, Eye } from "lucide-react";
+import { Star, MapPin, Award, Eye, MessageCircle } from "lucide-react";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ResearchAid {
   id: string;
@@ -24,6 +28,34 @@ interface ResearchAidsListingProps {
 }
 
 const ResearchAidsListing = ({ filteredAids, onViewProfile }: ResearchAidsListingProps) => {
+  const [showMessage, setShowMessage] = useState(false);
+  const [selectedAid, setSelectedAid] = useState<ResearchAid | null>(null);
+  const [message, setMessage] = useState("");
+  const { toast } = useToast();
+
+  const handleSendMessage = (aid: ResearchAid) => {
+    setSelectedAid(aid);
+    setShowMessage(true);
+  };
+
+  const handleMessageSubmit = () => {
+    if (message.trim() && selectedAid) {
+      toast({
+        title: "Message Sent!",
+        description: `Your message has been sent to ${selectedAid.name}`,
+      });
+      setMessage("");
+      setShowMessage(false);
+      setSelectedAid(null);
+    } else {
+      toast({
+        title: "Empty Message",
+        description: "Please enter a message before sending",
+        variant: "destructive"
+      });
+    }
+  };
+
   const ResearchAidCard = ({ aid }: { aid: ResearchAid }) => (
     <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary">
       <CardContent className="p-6">
@@ -78,14 +110,24 @@ const ResearchAidsListing = ({ filteredAids, onViewProfile }: ResearchAidsListin
                   {aid.hourlyRate.toLocaleString()} XAF/hr
                 </div>
               </div>
-              <Button 
-                size="sm" 
-                className="bg-primary hover:bg-primary/90"
-                onClick={() => onViewProfile(aid.id)}
-              >
-                <Eye className="h-4 w-4 mr-1" />
-                View Profile
-              </Button>
+              <div className="flex space-x-2">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => handleSendMessage(aid)}
+                >
+                  <MessageCircle className="h-4 w-4 mr-1" />
+                  Message
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="bg-primary hover:bg-primary/90"
+                  onClick={() => onViewProfile(aid.id)}
+                >
+                  <Eye className="h-4 w-4 mr-1" />
+                  View Profile
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -94,21 +136,48 @@ const ResearchAidsListing = ({ filteredAids, onViewProfile }: ResearchAidsListin
   );
 
   return (
-    <section id="research-aids-listing" className="py-16">
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold mb-8">
-            Available Research Aids 
-            <span className="text-gray-500 font-normal ml-2">({filteredAids.length} found)</span>
-          </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {filteredAids.map((aid) => (
-              <ResearchAidCard key={aid.id} aid={aid} />
-            ))}
+    <>
+      <section id="research-aids-listing" className="py-16">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-2xl font-bold mb-8">
+              Available Research Aids 
+              <span className="text-gray-500 font-normal ml-2">({filteredAids.length} found)</span>
+            </h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {filteredAids.map((aid) => (
+                <ResearchAidCard key={aid.id} aid={aid} />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Message Modal */}
+      <Dialog open={showMessage} onOpenChange={setShowMessage}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Message to {selectedAid?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Textarea
+              placeholder="Type your message here..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              rows={4}
+            />
+            <div className="flex space-x-2">
+              <Button onClick={handleMessageSubmit} className="flex-1">
+                Send Message
+              </Button>
+              <Button variant="outline" onClick={() => setShowMessage(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

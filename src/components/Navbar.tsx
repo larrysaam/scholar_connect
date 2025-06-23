@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import LanguageToggle from './LanguageToggle';
 import GetStartedModal from './GetStartedModal';
+import ResearchWhoaLogo from './ResearchWhoaLogo';
 
 const Navbar = () => {
   const { user, profile, signOut } = useAuth();
@@ -90,11 +91,8 @@ const Navbar = () => {
     <nav className="bg-white shadow-sm border-b">
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">R</span>
-            </div>
-            <span className="font-bold text-xl text-gray-900">ResearchWhoa</span>
+          <Link to="/" className="flex items-center">
+            <ResearchWhoaLogo size="md" showText={true} />
           </Link>
 
           {getNavigationItems()}
