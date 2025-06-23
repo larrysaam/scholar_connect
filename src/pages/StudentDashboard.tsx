@@ -43,8 +43,6 @@ const StudentDashboard = () => {
 
   const handleTabChange = (tab: string) => {
     console.log("Dashboard tab change requested:", tab);
-    
-    // All tabs are now handled internally - no external navigation needed
     setActiveTab(tab);
   };
 
