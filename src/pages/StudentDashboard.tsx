@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import StudentWelcomeOverviewTab from "@/components/dashboard/tabs/StudentWelcomeOverviewTab";
 import FindResearcherTab from "@/components/dashboard/tabs/FindResearcherTab";
+import FindResearchAidTab from "@/components/dashboard/tabs/FindResearchAidTab";
 import SessionBookingTab from "@/components/dashboard/tabs/SessionBookingTab";
 import StudentUpcomingTab from "@/components/dashboard/tabs/StudentUpcomingTab";
 import StudentPastTab from "@/components/dashboard/tabs/StudentPastTab";
@@ -43,14 +44,7 @@ const StudentDashboard = () => {
   const handleTabChange = (tab: string) => {
     console.log("Dashboard tab change requested:", tab);
     
-    // Handle navigation to external pages
-    if (tab === "find-research-aid") {
-      console.log("Navigating to research aids page...");
-      navigate("/research-aids");
-      return;
-    }
-    
-    // Handle internal tab changes - make sure Post a Job works
+    // All tabs are now handled internally - no external navigation needed
     setActiveTab(tab);
   };
 
@@ -62,6 +56,10 @@ const StudentDashboard = () => {
         return <StudentAIAssistantTab />;
       case "find-researcher":
         return <FindResearcherTab />;
+      case "find-research-aid":
+        return <FindResearchAidTab />;
+      case "post-job":
+        return <PostJobTab />;
       case "session-booking":
         return <SessionBookingTab />;
       case "upcoming":
@@ -82,8 +80,6 @@ const StudentDashboard = () => {
         return <DocumentsTab />;
       case "settings":
         return <SettingsTab />;
-      case "post-job":
-        return <PostJobTab />;
       default:
         return <StudentWelcomeOverviewTab />;
     }
