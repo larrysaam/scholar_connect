@@ -35,6 +35,9 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<ConsolidatedSignup />} />
+              <Route path="/student-signup" element={<ConsolidatedSignup />} />
+              <Route path="/researcher-signup" element={<ConsolidatedSignup />} />
+              <Route path="/research-aid-signup" element={<ConsolidatedSignup />} />
               <Route path="/dashboard" element={<StudentDashboard />} />
               <Route path="/researcher-dashboard" element={<ResearcherDashboard />} />
               <Route path="/research-aids-dashboard" element={<ResearchAidsDashboard />} />
