@@ -13,6 +13,7 @@ const ConsolidatedSignup = () => {
   const getUserTypeFromPath = (): UserRole => {
     if (location.pathname.includes('researcher')) return 'expert';
     if (location.pathname.includes('research-aid')) return 'aid';
+    if (location.pathname.includes('student')) return 'student';
     return 'student'; // default
   };
 
@@ -22,7 +23,7 @@ const ConsolidatedSignup = () => {
     switch (userType) {
       case 'expert':
         return {
-          title: 'Join as an Expert',
+          title: 'Join as a Research Expert',
           subtitle: 'Share your knowledge and help students excel in their research'
         };
       case 'aid':
@@ -47,7 +48,7 @@ const ConsolidatedSignup = () => {
         subtitle={headerContent.subtitle}
       />
       <main className="container mx-auto px-4 py-8">
-        <UnifiedSignupForm defaultUserType={userType} />
+        <UnifiedSignupForm defaultUserType={userType} showUserTypeSelector={false} />
       </main>
       <SignupFooter />
     </div>

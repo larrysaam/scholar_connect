@@ -17,9 +17,10 @@ import type { UserRole } from '@/types/signup';
 
 interface UnifiedSignupFormProps {
   defaultUserType: UserRole;
+  showUserTypeSelector?: boolean;
 }
 
-const UnifiedSignupForm = ({ defaultUserType }: UnifiedSignupFormProps) => {
+const UnifiedSignupForm = ({ defaultUserType, showUserTypeSelector = true }: UnifiedSignupFormProps) => {
   const navigate = useNavigate();
   const { signUp } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -124,56 +125,88 @@ const UnifiedSignupForm = ({ defaultUserType }: UnifiedSignupFormProps) => {
     }
   };
 
+  const getRoleDisplayName = (role: UserRole) => {
+    switch (role) {
+      case 'expert': return 'Expert';
+      case 'aid': return 'Research Aid';
+      default: return 'Student';
+    }
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Create Your Account</CardTitle>
+          <CardTitle className="text-2xl text-center">
+            {showUserTypeSelector ? 'Create Your Account' : `Create Your ${getRoleDisplayName(userType)} Account`}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <Tabs value={userType} onValueChange={(value) => setUserType(value as UserRole)}>
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="student">Student</TabsTrigger>
-                <TabsTrigger value="expert">Expert</TabsTrigger>
-                <TabsTrigger value="aid">Research Aid</TabsTrigger>
-              </TabsList>
+            {showUserTypeSelector ? (
+              <Tabs value={userType} onValueChange={(value) => setUserType(value as UserRole)}>
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="student">Student</TabsTrigger>
+                  <TabsTrigger value="expert">Expert</TabsTrigger>
+                  <TabsTrigger value="aid">Research Aid</TabsTrigger>
+                </TabsList>
 
-              <TabsContent value="student" className="space-y-4">
+                <TabsContent value="student" className="space-y-4">
+                  <BasicInfoFields formData={formData} onInputChange={handleInputChange} />
+                  <ContactFields formData={formData} onInputChange={handleInputChange} />
+                  <OrganizationFields formData={formData} onInputChange={handleInputChange} />
+                  <PasswordFields formData={formData} onInputChange={handleInputChange} />
+                  <TermsCheckbox 
+                    agreedToTerms={formData.agreedToTerms}
+                    onInputChange={handleInputChange}
+                  />
+                </TabsContent>
+
+                <TabsContent value="expert" className="space-y-4">
+                  <BasicInfoFields formData={formData} onInputChange={handleInputChange} />
+                  <ContactFields formData={formData} onInputChange={handleInputChange} />
+                  <OrganizationFields formData={formData} onInputChange={handleInputChange} />
+                  <ExpertFields formData={formData} onInputChange={handleInputChange} />
+                  <PasswordFields formData={formData} onInputChange={handleInputChange} />
+                  <TermsCheckbox 
+                    agreedToTerms={formData.agreedToTerms}
+                    onInputChange={handleInputChange}
+                  />
+                </TabsContent>
+
+                <TabsContent value="aid" className="space-y-4">
+                  <BasicInfoFields formData={formData} onInputChange={handleInputChange} />
+                  <ContactFields formData={formData} onInputChange={handleInputChange} />
+                  <OrganizationFields formData={formData} onInputChange={handleInputChange} />
+                  <AidFields formData={formData} onInputChange={handleInputChange} />
+                  <PasswordFields formData={formData} onInputChange={handleInputChange} />
+                  <TermsCheckbox 
+                    agreedToTerms={formData.agreedToTerms}
+                    onInputChange={handleInputChange}
+                  />
+                </TabsContent>
+              </Tabs>
+            ) : (
+              <div className="space-y-4">
                 <BasicInfoFields formData={formData} onInputChange={handleInputChange} />
                 <ContactFields formData={formData} onInputChange={handleInputChange} />
                 <OrganizationFields formData={formData} onInputChange={handleInputChange} />
+                
+                {userType === 'expert' && (
+                  <ExpertFields formData={formData} onInputChange={handleInputChange} />
+                )}
+                
+                {userType === 'aid' && (
+                  <AidFields formData={formData} onInputChange={handleInputChange} />
+                )}
+                
                 <PasswordFields formData={formData} onInputChange={handleInputChange} />
                 <TermsCheckbox 
                   agreedToTerms={formData.agreedToTerms}
                   onInputChange={handleInputChange}
                 />
-              </TabsContent>
-
-              <TabsContent value="expert" className="space-y-4">
-                <BasicInfoFields formData={formData} onInputChange={handleInputChange} />
-                <ContactFields formData={formData} onInputChange={handleInputChange} />
-                <OrganizationFields formData={formData} onInputChange={handleInputChange} />
-                <ExpertFields formData={formData} onInputChange={handleInputChange} />
-                <PasswordFields formData={formData} onInputChange={handleInputChange} />
-                <TermsCheckbox 
-                  agreedToTerms={formData.agreedToTerms}
-                  onInputChange={handleInputChange}
-                />
-              </TabsContent>
-
-              <TabsContent value="aid" className="space-y-4">
-                <BasicInfoFields formData={formData} onInputChange={handleInputChange} />
-                <ContactFields formData={formData} onInputChange={handleInputChange} />
-                <OrganizationFields formData={formData} onInputChange={handleInputChange} />
-                <AidFields formData={formData} onInputChange={handleInputChange} />
-                <PasswordFields formData={formData} onInputChange={handleInputChange} />
-                <TermsCheckbox 
-                  agreedToTerms={formData.agreedToTerms}
-                  onInputChange={handleInputChange}
-                />
-              </TabsContent>
-            </Tabs>
+              </div>
+            )}
 
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? 'Creating Account...' : 'Create Account'}
