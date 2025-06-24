@@ -4,14 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { useSecureAuth } from '@/hooks/useSecureAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import BasicInfoFields from './BasicInfoFields';
 import ContactFields from './ContactFields';
 import OrganizationFields from './OrganizationFields';
 import PasswordFields from './PasswordFields';
 import TermsCheckbox from './TermsCheckbox';
-import TabPlaceholder from './TabPlaceholder';
+import ExpertFields from './ExpertFields';
+import AidFields from './AidFields';
 import type { UserRole } from '@/types/signup';
 
 interface UnifiedSignupFormProps {
@@ -20,7 +21,7 @@ interface UnifiedSignupFormProps {
 
 const UnifiedSignupForm = ({ defaultUserType }: UnifiedSignupFormProps) => {
   const navigate = useNavigate();
-  const { signUp } = useSecureAuth();
+  const { signUp } = useAuth();
   const [loading, setLoading] = useState(false);
   const [userType, setUserType] = useState<UserRole>(defaultUserType);
   const [formData, setFormData] = useState({
@@ -37,6 +38,14 @@ const UnifiedSignupForm = ({ defaultUserType }: UnifiedSignupFormProps) => {
     researchTopic: '',
     dateOfBirth: '',
     sex: '',
+    academicRank: '',
+    highestEducation: '',
+    fieldsOfExpertise: '',
+    linkedinAccount: '',
+    researchgateAccount: '',
+    academiaEduAccount: '',
+    orcidId: '',
+    preferredLanguage: 'en',
     agreedToTerms: false,
   });
 
@@ -52,6 +61,11 @@ const UnifiedSignupForm = ({ defaultUserType }: UnifiedSignupFormProps) => {
 
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
+      return false;
+    }
+
+    if (formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters long');
       return false;
     }
 
@@ -82,17 +96,26 @@ const UnifiedSignupForm = ({ defaultUserType }: UnifiedSignupFormProps) => {
         researchTopic: formData.researchTopic,
         dateOfBirth: formData.dateOfBirth,
         sex: formData.sex,
+        academicRank: formData.academicRank,
+        highestEducation: formData.highestEducation,
+        fieldsOfExpertise: formData.fieldsOfExpertise,
+        linkedinAccount: formData.linkedinAccount,
+        researchgateAccount: formData.researchgateAccount,
+        academiaEduAccount: formData.academiaEduAccount,
+        orcidId: formData.orcidId,
+        preferredLanguage: formData.preferredLanguage,
       };
 
       const result = await signUp(formData.email, formData.password, userData);
       
       if (result.success) {
-        toast.success('Account created successfully! Please sign in to continue.');
+        toast.success('Account created successfully! Please check your email for verification.');
         navigate('/login');
       } else {
         toast.error(result.error || 'Failed to create account');
       }
     } catch (error) {
+      console.error('Signup error:', error);
       toast.error('An error occurred during registration');
     } finally {
       setLoading(false);
@@ -126,11 +149,27 @@ const UnifiedSignupForm = ({ defaultUserType }: UnifiedSignupFormProps) => {
               </TabsContent>
 
               <TabsContent value="expert" className="space-y-4">
-                <TabPlaceholder userType="expert" message="Expert registration form coming soon. Please use the contact form to register as an expert." />
+                <BasicInfoFields formData={formData} onInputChange={handleInputChange} />
+                <ContactFields formData={formData} onInputChange={handleInputChange} />
+                <OrganizationFields formData={formData} onInputChange={handleInputChange} />
+                <ExpertFields formData={formData} onInputChange={handleInputChange} />
+                <PasswordFields formData={formData} onInputChange={handleInputChange} />
+                <TermsCheckbox 
+                  agreedToTerms={formData.agreedToTerms}
+                  onInputChange={handleInputChange}
+                />
               </TabsContent>
 
               <TabsContent value="aid" className="space-y-4">
-                <TabPlaceholder userType="aid" message="Research Aid registration form coming soon. Please use the contact form to register as a research aid." />
+                <BasicInfoFields formData={formData} onInputChange={handleInputChange} />
+                <ContactFields formData={formData} onInputChange={handleInputChange} />
+                <OrganizationFields formData={formData} onInputChange={handleInputChange} />
+                <AidFields formData={formData} onInputChange={handleInputChange} />
+                <PasswordFields formData={formData} onInputChange={handleInputChange} />
+                <TermsCheckbox 
+                  agreedToTerms={formData.agreedToTerms}
+                  onInputChange={handleInputChange}
+                />
               </TabsContent>
             </Tabs>
 

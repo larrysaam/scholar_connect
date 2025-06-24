@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import ServiceSelector from "./booking/ServiceSelector";
 import AcademicLevelSelector from "./booking/AcademicLevelSelector";
 import AddOnSelector from "./booking/AddOnSelector";
@@ -21,6 +23,7 @@ import BookingSummary from "./booking/BookingSummary";
 
 interface BookingModalProps {
   researcher: {
+    id: string;
     name: string;
     hourlyRate: number;
     availableTimes: {
@@ -46,6 +49,7 @@ interface ConsultationService {
 
 const BookingModal = ({ researcher }: BookingModalProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<string | null>(null);
@@ -54,8 +58,8 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
   const [selectedChallenges, setSelectedChallenges] = useState<string[]>([]);
   const [comment, setComment] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
+  const [isBooking, setIsBooking] = useState(false);
 
-  // Mock consultation services - in real app, this would come from the researcher's profile
   const consultationServices = [
     {
       id: "1",
@@ -115,12 +119,10 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
     }
   ];
 
-  // Get selected service details
   const getSelectedServiceDetails = () => {
     return consultationServices.find(service => service.id === selectedService);
   };
 
-  // Get price for selected service and academic level
   const getServicePrice = () => {
     const service = getSelectedServiceDetails();
     if (!service || !selectedAcademicLevel) return 0;
@@ -132,7 +134,6 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
     return levelPrice ? levelPrice.price : 0;
   };
 
-  // Calculate total price including add-ons
   const calculateTotalPrice = () => {
     const basePrice = getServicePrice();
     const addOnsPrice = selectedAddOns.reduce((total, addonName) => {
@@ -152,7 +153,6 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
     }, 0);
   };
 
-  // Handle challenge selection (multi-select)
   const handleChallengeToggle = (challenge: string) => {
     setSelectedChallenges(prev => 
       prev.includes(challenge) 
@@ -161,7 +161,6 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
     );
   };
 
-  // Handle add-on selection
   const handleAddOnToggle = (addonName: string) => {
     setSelectedAddOns(prev => 
       prev.includes(addonName)
@@ -170,63 +169,81 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
     );
   };
 
-  // Handle booking with thesis information integration
-  const handleBooking = () => {
-    // Get thesis information from localStorage
-    const thesisInfo = {
-      title: "Machine Learning Applications in Healthcare Data Analysis",
-      problemStatement: "The healthcare industry generates vast amounts of data daily, but lacks efficient automated systems to analyze and extract meaningful insights that can improve patient outcomes and reduce operational costs.",
-      researchQuestions: [
-        "How can machine learning algorithms be optimized for healthcare data analysis?",
-        "What are the most effective ML models for predicting patient outcomes?",
-        "How can data privacy be maintained while enabling comprehensive analysis?"
-      ],
-      researchObjectives: [
-        "Develop and implement ML algorithms for healthcare data processing",
-        "Evaluate the effectiveness of different ML models in healthcare contexts",
-        "Create a framework for privacy-preserving healthcare data analysis",
-        "Validate the system through real-world healthcare datasets"
-      ],
-      researchHypothesis: "Implementation of optimized machine learning algorithms in healthcare data analysis will significantly improve diagnostic accuracy and treatment recommendations while maintaining patient data privacy.",
-      expectedOutcomes: [
-        "A comprehensive ML framework for healthcare data analysis",
-        "Improved diagnostic accuracy by 15-20%",
-        "Reduced data processing time by 40%",
-        "Published research papers in peer-reviewed journals",
-        "Potential patent applications for novel algorithms"
-      ]
-    };
+  const handleBooking = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to book a consultation.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    const bookingData = {
-      researcher: researcher.name,
-      service: getSelectedServiceDetails(),
-      academicLevel: selectedAcademicLevel,
-      date: selectedDate,
-      time: selectedTime,
-      addOns: selectedAddOns,
-      challenges: selectedChallenges,
-      comment,
-      totalPrice: calculateTotalPrice(),
-      studentThesisInfo: thesisInfo
-    };
+    setIsBooking(true);
 
-    console.log("Booking with thesis information:", bookingData);
-    
-    toast({
-      title: "Consultation Booked Successfully!",
-      description: `Your consultation with ${researcher.name} has been scheduled. The researcher can now access your thesis information.`,
-    });
-    
-    setIsOpen(false);
-    
-    // Reset form
-    setSelectedDate(undefined);
-    setSelectedTime(null);
-    setSelectedService(null);
-    setSelectedAcademicLevel(null);
-    setSelectedAddOns([]);
-    setSelectedChallenges([]);
-    setComment("");
+    try {
+      // Create the consultation record
+      const timeslot = new Date(selectedDate!);
+      const [hours, minutes] = selectedTime!.split(':');
+      timeslot.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+      const { data: consultation, error } = await supabase
+        .from('consultations')
+        .insert({
+          expert_id: researcher.id,
+          student_id: user.id,
+          title: getSelectedServiceDetails()?.category || 'Consultation',
+          description: comment || 'Consultation session',
+          timeslot: timeslot.toISOString(),
+          duration_hours: 1,
+          amount: calculateTotalPrice(),
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Create payment record
+      const { error: paymentError } = await supabase
+        .from('payments')
+        .insert({
+          student_id: user.id,
+          provider_id: researcher.id,
+          consultation_id: consultation.consultation_id,
+          amount: calculateTotalPrice(),
+          total_amount: calculateTotalPrice(),
+          payment_type: 'consultation',
+          status: 'pending'
+        });
+
+      if (paymentError) throw paymentError;
+
+      toast({
+        title: "Consultation Booked Successfully!",
+        description: `Your consultation with ${researcher.name} has been scheduled for ${selectedDate?.toLocaleDateString()} at ${selectedTime}.`,
+      });
+
+      setIsOpen(false);
+      
+      // Reset form
+      setSelectedDate(undefined);
+      setSelectedTime(null);
+      setSelectedService(null);
+      setSelectedAcademicLevel(null);
+      setSelectedAddOns([]);
+      setSelectedChallenges([]);
+      setComment("");
+    } catch (error) {
+      console.error('Booking error:', error);
+      toast({
+        title: "Booking Failed",
+        description: "There was an error booking your consultation. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsBooking(false);
+    }
   };
 
   return (
@@ -297,10 +314,10 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
           
           <Button 
             className="w-full" 
-            disabled={!selectedDate || !selectedTime || !selectedService || !selectedAcademicLevel || selectedChallenges.length === 0}
+            disabled={!selectedDate || !selectedTime || !selectedService || !selectedAcademicLevel || selectedChallenges.length === 0 || isBooking}
             onClick={handleBooking}
           >
-            Complete Booking
+            {isBooking ? 'Booking...' : 'Complete Booking'}
           </Button>
         </div>
       </DialogContent>
