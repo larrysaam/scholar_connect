@@ -49,9 +49,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!session) return;
 
     const checkSession = () => {
-      // Use expires_at instead of created_at
-      const expiresAt = session.expires_at;
-      if (expiresAt && Date.now() / 1000 > expiresAt) {
+      const sessionAge = Date.now() - new Date(session.created_at).getTime();
+      const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+
+      if (sessionAge > maxAge) {
         signOut();
         toast({
           title: "Session Expired",

@@ -1,22 +1,13 @@
 
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import UnifiedSignupForm from '@/components/signup/UnifiedSignupForm';
 import SignupHeader from '@/components/signup/SignupHeader';
 import SignupFooter from '@/components/signup/SignupFooter';
-import type { UserRole } from '@/types/signup';
 
 const ConsolidatedSignup = () => {
-  const location = useLocation();
-  
-  // Determine user type based on the current route
-  const getUserTypeFromPath = (): UserRole => {
-    if (location.pathname.includes('researcher')) return 'expert';
-    if (location.pathname.includes('research-aid')) return 'aid';
-    return 'student'; // default
-  };
-
-  const userType = getUserTypeFromPath();
+  const [searchParams] = useSearchParams();
+  const userType = searchParams.get('type') as 'student' | 'expert' | 'aid' || 'student';
 
   const getHeaderContent = () => {
     switch (userType) {
