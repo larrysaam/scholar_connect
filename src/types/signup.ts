@@ -1,6 +1,16 @@
 
 export type UserRole = 'student' | 'expert' | 'aid' | 'admin';
 
+export interface BaseFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  phone: string;
+  agreedToTerms: boolean;
+}
+
 export interface SignupFormData {
   firstName: string;
   lastName: string;
