@@ -112,7 +112,7 @@ const UnifiedSignupForm = ({ defaultUserType, showUserTypeSelector = true }: Uni
       const result = await signUp(formData.email, formData.password, userData);
       
       if (result.success) {
-        toast.success('Account created successfully! Please check your email for verification.');
+        // Welcome message is now handled in the auth hook
         navigate('/login');
       } else {
         toast.error(result.error || 'Failed to create account');

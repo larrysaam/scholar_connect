@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -156,6 +155,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       if (data.user) {
+        // Show welcome message for sign in
+        setTimeout(() => {
+          const firstName = profile?.name?.split(' ')[0] || 'there';
+          toast({
+            title: `Welcome back, ${firstName}!`,
+            description: "You've successfully signed in to your account.",
+          });
+        }, 1000);
+        
         return { success: true };
       }
 
@@ -211,6 +219,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       if (data.user) {
+        // Show welcome message for sign up
+        const firstName = userData.fullName?.split(' ')[0] || 'there';
+        const roleDisplayName = userData.role === 'expert' ? 'Research Expert' : 
+                               userData.role === 'aid' ? 'Research Aid' : 'Student';
+        
+        toast({
+          title: `Welcome, ${firstName}!`,
+          description: `Your ${roleDisplayName} account has been created successfully. Please check your email for verification.`,
+        });
+        
         return { success: true };
       }
 
