@@ -1,60 +1,54 @@
 
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import GetStartedModal from "@/components/GetStartedModal";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Link } from 'react-router-dom';
+import { GraduationCap, BookOpen, Users } from 'lucide-react';
 
 const JoinSection = () => {
+  const userTypes = [
+    {
+      title: 'Students',
+      description: 'Get expert guidance for your research projects and accelerate your academic journey.',
+      icon: GraduationCap,
+      link: '/student-signup',
+      color: 'bg-blue-50 text-blue-600'
+    },
+    {
+      title: 'Researchers',
+      description: 'Share your expertise, mentor students, and earn income through consultations.',
+      icon: BookOpen,
+      link: '/researcher-signup', 
+      color: 'bg-green-50 text-green-600'
+    },
+    {
+      title: 'Research Aids',
+      description: 'Offer your research assistance services and help students with their projects.',
+      icon: Users,
+      link: '/research-aid-signup',
+      color: 'bg-purple-50 text-purple-600'
+    }
+  ];
+
   return (
-    <section className="py-16 bg-blue-50">
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Join ResearchWhoa Today
-          </h2>
-          <p className="text-xl text-gray-600 mb-8">
-            Connect with top researchers, get expert guidance, and accelerate your research journey.
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h3 className="font-semibold mb-2">For Students</h3>
-              <p className="text-gray-600 text-sm mb-4">Get expert help and guidance for your research projects</p>
-              <Button asChild className="w-full">
-                <Link to="/student-signup">Join as Student</Link>
-              </Button>
-            </div>
-            
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h3 className="font-semibold mb-2">For Researchers</h3>
-              <p className="text-gray-600 text-sm mb-4">Share your expertise and earn additional income</p>
-              <Button asChild className="w-full">
-                <Link to="/researcher-signup">Join as Researcher</Link>
-              </Button>
-            </div>
-            
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h3 className="font-semibold mb-2">For Research Aids</h3>
-              <p className="text-gray-600 text-sm mb-4">Provide professional research assistance</p>
-              <Button asChild className="w-full">
-                <Link to="/research-aid-signup">Join as Research Aid</Link>
-              </Button>
-            </div>
-          </div>
-          
-          <div className="mb-8">
-            <GetStartedModal>
-              <Button size="lg" className="text-lg px-8 py-3">
-                Get Started
-              </Button>
-            </GetStartedModal>
-          </div>
-          
-          <p className="text-gray-600">
-            Already have an account?{' '}
-            <Link to="/login" className="text-blue-600 hover:underline font-medium">
-              Sign In
-            </Link>
-          </p>
+    <section className="py-20 bg-gray-50">
+      <div className="container mx-auto px-4">
+        <h2 className="text-4xl font-bold text-center mb-12">Join ResearchWhoa</h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          {userTypes.map((type, index) => (
+            <Card key={index} className="text-center hover:shadow-lg transition-shadow">
+              <CardContent className="p-8">
+                <div className={`w-16 h-16 rounded-full ${type.color} flex items-center justify-center mx-auto mb-4`}>
+                  <type.icon className="w-8 h-8" />
+                </div>
+                <h3 className="text-2xl font-semibold mb-4">{type.title}</h3>
+                <p className="text-gray-600 mb-6">{type.description}</p>
+                <Link to={type.link}>
+                  <Button className="w-full">Join as {type.title.slice(0, -1)}</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </section>

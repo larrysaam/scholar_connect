@@ -1,124 +1,40 @@
 
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import NDAModal from "@/components/dashboard/NDAModal";
-import IntelligentChatAssistant from "@/components/ai/IntelligentChatAssistant";
-import OnboardingCard from "@/components/dashboard/research-aids/OnboardingCard";
-import QuickActionsCard from "@/components/dashboard/research-aids/QuickActionsCard";
-import DashboardLayout from "@/components/dashboard/research-aids/DashboardLayout";
-import DashboardTabRenderer from "@/components/dashboard/research-aids/DashboardTabRenderer";
-import { notificationService } from "@/services/notificationService";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
+import React, { useState } from "react";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import DashboardContent from "@/components/dashboard/DashboardContent";
 
 const ResearchAidsDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showNDA, setShowNDA] = useState(false);
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { profile } = useAuth();
 
-  const getWelcomeMessage = () => {
-    if (!profile?.name) return "Welcome!";
-    
-    const nameParts = profile.name.split(' ');
-    const lastName = nameParts[nameParts.length - 1];
-    
-    // Check for academic rank first (Professor takes precedence)
-    if (profile.academic_rank && 
-        (profile.academic_rank.includes('Professor') || 
-         profile.academic_rank.includes('Prof'))) {
-      return `Welcome, Prof. ${lastName}!`;
-    }
-    
-    // Check for PhD/Postdoc in level_of_study or highest_education
-    const hasPhD = profile.level_of_study?.toLowerCase().includes('phd') ||
-                   profile.level_of_study?.toLowerCase().includes('postdoc') ||
-                   profile.highest_education?.toLowerCase().includes('phd') ||
-                   profile.highest_education?.toLowerCase().includes('postdoc');
-    
-    if (hasPhD) {
-      return `Welcome, Dr. ${lastName}!`;
-    }
-    
-    return `Welcome, ${lastName}!`;
-  };
-
-  useEffect(() => {
-    const hasCompletedOnboarding = localStorage.getItem('research_aids_onboarding_complete');
-    const hasSignedNDA = localStorage.getItem('research_aids_nda_signed');
-    
-    if (!hasCompletedOnboarding) {
-      setShowOnboarding(true);
-    }
-    
-    if (!hasSignedNDA) {
-      setShowNDA(true);
-    }
-
-    // Generate and show summary notification
-    const summaryNotification = notificationService.generateSummaryNotification();
-    if (summaryNotification.message !== "No new notifications at this time.") {
-      toast({
-        title: summaryNotification.title,
-        description: summaryNotification.message,
-      });
-    }
-
-    // Schedule weekly email summary
-    const userEmail = "neba.emmanuel@example.com";
-    notificationService.scheduleWeeklyEmail(userEmail);
-  }, [toast]);
-
-  const handleOnboardingComplete = () => {
-    localStorage.setItem('research_aids_onboarding_complete', 'true');
-    setShowOnboarding(false);
-  };
-
-  const handleNDAAccept = () => {
-    localStorage.setItem('research_aids_nda_signed', 'true');
-    localStorage.setItem('research_aids_nda_date', new Date().toISOString());
-    setShowNDA(false);
-  };
-
-  const handleViewJobBoard = () => {
-    navigate('/job-board');
+  const handleTabChange = (tab: string) => {
+    console.log("Dashboard tab change requested:", tab);
+    setActiveTab(tab);
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
-      <main className="flex-grow bg-gray-50 py-12">
-        <div className="container mx-auto px-4 md:px-6">
-          <h1 className="text-3xl font-bold mb-2">{getWelcomeMessage()}</h1>
-          <p className="text-gray-600 mb-8">Manage your jobs, clients, and earnings</p>
+    <ProtectedRoute requiredRole="aid">
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <DashboardHeader userType="aid" />
           
-          {showOnboarding && (
-            <OnboardingCard onComplete={handleOnboardingComplete} />
-          )}
-
-          <QuickActionsCard onViewJobBoard={handleViewJobBoard} />
-          
-          <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
-            <DashboardTabRenderer activeTab={activeTab} setActiveTab={setActiveTab} />
-          </DashboardLayout>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="lg:col-span-1">
+              <DashboardSidebar
+                activeTab={activeTab}
+                setActiveTab={handleTabChange}
+                userType="research-aide"
+              />
+            </div>
+            
+            <div className="lg:col-span-3">
+              <DashboardContent activeTab={activeTab} setActiveTab={handleTabChange} />
+            </div>
+          </div>
         </div>
-      </main>
-      
-      <IntelligentChatAssistant userType="research-aide" currentTab={activeTab} />
-      
-      <Footer />
-      
-      <NDAModal 
-        isOpen={showNDA}
-        onClose={() => {}}
-        onAccept={handleNDAAccept}
-      />
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 };
 

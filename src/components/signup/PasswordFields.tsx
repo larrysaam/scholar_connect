@@ -1,29 +1,37 @@
 
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import type { FormFieldProps } from '@/types/signup';
+import React from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
-const PasswordFields = ({ formData, onInputChange }: FormFieldProps) => {
+interface PasswordFieldsProps {
+  formData: {
+    password: string;
+    confirmPassword: string;
+  };
+  onInputChange: (field: string, value: string) => void;
+}
+
+const PasswordFields = ({ formData, onInputChange }: PasswordFieldsProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div className="space-y-2">
+    <div className="space-y-4">
+      <div>
         <Label htmlFor="password">Password *</Label>
-        <Input 
-          id="password" 
+        <Input
+          id="password"
           type="password"
-          value={formData.password || ''}
-          onChange={(e) => onInputChange("password", e.target.value)}
-          required 
+          value={formData.password}
+          onChange={(e) => onInputChange('password', e.target.value)}
+          required
         />
       </div>
-      <div className="space-y-2">
+      <div>
         <Label htmlFor="confirmPassword">Confirm Password *</Label>
-        <Input 
-          id="confirmPassword" 
+        <Input
+          id="confirmPassword"
           type="password"
-          value={formData.confirmPassword || ''}
-          onChange={(e) => onInputChange("confirmPassword", e.target.value)}
-          required 
+          value={formData.confirmPassword}
+          onChange={(e) => onInputChange('confirmPassword', e.target.value)}
+          required
         />
       </div>
     </div>

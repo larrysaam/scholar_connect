@@ -1,34 +1,24 @@
 
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import GetStartedModal from '@/components/GetStartedModal';
+
 const HeroSection = () => {
   return (
-    <section className="hero-gradient text-white py-20 lg:py-32 relative overflow-hidden">
-      <div className="absolute right-0 top-0 h-full w-1/2 z-10">
-        <div className="relative h-full w-full">
-          <img 
-            src="/lovable-uploads/327ccde5-c0c9-443a-acd7-4570799bb7f8.png" 
-            alt="Student consulting with researcher" 
-            className="h-full w-full object-cover object-center"
-            loading="eager"
-            style={{
-              filter: 'brightness(0.85) contrast(1.15) saturate(1.1)',
-              objectPosition: '25% center'
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-l from-blue-600/10 via-blue-600/30 to-blue-600/70"></div>
-        </div>
-      </div>
-      
-      <div className="container mx-auto px-4 md:px-6 relative z-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-          <div className="text-left">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-              Connect with Research Experts Worldwide
-            </h1>
-            <p className="text-lg mb-8 text-blue-100 leading-relaxed">
-              Get personalized guidance for your research projects and accelerate your academic success.
-            </p>
-          </div>
-        </div>
+    <section className="bg-gradient-to-r from-blue-600 to-purple-700 text-white py-20">
+      <div className="container mx-auto px-4 text-center">
+        <h1 className="text-5xl font-bold mb-6">
+          Accelerate Your Research with Expert Guidance
+        </h1>
+        <p className="text-xl mb-8 max-w-3xl mx-auto">
+          Connect with experienced researchers and get personalized help with your academic projects, 
+          from methodology to publication.
+        </p>
+        <GetStartedModal>
+          <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
+            Get Started Today
+          </Button>
+        </GetStartedModal>
       </div>
     </section>
   );
