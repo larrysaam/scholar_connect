@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useAuthState } from './auth/useAuthState';
+import { useAuthStateManager } from './auth/useAuthStateManager';
 import { useAuthActions } from './auth/useAuthActions';
 
 export const useSecureAuth = () => {
@@ -11,12 +11,10 @@ export const useSecureAuth = () => {
     profile,
     session,
     loading,
-    setUser,
-    setProfile,
-    setSession
-  } = useAuthState();
+    resetAuthState
+  } = useAuthStateManager();
 
-  const { signIn, signUp, signOut } = useAuthActions();
+  const { signIn, signUp, signOut } = useAuthActions({ profile, resetAuthState });
 
   return {
     user,
@@ -27,9 +25,7 @@ export const useSecureAuth = () => {
     signUp,
     signOut: async () => {
       await signOut();
-      setUser(null);
-      setProfile(null);
-      setSession(null);
+      resetAuthState();
       setIsRateLimited(false);
     },
     isRateLimited,
