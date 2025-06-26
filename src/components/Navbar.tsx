@@ -102,10 +102,10 @@ const Navbar = () => {
             {user ? (
               <div className="flex items-center space-x-4">
                 <Link to={getDashboardLink()}>
-                  <Button variant="outline">Dashboard</Button>
+                  <Button variant="outline">Get Started</Button>
                 </Link>
                 <Button onClick={handleSignOut} variant="ghost">
-                  Sign Out
+                  Sign In
                 </Button>
               </div>
             ) : (
