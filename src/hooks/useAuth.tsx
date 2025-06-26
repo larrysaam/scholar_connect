@@ -1,256 +1,252 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { useState, useEffect, createContext, useContext, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-
-interface UserProfile {
-  id: string;
-  email: string;
-  name: string;
-  role: 'student' | 'expert' | 'aid' | 'admin';
-  phone_number?: string;
-  country?: string;
-  university_institution?: string;
-  field_of_study?: string;
-  level_of_study?: string;
-  research_topic?: string;
-  academic_rank?: string;
-  highest_education?: string;
-  fields_of_expertise?: string;
-  linkedin_account?: string;
-  researchgate_account?: string;
-  academia_edu_account?: string;
-  orcid_id?: string;
-  preferred_language?: string;
-}
+import type { User, Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
-  profile: UserProfile | null;
+  profile: any | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  signUp: (email: string, password: string, userData: any) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const WARNING_TIME = 5 * 60 * 1000; // 5 minutes before timeout
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<any | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  
+  // Session timeout refs
+  const timeoutRef = useRef<NodeJS.Timeout>();
+  const warningRef = useRef<NodeJS.Timeout>();
 
-  // Session timeout handling
-  useEffect(() => {
-    if (!session) return;
-
-    const checkSession = () => {
-      // Use expires_at instead of created_at
-      const expiresAt = session.expires_at;
-      if (expiresAt && Date.now() / 1000 > expiresAt) {
-        signOut();
-        toast({
-          title: "Session Expired",
-          description: "Please sign in again to continue.",
-          variant: "destructive",
-        });
-      }
-    };
-
-    const interval = setInterval(checkSession, 60000); // Check every minute
-    return () => clearInterval(interval);
-  }, [session, toast]);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
-
-        console.log('Auth state change:', event);
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user && event !== 'SIGNED_OUT') {
-          try {
-            const { data: profileData, error } = await supabase
-              .from('users')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-            
-            if (error && error.code !== 'PGRST116') {
-              console.error('Error fetching profile:', error);
-            } else if (profileData && mounted) {
-              setProfile(profileData);
-            }
-          } catch (error) {
-            console.error('Profile fetch error:', error);
-          } finally {
-            if (mounted) {
-              setLoading(false);
-            }
-          }
-        } else {
-          setProfile(null);
-          if (mounted) {
-            setLoading(false);
-          }
-        }
-      }
-    );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return;
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data: profileData, error }) => {
-            if (error && error.code !== 'PGRST116') {
-              console.error('Error fetching profile:', error);
-            } else if (profileData && mounted) {
-              setProfile(profileData);
-            }
-            if (mounted) {
-              setLoading(false);
-            }
-          });
-      } else if (mounted) {
-        setLoading(false);
-      }
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.toLowerCase().trim(),
-        password: password,
-      });
+      const { data: profileData, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
-      if (error) {
-        console.error('Sign in error:', error);
-        return {
-          success: false,
-          error: error.message === 'Invalid login credentials' 
-            ? 'Invalid email or password. Please check your credentials and try again.'
-            : error.message
-        };
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('Error fetching profile:', profileError);
+        return null;
       }
 
-      if (data.user) {
-        return { success: true };
+      // Fetch user roles
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId);
+
+      if (rolesError) {
+        console.error('Error fetching user roles:', rolesError);
       }
 
+      const roles = rolesData?.map(r => r.role) || [];
+      
       return {
-        success: false,
-        error: 'Login failed. Please try again.'
+        ...profileData,
+        roles
       };
-    } catch (error: any) {
-      console.error('Sign in error:', error);
-      return {
-        success: false,
-        error: 'An unexpected error occurred. Please try again.'
-      };
+    } catch (error) {
+      console.error('Error in fetchProfile:', error);
+      return null;
     }
   };
 
-  const signUp = async (email: string, password: string, userData: any): Promise<{ success: boolean; error?: string }> => {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email: email.toLowerCase().trim(),
-        password: password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/login`,
-          data: {
-            fullName: userData.fullName,
-            role: userData.role,
-            phoneNumber: userData.phoneNumber,
-            country: userData.country,
-            universityInstitution: userData.universityInstitution,
-            fieldOfStudy: userData.fieldOfStudy,
-            levelOfStudy: userData.levelOfStudy,
-            researchTopic: userData.researchTopic,
-            dateOfBirth: userData.dateOfBirth,
-            sex: userData.sex,
-            academicRank: userData.academicRank,
-            highestEducation: userData.highestEducation,
-            fieldsOfExpertise: userData.fieldsOfExpertise,
-            linkedinAccount: userData.linkedinAccount,
-            researchgateAccount: userData.researchgateAccount,
-            academiaEduAccount: userData.academiaEduAccount,
-            orcidId: userData.orcidId,
-            preferredLanguage: userData.preferredLanguage,
-          }
-        }
-      });
-
-      if (error) {
-        console.error('Supabase signUp error:', error);
-        return {
-          success: false,
-          error: error.message
-        };
-      }
-
-      if (data.user) {
-        return { success: true };
-      }
-
-      return {
-        success: false,
-        error: 'Signup failed. Please try again.'
-      };
-    } catch (error: any) {
-      console.error('Sign up error:', error);
-      return {
-        success: false,
-        error: 'An unexpected error occurred. Please try again.'
-      };
+  const refreshProfile = async () => {
+    if (user) {
+      const profileData = await fetchProfile(user.id);
+      setProfile(profileData);
     }
   };
 
   const signOut = async () => {
     try {
+      // Clear session timeout timers
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      if (warningRef.current) {
+        clearTimeout(warningRef.current);
+      }
+
       await supabase.auth.signOut();
       setUser(null);
       setProfile(null);
       setSession(null);
+      
+      // Clear any sensitive data from localStorage
+      const keysToRemove = Object.keys(localStorage).filter(key => 
+        key.includes('sensitive') || key.includes('session') || key.includes('token')
+      );
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      
     } catch (error) {
-      console.error('Sign out error:', error);
-      toast({
-        variant: "destructive",
-        title: "Sign Out Error",
-        description: "Failed to sign out. Please try again.",
-      });
+      console.error('Error signing out:', error);
     }
   };
+
+  const handleSessionTimeout = useCallback(async () => {
+    await signOut();
+    toast({
+      title: "Session Expired",
+      description: "Your session has expired. Please sign in again.",
+      variant: "destructive"
+    });
+  }, [toast]);
+
+  const showWarning = useCallback(() => {
+    toast({
+      title: "Session Warning",
+      description: "Your session will expire in 5 minutes. Please save your work.",
+      variant: "destructive"
+    });
+  }, [toast]);
+
+  const resetSessionTimeout = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    if (warningRef.current) {
+      clearTimeout(warningRef.current);
+    }
+
+    if (user) {
+      // Set warning timeout
+      warningRef.current = setTimeout(showWarning, SESSION_TIMEOUT - WARNING_TIME);
+      
+      // Set logout timeout
+      timeoutRef.current = setTimeout(handleSessionTimeout, SESSION_TIMEOUT);
+    }
+  }, [user, handleSessionTimeout, showWarning]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const initializeAuth = async () => {
+      try {
+        console.log('Initializing auth...');
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+
+        if (initialSession?.user) {
+          console.log('Found existing session:', initialSession.user.id);
+          setUser(initialSession.user);
+          setSession(initialSession);
+          
+          // Fetch profile in background
+          setTimeout(async () => {
+            if (mounted) {
+              const profileData = await fetchProfile(initialSession.user.id);
+              if (mounted) {
+                setProfile(profileData);
+              }
+            }
+          }, 0);
+        } else {
+          console.log('No existing session found');
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+      } finally {
+        if (mounted) {
+          console.log('Auth initialization complete, setting loading to false');
+          setLoading(false);
+        }
+      }
+    };
+
+    initializeAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+        
+        console.log('Auth state changed:', event, session?.user?.id);
+        
+        if (session?.user) {
+          setUser(session.user);
+          setSession(session);
+          
+          // Fetch profile in background
+          setTimeout(async () => {
+            if (mounted) {
+              const profileData = await fetchProfile(session.user.id);
+              if (mounted) {
+                setProfile(profileData);
+              }
+            }
+          }, 0);
+        } else {
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+        }
+        
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    );
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (warningRef.current) clearTimeout(warningRef.current);
+    };
+  }, []);
+
+  // Set up session timeout monitoring when user changes
+  useEffect(() => {
+    if (user) {
+      resetSessionTimeout();
+
+      // Reset timeout on user activity
+      const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+      const resetTimeoutThrottled = (() => {
+        let timeoutId: NodeJS.Timeout;
+        return () => {
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(resetSessionTimeout, 1000); // Throttle to once per second
+        };
+      })();
+
+      events.forEach(event => {
+        document.addEventListener(event, resetTimeoutThrottled, true);
+      });
+
+      return () => {
+        events.forEach(event => {
+          document.removeEventListener(event, resetTimeoutThrottled, true);
+        });
+      };
+    } else {
+      // Clear timeouts when user logs out
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (warningRef.current) clearTimeout(warningRef.current);
+    }
+  }, [user, resetSessionTimeout]);
 
   const value = {
     user,
     profile,
     session,
     loading,
-    signIn,
-    signUp,
     signOut,
+    refreshProfile,
   };
 
   return (

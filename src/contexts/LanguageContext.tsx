@@ -1,9 +1,12 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
+import { translations } from '@/contexts/translations';
+
+export type Language = 'en' | 'fr';
 
 interface LanguageContextType {
-  language: string;
-  setLanguage: (lang: string) => void;
+  language: Language;
+  setLanguage: (lang: Language) => void;
   t: (key: string) => string;
 }
 
@@ -11,32 +14,41 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;
 };
 
-const translations = {
-  en: {
-    welcome: 'Welcome',
-    login: 'Login',
-    signup: 'Sign Up',
-    // Add more translations as needed
-  },
-  fr: {
-    welcome: 'Bienvenue',
-    login: 'Connexion',
-    signup: 'Inscription',
-    // Add more translations as needed
-  }
-};
+interface LanguageProviderProps {
+  children: ReactNode;
+}
 
-export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
-  const [language, setLanguage] = useState('en');
+export const LanguageProvider = ({ children }: LanguageProviderProps) => {
+  const [language, setLanguage] = useState<Language>('en');
 
   const t = (key: string): string => {
-    return translations[language as keyof typeof translations]?.[key as keyof typeof translations.en] || key;
+    const keys = key.split('.');
+    let value: any = translations[language];
+    
+    for (const k of keys) {
+      if (value && typeof value === 'object' && k in value) {
+        value = value[k];
+      } else {
+        // Fallback to English if key not found in current language
+        value = translations.en;
+        for (const fallbackKey of keys) {
+          if (value && typeof value === 'object' && fallbackKey in value) {
+            value = value[fallbackKey];
+          } else {
+            return key; // Return key if not found anywhere
+          }
+        }
+        break;
+      }
+    }
+    
+    return typeof value === 'string' ? value : key;
   };
 
   return (
