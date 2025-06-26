@@ -1,109 +1,160 @@
 
+import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { UserProfile } from './types';
+import { RateLimiter, validateEmail, validatePassword } from '@/utils/security';
+import { useToast } from '@/components/ui/use-toast';
 
-interface UseAuthActionsProps {
-  profile: UserProfile | null;
-  resetAuthState: () => void;
-}
+// Rate limiters for different operations
+const signInLimiter = new RateLimiter(5, 15 * 60 * 1000); // 5 attempts per 15 minutes
+const signUpLimiter = new RateLimiter(3, 60 * 60 * 1000); // 3 attempts per hour
 
-export const useAuthActions = ({ profile, resetAuthState }: UseAuthActionsProps) => {
-  const signIn = async (email: string, password: string) => {
+export const useAuthActions = () => {
+  const { toast } = useToast();
+
+  const signIn = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    const clientIP = 'user-ip'; // In a real app, you'd get the actual IP
+    
+    // Check rate limiting
+    if (!signInLimiter.isAllowed(clientIP)) {
+      const remainingTime = Math.ceil(signInLimiter.getRemainingTime(clientIP) / 1000 / 60);
+      return {
+        success: false,
+        error: `Too many login attempts. Please try again in ${remainingTime} minutes.`
+      };
+    }
+
+    // Validate input
+    if (!validateEmail(email)) {
+      return {
+        success: false,
+        error: 'Please enter a valid email address.'
+      };
+    }
+
+    if (!password || password.length < 6) {
+      return {
+        success: false,
+        error: 'Password is required and must be at least 6 characters.'
+      };
+    }
+
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: email.toLowerCase().trim(),
+        password: password,
       });
 
       if (error) {
-        console.error('Sign in error:', error);
-        return { success: false, error: error.message };
+        console.warn('Failed login attempt:', { email: email.toLowerCase(), error: error.message });
+        
+        return {
+          success: false,
+          error: error.message === 'Invalid login credentials' 
+            ? 'Invalid email or password. Please check your credentials and try again.'
+            : error.message
+        };
       }
 
       if (data.user) {
-        const firstName = data.user.user_metadata?.fullName?.split(' ')[0] || 
-                         data.user.user_metadata?.name?.split(' ')[0] || 
-                         'there';
-        toast.success(`Welcome back, ${firstName}!`);
+        console.log('Successful login:', { userId: data.user.id, email: data.user.email });
+        return { success: true };
       }
 
-      return { success: true };
-    } catch (error) {
+      return {
+        success: false,
+        error: 'Login failed. Please try again.'
+      };
+    } catch (error: any) {
       console.error('Sign in error:', error);
-      return { success: false, error: 'An unexpected error occurred' };
+      return {
+        success: false,
+        error: 'An unexpected error occurred. Please try again.'
+      };
     }
-  };
+  }, []);
 
-  const signUp = async (email: string, password: string, userData: any) => {
+  const signUp = useCallback(async (email: string, password: string, userData: any): Promise<{ success: boolean; error?: string }> => {
+    const clientIP = 'user-ip'; // In a real app, you'd get the actual IP
+    
+    // Check rate limiting
+    if (!signUpLimiter.isAllowed(clientIP)) {
+      const remainingTime = Math.ceil(signUpLimiter.getRemainingTime(clientIP) / 1000 / 60);
+      return {
+        success: false,
+        error: `Too many signup attempts. Please try again in ${remainingTime} minutes.`
+      };
+    }
+
+    // Validate input
+    if (!validateEmail(email)) {
+      return {
+        success: false,
+        error: 'Please enter a valid email address.'
+      };
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return {
+        success: false,
+        error: passwordValidation.errors[0]
+      };
+    }
+
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: email.toLowerCase().trim(),
+        password: password,
         options: {
-          emailRedirectTo: redirectUrl,
           data: {
-            fullName: userData.fullName,
-            role: userData.role,
-            phoneNumber: userData.phoneNumber,
-            country: userData.country,
-            universityInstitution: userData.universityInstitution,
-            fieldOfStudy: userData.fieldOfStudy,
-            levelOfStudy: userData.levelOfStudy,
-            researchTopic: userData.researchTopic,
-            dateOfBirth: userData.dateOfBirth,
-            sex: userData.sex,
-            academicRank: userData.academicRank,
-            highestEducation: userData.highestEducation,
-            fieldsOfExpertise: userData.fieldsOfExpertise,
-            linkedinAccount: userData.linkedinAccount,
-            researchgateAccount: userData.researchgateAccount,
-            academiaEduAccount: userData.academiaEduAccount,
-            orcidId: userData.orcidId,
-            preferredLanguage: userData.preferredLanguage,
+            name: userData.fullName || userData.name,
+            role: userData.role || 'student'
           }
         }
       });
 
       if (error) {
-        console.error('Sign up error:', error);
-        return { success: false, error: error.message };
+        console.error('Supabase signUp error:', error);
+        return {
+          success: false,
+          error: error.message
+        };
       }
 
       if (data.user) {
-        const firstName = userData.fullName?.split(' ')[0] || 'there';
-        const roleDisplayName = userData.role === 'expert' ? 'Expert' : 
-                               userData.role === 'aid' ? 'Research Aid' : 'Student';
-        toast.success(`Welcome, ${firstName}! Your ${roleDisplayName} account has been created successfully.`);
+        console.log('Successful signup:', { userId: data.user.id, email: data.user.email });
+        return { success: true };
       }
 
-      return { success: true };
-    } catch (error) {
+      return {
+        success: false,
+        error: 'Signup failed. Please try again.'
+      };
+    } catch (error: any) {
       console.error('Sign up error:', error);
-      return { success: false, error: 'An unexpected error occurred' };
+      return {
+        success: false,
+        error: 'An unexpected error occurred. Please try again.'
+      };
     }
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Sign out error:', error);
-        toast.error('Failed to sign out');
-      } else {
-        toast.success('Signed out successfully');
-      }
+      await supabase.auth.signOut();
     } catch (error) {
       console.error('Sign out error:', error);
-      toast.error('An error occurred during sign out');
+      toast({
+        variant: "destructive",
+        title: "Sign Out Error",
+        description: "Failed to sign out. Please try again.",
+      });
     }
-  };
+  }, [toast]);
 
   return {
     signIn,
     signUp,
-    signOut,
+    signOut
   };
 };
