@@ -1,5 +1,5 @@
 
-import React from 'react';
+import { Link } from "react-router-dom";
 
 interface SignupHeaderProps {
   title: string;
@@ -8,9 +8,21 @@ interface SignupHeaderProps {
 
 const SignupHeader = ({ title, subtitle }: SignupHeaderProps) => {
   return (
-    <div className="text-center py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-4">{title}</h1>
-      <p className="text-lg text-gray-600 max-w-2xl mx-auto">{subtitle}</p>
+    <div className="text-center mb-8">
+      <Link to="/" className="inline-flex items-center space-x-2">
+        <img 
+          src="/lovable-uploads/3e478490-867e-47d2-9e44-aaef66cf715c.png" 
+          alt="ResearchWhao" 
+          className="w-8 h-8"
+        />
+        <span className="text-xl font-bold text-blue-600">ResearchWhao</span>
+      </Link>
+      <h2 className="mt-6 text-3xl font-bold text-gray-900">
+        {title}
+      </h2>
+      <p className="mt-2 text-gray-600">
+        {subtitle}
+      </p>
     </div>
   );
 };

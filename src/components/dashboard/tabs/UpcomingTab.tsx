@@ -1,66 +1,56 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import ConsultationCard from '../consultation/ConsultationCard';
+import { upcomingConsultations } from "../mockData";
+import UpcomingConsultationCard from "../consultation/UpcomingConsultationCard";
+import { useConsultationActions } from "@/hooks/useConsultationActions";
+import { useDocumentUpload } from "@/hooks/useDocumentUpload";
 
 const UpcomingTab = () => {
-  const [uploadedDocuments] = useState<string[]>([]);
+  const {
+    isLoading: actionLoading,
+    handleAcceptConsultation,
+    handleDeclineConsultation,
+    handleRescheduleWithGoogleCalendar,
+    handleJoinWithGoogleMeet,
+    handleViewRecording,
+    handleViewAINotes,
+    handleLiveDocumentReview
+  } = useConsultationActions();
 
-  const mockConsultations = [
-    {
-      id: '1',
-      researcher: {
-        id: 'r1',
-        name: 'Dr. Sarah Johnson',
-        field: 'Data Science',
-        imageUrl: '/placeholder-avatar.jpg'
-      },
-      date: '2024-01-15',
-      time: '10:00 AM',
-      topic: 'Machine Learning Research Methods',
-      status: 'confirmed' as const
-    }
-  ];
-
-  const handleJoinMeet = (consultationId: string) => {
-    console.log('Joining meet for consultation:', consultationId);
-  };
-
-  const handleUploadDocument = (consultationId: string) => {
-    console.log('Uploading document for consultation:', consultationId);
-  };
-
-  const handleSubmitDocumentLink = (consultationId: string, documentLink: string) => {
-    console.log('Submitting document link:', consultationId, documentLink);
-  };
-
-  const handleContactResearcher = (researcherId: string, consultationId: string) => {
-    console.log('Contacting researcher:', researcherId, consultationId);
-  };
+  const {
+    uploadedDocuments,
+    isUploading,
+    handleUploadDocument
+  } = useDocumentUpload();
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Upcoming Consultations</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {mockConsultations.map((consultation) => (
-              <ConsultationCard
-                key={consultation.id}
-                consultation={consultation}
-                uploadedDocuments={uploadedDocuments}
-                userType="student"
-                onJoinMeet={handleJoinMeet}
-                onUploadDocument={handleUploadDocument}
-                onSubmitDocumentLink={handleSubmitDocumentLink}
-                onContactResearcher={handleContactResearcher}
-              />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+    <div className="bg-white p-6 rounded-lg shadow-sm">
+      <h2 className="text-xl font-semibold mb-4">Upcoming Consultations</h2>
+      
+      {upcomingConsultations.length > 0 ? (
+        <div className="space-y-6">
+          {upcomingConsultations.map((consultation) => (
+            <UpcomingConsultationCard
+              key={consultation.id}
+              consultation={consultation}
+              uploadedDocuments={uploadedDocuments[consultation.id] || []}
+              isUploading={isUploading[consultation.id] || false}
+              actionLoading={actionLoading}
+              onJoinWithGoogleMeet={handleJoinWithGoogleMeet}
+              onLiveDocumentReview={handleLiveDocumentReview}
+              onViewRecording={handleViewRecording}
+              onViewAINotes={handleViewAINotes}
+              onAcceptConsultation={handleAcceptConsultation}
+              onDeclineConsultation={handleDeclineConsultation}
+              onRescheduleWithGoogleCalendar={handleRescheduleWithGoogleCalendar}
+              onUploadDocument={handleUploadDocument}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-8">
+          <p className="text-gray-500">No upcoming consultations scheduled.</p>
+        </div>
+      )}
     </div>
   );
 };

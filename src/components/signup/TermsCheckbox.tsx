@@ -1,7 +1,6 @@
 
-import React from 'react';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface TermsCheckboxProps {
   agreedToTerms: boolean;
@@ -10,14 +9,15 @@ interface TermsCheckboxProps {
 
 const TermsCheckbox = ({ agreedToTerms, onInputChange }: TermsCheckboxProps) => {
   return (
-    <div className="flex items-center space-x-2">
-      <Checkbox
-        id="terms"
+    <div className="flex items-start space-x-2">
+      <Checkbox 
+        id="terms" 
         checked={agreedToTerms}
-        onCheckedChange={(checked) => onInputChange('agreedToTerms', checked as boolean)}
+        onCheckedChange={(checked) => onInputChange("agreedToTerms", checked as boolean)}
+        required 
       />
       <Label htmlFor="terms" className="text-sm">
-        I agree to the <a href="/terms" className="text-blue-600 hover:underline">Terms and Conditions</a> and <a href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</a>
+        I agree to the Terms of Service and Privacy Policy *
       </Label>
     </div>
   );

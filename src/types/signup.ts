@@ -5,35 +5,37 @@ export interface BaseFormData {
   firstName: string;
   lastName: string;
   email: string;
+  phone: string;
   password: string;
   confirmPassword: string;
-  phone: string;
   agreedToTerms: boolean;
 }
 
-export interface SignupFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  phone: string;
-  country: string;
-  institution: string;
-  organization: string;
-  position: string;
-  fieldOfStudy: string;
-  levelOfStudy: string;
-  researchTopic: string;
-  dateOfBirth: string;
-  sex: string;
-  academicRank: string;
-  highestEducation: string;
-  fieldsOfExpertise: string;
-  linkedinAccount: string;
-  researchgateAccount: string;
-  academiaEduAccount: string;
-  orcidId: string;
-  preferredLanguage: string;
-  agreedToTerms: boolean;
+export interface StudentSignupData extends BaseFormData {
+  institution?: string;
+  fieldOfStudy?: string;
+  levelOfStudy?: string;
+  researchTopic?: string;
+  country?: string;
+  dateOfBirth?: string;
+  sex?: string;
+}
+
+export interface ExpertSignupData extends BaseFormData {
+  organization?: string;
+  academicRank?: string;
+  highestEducation?: string;
+  fieldsOfExpertise?: string;
+  linkedinAccount?: string;
+  researchgateAccount?: string;
+  academiaEduAccount?: string;
+  orcidId?: string;
+  country?: string;
+  dateOfBirth?: string;
+  sex?: string;
+}
+
+export interface FormFieldProps {
+  formData: any;
+  onInputChange: (field: string, value: string | boolean) => void;
 }

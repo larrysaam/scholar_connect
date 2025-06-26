@@ -1,8 +1,9 @@
 
-import { useState } from 'react';
-import { validateFileType, validateFileSize } from '@/utils/security';
+import { useState, useCallback } from 'react';
+import { sanitizeInput, validateEmail, validatePassword } from '@/utils/security';
+import { supabase } from '@/integrations/supabase/client';
 
-export interface ValidationError {
+interface ValidationError {
   field: string;
   message: string;
 }
@@ -10,44 +11,61 @@ export interface ValidationError {
 export const useSecurityValidation = () => {
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
 
-  const validateFormData = (formData: { email?: string; password?: string; }): boolean => {
+  const validateFileUpload = useCallback(async (file: File): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.rpc('validate_file_upload', {
+        file_name: file.name,
+        file_size: file.size,
+        content_type: file.type
+      });
+
+      if (error) {
+        setValidationErrors([{ field: 'file', message: error.message }]);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      setValidationErrors([{ field: 'file', message: 'File validation failed' }]);
+      return false;
+    }
+  }, []);
+
+  const validateFormData = useCallback((formData: Record<string, any>): boolean => {
     const errors: ValidationError[] = [];
 
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.push({ field: 'email', message: 'Please enter a valid email address' });
-    }
+    Object.entries(formData).forEach(([field, value]) => {
+      if (typeof value === 'string') {
+        const sanitized = sanitizeInput(value);
+        if (sanitized !== value) {
+          errors.push({ field, message: 'Invalid characters detected' });
+        }
 
-    if (formData.password && formData.password.length < 8) {
-      errors.push({ field: 'password', message: 'Password must be at least 8 characters long' });
-    }
+        if (field === 'email' && value && !validateEmail(value)) {
+          errors.push({ field, message: 'Invalid email format' });
+        }
+
+        if (field === 'password' && value) {
+          const passwordValidation = validatePassword(value);
+          if (!passwordValidation.isValid) {
+            errors.push({ field, message: passwordValidation.errors[0] });
+          }
+        }
+      }
+    });
 
     setValidationErrors(errors);
     return errors.length === 0;
-  };
+  }, []);
 
-  const validateFileUpload = async (file: File): Promise<boolean> => {
-    const errors: ValidationError[] = [];
-
-    if (!validateFileType(file)) {
-      errors.push({ field: 'file', message: 'File type not allowed. Please upload JPG, PNG, or PDF files only.' });
-    }
-
-    if (!validateFileSize(file, 10)) {
-      errors.push({ field: 'file', message: 'File size must be less than 10MB.' });
-    }
-
-    setValidationErrors(errors);
-    return errors.length === 0;
-  };
-
-  const clearValidationErrors = () => {
+  const clearValidationErrors = useCallback(() => {
     setValidationErrors([]);
-  };
+  }, []);
 
   return {
-    validateFormData,
-    validateFileUpload,
     validationErrors,
+    validateFileUpload,
+    validateFormData,
     clearValidationErrors
   };
 };
