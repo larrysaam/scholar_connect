@@ -17,7 +17,6 @@ const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [hasRedirected, setHasRedirected] = useState(false);
 
   // Add timeout for loading state to prevent infinite loading
   useEffect(() => {
@@ -30,20 +29,23 @@ const Index = () => {
     return () => clearTimeout(timeout);
   }, [loading]);
 
-  // Only redirect authenticated users to dashboard on initial load, not on explicit navigation
+  // Only redirect authenticated users to dashboard on initial app load
   useEffect(() => {
-    if (user && !loading && !isRedirecting && !hasRedirected) {
-      // Check if this is the initial page load (no referrer from within the app)
-      const isInitialLoad = !location.state?.fromNavigation;
+    if (user && !loading && !isRedirecting) {
+      // Only redirect if this is the initial load of the root path and not from navigation
+      const isFromNavigation = location.state?.fromNavigation;
+      const isRootPath = location.pathname === '/';
       
-      if (isInitialLoad) {
+      console.log('Navigation check:', { isFromNavigation, isRootPath, pathname: location.pathname });
+      
+      // Only redirect if user directly accessed root path, not if they navigated to it
+      if (isRootPath && !isFromNavigation && !location.state) {
         console.log('Redirecting authenticated user to dashboard');
         setIsRedirecting(true);
-        setHasRedirected(true);
         navigate("/dashboard");
       }
     }
-  }, [user, loading, navigate, isRedirecting, hasRedirected, location.state]);
+  }, [user, loading, navigate, isRedirecting, location]);
 
   // Show loading spinner while checking authentication (with timeout)
   if (loading && !user) {
