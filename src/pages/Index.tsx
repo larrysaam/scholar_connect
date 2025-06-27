@@ -1,6 +1,5 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -14,9 +13,6 @@ import HomeFooter from "@/components/home/HomeFooter";
 
 const Index = () => {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Add timeout for loading state to prevent infinite loading
   useEffect(() => {
@@ -29,23 +25,6 @@ const Index = () => {
     return () => clearTimeout(timeout);
   }, [loading]);
 
-  // Only redirect authenticated users to dashboard on initial app load (not navigation)
-  useEffect(() => {
-    if (user && !loading && !isRedirecting) {
-      const isFromNavigation = location.state?.fromNavigation;
-      const isRootPath = location.pathname === '/';
-      
-      console.log('Navigation check:', { isFromNavigation, isRootPath, pathname: location.pathname });
-      
-      // Only redirect if user directly accessed root path AND it's not from navigation
-      if (isRootPath && !isFromNavigation) {
-        console.log('Redirecting authenticated user to dashboard');
-        setIsRedirecting(true);
-        navigate("/dashboard");
-      }
-    }
-  }, [user, loading, navigate, isRedirecting, location.state, location.pathname]);
-
   // Show loading spinner while checking authentication (with timeout)
   if (loading && !user) {
     return (
@@ -53,18 +32,6 @@ const Index = () => {
         <div className="text-center">
           <LoadingSpinner size="lg" />
           <p className="mt-4 text-gray-600">Loading application...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show loading while redirecting
-  if (isRedirecting) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner size="lg" />
-          <p className="mt-4 text-gray-600">Redirecting to dashboard...</p>
         </div>
       </div>
     );
