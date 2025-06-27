@@ -91,7 +91,11 @@ const Navbar = () => {
     <nav className="bg-white shadow-sm border-b">
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center">
+          <Link 
+            to="/" 
+            className="flex items-center"
+            state={{ fromNavigation: true }}
+          >
             <ResearchWhoaLogo size="md" showText={true} />
           </Link>
 

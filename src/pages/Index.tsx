@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Navbar from "@/components/Navbar";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -15,7 +15,9 @@ import HomeFooter from "@/components/home/HomeFooter";
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   // Add timeout for loading state to prevent infinite loading
   useEffect(() => {
@@ -28,14 +30,20 @@ const Index = () => {
     return () => clearTimeout(timeout);
   }, [loading]);
 
-  // Redirect authenticated users to dashboard
+  // Only redirect authenticated users to dashboard on initial load, not on explicit navigation
   useEffect(() => {
-    if (user && !loading && !isRedirecting) {
-      console.log('Redirecting authenticated user to dashboard');
-      setIsRedirecting(true);
-      navigate("/dashboard");
+    if (user && !loading && !isRedirecting && !hasRedirected) {
+      // Check if this is the initial page load (no referrer from within the app)
+      const isInitialLoad = !location.state?.fromNavigation;
+      
+      if (isInitialLoad) {
+        console.log('Redirecting authenticated user to dashboard');
+        setIsRedirecting(true);
+        setHasRedirected(true);
+        navigate("/dashboard");
+      }
     }
-  }, [user, loading, navigate, isRedirecting]);
+  }, [user, loading, navigate, isRedirecting, hasRedirected, location.state]);
 
   // Show loading spinner while checking authentication (with timeout)
   if (loading && !user) {
@@ -61,7 +69,7 @@ const Index = () => {
     );
   }
 
-  // Show homepage for unauthenticated users
+  // Show homepage for both authenticated and unauthenticated users
   return (
     <ErrorBoundary>
       <div className="min-h-screen flex flex-col">
