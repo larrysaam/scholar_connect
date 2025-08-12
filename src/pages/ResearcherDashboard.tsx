@@ -44,11 +44,11 @@ const ResearcherDashboard = () => {
       case "overview":
         return <WelcomeOverviewTab />;
       case "consultation-services":
-        return <ConsultationServicesTab />;
+        return <ConsultationServicesTab userType="researcher" />;
       case "upcoming":
-        return <UpcomingTab />;
+        return <UpcomingTab userType="researcher" />;
       case "past":
-        return <PastTab />;
+        return <PastTab userType="researcher" />;
       case "full-thesis-support":
         return <FullThesisSupportTab />;
       case "payments":
