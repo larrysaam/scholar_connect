@@ -1,4 +1,3 @@
-
 -- First, let's add the role column if it doesn't exist
 DO $$
 BEGIN

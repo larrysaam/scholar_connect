@@ -25,10 +25,51 @@ import StudentAIAssistantTab from "@/components/dashboard/tabs/StudentAIAssistan
 import SessionBookingTab from "@/components/dashboard/tabs/SessionBookingTab";
 import FullThesisSupportTab from "@/components/dashboard/tabs/FullThesisSupportTab";
 import ThesisInformationTab from "@/components/dashboard/tabs/ThesisInformationTab";
+import MyBookingsTab from "@/components/dashboard/tabs/MyBookingsTab";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [userName, setUserName] = useState("");
+
+  const { toast } = useToast();
+  const { user } = useAuth();
+  
+  useEffect(() => {
+    fetchUserProfile();
+  }, [user]);
+
+  const fetchUserProfile = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+  
+        if (error) {
+          console.error('Error fetching user profile:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load user name",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        setUserName(data.name);
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
 
   // Check if user needs onboarding (simulate with localStorage)
   useEffect(() => {
@@ -74,6 +115,8 @@ const Dashboard = () => {
         return <FindResearchAidTab />;
       case "post-job":
         return <PostJobTab />;
+      case "my-bookings":
+        return <MyBookingsTab />;
       case "session-booking":
         return <SessionBookingTab />;
       case "performance":
@@ -116,7 +159,7 @@ const Dashboard = () => {
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">Welcome back, Emmanuel!</h1>
+              <h1 className="text-2xl font-bold text-gray-800">Welcome back, {userName}</h1>
               <p className="text-gray-600">Ready to advance your research journey?</p>
             </div>
           </div>
@@ -170,3 +213,7 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+function setProfileLoading(arg0: boolean) {
+  throw new Error("Function not implemented.");
+}
+

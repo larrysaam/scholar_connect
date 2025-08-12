@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star, Brain, Zap, Target } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getAIRecommendations } from "@/services/geminiService";
 
 interface MatchedResearcher {
   id: string;
@@ -26,55 +27,72 @@ const AIResearcherMatcher = () => {
   const [matches, setMatches] = useState<MatchedResearcher[]>([]);
   const { toast } = useToast();
 
-  const sampleMatches: MatchedResearcher[] = [
-    {
-      id: "1",
-      name: "Dr. Sarah Johnson",
-      title: "Associate Professor",
-      institution: "Stanford University",
-      field: "Computer Science",
-      rating: 4.9,
-      matchScore: 95,
-      specialties: ["Machine Learning", "AI Ethics", "Data Mining"],
-      hourlyRate: 72000,
-      imageUrl: "/placeholder-avatar.jpg",
-      matchReasons: [
-        "Expertise in Machine Learning matches your research interest",
-        "High success rate with similar projects",
-        "Available in your preferred time zone"
-      ]
-    },
-    {
-      id: "2",
-      name: "Dr. Michael Chen",
-      title: "Research Scientist",
-      institution: "MIT",
-      field: "Computer Science",
-      rating: 4.8,
-      matchScore: 92,
-      specialties: ["Neural Networks", "Deep Learning", "Computer Vision"],
-      hourlyRate: 78000,
-      imageUrl: "/placeholder-avatar.jpg",
-      matchReasons: [
-        "Neural Networks expertise aligns with your project",
-        "Recent publications in your research area",
-        "Excellent student feedback"
-      ]
-    }
-  ];
-
   const handleAIMatch = async () => {
     setIsMatching(true);
-    
-    // Simulate AI matching process
-    setTimeout(() => {
-      setMatches(sampleMatches);
-      setIsMatching(false);
+
+    // In a real app, this data would come from your database or API.
+    const researchers = [
+      {
+        id: "1",
+        name: "Dr. Sarah Johnson",
+        title: "Associate Professor",
+        institution: "Stanford University",
+        field: "Computer Science",
+        rating: 4.9,
+        specialties: ["Machine Learning", "AI Ethics", "Data Mining"],
+        hourlyRate: 72000,
+        imageUrl: "/placeholder-avatar.jpg",
+      },
+      {
+        id: "2",
+        name: "Dr. Michael Chen",
+        title: "Research Scientist",
+        institution: "MIT",
+        field: "Computer Science",
+        rating: 4.8,
+        specialties: ["Neural Networks", "Deep Learning", "Computer Vision"],
+        hourlyRate: 78000,
+        imageUrl: "/placeholder-avatar.jpg",
+      }
+    ];
+
+    // This would come from the logged-in student's profile
+    const studentInfo = {
+      researchInterests: ["Machine Learning", "AI Ethics"],
+      challenges: ["Finding relevant literature", "Formulating a research question"]
+    };
+
+    try {
+      // 1. Get high-level recommendations from the AI
+      const recommendationsFromAI = await getAIRecommendations(studentInfo, researchers);
+
+      // 2. Merge AI recommendations with full researcher data
+      const enhancedMatches = recommendationsFromAI.map(rec => {
+        const originalResearcher = researchers.find(r => r.name === rec.researcher);
+        if (!originalResearcher) return null;
+
+        return {
+          ...originalResearcher,
+          matchScore: rec.matchScore,
+          matchReasons: [rec.explanation], // Adapt AI explanation to matchReasons array
+        };
+      }).filter(Boolean) as MatchedResearcher[]; // Filter out nulls and assert type
+
+      setMatches(enhancedMatches);
+
       toast({
         title: "AI Matching Complete!",
-        description: `Found ${sampleMatches.length} highly compatible researchers for you.`
+        description: `Found ${enhancedMatches.length} highly compatible researchers for you.`
       });
-    }, 2000);
+    } catch (error) {
+      toast({
+        title: "AI Matching Failed",
+        description: "Could not fetch recommendations. Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsMatching(false);
+    }
   };
 
   const handleBookConsultation = (researcher: MatchedResearcher) => {

@@ -14,91 +14,33 @@ import {
   Plus, 
   Edit,
   TrendingUp,
-  Calendar
+  Calendar,
+  Loader2,
+  Trash2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePayments } from "@/hooks/usePayments";
 
 const PaymentsEarningsTab = () => {
   const [activeTab, setActiveTab] = useState("earnings");
   const [withdrawalAmount, setWithdrawalAmount] = useState("");
   const [paymentMethodType, setPaymentMethodType] = useState("");
-  const [paymentDetails, setPaymentDetails] = useState("");
+  const [paymentDetails, setPaymentDetails] = useState<any>({});
   const [editingPaymentMethod, setEditingPaymentMethod] = useState<any>(null);
   const { toast } = useToast();
 
-  const earnings = [
-    {
-      id: 1,
-      project: "Statistical Analysis Project",
-      client: "Dr. Sarah Johnson",
-      amount: 75000,
-      date: "2024-01-28",
-      status: "completed",
-      type: "hourly"
-    },
-    {
-      id: 2,
-      project: "Literature Review",
-      client: "Prof. Michael Chen",
-      amount: 50000,
-      date: "2024-01-25",
-      status: "pending",
-      type: "fixed"
-    },
-    {
-      id: 3,
-      project: "Data Collection",
-      client: "Dr. Marie Dubois",
-      amount: 120000,
-      date: "2024-01-20",
-      status: "completed",
-      type: "milestone"
-    }
-  ];
-
-  const transactions = [
-    {
-      id: 1,
-      type: "earning",
-      description: "Payment for Statistical Analysis Project",
-      amount: 75000,
-      date: "2024-01-28",
-      status: "completed"
-    },
-    {
-      id: 2,
-      type: "withdrawal",
-      description: "Bank transfer withdrawal",
-      amount: -45000,
-      date: "2024-01-26",
-      status: "completed"
-    },
-    {
-      id: 3,
-      type: "earning",
-      description: "Payment for Data Collection",
-      amount: 120000,
-      date: "2024-01-20",
-      status: "completed"
-    }
-  ];
-
-  const [paymentMethods, setPaymentMethods] = useState([
-    {
-      id: 1,
-      type: "bank",
-      name: "Commercial Bank",
-      details: "****1234",
-      isDefault: true
-    },
-    {
-      id: 2,
-      type: "mobile",
-      name: "Orange Money",
-      details: "****5678",
-      isDefault: false
-    }
-  ]);
+  const {
+    earnings,
+    transactions,
+    paymentMethods,
+    availableBalance,
+    loading,
+    requestWithdrawal,
+    addPaymentMethod,
+    updatePaymentMethod,
+    deletePaymentMethod,
+    setDefaultPaymentMethod,
+  } = usePayments();
 
   const totalEarnings = earnings.reduce((sum, earning) => 
     earning.status === "completed" ? sum + earning.amount : sum, 0
@@ -108,15 +50,12 @@ const PaymentsEarningsTab = () => {
     earning.status === "pending" ? sum + earning.amount : sum, 0
   );
 
-  const availableBalance = 150000;
-
   const handleExport = (type: string) => {
     toast({
       title: "Exporting Data",
       description: `Generating ${type} export file...`
     });
     
-    // Create a simple CSV export
     const headers = type === "earnings" ? 
       ["Project", "Client", "Amount", "Date", "Status", "Type"] :
       ["Type", "Description", "Amount", "Date", "Status"];
@@ -126,6 +65,7 @@ const PaymentsEarningsTab = () => {
       headers.join(","),
       ...data.map(item => 
         type === "earnings" ? 
+        // @ts-ignore
         [item.project, item.client, item.amount, item.date, item.status, item.type].join(",") :
         [item.type, item.description, item.amount, item.date, item.status].join(",")
       )
@@ -142,84 +82,32 @@ const PaymentsEarningsTab = () => {
 
   const handleAddPaymentMethod = () => {
     if (!paymentMethodType || !paymentDetails) {
-      toast({
-        title: "Error",
-        description: "Please fill in all payment method details",
-        variant: "destructive"
-      });
+      toast({ title: "Error", description: "Please fill all details", variant: "destructive" });
       return;
     }
-
-    const newMethod = {
-      id: paymentMethods.length + 1,
-      type: paymentMethodType,
-      name: paymentMethodType === "bank" ? "New Bank Account" : "New Mobile Money",
-      details: `****${paymentDetails.slice(-4)}`,
-      isDefault: paymentMethods.length === 0
-    };
-
-    setPaymentMethods([...paymentMethods, newMethod]);
+    addPaymentMethod({ type: paymentMethodType, name: paymentMethodType === 'bank' ? 'Bank Account' : 'Mobile Money', details: paymentDetails });
     setPaymentMethodType("");
-    setPaymentDetails("");
-
-    toast({
-      title: "Payment Method Added",
-      description: "New payment method has been added successfully"
-    });
+    setPaymentDetails({});
   };
 
   const handleEditPaymentMethod = (method: any) => {
     if (!paymentDetails) {
-      toast({
-        title: "Error",
-        description: "Please enter payment details",
-        variant: "destructive"
-      });
+      toast({ title: "Error", description: "Please enter payment details", variant: "destructive" });
       return;
     }
-
-    setPaymentMethods(prev => prev.map(pm => 
-      pm.id === method.id 
-        ? { ...pm, details: `****${paymentDetails.slice(-4)}` }
-        : pm
-    ));
-
+    updatePaymentMethod({ ...method, details: paymentDetails });
     setEditingPaymentMethod(null);
-    setPaymentDetails("");
-
-    toast({
-      title: "Payment Method Updated",
-      description: "Payment method has been updated successfully"
-    });
+    setPaymentDetails({});
   };
 
   const handleRequestWithdrawal = () => {
     const amount = parseFloat(withdrawalAmount);
-    
     if (!amount || amount <= 0) {
-      toast({
-        title: "Error",
-        description: "Please enter a valid withdrawal amount",
-        variant: "destructive"
-      });
+      toast({ title: "Error", description: "Invalid amount", variant: "destructive" });
       return;
     }
-
-    if (amount > availableBalance) {
-      toast({
-        title: "Error",
-        description: "Insufficient balance for withdrawal",
-        variant: "destructive"
-      });
-      return;
-    }
-
+    requestWithdrawal(amount);
     setWithdrawalAmount("");
-    
-    toast({
-      title: "Withdrawal Requested",
-      description: `Withdrawal of ${amount.toLocaleString()} XAF has been requested`
-    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -234,6 +122,15 @@ const PaymentsEarningsTab = () => {
         return <Badge variant="outline">{status}</Badge>;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        <span className="ml-2 text-gray-500">Loading payment data...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -429,8 +326,7 @@ const PaymentsEarningsTab = () => {
                     <Input
                       id="payment-details"
                       placeholder={paymentMethodType === "bank" ? "Enter account number" : "Enter phone number"}
-                      value={paymentDetails}
-                      onChange={(e) => setPaymentDetails(e.target.value)}
+                      onChange={(e) => setPaymentDetails({ value: e.target.value })}
                     />
                   </div>
                   <Button onClick={handleAddPaymentMethod} className="w-full">
@@ -449,41 +345,48 @@ const PaymentsEarningsTab = () => {
                     <CreditCard className="h-8 w-8 text-blue-600" />
                     <div>
                       <h4 className="font-medium">{method.name}</h4>
-                      <p className="text-sm text-gray-600">{method.details}</p>
-                      {method.isDefault && (
+                      <p className="text-sm text-gray-600">{method.details.value}</p>
+                      {method.is_default && (
                         <Badge variant="secondary" className="text-xs">Default</Badge>
                       )}
                     </div>
                   </div>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" onClick={() => setEditingPaymentMethod(method)}>
-                        <Edit className="h-4 w-4 mr-1" />
-                        Edit
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Edit Payment Method</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="edit-payment-details">
-                            {method.type === "bank" ? "Account Number" : "Phone Number"}
-                          </Label>
-                          <Input
-                            id="edit-payment-details"
-                            placeholder={method.type === "bank" ? "Enter account number" : "Enter phone number"}
-                            value={paymentDetails}
-                            onChange={(e) => setPaymentDetails(e.target.value)}
-                          />
-                        </div>
-                        <Button onClick={() => handleEditPaymentMethod(method)} className="w-full">
-                          Update Payment Method
+                  <div className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm" onClick={() => setDefaultPaymentMethod(method.id)} disabled={method.is_default}>
+                      Set as Default
+                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" onClick={() => setEditingPaymentMethod(method)}>
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
                         </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Edit Payment Method</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="edit-payment-details">
+                              {method.type === "bank" ? "Account Number" : "Phone Number"}
+                            </Label>
+                            <Input
+                              id="edit-payment-details"
+                              placeholder={method.type === "bank" ? "Enter account number" : "Enter phone number"}
+                              onChange={(e) => setPaymentDetails({ value: e.target.value })}
+                            />
+                          </div>
+                          <Button onClick={() => handleEditPaymentMethod(method)} className="w-full">
+                            Update Payment Method
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                    <Button variant="destructive" size="sm" onClick={() => deletePaymentMethod(method.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

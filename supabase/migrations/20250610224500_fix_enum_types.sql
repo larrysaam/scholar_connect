@@ -1,4 +1,3 @@
-
 -- Drop existing trigger and function if they exist
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS public.handle_new_user();
@@ -25,10 +24,15 @@ CREATE TYPE payment_status AS ENUM ('pending', 'paid', 'failed', 'refunded', 're
 CREATE TYPE payment_method AS ENUM ('stripe', 'mobile_money', 'bank_transfer');
 CREATE TYPE payment_type AS ENUM ('consultation', 'service');
 
--- Update users table to use the new enum types
-ALTER TABLE public.users 
-  ALTER COLUMN role TYPE user_role USING role::text::user_role,
-  ALTER COLUMN role SET DEFAULT 'student'::user_role;
+-- Update users table to use the new enum types (only if table exists)
+DO $$ 
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'users' AND table_schema = 'public') THEN
+        ALTER TABLE public.users 
+          ALTER COLUMN role TYPE user_role USING role::text::user_role,
+          ALTER COLUMN role SET DEFAULT 'student'::user_role;
+    END IF;
+END $$;
 
 -- Create the handle_new_user function
 CREATE OR REPLACE FUNCTION public.handle_new_user()

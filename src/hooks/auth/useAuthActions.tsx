@@ -6,7 +6,7 @@ import { useToast } from '@/components/ui/use-toast';
 
 // Rate limiters for different operations
 const signInLimiter = new RateLimiter(5, 15 * 60 * 1000); // 5 attempts per 15 minutes
-const signUpLimiter = new RateLimiter(3, 60 * 60 * 1000); // 3 attempts per hour
+const signUpLimiter = new RateLimiter(10, 60 * 60 * 1000); // 3 attempts per hour
 
 export const useAuthActions = () => {
   const { toast } = useToast();
@@ -123,6 +123,87 @@ export const useAuthActions = () => {
 
       if (data.user) {
         console.log('Successful signup:', { userId: data.user.id, email: data.user.email });
+        
+        // Create comprehensive user profile in public.users table
+        try {
+          console.log('Creating user profile for:', data.user.id);
+          console.log('User data received:', userData);
+          
+          const userProfile = {
+            id: data.user.id,
+            email: data.user.email,
+            name: userData.fullName || userData.name || data.user.email?.split('@')[0],
+            role: userData.role || 'student',
+            phone_number: userData.phoneNumber || null,
+            country: userData.country || null,
+            date_of_birth: userData.dateOfBirth || null,
+            sex: userData.sex || null,
+            institution: userData.universityInstitution || userData.university || userData.institution || null,
+            faculty: userData.faculty || null,
+            study_level: userData.highestEducation || userData.studyLevel || null,
+            topic_title: userData.researchTopic || userData.topicTitle || null,
+            research_stage: userData.researchStage || null,
+            research_areas: userData.researchAreas || (userData.fieldOfStudy ? [userData.fieldOfStudy] : null),
+            experience: userData.academicRank || userData.experience || null,
+            expertise: userData.fieldOfExpertise ? [userData.fieldOfExpertise] : (userData.expertise || null),
+            other_expertise: userData.otherFieldOfExpertise || userData.otherExpertise || null,
+            languages: userData.preferredLanguage ? [userData.preferredLanguage] : (userData.languages || null),
+            linkedin_url: userData.linkedinAccount || userData.linkedInUrl || null,
+            preferred_payout_method: userData.preferredPayoutMethod || null,
+            wallet_balance: 0
+          };
+
+          // Remove undefined values
+          Object.keys(userProfile).forEach(key => {
+            if (userProfile[key as keyof typeof userProfile] === undefined) {
+              delete userProfile[key as keyof typeof userProfile];
+            }
+          });
+
+          console.log('Final user profile to insert:', userProfile);
+
+          const { data: insertedData, error: profileError } = await supabase
+            .from('users')
+            .insert(userProfile)
+            .select();
+
+          if (profileError) {
+            console.error('Error creating user profile:', profileError);
+            console.error('Profile error details:', {
+              message: profileError.message,
+              details: profileError.details,
+              hint: profileError.hint,
+              code: profileError.code
+            });
+            
+            // Show detailed error to user for debugging
+            toast({
+              title: "Profile Creation Error",
+              description: `Failed to create profile: ${profileError.message}. Please contact support.`,
+              variant: "destructive"
+            });
+            
+            // Return error since profile creation is critical
+            return {
+              success: false,
+              error: `Profile creation failed: ${profileError.message}`
+            };
+          } else {
+            console.log('User profile created successfully:', insertedData);
+            toast({
+              title: "Success",
+              description: "Account and profile created successfully!",
+              variant: "default"
+            });
+          }
+        } catch (profileError) {
+          console.error('Exception creating user profile:', profileError);
+          return {
+            success: false,
+            error: `Profile creation failed: ${profileError}`
+          };
+        }
+        
         return { success: true };
       }
 
@@ -137,7 +218,7 @@ export const useAuthActions = () => {
         error: 'An unexpected error occurred. Please try again.'
       };
     }
-  }, []);
+  }, [toast]);
 
   const signOut = useCallback(async () => {
     try {

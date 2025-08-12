@@ -1,26 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Star, MapPin, Filter, Users, Award, BookOpen, Eye } from "lucide-react";
+import { Search, Star, MapPin, Filter, Users, Award, BookOpen, Eye, Loader2, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-interface Researcher {
-  id: string;
-  name: string;
-  title: string;
-  institution: string;
-  field: string;
-  specializations: string[];
-  rating: number;
-  reviewCount: number;
-  hourlyRate: number;
-  location: string;
-  imageUrl: string;
-  featured: boolean;
-}
+import { useResearchers, Researcher } from "@/hooks/useResearchers";
 
 const FindResearcherTab = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,79 +15,24 @@ const FindResearcherTab = () => {
   const [priceRange, setPriceRange] = useState("all");
   const navigate = useNavigate();
 
-  const [featuredResearchers] = useState<Researcher[]>([
-    {
-      id: "1",
-      name: "Dr. Marie Ngono Abega",
-      title: "Senior Research Fellow",
-      institution: "University of Yaoundé I",
-      field: "Geographic Information Systems",
-      specializations: ["Remote Sensing", "Spatial Analysis", "Environmental Modeling"],
-      rating: 4.9,
-      reviewCount: 47,
-      hourlyRate: 15000,
-      location: "Cameroon",
-      imageUrl: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
-      featured: true
-    },
-    {
-      id: "2",
-      name: "Prof. James Akinyemi",
-      title: "Professor of Public Health",
-      institution: "University of Lagos",
-      field: "Epidemiology",
-      specializations: ["Disease Surveillance", "Health Policy", "Biostatistics"],
-      rating: 4.8,
-      reviewCount: 32,
-      hourlyRate: 18000,
-      location: "Nigeria",
-      imageUrl: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
-      featured: true
-    },
-    {
-      id: "3",
-      name: "Dr. Fatima Al-Rashid",
-      title: "Research Scientist",
-      institution: "American University of Cairo",
-      field: "Computer Science",
-      specializations: ["Machine Learning", "Data Science", "AI Ethics"],
-      rating: 4.7,
-      reviewCount: 28,
-      hourlyRate: 12000,
-      location: "Egypt",
-      imageUrl: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
-      featured: true
-    }
-  ]);
+  const {
+    researchers,
+    loading,
+    error,
+    searchResearchers,
+    getFeaturedResearchers,
+    getUniqueFields,
+    getUniqueLanguages
+  } = useResearchers();
 
-  const [allResearchers] = useState<Researcher[]>([
-    ...featuredResearchers,
-    {
-      id: "4",
-      name: "Dr. Sarah Osei",
-      title: "Associate Professor",
-      institution: "University of Ghana",
-      field: "Economics",
-      specializations: ["Development Economics", "Poverty Analysis"],
-      rating: 4.6,
-      reviewCount: 19,
-      hourlyRate: 14000,
-      location: "Ghana",
-      imageUrl: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
-      featured: false
-    }
-  ]);
+  const featuredResearchers = useMemo(() => getFeaturedResearchers(), [researchers]);
+  const uniqueFields = useMemo(() => getUniqueFields(), [researchers]);
+  const uniqueLanguages = useMemo(() => getUniqueLanguages(), [researchers]);
 
-  const filteredResearchers = allResearchers.filter(researcher => {
-    const matchesSearch = searchQuery === "" || 
-      researcher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      researcher.field.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      researcher.specializations.some(spec => spec.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    const matchesField = selectedField === "all" || researcher.field === selectedField;
-    
-    return matchesSearch && matchesField;
-  });
+  const filteredResearchers = useMemo(() => 
+    searchResearchers(searchQuery, selectedField, selectedLanguage, priceRange),
+    [researchers, searchQuery, selectedField, selectedLanguage, priceRange]
+  );
 
   const ResearcherCard = ({ researcher }: { researcher: Researcher }) => (
     <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-blue-500">
@@ -208,10 +139,11 @@ const FindResearcherTab = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Fields</SelectItem>
-                  <SelectItem value="Geographic Information Systems">GIS</SelectItem>
-                  <SelectItem value="Epidemiology">Epidemiology</SelectItem>
-                  <SelectItem value="Computer Science">Computer Science</SelectItem>
-                  <SelectItem value="Economics">Economics</SelectItem>
+                  {uniqueFields.map((field) => (
+                    <SelectItem key={field} value={field}>
+                      {field}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               
@@ -221,9 +153,11 @@ const FindResearcherTab = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Languages</SelectItem>
-                  <SelectItem value="english">English</SelectItem>
-                  <SelectItem value="french">French</SelectItem>
-                  <SelectItem value="arabic">Arabic</SelectItem>
+                  {uniqueLanguages.map((language) => (
+                    <SelectItem key={language} value={language.toLowerCase()}>
+                      {language}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               
@@ -253,14 +187,14 @@ const FindResearcherTab = () => {
         <Card className="text-center border-blue-100">
           <CardContent className="p-4">
             <Users className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-900">500+</div>
+            <div className="text-2xl font-bold text-gray-900">{researchers.length}</div>
             <div className="text-sm text-gray-600">Expert Researchers</div>
           </CardContent>
         </Card>
         <Card className="text-center border-blue-100">
           <CardContent className="p-4">
             <BookOpen className="h-8 w-8 text-green-500 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-900">50+</div>
+            <div className="text-2xl font-bold text-gray-900">{uniqueFields.length}</div>
             <div className="text-sm text-gray-600">Research Fields</div>
           </CardContent>
         </Card>
@@ -273,8 +207,33 @@ const FindResearcherTab = () => {
         </Card>
       </div>
 
+      {/* Loading State */}
+      {loading && (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-500" />
+            <p className="text-gray-600">Loading researchers...</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <Card className="border-red-200">
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-3 text-red-600">
+              <AlertCircle className="h-5 w-5" />
+              <div>
+                <h3 className="font-medium">Error Loading Researchers</h3>
+                <p className="text-sm text-red-500">{error}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Featured Experts */}
-      {searchQuery === "" && selectedField === "all" && (
+      {!loading && !error && searchQuery === "" && selectedField === "all" && featuredResearchers.length > 0 && (
         <div>
           <h3 className="text-xl font-semibold mb-4 flex items-center">
             <Award className="h-5 w-5 text-yellow-500 mr-2" />
@@ -289,17 +248,48 @@ const FindResearcherTab = () => {
       )}
 
       {/* Search Results */}
-      <div>
-        <h3 className="text-xl font-semibold mb-4">
-          {searchQuery || selectedField !== "all" ? "Search Results" : "All Researchers"} 
-          <span className="text-gray-500 font-normal ml-2">({filteredResearchers.length} found)</span>
-        </h3>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {filteredResearchers.map((researcher) => (
-            <ResearcherCard key={researcher.id} researcher={researcher} />
-          ))}
+      {!loading && !error && (
+        <div>
+          <h3 className="text-xl font-semibold mb-4">
+            {searchQuery || selectedField !== "all" ? "Search Results" : "All Researchers"} 
+            <span className="text-gray-500 font-normal ml-2">({filteredResearchers.length} found)</span>
+          </h3>
+          
+          {filteredResearchers.length === 0 ? (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No researchers found</h3>
+                <p className="text-gray-600 mb-4">
+                  {searchQuery || selectedField !== "all" || selectedLanguage !== "all" || priceRange !== "all"
+                    ? "Try adjusting your search criteria or filters"
+                    : "No researchers are currently available"
+                  }
+                </p>
+                {(searchQuery || selectedField !== "all" || selectedLanguage !== "all" || priceRange !== "all") && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSelectedField("all");
+                      setSelectedLanguage("all");
+                      setPriceRange("all");
+                    }}
+                  >
+                    Clear Filters
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {filteredResearchers.map((researcher) => (
+                <ResearcherCard key={researcher.id} researcher={researcher} />
+              ))}
+            </div>
+          )}
         </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -1,60 +1,33 @@
 
-import { useState } from "react";
+import { useState, useMemo } from 'react';
 import PastConsultationCard from "../consultation/PastConsultationCard";
+import { useConsultationServices } from "@/hooks/useConsultationServices";
+import { Loader2 } from "lucide-react";
 
 const PastTab = () => {
   const [uploadedResources, setUploadedResources] = useState<{[key: string]: string[]}>({});
+  const { bookings, loading } = useConsultationServices();
 
-  const pastConsultations = [
-    {
-      id: "past-1",
-      student: {
-        id: "student-1",
-        name: "Sarah Johnson",
-        field: "Computer Science",
-        imageUrl: "/lovable-uploads/83e0a07d-3527-4693-8172-d7d181156044.png"
-      },
-      date: "2024-01-15",
-      time: "2:00 PM - 3:00 PM",
-      topic: "Machine Learning Algorithm Optimization",
-      status: "completed" as const,
-      rating: 5,
-      hasRecording: true,
-      hasAINotes: true
-    },
-    {
-      id: "past-2",
-      student: {
-        id: "student-2",
-        name: "Michael Chen",
-        field: "Data Science",
-        imageUrl: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png"
-      },
-      date: "2024-01-12",
-      time: "10:00 AM - 11:00 AM",
-      topic: "Statistical Analysis Methods",
-      status: "completed" as const,
-      rating: 4,
-      hasRecording: true,
-      hasAINotes: true
-    },
-    {
-      id: "past-3",
-      student: {
-        id: "student-3",
-        name: "Emily Davis",
-        field: "Artificial Intelligence",
-        imageUrl: "/lovable-uploads/a2f6a2f6-b795-4e93-914c-2b58648099ff.png"
-      },
-      date: "2024-01-10",
-      time: "3:00 PM - 4:00 PM",
-      topic: "Neural Network Architecture Design",
-      status: "completed" as const,
-      rating: 5,
-      hasRecording: false,
-      hasAINotes: true
-    }
-  ];
+  const pastConsultations = useMemo(() => {
+    return bookings
+      .filter(booking => booking.status === 'completed')
+      .map(booking => ({
+        id: booking.id,
+        student: {
+          id: booking.client_id,
+          name: booking.client?.name || 'N/A',
+          field: booking.service?.category || 'N/A',
+          imageUrl: '/placeholder.svg',
+        },
+        date: new Date(booking.scheduled_date).toLocaleDateString(),
+        time: booking.scheduled_time,
+        topic: booking.service?.title || 'N/A',
+        status: "completed" as const,
+        rating: 5, // Placeholder
+        hasRecording: true, // Placeholder
+        hasAINotes: true, // Placeholder
+      }));
+  }, [bookings]);
 
   const handleViewRecording = (consultationId: string) => {
     console.log("Viewing Google Meet recording for consultation:", consultationId);
@@ -96,6 +69,14 @@ const PastTab = () => {
     console.log("Opening in-platform messaging with student:", studentId);
     alert(`Opening messaging interface with student for consultation ${consultationId}...`);
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-40">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">

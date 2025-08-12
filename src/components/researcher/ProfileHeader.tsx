@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Star, Users, Calendar } from "lucide-react";
 import StatusIndicator from "./StatusIndicator";
-import BookingModal from "./BookingModal";
+import ComprehensiveBookingModal from "./booking/ComprehensiveBookingModal";
 import MessageModal from "./MessageModal";
 import CoAuthorInvitationModal from "./CoAuthorInvitationModal";
 
@@ -114,7 +114,7 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-3 md:w-64">
-            <BookingModal researcher={researcher} />
+            <ComprehensiveBookingModal researcher={researcher} />
             
             <MessageModal researcher={researcher} />
             

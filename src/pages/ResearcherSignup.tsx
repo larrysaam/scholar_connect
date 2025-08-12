@@ -4,14 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useAuthActions } from '@/hooks/auth/useAuthActions';
 import AuthHeader from '@/components/auth/AuthHeader';
 import FormField from '@/components/auth/FormField';
 import { countries, cameroonAfricaUniversities, fieldsOfStudy, studyLevels, countryCodes, academicRanks, languages } from '@/data/authData';
 
 const ResearcherSignup = () => {
   const navigate = useNavigate();
+  const { signUp } = useAuthActions();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
@@ -64,39 +65,37 @@ const ResearcherSignup = () => {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/researcher-dashboard`,
-          data: {
-            fullName: formData.fullName,
-            role: 'expert',
-            phoneNumber: `${formData.countryCode}${formData.phoneNumber}`,
-            country: formData.country === 'other' ? formData.otherCountry : formData.country,
-            universityInstitution: formData.university === 'other' ? formData.otherUniversity : formData.university,
-            fieldOfStudy: formData.fieldOfExpertise === 'other' ? formData.otherFieldOfExpertise : formData.fieldOfExpertise,
-            academicRank: formData.academicRank === 'other' ? formData.otherAcademicRank : formData.academicRank,
-            highestEducation: formData.highestEducation,
-            sex: formData.sex,
-            dateOfBirth: formData.dateOfBirth,
-            linkedinAccount: formData.linkedinAccount,
-            researchgateAccount: formData.researchgateAccount,
-            academiaEduAccount: formData.academiaEduAccount,
-            orcidId: formData.orcidId,
-            preferredLanguage: formData.preferredLanguage
-          }
-        }
-      });
+      // Prepare comprehensive user data for the database
+      const userData = {
+        fullName: formData.fullName,
+        role: 'expert',
+        phoneNumber: `${formData.countryCode}${formData.phoneNumber}`,
+        country: formData.country === 'other' ? formData.otherCountry : formData.country,
+        universityInstitution: formData.university === 'other' ? formData.otherUniversity : formData.university,
+        fieldOfExpertise: formData.fieldOfExpertise === 'other' ? formData.otherFieldOfExpertise : formData.fieldOfExpertise,
+        otherFieldOfExpertise: formData.otherFieldOfExpertise,
+        academicRank: formData.academicRank === 'other' ? formData.otherAcademicRank : formData.academicRank,
+        highestEducation: formData.highestEducation,
+        sex: formData.sex,
+        dateOfBirth: formData.dateOfBirth,
+        linkedinAccount: formData.linkedinAccount,
+        researchgateAccount: formData.researchgateAccount,
+        academiaEduAccount: formData.academiaEduAccount,
+        orcidId: formData.orcidId,
+        preferredLanguage: formData.preferredLanguage
+      };
 
-      if (error) {
-        toast.error(error.message);
-      } else {
+      const result = await signUp(formData.email, formData.password, userData);
+
+      if (result.success) {
         toast.success('Account created successfully! Please check your email for verification.');
         navigate('/researcher-dashboard');
+      } else {
+        toast.error(result.error || 'An error occurred during signup');
       }
     } catch (error) {
-      toast.error('An error occurred during signup');
+      console.error('Signup error:', error);
+      toast.error('An unexpected error occurred during signup');
     } finally {
       setLoading(false);
     }

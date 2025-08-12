@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,11 +7,24 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { AlertTriangle, LogOut, Trash2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { AlertTriangle, LogOut, Trash2, User, Edit, Save, X, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import type { Database } from "@/integrations/supabase/types";
+
+type UserProfile = Database['public']['Tables']['users']['Row'];
+type UserRole = Database['public']['Enums']['user_role'];
+type PayoutMethod = Database['public']['Enums']['payout_method'];
 
 const SettingsTab = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  
+  // Settings states
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications, setSmsNotifications] = useState(false);
   const [profileVisible, setProfileVisible] = useState(true);
@@ -19,6 +32,113 @@ const SettingsTab = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+
+  // Profile states
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [newExpertise, setNewExpertise] = useState("");
+  const [newLanguage, setNewLanguage] = useState("");
+  const [newResearchArea, setNewResearchArea] = useState("");
+
+  // Fetch user profile on component mount
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load user profile",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  const handleProfileUpdate = async () => {
+    if (!user || !userProfile) return;
+
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          ...userProfile,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Error updating profile:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update profile",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setIsEditingProfile(false);
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been updated successfully"
+      });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleProfileFieldChange = (field: keyof UserProfile, value: any) => {
+    if (!userProfile) return;
+    setUserProfile({ ...userProfile, [field]: value });
+  };
+
+  const addArrayItem = (field: 'expertise' | 'languages' | 'research_areas', value: string) => {
+    if (!userProfile || !value.trim()) return;
+    
+    const currentArray = userProfile[field] as string[] || [];
+    if (!currentArray.includes(value.trim())) {
+      handleProfileFieldChange(field, [...currentArray, value.trim()]);
+    }
+    
+    // Clear the input
+    if (field === 'expertise') setNewExpertise("");
+    if (field === 'languages') setNewLanguage("");
+    if (field === 'research_areas') setNewResearchArea("");
+  };
+
+  const removeArrayItem = (field: 'expertise' | 'languages' | 'research_areas', index: number) => {
+    if (!userProfile) return;
+    
+    const currentArray = userProfile[field] as string[] || [];
+    const newArray = currentArray.filter((_, i) => i !== index);
+    handleProfileFieldChange(field, newArray);
+  };
 
   const handlePasswordChange = () => {
     // Validation
@@ -124,6 +244,443 @@ const SettingsTab = () => {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Account Settings</h2>
       
+      {/* User Profile Section */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            User Profile
+          </CardTitle>
+          <Button
+            variant={isEditingProfile ? "outline" : "default"}
+            size="sm"
+            onClick={() => {
+              if (isEditingProfile) {
+                setIsEditingProfile(false);
+                fetchUserProfile(); // Reset changes
+              } else {
+                setIsEditingProfile(true);
+              }
+            }}
+            className="flex items-center gap-2"
+          >
+            {isEditingProfile ? (
+              <>
+                <X className="h-4 w-4" />
+                Cancel
+              </>
+            ) : (
+              <>
+                <Edit className="h-4 w-4" />
+                Edit Profile
+              </>
+            )}
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {profileLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="text-gray-500">Loading profile...</div>
+            </div>
+          ) : userProfile ? (
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    value={userProfile.name || ""}
+                    onChange={(e) => handleProfileFieldChange('name', e.target.value)}
+                    disabled={!isEditingProfile}
+                    placeholder="Enter your full name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    value={userProfile.email}
+                    onChange={(e) => handleProfileFieldChange('email', e.target.value)}
+                    disabled={!isEditingProfile}
+                    type="email"
+                    placeholder="Enter your email"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone_number">Phone Number</Label>
+                  <Input
+                    id="phone_number"
+                    value={userProfile.phone_number || ""}
+                    onChange={(e) => handleProfileFieldChange('phone_number', e.target.value)}
+                    disabled={!isEditingProfile}
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="country">Country</Label>
+                  <Input
+                    id="country"
+                    value={userProfile.country || ""}
+                    onChange={(e) => handleProfileFieldChange('country', e.target.value)}
+                    disabled={!isEditingProfile}
+                    placeholder="Enter your country"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="date_of_birth">Date of Birth</Label>
+                  <Input
+                    id="date_of_birth"
+                    type="date"
+                    value={userProfile.date_of_birth || ""}
+                    onChange={(e) => handleProfileFieldChange('date_of_birth', e.target.value)}
+                    disabled={!isEditingProfile}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="sex">Gender</Label>
+                  <Select
+                    value={userProfile.sex || ""}
+                    onValueChange={(value) => handleProfileFieldChange('sex', value)}
+                    disabled={!isEditingProfile}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Academic Information */}
+              <Separator />
+              <div className="space-y-4">
+                <h4 className="text-lg font-semibold">Academic Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="institution">Institution</Label>
+                    <Input
+                      id="institution"
+                      value={userProfile.institution || ""}
+                      onChange={(e) => handleProfileFieldChange('institution', e.target.value)}
+                      disabled={!isEditingProfile}
+                      placeholder="Enter your institution"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="faculty">Faculty/Department</Label>
+                    <Input
+                      id="faculty"
+                      value={userProfile.faculty || ""}
+                      onChange={(e) => handleProfileFieldChange('faculty', e.target.value)}
+                      disabled={!isEditingProfile}
+                      placeholder="Enter your faculty or department"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="study_level">Study Level</Label>
+                    <Select
+                      value={userProfile.study_level || ""}
+                      onValueChange={(value) => handleProfileFieldChange('study_level', value)}
+                      disabled={!isEditingProfile}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select study level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="undergraduate">Undergraduate</SelectItem>
+                        <SelectItem value="masters">Masters</SelectItem>
+                        <SelectItem value="phd">PhD</SelectItem>
+                        <SelectItem value="postdoc">Post-doctorate</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="role">Role</Label>
+                    <Select
+                      value={userProfile.role}
+                      onValueChange={(value) => handleProfileFieldChange('role', value as UserRole)}
+                      disabled={!isEditingProfile}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="student">Student</SelectItem>
+                        <SelectItem value="expert">Expert</SelectItem>
+                        <SelectItem value="aid">Research Aid</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Research Information */}
+              <Separator />
+              <div className="space-y-4">
+                <h4 className="text-lg font-semibold">Research Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="topic_title">Research Topic/Title</Label>
+                    <Input
+                      id="topic_title"
+                      value={userProfile.topic_title || ""}
+                      onChange={(e) => handleProfileFieldChange('topic_title', e.target.value)}
+                      disabled={!isEditingProfile}
+                      placeholder="Enter your research topic"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="research_stage">Research Stage</Label>
+                    <Select
+                      value={userProfile.research_stage || ""}
+                      onValueChange={(value) => handleProfileFieldChange('research_stage', value)}
+                      disabled={!isEditingProfile}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select research stage" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="planning">Planning</SelectItem>
+                        <SelectItem value="proposal">Proposal</SelectItem>
+                        <SelectItem value="data_collection">Data Collection</SelectItem>
+                        <SelectItem value="analysis">Analysis</SelectItem>
+                        <SelectItem value="writing">Writing</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                {/* Research Areas */}
+                <div>
+                  <Label>Research Areas</Label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {(userProfile.research_areas || []).map((area, index) => (
+                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                        {area}
+                        {isEditingProfile && (
+                          <X 
+                            className="h-3 w-3 cursor-pointer" 
+                            onClick={() => removeArrayItem('research_areas', index)}
+                          />
+                        )}
+                      </Badge>
+                    ))}
+                  </div>
+                  {isEditingProfile && (
+                    <div className="flex gap-2">
+                      <Input
+                        value={newResearchArea}
+                        onChange={(e) => setNewResearchArea(e.target.value)}
+                        placeholder="Add research area"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addArrayItem('research_areas', newResearchArea);
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => addArrayItem('research_areas', newResearchArea)}
+                        disabled={!newResearchArea.trim()}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Professional Information */}
+              <Separator />
+              <div className="space-y-4">
+                <h4 className="text-lg font-semibold">Professional Information</h4>
+                
+                {/* Experience */}
+                <div>
+                  <Label htmlFor="experience">Experience</Label>
+                  <Textarea
+                    id="experience"
+                    value={userProfile.experience || ""}
+                    onChange={(e) => handleProfileFieldChange('experience', e.target.value)}
+                    disabled={!isEditingProfile}
+                    placeholder="Describe your professional experience"
+                    rows={3}
+                  />
+                </div>
+
+                {/* Expertise */}
+                <div>
+                  <Label>Areas of Expertise</Label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {(userProfile.expertise || []).map((skill, index) => (
+                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                        {skill}
+                        {isEditingProfile && (
+                          <X 
+                            className="h-3 w-3 cursor-pointer" 
+                            onClick={() => removeArrayItem('expertise', index)}
+                          />
+                        )}
+                      </Badge>
+                    ))}
+                  </div>
+                  {isEditingProfile && (
+                    <div className="flex gap-2">
+                      <Input
+                        value={newExpertise}
+                        onChange={(e) => setNewExpertise(e.target.value)}
+                        placeholder="Add expertise area"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addArrayItem('expertise', newExpertise);
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => addArrayItem('expertise', newExpertise)}
+                        disabled={!newExpertise.trim()}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Other Expertise */}
+                <div>
+                  <Label htmlFor="other_expertise">Other Expertise</Label>
+                  <Textarea
+                    id="other_expertise"
+                    value={userProfile.other_expertise || ""}
+                    onChange={(e) => handleProfileFieldChange('other_expertise', e.target.value)}
+                    disabled={!isEditingProfile}
+                    placeholder="Describe any other areas of expertise"
+                    rows={2}
+                  />
+                </div>
+
+                {/* Languages */}
+                <div>
+                  <Label>Languages</Label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {(userProfile.languages || []).map((language, index) => (
+                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                        {language}
+                        {isEditingProfile && (
+                          <X 
+                            className="h-3 w-3 cursor-pointer" 
+                            onClick={() => removeArrayItem('languages', index)}
+                          />
+                        )}
+                      </Badge>
+                    ))}
+                  </div>
+                  {isEditingProfile && (
+                    <div className="flex gap-2">
+                      <Input
+                        value={newLanguage}
+                        onChange={(e) => setNewLanguage(e.target.value)}
+                        placeholder="Add language"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addArrayItem('languages', newLanguage);
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => addArrayItem('languages', newLanguage)}
+                        disabled={!newLanguage.trim()}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LinkedIn URL */}
+                <div>
+                  <Label htmlFor="linkedin_url">LinkedIn Profile</Label>
+                  <Input
+                    id="linkedin_url"
+                    value={userProfile.linkedin_url || ""}
+                    onChange={(e) => handleProfileFieldChange('linkedin_url', e.target.value)}
+                    disabled={!isEditingProfile}
+                    placeholder="https://linkedin.com/in/yourprofile"
+                    type="url"
+                  />
+                </div>
+              </div>
+
+              {/* Payment Information */}
+              <Separator />
+              <div className="space-y-4">
+                <h4 className="text-lg font-semibold">Payment Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="preferred_payout_method">Preferred Payout Method</Label>
+                    <Select
+                      value={userProfile.preferred_payout_method || ""}
+                      onValueChange={(value) => handleProfileFieldChange('preferred_payout_method', value as PayoutMethod)}
+                      disabled={!isEditingProfile}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select payout method" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="mobile_money">Mobile Money</SelectItem>
+                        <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                        <SelectItem value="paypal">PayPal</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="wallet_balance">Wallet Balance</Label>
+                    <Input
+                      id="wallet_balance"
+                      value={userProfile.wallet_balance?.toString() || "0"}
+                      disabled={true}
+                      placeholder="0.00"
+                      type="number"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Wallet balance is read-only</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Save Button */}
+              {isEditingProfile && (
+                <div className="flex justify-end pt-4">
+                  <Button onClick={handleProfileUpdate} className="flex items-center gap-2">
+                    <Save className="h-4 w-4" />
+                    Save Profile Changes
+                  </Button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              No profile data found. Please try refreshing the page.
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Notification Preferences</CardTitle>

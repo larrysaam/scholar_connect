@@ -1,67 +1,15 @@
 
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QuickStatsCards from "../overview/QuickStatsCards";
 import NextSessionCard from "../overview/NextSessionCard";
 import RecentSummariesCard from "../overview/RecentSummariesCard";
 import QuickActionsCard from "../overview/QuickActionsCard";
-
-interface QuickStats {
-  upcomingSessions: number;
-  completedSessions: number;
-  newMessages: number;
-  researchGoals: number;
-}
-
-interface UpcomingSession {
-  id: string;
-  researcher: string;
-  topic: string;
-  datetime: string;
-  countdownHours: number;
-}
-
-interface RecentSummary {
-  id: string;
-  researcher: string;
-  topic: string;
-  date: string;
-  notes: string;
-}
+import { useStudentWelcomeOverview } from "@/hooks/useStudentWelcomeOverview";
+import { Loader2 } from "lucide-react";
 
 const StudentWelcomeOverviewTab = () => {
   const navigate = useNavigate();
-  const [stats] = useState<QuickStats>({
-    upcomingSessions: 2,
-    completedSessions: 5,
-    newMessages: 1,
-    researchGoals: 3
-  });
-
-  const [upcomingSession] = useState<UpcomingSession>({
-    id: "1",
-    researcher: "Dr. Marie Ngono Abega",
-    topic: "Research Methodology Review",
-    datetime: "Tomorrow, 2:00 PM",
-    countdownHours: 18
-  });
-
-  const [recentSummaries] = useState<RecentSummary[]>([
-    {
-      id: "1",
-      researcher: "Dr. Paul Mbarga",
-      topic: "Thesis Structure",
-      date: "2 days ago",
-      notes: "Excellent progress on introduction chapter"
-    },
-    {
-      id: "2", 
-      researcher: "Prof. Sarah Tankou",
-      topic: "Literature Review",
-      date: "1 week ago",
-      notes: "Focus on methodology gaps in current literature"
-    }
-  ]);
+  const { loading, stats, nextSession, recentSummaries } = useStudentWelcomeOverview();
 
   const handleFindResearcher = () => {
     navigate("/researchers");
@@ -83,14 +31,26 @@ const StudentWelcomeOverviewTab = () => {
     window.open('https://meet.google.com/new', '_blank');
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        <span className="ml-2 text-gray-500">Loading overview...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <QuickStatsCards stats={stats} />
       
-      <NextSessionCard 
-        session={upcomingSession} 
-        onJoinSession={handleJoinSession} 
-      />
+      {nextSession && (
+        <NextSessionCard 
+          // @ts-ignore
+          session={nextSession} 
+          onJoinSession={handleJoinSession} 
+        />
+      )}
 
       <RecentSummariesCard 
         summaries={recentSummaries} 

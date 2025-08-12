@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Lightbulb, Brain, Zap, BookOpen, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getAITopicSuggestions } from "@/services/geminiService";
 
 interface TopicRecommendation {
   id: string;
@@ -25,42 +26,6 @@ const AITopicRecommender = () => {
   const [recommendations, setRecommendations] = useState<TopicRecommendation[]>([]);
   const { toast } = useToast();
 
-  const sampleRecommendations: TopicRecommendation[] = [
-    {
-      id: "1",
-      title: "AI-Driven Climate Change Prediction Models",
-      description: "Investigate machine learning approaches for improving long-term climate forecasting accuracy using satellite data and environmental sensors.",
-      relevanceScore: 94,
-      difficulty: "Advanced",
-      estimatedDuration: "8-12 months",
-      keywords: ["Machine Learning", "Climate Science", "Predictive Modeling", "Big Data"],
-      trendingScore: 88,
-      methodology: ["Data Collection", "Model Training", "Validation Studies", "Performance Analysis"]
-    },
-    {
-      id: "2",
-      title: "Blockchain Applications in Academic Credential Verification",
-      description: "Explore how blockchain technology can create tamper-proof systems for academic credentials and reduce credential fraud.",
-      relevanceScore: 87,
-      difficulty: "Intermediate",
-      estimatedDuration: "6-9 months",
-      keywords: ["Blockchain", "Education Technology", "Security", "Digital Credentials"],
-      trendingScore: 92,
-      methodology: ["Literature Review", "System Design", "Prototype Development", "Security Testing"]
-    },
-    {
-      id: "3",
-      title: "Quantum Computing Applications in Cryptography",
-      description: "Research the implications of quantum computing on current encryption methods and develop quantum-resistant algorithms.",
-      relevanceScore: 91,
-      difficulty: "Advanced",
-      estimatedDuration: "10-15 months",
-      keywords: ["Quantum Computing", "Cryptography", "Security", "Algorithm Design"],
-      trendingScore: 95,
-      methodology: ["Theoretical Analysis", "Algorithm Development", "Simulation", "Security Assessment"]
-    }
-  ];
-
   const handleGenerateRecommendations = async () => {
     if (!userField.trim()) {
       toast({
@@ -72,16 +37,31 @@ const AITopicRecommender = () => {
     }
 
     setIsGenerating(true);
-    
-    // Simulate AI generation
-    setTimeout(() => {
-      setRecommendations(sampleRecommendations);
-      setIsGenerating(false);
+
+    // Mock student profile (replace with actual data)
+    const studentProfile = {
+      field: userField,
+      interests: ["Sustainable Technology", "Renewable Energy"]
+    };
+
+    try {
+      const suggestions = await getAITopicSuggestions(studentProfile);
+      // Add a unique ID to each recommendation for key prop
+      const suggestionsWithIds = suggestions.map((suggestion, index) => ({ ...suggestion, id: `topic-${index}` }));
+      setRecommendations(suggestionsWithIds);
       toast({
         title: "AI Recommendations Generated!",
-        description: `Found ${sampleRecommendations.length} trending research topics in your field.`
+        description: `Found ${suggestions.length} trending research topics in your field.`
       });
-    }, 2000);
+    } catch (error) {
+      toast({
+        title: "AI Recommendation Failed",
+        description: "Could not fetch recommendations. Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleSaveRecommendation = (topic: TopicRecommendation) => {
@@ -180,7 +160,7 @@ const AITopicRecommender = () => {
                       <div>
                         <span className="text-sm font-medium text-gray-700">Keywords: </span>
                         <div className="flex flex-wrap gap-1 mt-1">
-                          {topic.keywords.map((keyword, index) => (
+                          {(topic.keywords || []).map((keyword, index) => (
                             <Badge key={index} variant="outline" className="text-xs">
                               {keyword}
                             </Badge>
@@ -189,9 +169,9 @@ const AITopicRecommender = () => {
                       </div>
                       
                       <div>
-                        <span className="text-sm font-medium text-gray-700">Suggested Methodology: </span>
+                        <span className="text-sm font-medium text-gray-700">Suggested Methodology: </span> 
                         <div className="flex flex-wrap gap-1 mt-1">
-                          {topic.methodology.map((method, index) => (
+                          {(topic.methodology || []).map((method, index) => (
                             <Badge key={index} variant="secondary" className="text-xs">
                               {method}
                             </Badge>

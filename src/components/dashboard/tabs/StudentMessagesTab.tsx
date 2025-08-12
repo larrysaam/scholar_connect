@@ -1,121 +1,56 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle, Upload, Send, Paperclip, Clock } from "lucide-react";
-
-interface Message {
-  id: string;
-  senderId: string;
-  senderName: string;
-  senderType: "student" | "researcher";
-  content: string;
-  timestamp: string;
-  hasAttachment: boolean;
-  attachmentName?: string;
-}
-
-interface Conversation {
-  id: string;
-  researcher: {
-    name: string;
-    title: string;
-    imageUrl: string;
-  };
-  lastMessage: string;
-  timestamp: string;
-  unreadCount: number;
-  sessionRelated: boolean;
-  sessionDate?: string;
-}
+import { useMessages } from "@/hooks/useMessages";
+import { useAuth } from "@/hooks/useAuth";
 
 const StudentMessagesTab = () => {
-  const [activeConversation, setActiveConversation] = useState<string | null>("1");
+  const { user } = useAuth();
+  const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState("");
 
-  const [conversations] = useState<Conversation[]>([
-    {
-      id: "1",
-      researcher: {
-        name: "Dr. Marie Ngono Abega",
-        title: "GIS Research Fellow",
-        imageUrl: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png"
-      },
-      lastMessage: "I've reviewed your research proposal draft. Here are my suggestions...",
-      timestamp: "2 hours ago",
-      unreadCount: 2,
-      sessionRelated: true,
-      sessionDate: "Tomorrow, 2:00 PM"
-    },
-    {
-      id: "2",
-      researcher: {
-        name: "Prof. James Akinyemi",
-        title: "Public Health Professor",
-        imageUrl: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png"
-      },
-      lastMessage: "Thank you for the session today. Please find the additional resources attached.",
-      timestamp: "1 day ago",
-      unreadCount: 0,
-      sessionRelated: true,
-      sessionDate: "Completed: Yesterday"
-    }
-  ]);
+  // Use the real messages hook
+  const {
+    conversations,
+    messages,
+    loading,
+    sendMessage,
+    fetchMessages,
+  } = useMessages();
 
-  const [messages] = useState<Message[]>([
-    {
-      id: "1",
-      senderId: "researcher_1",
-      senderName: "Dr. Marie Ngono Abega",
-      senderType: "researcher",
-      content: "Hello John! I'm looking forward to our session tomorrow. I've reviewed the research outline you shared.",
-      timestamp: "1 day ago",
-      hasAttachment: false
-    },
-    {
-      id: "2",
-      senderId: "student_1",
-      senderName: "John",
-      senderType: "student",
-      content: "Thank you Dr. Ngono! I have a few specific questions about the methodology section. Should I prepare them beforehand?",
-      timestamp: "1 day ago",
-      hasAttachment: false
-    },
-    {
-      id: "3",
-      senderId: "researcher_1",
-      senderName: "Dr. Marie Ngono Abega",
-      senderType: "researcher",
-      content: "Absolutely! Please prepare your questions. I've also attached a methodology checklist that might help you structure your thoughts.",
-      timestamp: "3 hours ago",
-      hasAttachment: true,
-      attachmentName: "methodology_checklist.pdf"
-    },
-    {
-      id: "4",
-      senderId: "researcher_1",
-      senderName: "Dr. Marie Ngono Abega",
-      senderType: "researcher",
-      content: "I've reviewed your research proposal draft. Here are my suggestions for improvement...",
-      timestamp: "2 hours ago",
-      hasAttachment: false
-    }
-  ]);
+  // Fetch conversations on mount
+  useEffect(() => {
+    // fetchConversations is not returned, so we need to trigger it by updating the hook
+    // Instead, rely on the useEffect inside useMessages to fetch conversations when user changes
+    // No need to manually call useMessages().fetchConversations()
+  }, []);
 
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      // Implementation for sending message
-      console.log("Sending message:", newMessage);
+  useEffect(() => {
+    if (activeConversation) {
+      fetchMessages(activeConversation);
+    }
+  }, [activeConversation, fetchMessages]);
+
+  const handleSendMessage = async () => {
+    if (newMessage.trim() && activeConversation) {
+      // Find the conversation and get recipient_id and booking_id
+      const conv = conversations.find(c => c.id === activeConversation);
+      if (!conv) return;
+      // For student, recipient is the researcher (not the user)
+      // Assume booking_id is the conversation id for now
+      await sendMessage(conv.id, activeConversation, newMessage);
       setNewMessage("");
+      fetchMessages(activeConversation);
     }
   };
 
   const handleFileUpload = () => {
-    // Implementation for file upload
-    console.log("File upload clicked");
+    // Implementation for file upload (optional)
+    // You can integrate with your file upload logic here
   };
 
   const activeConv = conversations.find(conv => conv.id === activeConversation);
@@ -148,31 +83,20 @@ const StudentMessagesTab = () => {
                 >
                   <div className="flex items-start space-x-3">
                     <img
-                      src={conversation.researcher.imageUrl}
-                      alt={conversation.researcher.name}
+                      src={conversation.avatar_url}
+                      alt={conversation.name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <h4 className="font-semibold text-sm truncate">
-                          {conversation.researcher.name}
+                          {conversation.name}
                         </h4>
-                        {conversation.unreadCount > 0 && (
-                          <Badge className="bg-red-500 text-white text-xs">
-                            {conversation.unreadCount}
-                          </Badge>
-                        )}
                       </div>
-                      <p className="text-xs text-gray-600">{conversation.researcher.title}</p>
-                      {conversation.sessionRelated && (
-                        <p className="text-xs text-blue-600 mt-1">
-                          📅 {conversation.sessionDate}
-                        </p>
-                      )}
                       <p className="text-sm text-gray-600 truncate mt-1">
-                        {conversation.lastMessage}
+                        {conversation.last_message}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">{conversation.timestamp}</p>
+                      <p className="text-xs text-gray-400 mt-1">{conversation.last_message_at}</p>
                     </div>
                   </div>
                 </div>
@@ -188,16 +112,12 @@ const StudentMessagesTab = () => {
               <CardHeader className="border-b">
                 <div className="flex items-center space-x-3">
                   <img
-                    src={activeConv.researcher.imageUrl}
-                    alt={activeConv.researcher.name}
+                    src={activeConv?.avatar_url}
+                    alt={activeConv?.name}
                     className="w-10 h-10 rounded-full object-cover"
                   />
                   <div>
-                    <h3 className="font-semibold">{activeConv.researcher.name}</h3>
-                    <p className="text-sm text-gray-600">{activeConv.researcher.title}</p>
-                    {activeConv.sessionRelated && (
-                      <p className="text-xs text-blue-600">Session: {activeConv.sessionDate}</p>
-                    )}
+                    <h3 className="font-semibold">{activeConv?.name}</h3>
                   </div>
                 </div>
               </CardHeader>
@@ -208,24 +128,18 @@ const StudentMessagesTab = () => {
                   {messages.map((message) => (
                     <div
                       key={message.id}
-                      className={`flex ${message.senderType === 'student' ? 'justify-end' : 'justify-start'}`}
+                      className={`flex ${message.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
                         className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                          message.senderType === 'student'
+                          message.sender_id === user?.id
                             ? 'bg-blue-600 text-white'
                             : 'bg-gray-100 text-gray-800'
                         }`}
                       >
                         <p className="text-sm">{message.content}</p>
-                        {message.hasAttachment && (
-                          <div className="mt-2 p-2 bg-white bg-opacity-20 rounded flex items-center space-x-2">
-                            <Paperclip className="h-4 w-4" />
-                            <span className="text-xs">{message.attachmentName}</span>
-                          </div>
-                        )}
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-xs opacity-75">{message.timestamp}</span>
+                          <span className="text-xs opacity-75">{message.created_at}</span>
                         </div>
                       </div>
                     </div>

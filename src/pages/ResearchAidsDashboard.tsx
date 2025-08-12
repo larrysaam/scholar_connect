@@ -9,7 +9,7 @@ import OnboardingCard from "@/components/dashboard/research-aids/OnboardingCard"
 import QuickActionsCard from "@/components/dashboard/research-aids/QuickActionsCard";
 import DashboardLayout from "@/components/dashboard/research-aids/DashboardLayout";
 import DashboardTabRenderer from "@/components/dashboard/research-aids/DashboardTabRenderer";
-import { notificationService } from "@/services/notificationService";
+import { NotificationService } from "@/services/notificationService";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -59,18 +59,10 @@ const ResearchAidsDashboard = () => {
       setShowNDA(true);
     }
 
-    // Generate and show summary notification
-    const summaryNotification = notificationService.generateSummaryNotification();
-    if (summaryNotification.message !== "No new notifications at this time.") {
-      toast({
-        title: summaryNotification.title,
-        description: summaryNotification.message,
-      });
+    // Example: Create a welcome notification for new users
+    if (profile?.id && !hasCompletedOnboarding) {
+      NotificationService.notifyProfileIncomplete(profile.id);
     }
-
-    // Schedule weekly email summary
-    const userEmail = "neba.emmanuel@example.com";
-    notificationService.scheduleWeeklyEmail(userEmail);
   }, [toast]);
 
   const handleOnboardingComplete = () => {

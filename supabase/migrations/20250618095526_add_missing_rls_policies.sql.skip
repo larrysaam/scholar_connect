@@ -1,14 +1,18 @@
 
 -- Add remaining RLS policies for all tables
 
--- Consultations policies
-DO $$
+-- Consultations policies (only if table exists)
+DO $
 BEGIN
-    CREATE POLICY "Students can view their consultations" ON public.consultations
-      FOR SELECT USING (auth.uid() = student_id);
-EXCEPTION
-    WHEN duplicate_object THEN NULL;
-END $$;
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'consultations' AND table_schema = 'public') THEN
+        BEGIN
+            CREATE POLICY "Students can view their consultations" ON public.consultations
+              FOR SELECT USING (auth.uid() = student_id);
+        EXCEPTION
+            WHEN duplicate_object THEN NULL;
+        END;
+    END IF;
+END $;
 
 DO $$
 BEGIN

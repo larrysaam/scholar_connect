@@ -1,80 +1,220 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  BookOpen, 
+  Plus, 
+  Calendar, 
+  DollarSign, 
+  Users, 
+  Settings,
+  Eye,
+  EyeOff,
+  Edit,
+  Trash2,
+  Clock,
+  Loader2
+} from "lucide-react";
+import { useConsultationServices } from "@/hooks/useConsultationServices";
 import ServiceInstructions from "../consultation-services/ServiceInstructions";
 import ServiceCard from "../consultation-services/ServiceCard";
 import AddServiceForm from "../consultation-services/AddServiceForm";
-
-interface AcademicLevelPrice {
-  level: "Undergraduate" | "Master's" | "PhD";
-  price: number;
-}
-
-interface AddOn {
-  name: string;
-  price: number;
-}
-
-interface ServiceType {
-  id: string;
-  category: "General Consultation" | "Chapter Review" | "Full Thesis Cycle Support" | "Full Thesis Review";
-  academicLevelPrices: AcademicLevelPrice[];
-  description: string;
-  addOns: AddOn[];
-}
+import ServiceManagement from "../consultation-services/ServiceManagement";
+import BookingManagement from "../consultation-services/BookingManagement";
 
 const ConsultationServicesTab = () => {
-  const [services, setServices] = useState<ServiceType[]>([
-    {
-      id: "1",
-      category: "General Consultation",
-      academicLevelPrices: [{ level: "Undergraduate", price: 8000 }],
-      description: "General research guidance and consultation",
-      addOns: []
-    }
-  ]);
+  const {
+    services,
+    bookings,
+    loading,
+    creating,
+    updating,
+    createService,
+    updateService,
+    toggleServiceStatus,
+    deleteService,
+    updateBookingStatus
+  } = useConsultationServices();
 
-  const addService = (serviceData: Omit<ServiceType, "id">) => {
-    setServices(prev => [...prev, {
-      ...serviceData,
-      id: Date.now().toString()
-    }]);
-  };
+  const [activeTab, setActiveTab] = useState("services");
 
-  const removeService = (id: string) => {
-    setServices(prev => prev.filter(service => service.id !== id));
-  };
+  const activeServices = services.filter(service => service.is_active);
+  const pendingBookings = bookings.filter(booking => booking.status === 'pending');
+  const upcomingBookings = bookings.filter(booking => 
+    booking.status === 'confirmed' && new Date(booking.scheduled_date) >= new Date()
+  );
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        <span className="ml-2 text-gray-500">Loading consultation services...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <ServiceInstructions />
 
-      <div>
-        <h2 className="text-2xl font-bold">Consultation Service Setup</h2>
-        <p className="text-gray-600">Configure your service offerings and pricing</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold">Consultation Services</h2>
+          <p className="text-gray-600">Manage your service offerings, pricing, and bookings</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Badge variant="outline" className="bg-green-50">
+              {activeServices.length} Active Services
+            </Badge>
+            <Badge variant="outline" className="bg-blue-50">
+              {pendingBookings.length} Pending Bookings
+            </Badge>
+          </div>
+        </div>
       </div>
 
-      {/* Current Services */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <BookOpen className="h-5 w-5" />
-            <span>Your Service Offerings</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {services.map((service) => (
-            <ServiceCard
-              key={service.id}
-              service={service}
-              onRemove={removeService}
-            />
-          ))}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="services" className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4" />
+            Services ({services.length})
+          </TabsTrigger>
+          <TabsTrigger value="bookings" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Bookings ({bookings.length})
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Analytics
+          </TabsTrigger>
+        </TabsList>
 
-          <AddServiceForm onAddService={addService} />
-        </CardContent>
-      </Card>
+        <TabsContent value="services" className="space-y-6">
+          <ServiceManagement
+            services={services}
+            creating={creating}
+            updating={updating}
+            onCreateService={createService}
+            onUpdateService={updateService}
+            onToggleStatus={toggleServiceStatus}
+            onDeleteService={deleteService}
+          />
+        </TabsContent>
+
+        <TabsContent value="bookings" className="space-y-6">
+          <BookingManagement
+            bookings={bookings}
+            services={services}
+            onUpdateBookingStatus={updateBookingStatus}
+          />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Services</p>
+                    <p className="text-2xl font-bold">{services.length}</p>
+                  </div>
+                  <BookOpen className="h-8 w-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Active Services</p>
+                    <p className="text-2xl font-bold">{activeServices.length}</p>
+                  </div>
+                  <Eye className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Bookings</p>
+                    <p className="text-2xl font-bold">{bookings.length}</p>
+                  </div>
+                  <Calendar className="h-8 w-8 text-purple-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Upcoming Sessions</p>
+                    <p className="text-2xl font-bold">{upcomingBookings.length}</p>
+                  </div>
+                  <Clock className="h-8 w-8 text-orange-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Service Performance</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {services.map((service) => {
+                  const serviceBookings = bookings.filter(b => b.service_id === service.id);
+                  const completedBookings = serviceBookings.filter(b => b.status === 'completed');
+                  const totalRevenue = completedBookings.reduce((sum, booking) => sum + booking.total_price, 0);
+
+                  return (
+                    <div key={service.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <h4 className="font-medium">{service.title}</h4>
+                        <p className="text-sm text-gray-600">{service.category}</p>
+                      </div>
+                      <div className="flex items-center gap-6 text-sm">
+                        <div className="text-center">
+                          <p className="font-medium">{serviceBookings.length}</p>
+                          <p className="text-gray-600">Total Bookings</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="font-medium">{completedBookings.length}</p>
+                          <p className="text-gray-600">Completed</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="font-medium">{totalRevenue.toLocaleString()} XAF</p>
+                          <p className="text-gray-600">Revenue</p>
+                        </div>
+                        <Badge 
+                          variant={service.is_active ? "default" : "secondary"}
+                          className={service.is_active ? "bg-green-600" : ""}
+                        >
+                          {service.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                {services.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    No services created yet. Create your first service to see analytics.
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

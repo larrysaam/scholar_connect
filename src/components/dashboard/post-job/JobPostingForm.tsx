@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useJobManagement, CreateJobData } from "@/hooks/useJobManagement";
 import BasicInfoSection from "./BasicInfoSection";
 import JobDescriptionSection from "./JobDescriptionSection";
 import AdditionalDetailsSection from "./AdditionalDetailsSection";
@@ -19,12 +20,16 @@ const JobPostingForm = () => {
     deadline: "",
     location: "",
     duration: "",
+    experience_level: "",
+    urgency: "medium",
     skills: [] as string[],
     files: [] as File[]
   });
+  
+  const { createJob, creating } = useJobManagement();
   const { toast } = useToast();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!jobData.title || !jobData.description || !jobData.category || !jobData.budget) {
       toast({
         title: "Missing Information",
@@ -34,14 +39,34 @@ const JobPostingForm = () => {
       return;
     }
 
-    console.log("Submitting job:", jobData);
-    
-    toast({
-      title: "Job Posted Successfully!",
-      description: "Your job has been posted and research aids will be notified"
-    });
+    const budgetNumber = parseFloat(jobData.budget);
+    if (isNaN(budgetNumber) || budgetNumber <= 0) {
+      toast({
+        title: "Invalid Budget",
+        description: "Please enter a valid budget amount",
+        variant: "destructive"
+      });
+      return;
+    }
 
-    clearForm();
+    const createJobData: CreateJobData = {
+      title: jobData.title,
+      description: jobData.description,
+      category: jobData.category,
+      budget: budgetNumber,
+      currency: "XAF",
+      location: jobData.location || undefined,
+      duration: jobData.duration || undefined,
+      skills_required: jobData.skills,
+      experience_level: jobData.experience_level || undefined,
+      urgency: jobData.urgency as "low" | "medium" | "high",
+      deadline: jobData.deadline ? new Date(jobData.deadline).toISOString() : undefined
+    };
+
+    const success = await createJob(createJobData);
+    if (success) {
+      clearForm();
+    }
   };
 
   const clearForm = () => {
@@ -53,6 +78,8 @@ const JobPostingForm = () => {
       deadline: "",
       location: "",
       duration: "",
+      experience_level: "",
+      urgency: "medium",
       skills: [],
       files: []
     });
@@ -103,6 +130,7 @@ const JobPostingForm = () => {
         <FormActions
           onSubmit={handleSubmit}
           onClear={clearForm}
+          isSubmitting={creating}
         />
       </CardContent>
     </Card>

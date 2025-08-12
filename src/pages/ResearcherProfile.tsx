@@ -1,206 +1,83 @@
-import { useState } from "react";
 import { useParams } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2, AlertCircle, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProfileHeader from "@/components/researcher/ProfileHeader";
 import ProfileTabs from "@/components/researcher/ProfileTabs";
+import { useResearcherProfile } from "@/hooks/useResearcherProfile";
 
 const ResearcherProfile = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { researcher, loading, error, addReview, refetch } = useResearcherProfile(id || '');
 
-  // Mock data - in a real app, this would come from an API
-  const researcher = {
-    id: id || "1",
-    name: "Dr. Marie Ngono Abega",
-    title: "Senior Research Fellow in Geographic Information Systems",
-    affiliation: "University of Yaoundé I",
-    location: "Yaoundé, Cameroon",
-    rating: 4.9,
-    totalReviews: 45,
-    studentsSupervised: 25,
-    yearsExperience: 15,
-    expertise: ["Remote Sensing", "Spatial Analysis", "Environmental Modeling", "Cartography", "Urban Planning", "Climate Change Analysis"],
-    bio: "Dr. Marie Ngono Abega is a distinguished researcher with over 15 years of experience in Geographic Information Systems and Remote Sensing. She has published extensively in international journals and has worked on numerous projects involving spatial analysis, environmental modeling, and urban planning. Her expertise spans across multiple domains including climate change analysis, land use planning, and disaster risk assessment. She is passionate about using GIS technology to solve real-world problems and has collaborated with various international organizations including the UN and World Bank.",
-    imageUrl: "/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png",
-    isOnline: true,
-    responseTime: "Usually responds within 2 hours",
-    languages: ["English", "French", "German"],
-    hourlyRate: 15000,
-    
-    // Additional data for ProfileTabs
-    institution: "University of Yaoundé I",
-    department: "Department of Geography",
-    field: "Geographic Information Systems",
-    specialties: ["Remote Sensing", "Spatial Analysis", "Environmental Modeling", "Cartography", "Urban Planning", "Climate Change Analysis"],
-    reviews: [
-      {
-        id: "1",
-        name: "Dr. Paul Mbarga",
-        rating: 5,
-        date: "2024-01-15",
-        comment: "Excellent expertise in GIS analysis. Very professional and delivered quality work on time. Highly recommended for spatial analysis projects."
-      },
-      {
-        id: "2",
-        name: "Prof. Sarah Tankou",
-        rating: 5,
-        date: "2024-01-10",
-        comment: "Outstanding knowledge in remote sensing. Helped me greatly with my research project on environmental monitoring."
-      },
-      {
-        id: "3",
-        name: "Dr. Jean Baptiste",
-        rating: 4,
-        date: "2024-01-05",
-        comment: "Very knowledgeable researcher with deep understanding of cartographic principles. Great collaboration experience."
-      }
-    ],
-    education: [
-      {
-        degree: "PhD in Geography (Geographic Information Systems)",
-        institution: "University of Yaoundé I",
-        year: "2018"
-      },
-      {
-        degree: "MSc in Geographic Information Systems",
-        institution: "University of Buea",
-        year: "2014"
-      },
-      {
-        degree: "BSc in Geography",
-        institution: "University of Dschang",
-        year: "2011"
-      }
-    ],
-    experience: [
-      {
-        position: "Senior Research Fellow",
-        institution: "University of Yaoundé I",
-        period: "2020-Present"
-      },
-      {
-        position: "Research Associate",
-        institution: "Institute of Geological Sciences",
-        period: "2018-2020"
-      },
-      {
-        position: "GIS Analyst",
-        institution: "Ministry of Environment",
-        period: "2015-2018"
-      }
-    ],
-    publications: [
-      {
-        title: "Spatial Analysis of Urban Growth in Cameroon Cities: A Remote Sensing Approach",
-        journal: "African Journal of Geography",
-        year: "2023",
-        citations: 45
-      },
-      {
-        title: "Remote Sensing Applications in Environmental Monitoring of Central African Forests",
-        journal: "International Journal of Remote Sensing",
-        year: "2022",
-        citations: 62
-      },
-      {
-        title: "Climate Change Impact Assessment Using GIS: A Case Study of Northern Cameroon",
-        journal: "Environmental Science & Technology",
-        year: "2021",
-        citations: 38
-      },
-      {
-        title: "Land Use Change Detection in Urban Areas Using Satellite Imagery",
-        journal: "Journal of Urban Planning",
-        year: "2020",
-        citations: 29
-      }
-    ],
-    awards: [
-      {
-        title: "Best Young Researcher Award - African Association of Remote Sensing",
-        year: "2021"
-      },
-      {
-        title: "Excellence in Research Grant - CODESRIA",
-        year: "2020"
-      },
-      {
-        title: "Outstanding Publication Award - University of Yaoundé I",
-        year: "2019"
-      }
-    ],
-    fellowships: [
-      {
-        title: "African Union Research Fellowship",
-        period: "2019-2020"
-      },
-      {
-        title: "UNESCO Young Scientists Programme",
-        period: "2018-2019"
-      },
-      {
-        title: "DAAD Research Fellowship",
-        period: "2017-2018"
-      }
-    ],
-    grants: [
-      {
-        title: "Climate Change Adaptation Research Grant",
-        amount: "150,000 XAF",
-        period: "2022-2024"
-      },
-      {
-        title: "Innovation Research Fund - GIS Applications",
-        amount: "75,000 XAF", 
-        period: "2021-2023"
-      },
-      {
-        title: "Environmental Monitoring Project Grant",
-        amount: "200,000 XAF",
-        period: "2020-2022"
-      }
-    ],
-    memberships: [
-      "African Association of Remote Sensing",
-      "International Geographic Union",
-      "Cameroon Geographic Society",
-      "International Society for Photogrammetry and Remote Sensing",
-      "African Association of Cartography"
-    ],
-    supervision: [
-      {
-        type: "PhD Students",
-        count: 5
-      },
-      {
-        type: "Master's Students", 
-        count: 12
-      },
-      {
-        type: "Research Assistants",
-        count: 8
-      }
-    ],
-    availableTimes: [
-      {
-        date: new Date("2024-01-20"),
-        slots: ["09:00", "10:00", "14:00", "15:00"]
-      },
-      {
-        date: new Date("2024-01-21"),
-        slots: ["09:00", "11:00", "13:00", "16:00"]
-      },
-      {
-        date: new Date("2024-01-22"),
-        slots: ["10:00", "14:00", "15:00", "16:00"]
-      }
-    ],
-    onlineStatus: "online" as const,
-    verifications: {
-      academic: "verified" as const,
-      publication: "verified" as const,
-      institutional: "verified" as const
-    }
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Navbar />
+        <main className="flex-grow flex items-center justify-center">
+          <Card className="w-full max-w-md">
+            <CardContent className="p-12 text-center">
+              <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-blue-500" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Loading Profile</h3>
+              <p className="text-gray-600">Please wait while we fetch the researcher's information...</p>
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !researcher) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Navbar />
+        <main className="flex-grow flex items-center justify-center">
+          <Card className="w-full max-w-md border-red-200">
+            <CardContent className="p-12 text-center">
+              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Profile Not Found</h3>
+              <p className="text-gray-600 mb-6">
+                {error || "The researcher profile you're looking for doesn't exist or is not available."}
+              </p>
+              <div className="space-y-2">
+                <Button onClick={() => navigate('/dashboard')} className="w-full">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+                <Button variant="outline" onClick={refetch} className="w-full">
+                  Try Again
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Transform data to match the existing ProfileHeader and ProfileTabs interface
+  const transformedResearcher = {
+    ...researcher,
+    // Map database fields to component expected fields
+    expertise: researcher.specialties || researcher.expertise || [],
+    reviews: researcher.reviews.map(review => ({
+      id: review.id,
+      name: review.reviewer_name,
+      rating: review.rating,
+      date: new Date(review.created_at).toISOString().split('T')[0],
+      comment: review.comment
+    })),
+    availableTimes: researcher.available_times || [],
+    onlineStatus: researcher.online_status,
+    // Ensure all required fields are present
+    hourlyRate: researcher.hourly_rate,
+    responseTime: researcher.response_time
   };
 
   return (
@@ -208,10 +85,10 @@ const ResearcherProfile = () => {
       <Navbar />
       
       <main className="flex-grow">
-        <ProfileHeader researcher={researcher} />
+        <ProfileHeader researcher={transformedResearcher} />
         
         <div className="container mx-auto px-4 py-8">
-          <ProfileTabs researcher={researcher} />
+          <ProfileTabs researcher={transformedResearcher} />
         </div>
       </main>
       

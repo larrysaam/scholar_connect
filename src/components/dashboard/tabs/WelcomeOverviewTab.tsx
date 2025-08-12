@@ -2,11 +2,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, DollarSign, Users, TrendingUp, MessageSquare } from "lucide-react";
+import { Calendar, Clock, DollarSign, Users, TrendingUp, MessageSquare, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useWelcomeOverview } from "@/hooks/useWelcomeOverview";
 
 const WelcomeOverviewTab = () => {
   const { profile } = useAuth();
+  const {
+    loading,
+    upcomingConsultationsCount,
+    weeklyStats,
+    todaysSchedule,
+    newMessagesCount,
+  } = useWelcomeOverview();
 
   const getWelcomeMessage = () => {
     if (!profile?.name) return "Welcome!";
@@ -14,17 +22,22 @@ const WelcomeOverviewTab = () => {
     const nameParts = profile.name.split(' ');
     const lastName = nameParts[nameParts.length - 1];
     
-    // Check for academic rank first (Professor takes precedence)
+    // @ts-ignore
     if (profile.academic_rank && 
+        // @ts-ignore
         (profile.academic_rank.includes('Professor') || 
+        // @ts-ignore
          profile.academic_rank.includes('Prof'))) {
       return `Welcome, Prof. ${lastName}!`;
     }
     
-    // Check for PhD/Postdoc in level_of_study or highest_education
+    // @ts-ignore
     const hasPhD = profile.level_of_study?.toLowerCase().includes('phd') ||
+                   // @ts-ignore
                    profile.level_of_study?.toLowerCase().includes('postdoc') ||
+                   // @ts-ignore
                    profile.highest_education?.toLowerCase().includes('phd') ||
+                   // @ts-ignore
                    profile.highest_education?.toLowerCase().includes('postdoc');
     
     if (hasPhD) {
@@ -34,6 +47,15 @@ const WelcomeOverviewTab = () => {
     return `Welcome, ${lastName}!`;
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        <span className="ml-2 text-gray-500">Loading overview...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Welcome Message */}
@@ -41,8 +63,8 @@ const WelcomeOverviewTab = () => {
         <CardContent className="p-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">{getWelcomeMessage()}</h2>
           <p className="text-gray-600">
-            You have <span className="font-semibold text-blue-600">3 upcoming consultations</span> and 
-            <span className="font-semibold text-green-600"> 2 new messages</span> waiting for you.
+            You have <span className="font-semibold text-blue-600">{upcomingConsultationsCount} upcoming consultations</span> and 
+            <span className="font-semibold text-green-600">{newMessagesCount} new messages</span> waiting for you.
           </p>
         </CardContent>
       </Card>
@@ -57,7 +79,7 @@ const WelcomeOverviewTab = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">This Week</p>
-                <p className="text-xl font-bold">12</p>
+                <p className="text-xl font-bold">{weeklyStats.consultations}</p>
                 <p className="text-xs text-gray-500">Consultations</p>
               </div>
             </div>
@@ -72,7 +94,7 @@ const WelcomeOverviewTab = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Earnings</p>
-                <p className="text-xl font-bold">180,000</p>
+                <p className="text-xl font-bold">{weeklyStats.earnings.toLocaleString()}</p>
                 <p className="text-xs text-gray-500">XAF this week</p>
               </div>
             </div>
@@ -87,7 +109,7 @@ const WelcomeOverviewTab = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Hours</p>
-                <p className="text-xl font-bold">24</p>
+                <p className="text-xl font-bold">{weeklyStats.hours}</p>
                 <p className="text-xs text-gray-500">Total this week</p>
               </div>
             </div>
@@ -102,7 +124,7 @@ const WelcomeOverviewTab = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Rating</p>
-                <p className="text-xl font-bold">4.8</p>
+                <p className="text-xl font-bold">{weeklyStats.rating}</p>
                 <p className="text-xs text-gray-500">Average</p>
               </div>
             </div>
@@ -115,52 +137,29 @@ const WelcomeOverviewTab = () => {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Today's Schedule</span>
-            <Badge variant="secondary">3 consultations</Badge>
+            <Badge variant="secondary">{todaysSchedule.length} consultations</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <div>
-                  <p className="font-medium">Machine Learning Consultation</p>
-                  <p className="text-sm text-gray-600">with Sarah Johnson</p>
+            {todaysSchedule.map((booking: any) => (
+              <div key={booking.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <div>
+                    <p className="font-medium">{booking.service?.title || 'N/A'}</p>
+                    <p className="text-sm text-gray-600">with {booking.client?.name || 'N/A'}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-medium">{booking.scheduled_time}</p>
+                  <p className="text-sm text-gray-600">{booking.duration_minutes} min</p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="font-medium">10:00 AM</p>
-                <p className="text-sm text-gray-600">1 hour</p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <div>
-                  <p className="font-medium">Data Analysis Review</p>
-                  <p className="text-sm text-gray-600">with Michael Chen</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">2:00 PM</p>
-                <p className="text-sm text-gray-600">2 hours</p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                <div>
-                  <p className="font-medium">Research Methodology</p>
-                  <p className="text-sm text-gray-600">with Emma Wilson</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">4:30 PM</p>
-                <p className="text-sm text-gray-600">1.5 hours</p>
-              </div>
-            </div>
+            ))}
+            {todaysSchedule.length === 0 && (
+              <p className="text-gray-500">No consultations scheduled for today.</p>
+            )}
           </div>
         </CardContent>
       </Card>

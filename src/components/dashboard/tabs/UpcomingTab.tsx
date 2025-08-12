@@ -1,10 +1,17 @@
 
-import { upcomingConsultations } from "../mockData";
+import { useMemo } from 'react';
 import UpcomingConsultationCard from "../consultation/UpcomingConsultationCard";
 import { useConsultationActions } from "@/hooks/useConsultationActions";
 import { useDocumentUpload } from "@/hooks/useDocumentUpload";
+import { useConsultationServices, ServiceBooking } from "@/hooks/useConsultationServices";
+import { Loader2 } from "lucide-react";
 
 const UpcomingTab = () => {
+  const {
+    bookings,
+    loading,
+  } = useConsultationServices();
+
   const {
     isLoading: actionLoading,
     handleAcceptConsultation,
@@ -21,6 +28,32 @@ const UpcomingTab = () => {
     isUploading,
     handleUploadDocument
   } = useDocumentUpload();
+
+  const upcomingConsultations = useMemo(() => {
+    return bookings
+      .filter(booking => booking.status === 'confirmed' && new Date(booking.scheduled_date) > new Date())
+      .map(booking => ({
+        id: booking.id,
+        researcher: {
+          id: booking.client_id,
+          name: booking.client?.name || 'N/A',
+          field: booking.service?.category || 'N/A',
+          imageUrl: booking.client?.avatar_url || '/placeholder.svg',
+        },
+        date: new Date(booking.scheduled_date).toLocaleDateString(),
+        time: booking.scheduled_time,
+        topic: booking.service?.title || 'N/A',
+        status: booking.status,
+      }));
+  }, [bookings]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-40">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
