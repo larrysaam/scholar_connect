@@ -36,9 +36,9 @@ import {
   DollarSign
 } from "lucide-react";
 import { format } from "date-fns";
-import { useConsultationServices } from "@/hooks/useConsultationServices";
 import { useBookingSystem } from "@/hooks/useBookingSystem";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from '@/integrations/supabase/client';
 
 interface ComprehensiveBookingModalProps {
   researcher: {
@@ -60,7 +60,6 @@ interface PaymentMethod {
 
 const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProps) => {
   const { toast } = useToast();
-  const { services, loading: servicesLoading } = useConsultationServices();
   const { 
     createBooking, 
     processPayment, 
@@ -90,8 +89,32 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
-  // Filter services for this researcher
-  const researcherServices = services.filter(service => service.user_id === researcher.id);
+  // Add state for services and loading
+  const [services, setServices] = useState<any[]>([]);
+  const [servicesLoading, setServicesLoading] = useState(true);
+
+  // Fetch all active services for this researcher on open
+  useEffect(() => {
+    if (!isOpen) return;
+    const fetchServices = async () => {
+      setServicesLoading(true);
+      const { data, error } = await supabase
+        .from('consultation_services')
+        .select(`*, pricing:service_pricing(*), addons:service_addons(*)`)
+        .eq('user_id', researcher.id)
+        .eq('is_active', true);
+      if (error) {
+        setServices([]);
+      } else {
+        setServices(data || []);
+      }
+      setServicesLoading(false);
+    };
+    fetchServices();
+  }, [isOpen, researcher.id]);
+
+  // researcherServices now just filters the fetched services
+  const researcherServices = services;
 
   const paymentMethods: PaymentMethod[] = [
     {
@@ -279,6 +302,23 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
+        if (servicesLoading) {
+          return (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span className="ml-2">Loading services...</span>
+            </div>
+          );
+        }
+        if (researcherServices.length === 0) {
+          return (
+            <div className="text-center py-8">
+              <AlertCircle className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
+              <h4 className="font-semibold mb-2">No Consultation Services Available</h4>
+              <p className="text-gray-600">This researcher has not published any consultation services yet. Please check back later.</p>
+            </div>
+          );
+        }
         return (
           <div className="space-y-6">
             <div>
@@ -309,7 +349,7 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
                         <div className="text-right">
                           <p className="text-sm text-gray-500">Starting from</p>
                           <p className="font-semibold text-green-600">
-                            {Math.min(...service.pricing.map(p => p.price)).toLocaleString()} XAF
+                            {service.pricing && service.pricing.length > 0 ? Math.min(...service.pricing.map(p => p.price)).toLocaleString() : 0} XAF
                           </p>
                         </div>
                       </div>
@@ -318,7 +358,6 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
                 ))}
               </div>
             </div>
-
             {selectedService && (
               <div>
                 <Label className="text-base font-medium">Academic Level</Label>
@@ -341,7 +380,6 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
                 </Select>
               </div>
             )}
-
             {selectedService && getSelectedService()?.addons.length > 0 && (
               <div>
                 <Label className="text-base font-medium">Add-ons (Optional)</Label>
@@ -599,11 +637,10 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
   };
 
   const stepTitles = [
-    "Select Service",
-    "Choose Date & Time", 
-    "Consultation Details",
-    "Payment",
-    "Confirmation"
+    'Select Service',
+    'Choose Date & Time',
+    'Enter Details',
+    'Review & Pay'
   ];
 
   return (
@@ -670,7 +707,7 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
             {currentStep < 4 ? (
               <Button
                 onClick={() => setCurrentStep(prev => prev + 1)}
-                disabled={!isStepValid(currentStep)}
+                disabled={!isStepValid(currentStep) || researcherServices.length === 0}
               >
                 Next
               </Button>

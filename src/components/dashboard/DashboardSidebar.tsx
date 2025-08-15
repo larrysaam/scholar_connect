@@ -56,6 +56,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
     { id: "payments", label: "Payments & Earnings", icon: DollarSign },
     { id: "performance", label: "Performance & Reputation", icon: TrendingUp },
     { id: "quality", label: "Quality & Feedback", icon: Star },
+    { id: "messaging", label: "Messaging", icon: MessageSquare }, // <-- Added Messaging tab
     { id: "discussion", label: "Discussion Board", icon: MessageSquare },
     { id: "verification", label: "Verification", icon: Shield },
     { id: "notifications", label: "Notifications", icon: Bell, badge: 3 },

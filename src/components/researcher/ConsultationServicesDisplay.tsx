@@ -1,5 +1,5 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,59 +28,66 @@ const ConsultationServicesDisplay = ({ researcherId, researcherName }: Consultat
   const [selectedService, setSelectedService] = useState<string>("");
   const [selectedLevel, setSelectedLevel] = useState<string>("");
   const [bookingMessage, setBookingMessage] = useState("");
+  const [consultationServices, setConsultationServices] = useState<ConsultationService[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Mock data - this would come from the researcher's profile
-  const consultationServices: ConsultationService[] = [
-    {
-      id: "1",
-      category: "General Consultation",
-      academicLevelPrices: [
-        { level: "Undergraduate", price: 8000 },
-        { level: "Master's", price: 8000 },
-        { level: "PhD", price: 8000 }
-      ],
-      description: "General research guidance and consultation"
-    },
-    {
-      id: "2",
-      category: "Chapter Review",
-      academicLevelPrices: [
-        { level: "Undergraduate", price: 15000 },
-        { level: "Master's", price: 20000 },
-        { level: "PhD", price: 25000 }
-      ],
-      description: "Comprehensive review of individual thesis chapters"
-    },
-    {
-      id: "3",
-      category: "Full Thesis Cycle Support",
-      academicLevelPrices: [
-        { level: "Undergraduate", price: 100000 },
-        { level: "Master's", price: 180000 },
-        { level: "PhD", price: 300000 }
-      ],
-      description: "Complete thesis guidance from topic development to defense"
-    }
-  ];
+  useEffect(() => {
+    const fetchServices = async () => {
+      setLoading(true);
+      // Fetch all active services for the researcher, including pricing
+      const { data, error } = await supabase
+        .from("consultation_services")
+        .select(`id, category, description, pricing:service_pricing(academic_level, price)`) // fetch pricing as nested
+        .eq("user_id", researcherId)
+        .eq("is_active", true);
+      if (error) {
+        setConsultationServices([]);
+        setLoading(false);
+        return;
+      }
+      // Transform to match UI structure
+      const services = (data || []).map((service: any) => ({
+        id: service.id,
+        category: service.category,
+        description: service.description,
+        academicLevelPrices: (service.pricing || []).map((p: any) => ({
+          level: p.academic_level === "Masters" ? "Master's" : p.academic_level,
+          price: p.price
+        }))
+      }));
+      setConsultationServices(services);
+      setLoading(false);
+      // Auto-select first service if available
+      if (services.length > 0) {
+        setSelectedService(services[0].id);
+        // Auto-select first academic level if available
+        if (services[0].academicLevelPrices.length > 0) {
+          setSelectedLevel(services[0].academicLevelPrices[0].level);
+        }
+      }
+    };
+    if (researcherId) fetchServices();
+  }, [researcherId]);
 
   const handleBookConsultation = () => {
     if (!selectedService || !selectedLevel) {
-      alert("Please select a service and academic level");
+      window.alert("Please select a service and academic level");
       return;
     }
 
     const service = consultationServices.find(s => s.id === selectedService);
-    const levelPrice = service?.academicLevelPrices.find(p => p.level === selectedLevel);
+    const levelPriceObj = service?.academicLevelPrices.find(p => p.level === selectedLevel);
+    const price = levelPriceObj ? levelPriceObj.price : 0;
     
     console.log("Booking consultation:", {
       researcherId,
       serviceId: selectedService,
       academicLevel: selectedLevel,
-      price: levelPrice?.price,
+      price,
       message: bookingMessage
     });
 
-    alert(`Consultation booking request sent! You will be redirected to payment for ${levelPrice?.price.toLocaleString()} XAF`);
+    window.alert(`Consultation booking request sent! You will be redirected to payment for ${price.toLocaleString()} XAF`);
   };
 
   return (

@@ -44,7 +44,7 @@ export const useResearchers = () => {
 
       const { data, error } = await supabase
         .from('users')
-        .select('*')
+        .select('*, researcher_profiles:researcher_profiles(*), consultation_services:consultation_services(*, pricing:service_pricing(*))')
         .eq('role', 'expert')
         .order('created_at', { ascending: false });
 
@@ -60,35 +60,47 @@ export const useResearchers = () => {
       }
 
       // Transform database data to match the component interface
-      const transformedResearchers: Researcher[] = (data || []).map(user => ({
-        id: user.id,
-        name: user.name || 'Unknown Researcher',
-        email: user.email,
-        role: user.role,
-        institution: user.institution || 'Institution not specified',
-        faculty: user.faculty,
-        study_level: user.study_level,
-        experience: user.experience,
-        expertise: user.expertise || [],
-        other_expertise: user.other_expertise,
-        languages: user.languages || ['English'],
-        linkedin_url: user.linkedin_url,
-        country: user.country || 'Location not specified',
-        phone_number: user.phone_number,
-        created_at: user.created_at,
-        updated_at: user.updated_at,
-        
-        // Computed fields for compatibility with existing component
-        title: user.experience || 'Research Expert',
-        field: user.expertise?.[0] || 'General Research',
-        specializations: user.expertise || ['Research Guidance'],
-        rating: 4.5 + Math.random() * 0.5, // Random rating between 4.5-5.0
-        reviewCount: Math.floor(Math.random() * 50) + 5, // Random review count 5-55
-        hourlyRate: Math.floor(Math.random() * 10000) + 10000, // Random rate 10k-20k XAF
-        location: user.country || 'Location not specified',
-        imageUrl: '/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png', // Default avatar
-        featured: Math.random() > 0.7 // 30% chance of being featured
-      }));
+      const transformedResearchers: Researcher[] = (data || []).map(user => {
+        const profile = Array.isArray(user.researcher_profiles) && user.researcher_profiles.length > 0 ? user.researcher_profiles[0] : undefined;
+        // Find the minimum price from all their services
+        let minPrice = 0;
+        if (Array.isArray(user.consultation_services) && user.consultation_services.length > 0) {
+          const allPrices = user.consultation_services.flatMap(service =>
+            Array.isArray(service.pricing) ? service.pricing.map(p => p.price) : []
+          );
+          if (allPrices.length > 0) {
+            minPrice = Math.min(...allPrices.filter(p => typeof p === 'number'));
+          }
+        }
+        return {
+          id: user.id,
+          name: user.name || 'Unknown Researcher',
+          email: user.email,
+          role: user.role,
+          institution: user.institution || 'Institution not specified',
+          faculty: user.faculty,
+          study_level: user.study_level,
+          experience: user.experience,
+          expertise: user.expertise || [],
+          other_expertise: user.other_expertise,
+          languages: user.languages || ['English'],
+          linkedin_url: user.linkedin_url,
+          country: user.country || 'Location not specified',
+          phone_number: user.phone_number,
+          created_at: user.created_at,
+          updated_at: user.updated_at,
+          // Computed fields for compatibility with existing component
+          title: (profile && profile.title) || user.experience || 'Research Expert',
+          field: user.expertise?.[0] || 'General Research',
+          specializations: user.expertise || ['Research Guidance'],
+          rating: (profile && typeof profile.rating === 'number') ? profile.rating : 0,
+          reviewCount: (profile && typeof profile.total_reviews === 'number') ? profile.total_reviews : 0,
+          hourlyRate: minPrice,
+          location: user.country || 'Location not specified',
+          imageUrl: '/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png',
+          featured: Math.random() > 0.7 // 30% chance of being featured
+        };
+      });
 
       setResearchers(transformedResearchers);
     } catch (error) {

@@ -156,32 +156,39 @@ export const useResearcherProfile = (researcherId: string) => {
       // If no profile exists, create a default one
       let profile = profileData;
       if (profileError && profileError.code === 'PGRST116') {
-        // Create default profile
-        const { data: newProfile, error: createError } = await supabase
-          .from('researcher_profiles')
-          .insert({
-            user_id: researcherId,
-            title: userData.experience || 'Research Expert',
-            bio: 'Experienced researcher ready to help with your academic projects.',
-            research_interests: userData.expertise || [],
-            specialties: userData.expertise || [],
-            education: [],
-            experience: [],
-            publications: [],
-            awards: [],
-            fellowships: [],
-            grants: [],
-            memberships: [],
-            supervision: [],
-            available_times: []
-          })
-          .select()
-          .single();
+        // Only try to create a profile if the user is authenticated and is the owner
+        const { data: authUserData } = await supabase.auth.getUser();
+        const userId = authUserData?.user?.id;
+        if (userId && userId === researcherId) {
+          const { data: newProfile, error: createError } = await supabase
+            .from('researcher_profiles')
+            .insert({
+              user_id: researcherId,
+              title: userData.experience || 'Research Expert',
+              bio: 'Experienced researcher ready to help with your academic projects.',
+              research_interests: userData.expertise || [],
+              specialties: userData.expertise || [],
+              education: [],
+              experience_history: [],
+              publications: [],
+              awards: [],
+              fellowships: [],
+              grants: [],
+              memberships: [],
+              supervision: [],
+              available_times: []
+            })
+            .select()
+            .single();
 
-        if (createError) {
-          console.error('Error creating profile:', createError);
+          if (createError) {
+            console.error('Error creating profile:', createError);
+          } else {
+            profile = newProfile;
+          }
         } else {
-          profile = newProfile;
+          // Not authenticated or not the owner, do not attempt to create
+          profile = null;
         }
       }
 

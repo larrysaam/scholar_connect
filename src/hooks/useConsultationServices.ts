@@ -202,13 +202,131 @@ export const useConsultationServices = () => {
   }, [user]);
 
   const createService = async (serviceData: CreateServiceData): Promise<boolean> => {
-    // Placeholder implementation
-    return false;
+    if (!user) return false;
+    setCreating(true);
+    try {
+      // Insert the main service
+      const { data: service, error } = await supabase
+        .from('consultation_services')
+        .insert({
+          user_id: user.id,
+          category: serviceData.category,
+          title: serviceData.title,
+          description: serviceData.description,
+          duration_minutes: serviceData.duration_minutes || 60,
+          is_active: true,
+        })
+        .select()
+        .single();
+      if (error || !service) {
+        toast({ title: 'Error', description: 'Failed to create service', variant: 'destructive' });
+        setCreating(false);
+        return false;
+      }
+      // Insert pricing
+      if (serviceData.pricing && serviceData.pricing.length > 0) {
+        const pricingRows = serviceData.pricing.map(p => ({
+          service_id: service.id,
+          academic_level: p.academic_level,
+          price: p.price,
+          currency: p.currency || 'XAF',
+        }));
+        await supabase.from('service_pricing').insert(pricingRows);
+      }
+      // Insert addons
+      if (serviceData.addons && serviceData.addons.length > 0) {
+        const addonRows = serviceData.addons.map(a => ({
+          service_id: service.id,
+          name: a.name,
+          description: a.description || '',
+          price: a.price,
+          currency: a.currency || 'XAF',
+          is_active: true,
+        }));
+        await supabase.from('service_addons').insert(addonRows);
+      }
+      await fetchServices();
+      toast({ title: 'Service Created', description: 'Your service has been added.', variant: 'default' });
+      setCreating(false);
+      return true;
+    } catch (err) {
+      setCreating(false);
+      toast({ title: 'Error', description: 'Unexpected error creating service', variant: 'destructive' });
+      return false;
+    }
   };
 
   const updateService = async (serviceId: string, updates: Partial<CreateServiceData>): Promise<boolean> => {
-    // Placeholder implementation
-    return false;
+    if (!user) return false;
+    setUpdating(true);
+    try {
+      // Update main service fields
+      const { error: serviceError } = await supabase
+        .from('consultation_services')
+        .update({
+          category: updates.category,
+          title: updates.title,
+          description: updates.description,
+          duration_minutes: updates.duration_minutes,
+        })
+        .eq('id', serviceId);
+      if (serviceError) {
+        toast({ title: 'Error', description: 'Failed to update service', variant: 'destructive' });
+        setUpdating(false);
+        return false;
+      }
+      // Update pricing: delete old, insert new
+      if (updates.pricing) {
+        await supabase.from('service_pricing').delete().eq('service_id', serviceId);
+        const pricingRows = updates.pricing.map(p => ({
+          service_id: serviceId,
+          academic_level: p.academic_level,
+          price: p.price,
+          currency: p.currency || 'XAF',
+        }));
+        if (pricingRows.length > 0) {
+          await supabase.from('service_pricing').insert(pricingRows);
+        }
+      }
+      // Update addons: delete old, insert new
+      if (updates.addons) {
+        await supabase.from('service_addons').delete().eq('service_id', serviceId);
+        const addonRows = updates.addons.map(a => ({
+          service_id: serviceId,
+          name: a.name,
+          description: a.description || '',
+          price: a.price,
+          currency: a.currency || 'XAF',
+          is_active: true,
+        }));
+        if (addonRows.length > 0) {
+          await supabase.from('service_addons').insert(addonRows);
+        }
+      }
+      // Update availability: delete old, insert new
+      if (updates.availability) {
+        await supabase.from('service_availability').delete().eq('service_id', serviceId);
+        const availabilityRows = updates.availability.map(a => ({
+          service_id: serviceId,
+          day_of_week: a.day_of_week,
+          start_time: a.start_time,
+          end_time: a.end_time,
+          timezone: a.timezone,
+          is_active: a.is_active,
+        }));
+        if (availabilityRows.length > 0) {
+          await supabase.from('service_availability').insert(availabilityRows);
+        }
+      }
+      await fetchServices();
+      toast({ title: 'Service Updated', description: 'Your service has been updated.', variant: 'default' });
+      setUpdating(false);
+      return true;
+    } catch (err) {
+      setUpdating(false);
+      toast({ title: 'Error', description: 'Unexpected error updating service', variant: 'destructive' });
+      return false;
+    }
   };
 
   const toggleServiceStatus = async (serviceId: string, isActive: boolean): Promise<boolean> => {
@@ -222,8 +340,53 @@ export const useConsultationServices = () => {
   };
 
   const updateBookingStatus = async (bookingId: string, status: ServiceBooking['status']): Promise<boolean> => {
-    // Placeholder implementation
-    return false;
+    try {
+      setUpdating(true);
+      const { error } = await supabase
+        .from('service_bookings')
+        .update({
+          status,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', bookingId);
+
+      if (error) {
+        toast({
+          title: 'Error',
+          description: `Failed to update booking status: ${error.message}`,
+          variant: 'destructive',
+        });
+        return false;
+      }
+
+      // Update local state
+      setBookings(prev =>
+        prev.map(b =>
+          b.id === bookingId ? { ...b, status, updated_at: new Date().toISOString() } : b
+        )
+      );
+      setStudentBookings(prev =>
+        prev.map(b =>
+          b.id === bookingId ? { ...b, status, updated_at: new Date().toISOString() } : b
+        )
+      );
+
+      toast({
+        title: 'Booking Updated',
+        description: `Booking status changed to '${status}'.`,
+      });
+      return true;
+    } catch (error: any) {
+      console.error('Error updating booking status:', error);
+      toast({
+        title: 'Error',
+        description: 'Unexpected error updating booking status',
+        variant: 'destructive',
+      });
+      return false;
+    } finally {
+      setUpdating(false);
+    }
   };
 
   useEffect(() => {

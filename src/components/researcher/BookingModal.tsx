@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import ServiceSelector from "./booking/ServiceSelector";
 import AcademicLevelSelector from "./booking/AcademicLevelSelector";
 import AddOnSelector from "./booking/AddOnSelector";
@@ -21,6 +22,7 @@ import BookingSummary from "./booking/BookingSummary";
 
 interface BookingModalProps {
   researcher: {
+    id: string; // <-- Add id here
     name: string;
     hourlyRate: number;
     availableTimes: {
@@ -54,66 +56,57 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
   const [selectedChallenges, setSelectedChallenges] = useState<string[]>([]);
   const [comment, setComment] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
+  const [consultationServices, setConsultationServices] = useState<ConsultationService[]>([]);
 
-  // Mock consultation services - in real app, this would come from the researcher's profile
-  const consultationServices = [
-    {
-      id: "1",
-      category: "General Consultation" as const,
-      academicLevelPrices: [
-        { level: "Undergraduate" as const, price: 8000 },
-        { level: "Master's" as const, price: 8000 },
-        { level: "PhD" as const, price: 8000 }
-      ],
-      description: "General research guidance and consultation",
-      addOns: []
-    },
-    {
-      id: "2", 
-      category: "Chapter Review" as const,
-      academicLevelPrices: [
-        { level: "Undergraduate" as const, price: 15000 },
-        { level: "Master's" as const, price: 20000 },
-        { level: "PhD" as const, price: 25000 }
-      ],
-      description: "Comprehensive review of individual thesis chapters",
-      addOns: [
-        { name: "Formatting & Language Polishing", price: 7500 },
-        { name: "Citation & Reference Check", price: 3500 },
-        { name: "Express Review (24–72 hours)", price: 5000 }
-      ]
-    },
-    {
-      id: "3",
-      category: "Full Thesis Review" as const, 
-      academicLevelPrices: [
-        { level: "Undergraduate" as const, price: 75000 },
-        { level: "Master's" as const, price: 120000 },
-        { level: "PhD" as const, price: 200000 }
-      ],
-      description: "Complete thesis review with comprehensive feedback",
-      addOns: [
-        { name: "Formatting & Language Polishing", price: 15000 },
-        { name: "Citation & Reference Check", price: 10000 },
-        { name: "Express Review (72 hours)", price: 25000 }
-      ]
-    },
-    {
-      id: "4",
-      category: "Full Thesis Cycle Support" as const,
-      academicLevelPrices: [
-        { level: "Undergraduate" as const, price: 100000 },
-        { level: "Master's" as const, price: 180000 },
-        { level: "PhD" as const, price: 300000 }
-      ],
-      description: "Complete thesis guidance from topic development to defense",
-      addOns: [
-        { name: "Formatting & Language Polishing", price: 20000 },
-        { name: "Citation & Reference Check", price: 15000 },
-        { name: "Express Review", price: 30000 }
-      ]
-    }
-  ];
+  useEffect(() => {
+    const fetchServices = async () => {
+      if (!researcher || !researcher.id) {
+        console.log('[BookingModal] No researcher provided or researcher ID is missing');
+        setConsultationServices([]);
+        return;
+      }
+      setConsultationServices([]);
+      // Fetch consultation services for the researcher, including pricing and add-ons
+      const { data, error } = await supabase
+        .from("consultation_services")
+        .select(`id, category, description, service_pricing:service_pricing(academic_level, price), service_addons:service_addons(name, price)`)
+        .eq("user_id", researcher.id)
+        .eq("is_active", true);
+      if (error || !data) {
+        setConsultationServices([]);
+        return;
+      }
+      // Map the data to the expected structure for the ServiceSelector
+      const services = (data || []).map((service: any) => ({
+        id: service.id,
+        category: service.category,
+        description: service.description,
+        academicLevelPrices: (service.service_pricing || []).map((p: any) => ({
+          level: p.academic_level === "Masters" ? "Master's" : p.academic_level,
+          price: p.price
+        })),
+        addOns: (service.service_addons || []).map((a: any) => ({
+          name: a.name,
+          price: a.price
+        }))
+      })).filter((s: any) => s.academicLevelPrices.length > 0);
+      console.log('[BookingModal] Fetched services:', services);
+      setConsultationServices(services);
+      if (services.length > 0) {
+        setSelectedService(services[0].id);
+        if (services[0].academicLevelPrices.length > 0) {
+          setSelectedAcademicLevel(services[0].academicLevelPrices[0].level);
+        }
+      } else {
+        setSelectedService(null);
+        setSelectedAcademicLevel(null);
+      }
+    };
+    fetchServices();
+  }, [researcher]);
+
+  // Defensive: If no services, show a message in the modal
+  const noServices = consultationServices.length === 0;
 
   // Get selected service details
   const getSelectedServiceDetails = () => {
@@ -244,64 +237,64 @@ const BookingModal = ({ researcher }: BookingModalProps) => {
             Select a consultation service, date and time to schedule your session.
           </DialogDescription>
         </DialogHeader>
-        
         <div className="grid gap-6 py-4">
-          <ServiceSelector
-            services={consultationServices}
-            selectedService={selectedService}
-            onServiceChange={setSelectedService}
-          />
-
-          <AcademicLevelSelector
-            selectedService={getSelectedServiceDetails()}
-            selectedAcademicLevel={selectedAcademicLevel}
-            onAcademicLevelChange={setSelectedAcademicLevel}
-          />
-
-          <AddOnSelector
-            selectedService={getSelectedServiceDetails()}
-            selectedAddOns={selectedAddOns}
-            onAddOnToggle={handleAddOnToggle}
-          />
-
-          <DateTimeSelector
-            selectedDate={selectedDate}
-            selectedTime={selectedTime}
-            availableTimes={researcher.availableTimes}
-            onDateSelect={setSelectedDate}
-            onTimeSelect={setSelectedTime}
-          />
-
-          <ChallengeSelector
-            selectedChallenges={selectedChallenges}
-            onChallengeToggle={handleChallengeToggle}
-          />
-
-          <div>
-            <Label htmlFor="comment" className="font-medium">Leave a comment:</Label>
-            <Textarea
-              id="comment"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Provide additional details about your consultation needs..."
-              rows={3}
-              className="mt-2"
-            />
-          </div>
-          
-          <BookingSummary
-            servicePrice={getServicePrice()}
-            addOnsPrice={getAddOnsPrice()}
-            totalPrice={calculateTotalPrice()}
-          />
-          
-          <Button 
-            className="w-full" 
-            disabled={!selectedDate || !selectedTime || !selectedService || !selectedAcademicLevel || selectedChallenges.length === 0}
-            onClick={handleBooking}
-          >
-            Complete Booking
-          </Button>
+          {noServices ? (
+            <div className="text-center text-gray-500 py-8">
+              This researcher currently has no available consultation services.
+            </div>
+          ) : (
+            <>
+              <ServiceSelector
+                services={consultationServices}
+                selectedService={selectedService}
+                onServiceChange={setSelectedService}
+              />
+              <AcademicLevelSelector
+                selectedService={getSelectedServiceDetails()}
+                selectedAcademicLevel={selectedAcademicLevel}
+                onAcademicLevelChange={setSelectedAcademicLevel}
+              />
+              <AddOnSelector
+                selectedService={getSelectedServiceDetails()}
+                selectedAddOns={selectedAddOns}
+                onAddOnToggle={handleAddOnToggle}
+              />
+              <DateTimeSelector
+                selectedDate={selectedDate}
+                selectedTime={selectedTime}
+                availableTimes={researcher.availableTimes}
+                onDateSelect={setSelectedDate}
+                onTimeSelect={setSelectedTime}
+              />
+              <ChallengeSelector
+                selectedChallenges={selectedChallenges}
+                onChallengeToggle={handleChallengeToggle}
+              />
+              <div>
+                <Label htmlFor="comment" className="font-medium">Leave a comment:</Label>
+                <Textarea
+                  id="comment"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Provide additional details about your consultation needs..."
+                  rows={3}
+                  className="mt-2"
+                />
+              </div>
+              <BookingSummary
+                servicePrice={getServicePrice()}
+                addOnsPrice={getAddOnsPrice()}
+                totalPrice={calculateTotalPrice()}
+              />
+              <Button 
+                className="w-full" 
+                disabled={!selectedDate || !selectedTime || !selectedService || !selectedAcademicLevel || selectedChallenges.length === 0}
+                onClick={handleBooking}
+              >
+                Complete Booking
+              </Button>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>

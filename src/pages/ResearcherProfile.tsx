@@ -12,7 +12,7 @@ import { useResearcherProfile } from "@/hooks/useResearcherProfile";
 const ResearcherProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { researcher, loading, error, addReview, refetch } = useResearcherProfile(id || '');
+  const { researcher, loading, error, refetch } = useResearcherProfile(id || '');
 
   if (loading) {
     return (
@@ -61,12 +61,31 @@ const ResearcherProfile = () => {
     );
   }
 
-  // Transform data to match the existing ProfileHeader and ProfileTabs interface
+  const fixVerification = (v) => {
+    if (!v) return undefined;
+    const fix = (val) => val === 'rejected' ? 'unverified' : val;
+    return {
+      academic: fix(v.academic),
+      publication: fix(v.publication),
+      institutional: fix(v.institutional)
+    };
+  };
+  const safeArray = (val, fallback = []) => Array.isArray(val) ? val : fallback;
+  const safeExperience = safeArray(researcher.experience).map(e =>
+    typeof e === 'object' && e !== null && 'position' in e && 'institution' in e && 'period' in e
+      ? e
+      : { position: '', institution: '', period: '' }
+  );
+  const safeEducation = safeArray(researcher.education).map(e =>
+    typeof e === 'object' && e !== null && 'degree' in e && 'institution' in e && 'year' in e
+      ? e
+      : { degree: '', institution: '', year: '' }
+  );
   const transformedResearcher = {
     ...researcher,
-    // Map database fields to component expected fields
     expertise: researcher.specialties || researcher.expertise || [],
-    reviews: researcher.reviews.map(review => ({
+    specialties: researcher.specialties || researcher.expertise || [],
+    reviews: (researcher.reviews || []).map(review => ({
       id: review.id,
       name: review.reviewer_name,
       rating: review.rating,
@@ -75,9 +94,31 @@ const ResearcherProfile = () => {
     })),
     availableTimes: researcher.available_times || [],
     onlineStatus: researcher.online_status,
-    // Ensure all required fields are present
     hourlyRate: researcher.hourly_rate,
-    responseTime: researcher.response_time
+    responseTime: researcher.response_time,
+    id: researcher.id,
+    name: researcher.name,
+    title: researcher.title || '',
+    affiliation: researcher.affiliation || '',
+    location: researcher.location || '',
+    rating: researcher.rating || 0,
+    totalReviews: researcher.totalReviews || 0,
+    studentsSupervised: researcher.studentsSupervised || 0,
+    yearsExperience: researcher.yearsExperience || 0,
+    bio: researcher.bio || '',
+    education: safeEducation,
+    experience: safeExperience,
+    awards: safeArray(researcher.awards),
+    fellowships: safeArray(researcher.fellowships),
+    grants: safeArray(researcher.grants),
+    memberships: safeArray(researcher.memberships),
+    supervision: safeArray(researcher.supervision),
+    publications: safeArray(researcher.publications),
+    verifications: fixVerification(researcher.verifications),
+    imageUrl: researcher.imageUrl || '',
+    isOnline: researcher.isOnline || false,
+    languages: researcher.languages || [],
+    field: researcher.field || '',
   };
 
   return (

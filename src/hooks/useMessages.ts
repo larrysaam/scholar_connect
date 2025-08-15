@@ -1,12 +1,12 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useConsultationServices } from './useConsultationServices';
 
 export interface Conversation {
-  id: string;
-  name: string;
-  avatar_url: string;
+  id: string; // booking_id
+  student_id: string;
+  student_name: string;
   last_message: string;
   last_message_at: string;
 }
@@ -22,82 +22,76 @@ export interface Message {
 
 export const useMessages = () => {
   const { user } = useAuth();
+  const { bookings } = useConsultationServices(); // For researchers: their bookings
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
 
+  // Fetch conversations: all students who booked with this researcher
   const fetchConversations = useCallback(async () => {
     if (!user) return;
-
-    try {
-      const { data, error } = await supabase.rpc('get_conversations', { p_user_id: user.id });
-
-      if (error) {
-        console.error('Error fetching conversations:', error);
-        return;
+    // Group bookings by student
+    const map = new Map<string, Conversation>();
+    for (const booking of bookings) {
+      if (!map.has(booking.client_id)) {
+        map.set(booking.client_id, {
+          id: booking.id, // booking_id
+          student_id: booking.client_id,
+          student_name: booking.client?.name || 'Student',
+          last_message: '',
+          last_message_at: '',
+        });
       }
-
-      setConversations(data || []);
-    } catch (error) {
-      console.error('Error fetching conversations:', error);
     }
-  }, [user]);
-
-  const fetchMessages = useCallback(async (conversationId: string) => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
+    // Optionally fetch last message for each conversation
+    const convs = Array.from(map.values());
+    for (const conv of convs) {
+      const { data } = await supabase
         .from('messages')
-        .select('*')
-        .or(`and(sender_id.eq.${user.id},recipient_id.eq.${conversationId}),and(sender_id.eq.${conversationId},recipient_id.eq.${user.id})`)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching messages:', error);
-        return;
+        .select('content,created_at')
+        .eq('booking_id', conv.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      if (data) {
+        conv.last_message = data.content;
+        conv.last_message_at = data.created_at;
       }
-
-      setMessages(data || []);
-    } catch (error) {
-      console.error('Error fetching messages:', error);
     }
+    setConversations(convs);
+  }, [user, bookings]);
+
+  // Fetch messages for a conversation (by booking_id)
+  const fetchMessages = useCallback(async (bookingId: string) => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('booking_id', bookingId)
+      .order('created_at', { ascending: true });
+    if (!error) setMessages(data || []);
   }, [user]);
 
-  const sendMessage = async (recipientId: string, bookingId: string, content: string) => {
-    if (!user) return;
-
-    try {
-      const { error } = await supabase.from('messages').insert({
-        sender_id: user.id,
-        recipient_id: recipientId,
-        booking_id: bookingId,
-        content,
-      });
-
-      if (error) {
-        console.error('Error sending message:', error);
-        return;
-      }
-
-      await fetchMessages(recipientId);
-    } catch (error) {
-      console.error('Error sending message:', error);
-    }
+  // Send message (scoped to booking_id)
+  const sendMessage = async (bookingId: string, content: string) => {
+    if (!user || !selectedConversation) return;
+    const recipient_id = selectedConversation.student_id;
+    await supabase.from('messages').insert({
+      sender_id: user.id,
+      recipient_id,
+      booking_id: bookingId,
+      content,
+    });
+    await fetchMessages(bookingId);
   };
 
-  useEffect(() => {
-    if (user) {
-      setLoading(true);
-      fetchConversations().finally(() => setLoading(false));
-    }
-  }, [user, fetchConversations]);
-
   return {
-    loading,
     conversations,
     messages,
+    fetchConversations,
     fetchMessages,
     sendMessage,
+    selectedConversation,
+    setSelectedConversation,
   };
 };

@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 const StudentMessagesTab = () => {
   const { user } = useAuth();
-  const [activeConversation, setActiveConversation] = useState<string | null>(null);
+  const [activeConversation, setActiveConversation] = useState<string | null>(null); // booking_id
   const [newMessage, setNewMessage] = useState("");
 
   // Use the real messages hook
@@ -22,13 +22,7 @@ const StudentMessagesTab = () => {
     fetchMessages,
   } = useMessages();
 
-  // Fetch conversations on mount
-  useEffect(() => {
-    // fetchConversations is not returned, so we need to trigger it by updating the hook
-    // Instead, rely on the useEffect inside useMessages to fetch conversations when user changes
-    // No need to manually call useMessages().fetchConversations()
-  }, []);
-
+  // Fetch messages when activeConversation (booking_id) changes
   useEffect(() => {
     if (activeConversation) {
       fetchMessages(activeConversation);
@@ -37,12 +31,10 @@ const StudentMessagesTab = () => {
 
   const handleSendMessage = async () => {
     if (newMessage.trim() && activeConversation) {
-      // Find the conversation and get recipient_id and booking_id
-      const conv = conversations.find(c => c.id === activeConversation);
+      // Find the conversation and get recipient_id (the researcher)
+      const conv = conversations.find(c => c.booking_id === activeConversation);
       if (!conv) return;
-      // For student, recipient is the researcher (not the user)
-      // Assume booking_id is the conversation id for now
-      await sendMessage(conv.id, activeConversation, newMessage);
+      await sendMessage(conv.id, activeConversation, newMessage); // conv.id is provider_id
       setNewMessage("");
       fetchMessages(activeConversation);
     }
@@ -50,10 +42,10 @@ const StudentMessagesTab = () => {
 
   const handleFileUpload = () => {
     // Implementation for file upload (optional)
-    // You can integrate with your file upload logic here
   };
 
-  const activeConv = conversations.find(conv => conv.id === activeConversation);
+  // Find the active conversation object
+  const activeConv = conversations.find(conv => conv.booking_id === activeConversation);
 
   return (
     <div className="space-y-6">
@@ -75,10 +67,10 @@ const StudentMessagesTab = () => {
             <div className="space-y-1">
               {conversations.map((conversation) => (
                 <div
-                  key={conversation.id}
-                  onClick={() => setActiveConversation(conversation.id)}
+                  key={conversation.booking_id}
+                  onClick={() => setActiveConversation(conversation.booking_id)}
                   className={`p-4 cursor-pointer border-b hover:bg-gray-50 ${
-                    activeConversation === conversation.id ? 'bg-blue-50' : ''
+                    activeConversation === conversation.booking_id ? 'bg-blue-50' : ''
                   }`}
                 >
                   <div className="flex items-start space-x-3">
@@ -121,7 +113,6 @@ const StudentMessagesTab = () => {
                   </div>
                 </div>
               </CardHeader>
-              
               <CardContent className="flex-1 p-0">
                 {/* Messages */}
                 <div className="h-96 overflow-y-auto p-4 space-y-4">
@@ -145,7 +136,6 @@ const StudentMessagesTab = () => {
                     </div>
                   ))}
                 </div>
-
                 {/* Message Input */}
                 <div className="border-t p-4">
                   <div className="flex items-end space-x-2">
@@ -181,7 +171,6 @@ const StudentMessagesTab = () => {
           )}
         </Card>
       </div>
-
       {/* Response Time Notice */}
       <Card>
         <CardContent className="p-4">

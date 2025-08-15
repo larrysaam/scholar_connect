@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +18,7 @@ import {
   Loader2
 } from "lucide-react";
 import { useConsultationServices } from "@/hooks/useConsultationServices";
+import { useToast } from "@/components/ui/use-toast";
 import ServiceInstructions from "../consultation-services/ServiceInstructions";
 import ServiceCard from "../consultation-services/ServiceCard";
 import AddServiceForm from "../consultation-services/AddServiceForm";
@@ -39,13 +39,34 @@ const ConsultationServicesTab = () => {
     updateBookingStatus
   } = useConsultationServices();
 
+  const { toast } = useToast();
+
   const [activeTab, setActiveTab] = useState("services");
+  const [showAddService, setShowAddService] = useState(false);
 
   const activeServices = services.filter(service => service.is_active);
   const pendingBookings = bookings.filter(booking => booking.status === 'pending');
   const upcomingBookings = bookings.filter(booking => 
     booking.status === 'confirmed' && new Date(booking.scheduled_date) >= new Date()
   );
+
+  // Handler to mark a booking as completed
+  const handleCompleteBooking = async (bookingId: string) => {
+    const success = await updateBookingStatus(bookingId, 'completed');
+    if (success) {
+      toast({
+        title: 'Booking Completed',
+        description: 'The booking has been marked as completed.',
+        variant: 'success',
+      });
+    } else {
+      toast({
+        title: 'Error',
+        description: 'Failed to complete the booking.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -66,6 +87,9 @@ const ConsultationServicesTab = () => {
           <p className="text-gray-600">Manage your service offerings, pricing, and bookings</p>
         </div>
         <div className="flex items-center gap-4">
+          <Button onClick={() => setShowAddService(true)} variant="default" className="flex items-center gap-2">
+            <Plus className="h-4 w-4" /> Add Service
+          </Button>
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Badge variant="outline" className="bg-green-50">
               {activeServices.length} Active Services
@@ -76,6 +100,24 @@ const ConsultationServicesTab = () => {
           </div>
         </div>
       </div>
+
+      {showAddService && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Add a New Service</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AddServiceForm
+              onSubmit={async (data) => {
+                await createService(data);
+                setShowAddService(false);
+              }}
+              onCancel={() => setShowAddService(false)}
+              loading={creating}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
@@ -110,6 +152,7 @@ const ConsultationServicesTab = () => {
             bookings={bookings}
             services={services}
             onUpdateBookingStatus={updateBookingStatus}
+            onCompleteBooking={handleCompleteBooking}
           />
         </TabsContent>
 

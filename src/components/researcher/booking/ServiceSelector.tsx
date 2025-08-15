@@ -1,4 +1,3 @@
-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
@@ -23,25 +22,46 @@ interface ServiceSelectorProps {
 }
 
 const ServiceSelector = ({ services, selectedService, onServiceChange }: ServiceSelectorProps) => {
-  const selectedServiceDetails = services.find(service => service.id === selectedService);
+  // Debug log to trace incoming services and selectedService
+  if (!Array.isArray(services)) {
+    console.error('[ServiceSelector] services prop is not an array:', services);
+  } else {
+    console.log('[ServiceSelector] services:', services);
+  }
+  console.log('[ServiceSelector] selectedService:', selectedService);
+  const selectedServiceDetails = Array.isArray(services)
+    ? services.find(service => service.id === selectedService)
+    : undefined;
 
   return (
     <div>
       <h3 className="mb-3 font-medium">Select Consultation Service:</h3>
       <div className="space-y-3">
-        <Select value={selectedService || ""} onValueChange={onServiceChange}>
+        {!Array.isArray(services) || services.length === 0 ? (
+          <div className="text-red-500 text-sm mb-2">No consultation services are available for this researcher.</div>
+        ) : null}
+        <Select
+          value={selectedService || ""}
+          onValueChange={onServiceChange}
+          disabled={!Array.isArray(services) || services.length === 0}
+        >
           <SelectTrigger>
-            <SelectValue placeholder="Choose a consultation service" />
+            <SelectValue placeholder={!Array.isArray(services) || services.length === 0 ? "No services available" : "Choose a consultation service"} />
           </SelectTrigger>
           <SelectContent>
-            {services.map((service) => (
-              <SelectItem key={service.id} value={service.id}>
-                {service.category}
+            {!Array.isArray(services) || services.length === 0 ? (
+              <SelectItem value="" disabled>
+                No services available
               </SelectItem>
-            ))}
+            ) : (
+              services.map((service) => (
+                <SelectItem key={service.id} value={service.id}>
+                  {service.category}
+                </SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
-        
         {selectedService && selectedServiceDetails && (
           <div className="p-3 bg-gray-50 rounded-lg">
             <p className="text-sm text-gray-600">

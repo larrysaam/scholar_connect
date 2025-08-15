@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AboutTab from "./tabs/AboutTab";
 import EducationTab from "./tabs/EducationTab";
@@ -7,6 +6,7 @@ import AwardsTab from "./tabs/AwardsTab";
 import PublicationsTab from "./tabs/PublicationsTab";
 import ReviewsTab from "./tabs/ReviewsTab";
 import VerificationTab from "./tabs/VerificationTab";
+import ConsultationServicesDisplay from "./ConsultationServicesDisplay";
 
 interface ProfileTabsProps {
   researcher: {
@@ -68,7 +68,7 @@ const ProfileTabs = ({ researcher }: ProfileTabsProps) => {
 
   return (
     <Tabs defaultValue="about" className="w-full">
-      <TabsList className="mb-8 bg-gray-100 grid grid-cols-4 md:grid-cols-7 w-full">
+      <TabsList className="mb-8 bg-gray-100 grid grid-cols-4 md:grid-cols-8 w-full">
         <TabsTrigger value="about">About</TabsTrigger>
         <TabsTrigger value="verification">Verification</TabsTrigger>
         <TabsTrigger value="education">Education</TabsTrigger>
@@ -76,6 +76,7 @@ const ProfileTabs = ({ researcher }: ProfileTabsProps) => {
         <TabsTrigger value="achievements">Achievements</TabsTrigger>
         <TabsTrigger value="publications">Publications</TabsTrigger>
         <TabsTrigger value="reviews">Reviews</TabsTrigger>
+        <TabsTrigger value="services">Services</TabsTrigger>
       </TabsList>
       
       <TabsContent value="about" className="mt-0">
@@ -110,6 +111,10 @@ const ProfileTabs = ({ researcher }: ProfileTabsProps) => {
       
       <TabsContent value="reviews" className="mt-0">
         <ReviewsTab rating={researcher.rating} reviews={researcher.reviews} />
+      </TabsContent>
+
+      <TabsContent value="services" className="mt-0">
+        <ConsultationServicesDisplay researcherId={researcher.id} researcherName={researcher.name || "Researcher"} />
       </TabsContent>
     </Tabs>
   );

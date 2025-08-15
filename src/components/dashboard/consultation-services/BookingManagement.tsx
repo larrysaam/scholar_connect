@@ -26,12 +26,14 @@ interface BookingManagementProps {
   bookings: ServiceBooking[];
   services: ConsultationService[];
   onUpdateBookingStatus: (bookingId: string, status: ServiceBooking['status']) => Promise<boolean>;
+  onCompleteBooking?: (bookingId: string) => Promise<void>;
 }
 
 const BookingManagement = ({
   bookings,
   services,
-  onUpdateBookingStatus
+  onUpdateBookingStatus,
+  onCompleteBooking
 }: BookingManagementProps) => {
   const [selectedBooking, setSelectedBooking] = useState<ServiceBooking | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -213,7 +215,7 @@ const BookingManagement = ({
           {booking.status === 'confirmed' && (
             <>
               <Button
-                onClick={() => onUpdateBookingStatus(booking.id, 'completed')}
+                onClick={() => onCompleteBooking ? onCompleteBooking(booking.id) : onUpdateBookingStatus(booking.id, 'completed')}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
@@ -419,7 +421,7 @@ const BookingManagement = ({
                     {booking.status === 'confirmed' && (
                       <Button
                         size="sm"
-                        onClick={() => onUpdateBookingStatus(booking.id, 'completed')}
+                        onClick={() => onCompleteBooking ? onCompleteBooking(booking.id) : onUpdateBookingStatus(booking.id, 'completed')}
                         className="bg-blue-600 hover:bg-blue-700"
                       >
                         Complete
