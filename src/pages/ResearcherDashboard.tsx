@@ -21,6 +21,7 @@ import DiscussionTab from "@/components/dashboard/tabs/DiscussionTab";
 import ConsultationServicesTab from "@/components/dashboard/tabs/ConsultationServicesTab";
 import PerformanceReputationTab from "@/components/dashboard/tabs/PerformanceReputationTab";
 import FullThesisSupportTab from "@/components/dashboard/tabs/FullThesisSupportTab";
+import MessagingTab from "@/components/dashboard/tabs/MessagingTab";
 import MisconductReportModal from "@/components/dashboard/MisconductReportModal";
 
 const ResearcherDashboard = () => {
@@ -57,6 +58,8 @@ const ResearcherDashboard = () => {
         return <PerformanceReputationTab />;
       case "quality":
         return <QualityAssuranceAndFeedbackTab />;
+      case "messaging":
+        return <MessagingTab />;
       case "discussion":
         return <DiscussionTab />;
       case "verification":
