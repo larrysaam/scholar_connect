@@ -17,26 +17,24 @@ const StudentMessagesTab = () => {
   const {
     conversations,
     messages,
-    loading,
     sendMessage,
     fetchMessages,
+    selectedConversation,
+    setSelectedConversation,
   } = useMessages();
 
-  // Fetch messages when activeConversation (id) changes
+  // When a conversation is selected, set it in the hook as well
   useEffect(() => {
     if (activeConversation) {
+      setSelectedConversation(conversations.find(c => c.id === activeConversation) || null);
       fetchMessages(activeConversation);
     }
-  }, [activeConversation, fetchMessages]);
+  }, [activeConversation, conversations, setSelectedConversation, fetchMessages]);
 
   const handleSendMessage = async () => {
-    if (newMessage.trim() && activeConversation) {
-      // Find the conversation and get recipient_id (the researcher)
-      const conv = conversations.find(c => c.id === activeConversation);
-      if (!conv) return;
-      await sendMessage(conv.id, newMessage);
+    if (newMessage.trim() && selectedConversation) {
+      await sendMessage(selectedConversation.id, newMessage);
       setNewMessage("");
-      fetchMessages(activeConversation);
     }
   };
 

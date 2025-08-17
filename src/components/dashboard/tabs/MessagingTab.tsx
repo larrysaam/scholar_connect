@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 // MessagingTab: Chat with students who booked your services
 const MessagingTab = () => {
   const { user } = useAuth();
+  // Use the real messages hook
   const {
     conversations,
     messages,
@@ -15,14 +16,15 @@ const MessagingTab = () => {
     fetchMessages,
     sendMessage,
     selectedConversation,
-    setSelectedConversation
+    setSelectedConversation,
+    socketConnected,
   } = useMessages();
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (user) fetchConversations();
-  }, [user]);
+    fetchConversations();
+  }, []);
 
   useEffect(() => {
     if (selectedConversation) fetchMessages(selectedConversation.id);
@@ -54,7 +56,7 @@ const MessagingTab = () => {
               className={`p-2 rounded cursor-pointer mb-2 ${selectedConversation?.id === conv.id ? "bg-blue-100" : "hover:bg-gray-100"}`}
               onClick={() => setSelectedConversation(conv)}
             >
-              <div className="font-medium">{conv.student_name}</div>
+              <div className="font-medium">{conv.other_user_name}</div>
               <div className="text-xs text-gray-500">{conv.last_message?.slice(0, 32)}</div>
             </li>
           ))}
