@@ -61,41 +61,47 @@ const MessagingTab = () => {
         </ul>
       </div>
       {/* Chat Window */}
-      <div className="flex-1 flex flex-col">
-        <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
-          {selectedConversation ? (
-            <>
-              <div className="mb-2 text-sm text-gray-600">Chat with <span className="font-semibold">{selectedConversation.student_name}</span></div>
-              <div>
-                {messages.map((msg: any) => (
-                  <div
-                    key={msg.id}
-                    className={`mb-2 flex ${msg.sender_id === user?.id ? "justify-end" : "justify-start"}`}
-                  >
-                    <div className={`px-3 py-2 rounded-lg max-w-xs ${msg.sender_id === user?.id ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-900"}`}>
-                      {msg.content}
-                      <div className="text-xs text-gray-300 mt-1 text-right">{new Date(msg.created_at).toLocaleTimeString()}</div>
-                    </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
+      <div className="w-2/3 flex flex-col">
+        {/* Chat Header: Show the name of the person the researcher is talking with */}
+        {selectedConversation && (
+          <div className="border-b p-4 flex items-center gap-3 bg-gray-50">
+            {/* Optionally, add avatar here if available: <img src={selectedConversation.avatar_url} ... /> */}
+            <span className="font-semibold text-lg">
+              You are chatting with {selectedConversation.other_user_name}
+            </span>
+          </div>
+        )}
+        {/* Chat Messages */}
+        <div className="flex-1 overflow-y-auto p-4">
+          {messages.map((msg: any) => (
+            <div
+              key={msg.id}
+              className={`mb-2 flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`rounded-lg px-4 py-2 max-w-xs break-words ${
+                  msg.sender_id === user?.id ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-900'
+                }`}
+              >
+                <div className="text-sm">{msg.content}</div>
+                <div className="text-xs opacity-70 mt-1">{msg.created_at}</div>
               </div>
-            </>
-          ) : (
-            <div className="h-full flex items-center justify-center text-gray-400">Select a conversation to start chatting.</div>
-          )}
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
         </div>
         {/* Message Input */}
         {selectedConversation && (
-          <form onSubmit={handleSend} className="flex p-4 border-t bg-white">
+          <form onSubmit={handleSend} className="border-t p-4 flex gap-2">
             <Input
               value={message}
               onChange={e => setMessage(e.target.value)}
               placeholder="Type your message..."
-              className="flex-1 mr-2"
-              autoComplete="off"
+              className="flex-1"
             />
-            <Button type="submit" disabled={!message.trim()}>Send</Button>
+            <Button type="submit" disabled={!message.trim()}>
+              Send
+            </Button>
           </form>
         )}
       </div>

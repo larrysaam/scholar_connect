@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 const StudentMessagesTab = () => {
   const { user } = useAuth();
-  const [activeConversation, setActiveConversation] = useState<string | null>(null); // booking_id
+  const [activeConversation, setActiveConversation] = useState<string | null>(null); // id
   const [newMessage, setNewMessage] = useState("");
 
   // Use the real messages hook
@@ -22,7 +22,7 @@ const StudentMessagesTab = () => {
     fetchMessages,
   } = useMessages();
 
-  // Fetch messages when activeConversation (booking_id) changes
+  // Fetch messages when activeConversation (id) changes
   useEffect(() => {
     if (activeConversation) {
       fetchMessages(activeConversation);
@@ -32,9 +32,9 @@ const StudentMessagesTab = () => {
   const handleSendMessage = async () => {
     if (newMessage.trim() && activeConversation) {
       // Find the conversation and get recipient_id (the researcher)
-      const conv = conversations.find(c => c.booking_id === activeConversation);
+      const conv = conversations.find(c => c.id === activeConversation);
       if (!conv) return;
-      await sendMessage(conv.id, activeConversation, newMessage); // conv.id is provider_id
+      await sendMessage(conv.id, newMessage);
       setNewMessage("");
       fetchMessages(activeConversation);
     }
@@ -45,7 +45,7 @@ const StudentMessagesTab = () => {
   };
 
   // Find the active conversation object
-  const activeConv = conversations.find(conv => conv.booking_id === activeConversation);
+  const activeConv = conversations.find(conv => conv.id === activeConversation);
 
   return (
     <div className="space-y-6">
@@ -67,22 +67,22 @@ const StudentMessagesTab = () => {
             <div className="space-y-1">
               {conversations.map((conversation) => (
                 <div
-                  key={conversation.booking_id}
-                  onClick={() => setActiveConversation(conversation.booking_id)}
+                  key={conversation.id}
+                  onClick={() => setActiveConversation(conversation.id)}
                   className={`p-4 cursor-pointer border-b hover:bg-gray-50 ${
-                    activeConversation === conversation.booking_id ? 'bg-blue-50' : ''
+                    activeConversation === conversation.id ? 'bg-blue-50' : ''
                   }`}
                 >
                   <div className="flex items-start space-x-3">
                     <img
                       src={conversation.avatar_url}
-                      alt={conversation.name}
+                      alt={conversation.other_user_name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <h4 className="font-semibold text-sm truncate">
-                          {conversation.name}
+                          {conversation.other_user_name}
                         </h4>
                       </div>
                       <p className="text-sm text-gray-600 truncate mt-1">
@@ -105,11 +105,13 @@ const StudentMessagesTab = () => {
                 <div className="flex items-center space-x-3">
                   <img
                     src={activeConv?.avatar_url}
-                    alt={activeConv?.name}
+                    alt={activeConv?.other_user_name}
                     className="w-10 h-10 rounded-full object-cover"
                   />
                   <div>
-                    <h3 className="font-semibold">{activeConv?.name}</h3>
+                    <h3 className="font-semibold">{activeConv?.other_user_name}</h3>
+                    {/* Show the name of the person the user is talking with */}
+                    <p className="text-xs text-gray-500">You are chatting with {activeConv?.other_user_name}</p>
                   </div>
                 </div>
               </CardHeader>
