@@ -1,12 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useConsultationServices } from './useConsultationServices';
+import { useBookingSystem } from './useBookingSystem';
 
 export interface Conversation {
   id: string; // booking_id
-  student_id: string;
-  student_name: string;
+  other_user_id: string;
+  other_user_name: string;
   last_message: string;
   last_message_at: string;
 }
@@ -22,29 +23,52 @@ export interface Message {
 
 export const useMessages = () => {
   const { user } = useAuth();
-  const { bookings } = useConsultationServices(); // For researchers: their bookings
+  const { bookings: researcherBookings } = useConsultationServices();
+  const { bookings: studentBookings } = useBookingSystem();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
 
-  // Fetch conversations: all students who booked with this researcher
+  // Determine user type by presence of bookings
+  const isResearcher = (researcherBookings && researcherBookings.length > 0) || false;
+  const isStudent = (studentBookings && studentBookings.length > 0) || false;
+
+  // Fetch conversations for researcher or student
   const fetchConversations = useCallback(async () => {
     if (!user) return;
-    // Group bookings by student
-    const map = new Map<string, Conversation>();
-    for (const booking of bookings) {
-      if (!map.has(booking.client_id)) {
-        map.set(booking.client_id, {
-          id: booking.id, // booking_id
-          student_id: booking.client_id,
-          student_name: booking.client?.name || 'Student',
-          last_message: '',
-          last_message_at: '',
-        });
+    let convs: Conversation[] = [];
+    if (isResearcher) {
+      // Researcher: show all students who booked with them
+      const map = new Map<string, Conversation>();
+      for (const booking of researcherBookings) {
+        if (!map.has(booking.client_id)) {
+          map.set(booking.client_id, {
+            id: booking.id, // booking_id
+            other_user_id: booking.client_id,
+            other_user_name: booking.client?.name || 'Student',
+            last_message: '',
+            last_message_at: '',
+          });
+        }
       }
+      convs = Array.from(map.values());
+    } else if (isStudent) {
+      // Student: show all researchers they've booked
+      const map = new Map<string, Conversation>();
+      for (const booking of studentBookings) {
+        if (!map.has(booking.provider_id)) {
+          map.set(booking.provider_id, {
+            id: booking.id, // booking_id
+            other_user_id: booking.provider_id,
+            other_user_name: booking.provider?.name || 'Researcher',
+            last_message: '',
+            last_message_at: '',
+          });
+        }
+      }
+      convs = Array.from(map.values());
     }
-    // Optionally fetch last message for each conversation
-    const convs = Array.from(map.values());
+    // Fetch last message for each conversation
     for (const conv of convs) {
       const { data } = await supabase
         .from('messages')
@@ -59,7 +83,7 @@ export const useMessages = () => {
       }
     }
     setConversations(convs);
-  }, [user, bookings]);
+  }, [user, isResearcher, isStudent, researcherBookings, studentBookings]);
 
   // Fetch messages for a conversation (by booking_id)
   const fetchMessages = useCallback(async (bookingId: string) => {
@@ -75,7 +99,7 @@ export const useMessages = () => {
   // Send message (scoped to booking_id)
   const sendMessage = async (bookingId: string, content: string) => {
     if (!user || !selectedConversation) return;
-    const recipient_id = selectedConversation.student_id;
+    const recipient_id = selectedConversation.other_user_id;
     await supabase.from('messages').insert({
       sender_id: user.id,
       recipient_id,

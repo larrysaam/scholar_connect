@@ -151,29 +151,27 @@ export const useConsultationServices = () => {
     try {
       const { data, error } = await supabase
         .from('service_bookings')
-        .select(`
-          *,
-          service:consultation_services(title, category),
-          client:users!service_bookings_client_id_fkey(name, email)
-        `)
+        .select(`*, client:users!service_bookings_client_id_fkey(name, email)`) // Join client user
         .eq('provider_id', user.id)
         .order('scheduled_date', { ascending: true });
-
       if (error) {
         toast({
           title: 'Error',
           description: 'Failed to fetch your bookings',
-          variant: 'destructive',
+          variant: 'destructive'
         });
         return;
       }
-      setBookings((data || []).map(normalizeBooking));
+      setBookings((data || []).map((b: any) => ({
+        ...b,
+        client: b.client || { name: '', email: '' },
+      })));
     } catch (error) {
       console.error('Error fetching bookings:', error);
       toast({
         title: 'Error',
         description: 'Unexpected error fetching bookings',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     }
   }, [user, toast]);
