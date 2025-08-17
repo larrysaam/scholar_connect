@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useMessages } from "@/hooks/useMessages";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -31,7 +31,10 @@ const MessagingTab = () => {
   }, [selectedConversation]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Always scroll to the bottom of the messages area on render and when messages change
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "auto" });
+    }
   }, [messages]);
 
   const handleSend = async (e: React.FormEvent) => {
@@ -42,71 +45,126 @@ const MessagingTab = () => {
   };
 
   return (
-    <div className="flex h-[600px] bg-white rounded-lg shadow overflow-hidden">
-      {/* Conversation List */}
-      <div className="w-1/3 border-r p-4 overflow-y-auto">
-        <h3 className="font-semibold mb-4">Conversations</h3>
-        {conversations.length === 0 && (
-          <div className="text-gray-500 text-sm">No conversations yet.</div>
-        )}
-        <ul>
-          {conversations.map((conv: any) => (
-            <li
-              key={conv.id}
-              className={`p-2 rounded cursor-pointer mb-2 ${selectedConversation?.id === conv.id ? "bg-blue-100" : "hover:bg-gray-100"}`}
-              onClick={() => setSelectedConversation(conv)}
-            >
-              <div className="font-medium">{conv.other_user_name}</div>
-              <div className="text-xs text-gray-500">{conv.last_message?.slice(0, 32)}</div>
-            </li>
-          ))}
-        </ul>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold mb-2">Messages & File Exchange</h2>
+        <p className="text-gray-600">Communicate with your booked students</p>
       </div>
-      {/* Chat Window */}
-      <div className="w-2/3 flex flex-col">
-        {/* Chat Header: Show the name of the person the researcher is talking with */}
-        {selectedConversation && (
-          <div className="border-b p-4 flex items-center gap-3 bg-gray-50">
-            {/* Optionally, add avatar here if available: <img src={selectedConversation.avatar_url} ... /> */}
-            <span className="font-semibold text-lg">
-              You are chatting with {selectedConversation.other_user_name}
-            </span>
-          </div>
-        )}
-        {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto p-4">
-          {messages.map((msg: any) => (
-            <div
-              key={msg.id}
-              className={`mb-2 flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`rounded-lg px-4 py-2 max-w-xs break-words ${
-                  msg.sender_id === user?.id ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-900'
-                }`}
-              >
-                <div className="text-sm">{msg.content}</div>
-                <div className="text-xs opacity-70 mt-1">{msg.created_at}</div>
-              </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
+        {/* Conversations List */}
+        <Card className="lg:col-span-1">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <span className="font-semibold">Conversations</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="space-y-1">
+              {conversations.map((conv: any) => (
+                <div
+                  key={conv.id}
+                  onClick={() => setSelectedConversation(conv)}
+                  className={`p-4 cursor-pointer border-b hover:bg-gray-50 ${selectedConversation?.id === conv.id ? 'bg-blue-50' : ''}`}
+                >
+                  <div className="flex items-start space-x-3">
+                    {/* Show avatar if available, fallback to placeholder */}
+                    <img
+                      src={conv.avatar_url || '/placeholder.svg'}
+                      alt={conv.other_user_name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold text-sm truncate">{conv.other_user_name}</h4>
+                      </div>
+                      <p className="text-sm text-gray-600 truncate mt-1">{conv.last_message}</p>
+                      <p className="text-xs text-gray-400 mt-1">{conv.last_message_at}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-        {/* Message Input */}
-        {selectedConversation && (
-          <form onSubmit={handleSend} className="border-t p-4 flex gap-2">
-            <Input
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1"
-            />
-            <Button type="submit" disabled={!message.trim()}>
-              Send
-            </Button>
-          </form>
-        )}
+          </CardContent>
+        </Card>
+
+        {/* Chat Area */}
+        <Card className="lg:col-span-2">
+          {selectedConversation ? (
+            <div className="flex flex-col h-full">
+              <CardHeader className="border-b">
+                <div className="flex items-center space-x-3">
+                  {/* Optionally add avatar here if available: <img src={selectedConversation.avatar_url} ... /> */}
+                  <div>
+                    <h3 className="font-semibold">{selectedConversation.other_user_name}</h3>
+                    <p className="text-xs text-gray-500">You are chatting with {selectedConversation.other_user_name}</p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="flex-1 p-0">
+                <div className="h-96 overflow-y-auto p-4 space-y-4">
+                  {messages.map((msg: any) => (
+                    <div
+                      key={msg.id}
+                      className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${msg.sender_id === user?.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'}`}
+                      >
+                        <p className="text-sm">{msg.content}</p>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-xs opacity-75">
+                            {msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+                {/* Message Input */}
+                <div className="border-t p-4">
+                  <div className="flex items-end space-x-2">
+                    {/* File upload button can be added here if needed */}
+                    <div className="flex-1">
+                      <Input
+                        placeholder="Type your message..."
+                        value={message}
+                        onChange={e => setMessage(e.target.value)}
+                        className="resize-none"
+                      />
+                    </div>
+                    <Button onClick={handleSend} disabled={!message.trim()}>
+                      Send
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Share drafts, research outlines, and documents securely
+                  </p>
+                </div>
+              </CardContent>
+            </div>
+          ) : (
+            <CardContent className="flex items-center justify-center h-full">
+              <div className="text-center text-gray-500">
+                <span className="block text-4xl mb-4">💬</span>
+                <p>Select a conversation to start messaging</p>
+              </div>
+            </CardContent>
+          )}
+        </Card>
       </div>
+      {/* Response Time Notice */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center space-x-3 text-blue-600">
+            <span className="font-medium">Response Time Guidelines</span>
+            <p className="text-sm text-gray-600">
+              Students typically respond within 24 hours. Messages are consultation-related only.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

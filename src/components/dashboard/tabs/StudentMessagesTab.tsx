@@ -130,7 +130,9 @@ const StudentMessagesTab = () => {
                       >
                         <p className="text-sm">{message.content}</p>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-xs opacity-75">{message.created_at}</span>
+                          <span className="text-xs opacity-75">
+                            {message.created_at ? new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                          </span>
                         </div>
                       </div>
                     </div>
