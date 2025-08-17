@@ -4,6 +4,7 @@ import { useMessages } from "@/hooks/useMessages";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { format } from 'date-fns';
 
 // MessagingTab: Chat with students who booked your services
 const MessagingTab = () => {
@@ -103,23 +104,49 @@ const MessagingTab = () => {
               </CardHeader>
               <CardContent className="flex-1 p-0">
                 <div className="h-96 overflow-y-auto p-4 space-y-4">
-                  {messages.map((msg: any) => (
-                    <div
-                      key={msg.id}
-                      className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${msg.sender_id === user?.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'}`}
-                      >
-                        <p className="text-sm">{msg.content}</p>
-                        <div className="flex items-center justify-between mt-1">
-                          <span className="text-xs opacity-75">
-                            {msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                          </span>
+                  {(() => {
+                    const grouped: { [date: string]: any[] } = {};
+                    messages.forEach((msg: any) => {
+                      const date = msg.created_at ? new Date(msg.created_at) : null;
+                      if (!date) return;
+                      const dateKey = date.toDateString();
+                      if (!grouped[dateKey]) grouped[dateKey] = [];
+                      grouped[dateKey].push(msg);
+                    });
+                    const today = new Date();
+                    const yesterday = new Date();
+                    yesterday.setDate(today.getDate() - 1);
+                    const getLabel = (dateKey: string) => {
+                      const date = new Date(dateKey);
+                      if (date.toDateString() === today.toDateString()) return 'Today';
+                      if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+                      return format(date, 'MMM d, yyyy');
+                    };
+                    return Object.keys(grouped).sort((a, b) => new Date(a).getTime() - new Date(b).getTime()).map(dateKey => (
+                      <div key={dateKey}>
+                        <div className="flex items-center justify-center my-2">
+                          <span className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">{getLabel(dateKey)}</span>
                         </div>
+                        {grouped[dateKey].map((msg: any) => (
+                          <div
+                            key={msg.id}
+                            className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
+                          >
+                            <div
+                              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${msg.sender_id === user?.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'}`}
+                            >
+                              <p className="text-sm">{msg.content}</p>
+                              <div className="flex items-center justify-between mt-1">
+                                <span className="text-xs opacity-75">
+                                  {msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                  ))}
+                    ));
+                  })()}
                   <div ref={messagesEndRef} />
                 </div>
                 {/* Message Input */}
