@@ -87,7 +87,9 @@ const StudentMessagesTab = () => {
                       <p className="text-sm text-gray-600 truncate mt-1">
                         {conversation.last_message}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">{conversation.last_message_at}</p>
+                      <span className="text-xs opacity-75">
+                          {conversation.last_message_at ? new Date(conversation.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -140,10 +142,10 @@ const StudentMessagesTab = () => {
                         <div className="flex items-center justify-center my-2">
                           <span className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">{getLabel(dateKey)}</span>
                         </div>
-                        {grouped[dateKey].map((msg: any) => (
+                        {grouped[dateKey].map((msg: any, idx: number) => (
                           <div
                             key={msg.id}
-                            className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
+                            className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}${idx !== 0 ? ' mt-1' : ''}`}
                           >
                             <div
                               className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${msg.sender_id === user?.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'}`}
