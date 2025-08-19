@@ -1,106 +1,192 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Shield, CheckCircle, AlertTriangle, Upload, FileText, User, GraduationCap, Award, Building } from "lucide-react";
+import { Shield, CheckCircle, AlertTriangle, Upload, FileText, User, GraduationCap, Award, Building, Loader2, XCircle } from "lucide-react";
+import { useAuth } from '@/hooks/useAuth';
+import { useResearcherProfile } from '@/hooks/useResearcherProfile';
+import { useDocumentUpload } from '@/hooks/useDocumentUpload';
+import { useToast } from '@/components/ui/use-toast';
+
+// Define the structure for a single verification document
+interface VerificationDocument {
+  documentType: string;
+  status: 'verified' | 'pending' | 'rejected' | 'not_started';
+  fileUrl?: string;
+  fileName?: string;
+  uploadedAt?: string;
+  rejectionReason?: string;
+}
+
+// Define the structure for a verification category
+interface VerificationCategory {
+  documents: VerificationDocument[];
+  otherDetails?: string;
+}
+
+// Define the overall verifications structure
+interface Verifications {
+  [key: string]: VerificationCategory;
+}
 
 const VerificationTab = () => {
-  const [verificationStatus] = useState({
-    identity: "verified",
-    education: "verified", 
-    employment: "pending",
-    publications: "verified"
-  });
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const { researcher, loading: profileLoading, updateProfile, refetch } = useResearcherProfile(user?.id || '');
+  const { uploadDocument } = useDocumentUpload();
 
+  const [loadingStates, setLoadingStates] = useState<{ [key: string]: boolean }>({});
   const [otherEmployment, setOtherEmployment] = useState("");
-  const [uploadedFiles, setUploadedFiles] = useState<{[key: string]: string[]}>({});
 
-  const verificationProgress = 75; // 3 out of 4 verified
+  useEffect(() => {
+    if (researcher?.verifications?.employment?.otherDetails) {
+      setOtherEmployment(researcher.verifications.employment.otherDetails);
+    }
+  }, [researcher]);
 
   const verificationItems = [
     {
+      key: 'identity',
       title: "Identity Verification",
       description: "Government-issued ID verification",
-      status: verificationStatus.identity,
       icon: User,
       documents: ["Passport", "Driver's License", "National ID Card"]
     },
     {
+      key: 'education',
       title: "Educational Background",
       description: "Academic credentials and degrees",
-      status: verificationStatus.education,
       icon: GraduationCap,
       documents: ["PhD Certificate", "Academic Credentials"]
     },
     {
+      key: 'employment',
       title: "Employment Verification",
       description: "Current institutional affiliation",
-      status: verificationStatus.employment,
       icon: Building,
       documents: ["Employment Letter", "Faculty ID"],
       hasOtherField: true
     },
     {
+      key: 'publications',
       title: "Research Publications",
       description: "Published academic work verification",
-      status: verificationStatus.publications,
       icon: Award,
       documents: ["Publication List", "ORCID Profile"]
     }
   ];
 
-  const getStatusColor = (status: string) => {
+  const getStatusInfo = (status: VerificationDocument['status']) => {
     switch (status) {
       case 'verified':
-        return 'bg-green-100 text-green-800';
+        return { color: 'bg-green-100 text-green-800', icon: <CheckCircle className="h-4 w-4 text-green-600" /> };
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return { color: 'bg-yellow-100 text-yellow-800', icon: <AlertTriangle className="h-4 w-4 text-yellow-600" /> };
       case 'rejected':
-        return 'bg-red-100 text-red-800';
+        return { color: 'bg-red-100 text-red-800', icon: <AlertTriangle className="h-4 w-4 text-red-600" /> };
       default:
-        return 'bg-gray-100 text-gray-800';
+        return { color: 'bg-gray-100 text-gray-800', icon: <AlertTriangle className="h-4 w-4 text-gray-500" /> };
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'verified':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'pending':
-        return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
-      default:
-        return <AlertTriangle className="h-4 w-4 text-red-600" />;
-    }
-  };
+  const handleFileUpload = async (categoryKey: string, documentType: string) => {
+    const loadingKey = `${categoryKey}-${documentType}`;
+    setLoadingStates(prev => ({ ...prev, [loadingKey]: true }));
 
-  const handleFileUpload = (category: string, documentType: string) => {
-    console.log("Uploading file for:", category, documentType);
-    
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        const key = `${category}-${documentType}`;
-        setUploadedFiles(prev => ({
-          ...prev,
-          [key]: [...(prev[key] || []), file.name]
-        }));
-        console.log("File uploaded:", file.name);
-        alert(`File "${file.name}" uploaded successfully for ${documentType}!`);
+      if (file && user) {
+        const path = `public/${user.id}/${file.name}`;
+        const fileUrl = await uploadDocument(file, 'lovable-uploads', path);
+
+        if (fileUrl && researcher) {
+          const currentVerifications: Verifications = JSON.parse(JSON.stringify(researcher.verifications || {}));
+          
+          if (!currentVerifications[categoryKey]) {
+            currentVerifications[categoryKey] = { documents: [] };
+          }
+          
+          const docIndex = currentVerifications[categoryKey].documents.findIndex(d => d.documentType === documentType);
+
+          const newDocument: VerificationDocument = {
+            documentType,
+            status: 'pending',
+            fileUrl,
+            fileName: file.name,
+            uploadedAt: new Date().toISOString(),
+          };
+
+          if (docIndex > -1) {
+            currentVerifications[categoryKey].documents[docIndex] = newDocument;
+          } else {
+            currentVerifications[categoryKey].documents.push(newDocument);
+          }
+
+          await updateProfile({ verifications: currentVerifications });
+          refetch();
+        }
       }
+      setLoadingStates(prev => ({ ...prev, [loadingKey]: false }));
     };
     input.click();
+    // In case user closes file dialog without selecting
+    input.oncancel = () => {
+      setLoadingStates(prev => ({ ...prev, [loadingKey]: false }));
+    };
+  };
+
+  const handleRemoveFile = async (categoryKey: string, documentType: string) => {
+    if (!researcher) return;
+
+    const currentVerifications: Verifications = JSON.parse(JSON.stringify(researcher.verifications || {}));
+    if (!currentVerifications[categoryKey]) return;
+
+    currentVerifications[categoryKey].documents = currentVerifications[categoryKey].documents.filter(
+      d => d.documentType !== documentType
+    );
+
+    await updateProfile({ verifications: currentVerifications });
+    refetch();
+  };
+
+  const handleSaveOtherEmployment = async () => {
+    if (!researcher) return;
+    const currentVerifications: Verifications = JSON.parse(JSON.stringify(researcher.verifications || {}));
+    if (!currentVerifications.employment) {
+      currentVerifications.employment = { documents: [] };
+    }
+    currentVerifications.employment.otherDetails = otherEmployment;
+    await updateProfile({ verifications: currentVerifications });
+    toast({ title: "Success", description: "Employment details saved." });
+  };
+
+  if (profileLoading) {
+    return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  }
+
+  const verificationProgress = researcher?.verifications ? 
+    (Object.values(researcher.verifications)
+      .flatMap(c => c.documents || [])
+      .filter(d => d.status === 'verified').length / verificationItems.flatMap(item => item.documents).length) * 100 
+    : 0;
+
+  const getCategoryStatus = (categoryKey: string): VerificationDocument['status'] => {
+    const category = researcher?.verifications?.[categoryKey];
+    if (!category || category.documents.length === 0) return 'not_started';
+    if (category.documents.some(d => d.status === 'verified')) return 'verified';
+    if (category.documents.some(d => d.status === 'pending')) return 'pending';
+    if (category.documents.some(d => d.status === 'rejected')) return 'rejected';
+    return 'not_started';
   };
 
   return (
     <div className="space-y-6">
-      {/* Verification Overview */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -116,147 +202,112 @@ const VerificationTab = () => {
             <div>
               <div className="flex justify-between text-sm mb-2">
                 <span>Overall Progress</span>
-                <span>{verificationProgress}% Complete</span>
+                <span>{verificationProgress.toFixed(0)}% Complete</span>
               </div>
               <Progress value={verificationProgress} className="h-3" />
             </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">3</div>
-                <div className="text-sm text-gray-600">Verified</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-600">1</div>
-                <div className="text-sm text-gray-600">Pending</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-400">0</div>
-                <div className="text-sm text-gray-600">Rejected</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">4</div>
-                <div className="text-sm text-gray-600">Total Items</div>
-              </div>
-            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Verification Items */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {verificationItems.map((item, index) => (
-          <Card key={index}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center space-x-2">
-                  <item.icon className="h-5 w-5" />
-                  <span>{item.title}</span>
-                </CardTitle>
-                <div className="flex items-center space-x-2">
-                  {getStatusIcon(item.status)}
-                  <Badge className={getStatusColor(item.status)}>
-                    {item.status.toUpperCase()}
-                  </Badge>
-                </div>
-              </div>
-              <CardDescription>{item.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {item.hasOtherField && (
-                  <div className="space-y-2">
-                    <Label htmlFor="other-employment">Other Employment Details</Label>
-                    <Input
-                      id="other-employment"
-                      value={otherEmployment}
-                      onChange={(e) => setOtherEmployment(e.target.value)}
-                      placeholder="Enter other employment information..."
-                    />
-                  </div>
-                )}
-                
-                <div>
-                  <h4 className="font-medium text-sm mb-2">Required Documents:</h4>
-                  <div className="space-y-2">
-                    {item.documents.map((doc, docIndex) => {
-                      const fileKey = `${item.title}-${doc}`;
-                      const uploadedForDoc = uploadedFiles[fileKey] || [];
-                      
-                      return (
-                        <div key={docIndex} className="flex items-center justify-between p-2 border rounded">
-                          <div className="flex-1">
-                            <span className="text-sm flex items-center space-x-2">
-                              <FileText className="h-4 w-4" />
-                              <span>{doc}</span>
-                            </span>
-                            {uploadedForDoc.length > 0 && (
-                              <div className="mt-1 text-xs text-green-600">
-                                {uploadedForDoc.length} file(s) uploaded: {uploadedForDoc[uploadedForDoc.length - 1]}
-                              </div>
-                            )}
-                          </div>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleFileUpload(item.title, doc)}
-                            className="ml-2"
-                          >
-                            <Upload className="h-4 w-4 mr-1" />
-                            {uploadedForDoc.length > 0 ? 'Replace' : 'Upload'}
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-                
-                {item.status === 'pending' && (
-                  <div className="bg-yellow-50 p-3 rounded border border-yellow-200">
-                    <p className="text-sm text-yellow-800">
-                      Your documents are under review. We'll notify you once verification is complete.
-                    </p>
-                  </div>
-                )}
-                
-                {item.status === 'verified' && (
-                  <div className="bg-green-50 p-3 rounded border border-green-200">
-                    <p className="text-sm text-green-800">
-                      ✓ Verification completed successfully.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+        {verificationItems.map((item) => {
+          const categoryStatus = getCategoryStatus(item.key);
+          const { color, icon } = getStatusInfo(categoryStatus);
 
-      {/* Verification Benefits */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Verification Benefits</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4">
-              <Shield className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-              <h4 className="font-medium">Enhanced Trust</h4>
-              <p className="text-sm text-gray-600">Build credibility with students and institutions</p>
-            </div>
-            <div className="text-center p-4">
-              <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <h4 className="font-medium">Higher Visibility</h4>
-              <p className="text-sm text-gray-600">Appear higher in search results</p>
-            </div>
-            <div className="text-center p-4">
-              <Award className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
-              <h4 className="font-medium">Premium Features</h4>
-              <p className="text-sm text-gray-600">Access to exclusive platform features</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          return (
+            <Card key={item.key}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center space-x-2">
+                    <item.icon className="h-5 w-5" />
+                    <span>{item.title}</span>
+                  </CardTitle>
+                  <div className="flex items-center space-x-2">
+                    {icon}
+                    <Badge className={color}>
+                      {categoryStatus.replace('_', ' ').toUpperCase()}
+                    </Badge>
+                  </div>
+                </div>
+                <CardDescription>{item.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {item.hasOtherField && (
+                    <div className="space-y-2">
+                      <Label htmlFor="other-employment">Other Employment Details</Label>
+                      <Input
+                        id="other-employment"
+                        value={otherEmployment}
+                        onChange={(e) => setOtherEmployment(e.target.value)}
+                        placeholder="Enter other employment information..."
+                      />
+                      <Button size="sm" onClick={handleSaveOtherEmployment}>Save Details</Button>
+                    </div>
+                  )}
+                  
+                  <div>
+                    <h4 className="font-medium text-sm mb-2">Required Documents:</h4>
+                    <div className="space-y-2">
+                      {item.documents.map((doc) => {
+                        const docData = researcher?.verifications?.[item.key]?.documents.find(d => d.documentType === doc);
+                        const isLoading = loadingStates[`${item.key}-${doc}`];
+                        const statusInfo = getStatusInfo(docData?.status || 'not_started');
+
+                        return (
+                          <div key={doc} className="flex items-center justify-between p-2 border rounded">
+                            <div className="flex-1">
+                              <span className="text-sm flex items-center space-x-2">
+                                {docData ? statusInfo.icon : <FileText className="h-4 w-4" />}
+                                <span>{doc}</span>
+                              </span>
+                              {docData?.fileName && (
+                                <div className="mt-1 text-xs text-gray-600">
+                                  <a href={docData.fileUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                    {docData.fileName}
+                                  </a>
+                                  <Badge variant="outline" className={`ml-2 ${statusInfo.color}`}>{docData.status}</Badge>
+                                </div>
+                              )}
+                              {docData?.status === 'rejected' && docData.rejectionReason && (
+                                <p className="text-xs text-red-600 mt-1">Reason: {docData.rejectionReason}</p>
+                              )}
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleFileUpload(item.key, doc)}
+                                className="ml-2"
+                                disabled={isLoading}
+                              >
+                                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                <span className="ml-1">{docData ? 'Replace' : 'Upload'}</span>
+                              </Button>
+                              {docData && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="text-red-500 hover:text-red-700"
+                                  onClick={() => handleRemoveFile(item.key, doc)}
+                                  disabled={isLoading}
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 };

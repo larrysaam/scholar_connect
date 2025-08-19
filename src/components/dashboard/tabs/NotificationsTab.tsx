@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,7 +33,8 @@ const NotificationsTab = () => {
     markAllAsRead,
     deleteNotification,
     updatePreferences,
-    fetchNotifications
+    fetchNotifications,
+    createNotification
   } = useNotifications();
 
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
@@ -80,6 +80,121 @@ const NotificationsTab = () => {
     await fetchNotifications();
   };
 
+  // --- DEMO: Trigger all notification types for this user ---
+  const handleTriggerAllNotifications = async () => {
+    if (!preferences) return;
+    // Use the createNotification function from the hook instance
+    if (typeof createNotification !== 'function') return;
+    const trigger = async (data: any) => {
+      await createNotification(data);
+    };
+    const now = new Date();
+    await trigger({
+      title: "New Message Received",
+      message: "You have a new message from Dr. Smith.",
+      type: "info",
+      category: "message",
+      action_url: "/dashboard?tab=messages",
+      action_label: "View Message"
+    });
+    await trigger({
+      title: "Message Read Receipt",
+      message: "Your message to Dr. Smith was read.",
+      type: "info",
+      category: "message",
+      action_url: "/dashboard?tab=messages",
+      action_label: "View Conversation"
+    });
+    await trigger({
+      title: "Booking Confirmed",
+      message: "Your consultation with Dr. Smith is confirmed for tomorrow.",
+      type: "success",
+      category: "consultation",
+      action_url: "/dashboard?tab=upcoming",
+      action_label: "View Details"
+    });
+    await trigger({
+      title: "Booking Cancelled",
+      message: "Your booking with Dr. Smith was cancelled.",
+      type: "warning",
+      category: "consultation"
+    });
+    await trigger({
+      title: "Booking Reminder",
+      message: "Reminder: You have a consultation scheduled with Dr. Smith in 1 hour.",
+      type: "warning",
+      category: "consultation"
+    });
+    await trigger({
+      title: "Payment Received",
+      message: "Payment of $100 received for your consultation.",
+      type: "success",
+      category: "payment",
+      action_url: "/dashboard?tab=payments",
+      action_label: "View Payments"
+    });
+    await trigger({
+      title: "Payment Failed/Refunded",
+      message: "Payment for your booking failed/refunded.",
+      type: "error",
+      category: "payment"
+    });
+    await trigger({
+      title: "Job Application Update",
+      message: "Your application for Research Assistant has been accepted.",
+      type: "success",
+      category: "application"
+    });
+    await trigger({
+      title: "Collaboration Invitation",
+      message: "Dr. Smith invited you to collaborate on a project.",
+      type: "info",
+      category: "collaboration"
+    });
+    await trigger({
+      title: "Collaboration Accepted/Declined",
+      message: "Dr. Smith accepted your collaboration request.",
+      type: "success",
+      category: "collaboration"
+    });
+    await trigger({
+      title: "System Announcement",
+      message: "Scheduled maintenance on 2025-08-20. Some features may be unavailable.",
+      type: "warning",
+      category: "system"
+    });
+    await trigger({
+      title: "Profile Approved/Verified",
+      message: "Your researcher profile has been approved.",
+      type: "success",
+      category: "system"
+    });
+    await trigger({
+      title: "Document Uploaded/Reviewed",
+      message: "Your uploaded document has been reviewed.",
+      type: "info",
+      category: "system"
+    });
+    await trigger({
+      title: "Consultation Feedback Received",
+      message: "You received feedback for your recent consultation.",
+      type: "success",
+      category: "consultation"
+    });
+    await trigger({
+      title: "Security Alert",
+      message: "New login detected from a new device/location.",
+      type: "warning",
+      category: "system"
+    });
+    await trigger({
+      title: "Welcome to ScholarConnect!",
+      message: "Explore features and connect with others.",
+      type: "info",
+      category: "system"
+    });
+  };
+
   const readCount = notifications.filter(notif => notif.is_read).length;
 
   const getTypeColor = (type: string) => {
@@ -121,6 +236,10 @@ const NotificationsTab = () => {
           <Button onClick={handleRefresh} variant="outline" size="sm">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
+          </Button>
+          <Button onClick={handleTriggerAllNotifications} variant="outline" size="sm">
+            <Bell className="h-4 w-4 mr-2" />
+            Trigger All Notifications
           </Button>
           {unreadCount > 0 && (
             <Button onClick={handleMarkAllAsRead} variant="outline" size="sm">

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { format } from 'date-fns';
+import { Check, CheckCheck } from "lucide-react";
 
 // MessagingTab: Chat with students who booked your services
 const MessagingTab = () => {
@@ -19,9 +20,11 @@ const MessagingTab = () => {
     selectedConversation,
     setSelectedConversation,
     socketConnected,
+    socket, // <-- add socket from useMessages
   } = useMessages();
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const activeConv = selectedConversation;
 
   useEffect(() => {
     fetchConversations();
@@ -38,11 +41,41 @@ const MessagingTab = () => {
     }
   }, [messages]);
 
+  useEffect(() => {
+    if (activeConv && user) {
+      // Instead of API, emit a socket event to mark messages as read
+      if (socketConnected && socket) {
+        socket.emit('markAsRead', {
+          bookingId: activeConv.id,
+          userId: user.id,
+        });
+      }
+    }
+  }, [activeConv, user, socketConnected, socket]);
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim() || !selectedConversation) return;
     await sendMessage(selectedConversation.id, message);
     setMessage("");
+  };
+
+  const getMessageStatusIcon = (msg: any, idx: number, messages: any[], userId: string) => {
+    // Only for messages sent by the current user
+    if (msg.sender_id !== userId) return null;
+    // Find the last message sent by the user that is marked as 'read'
+    const userMessages = messages.filter((m: any) => m.sender_id === userId);
+    const lastReadIdx = userMessages.map((m: any) => m.status).lastIndexOf('read');
+    const isLastRead = userMessages[lastReadIdx]?.id === msg.id;
+    if (msg.status === 'read' && isLastRead) {
+      return <CheckCheck className="h-4 w-4 text-blue-400" />;
+    } else if (msg.status === 'read' || msg.status === 'delivered') {
+      return <CheckCheck className="h-4 w-4 text-gray-400" />;
+    } else if (msg.status === 'sent') {
+      return <Check className="h-4 w-4 text-gray-400" />;
+    } else {
+      return <Check className="h-4 w-4 text-gray-300" />;
+    }
   };
 
   return (
@@ -98,6 +131,11 @@ const MessagingTab = () => {
               <CardHeader className="border-b">
                 <div className="flex items-center space-x-3">
                   {/* Optionally add avatar here if available: <img src={selectedConversation.avatar_url} ... /> */}
+                  <img
+                    src={(selectedConversation as any)?.avatar_url || '/placeholder.svg'}
+                    alt={selectedConversation.other_user_name}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
                   <div>
                     <h3 className="font-semibold">{selectedConversation.other_user_name}</h3>
                     <p className="text-xs text-gray-500">You are chatting with {selectedConversation.other_user_name}</p>
@@ -142,6 +180,11 @@ const MessagingTab = () => {
                                 <span className="text-xs opacity-75">
                                   {msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                                 </span>
+                                {msg.sender_id === user?.id && (
+                                  <span className="ml-2 text-xs flex items-center">
+                                    {getMessageStatusIcon(msg, idx, messages, user.id)}
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>

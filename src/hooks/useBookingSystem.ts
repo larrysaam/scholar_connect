@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/ui/use-toast';
+import { NotificationService } from '@/services/notificationService';
 
 export interface BookingData {
   provider_id: string;
@@ -110,10 +111,21 @@ export const useBookingSystem = () => {
 
       // Add selected addons if any
       if (bookingData.selected_addons && bookingData.selected_addons.length > 0) {
-        const addonInserts = bookingData.selected_addons.map(addonId => ({
-          booking_id: booking.id,
-          addon_id: addonId
-        }));
+        // You must provide price (and optionally quantity) for each addon insert
+        // We'll fetch addon details to get the price
+        const { data: addonDetails } = await supabase
+          .from('service_addons')
+          .select('id, price')
+          .in('id', bookingData.selected_addons);
+
+        const addonInserts = (bookingData.selected_addons || []).map(addonId => {
+          const found = addonDetails?.find((a: any) => a.id === addonId);
+          return {
+            booking_id: booking.id,
+            addon_id: addonId,
+            price: found?.price || 0
+          };
+        });
 
         const { error: addonError } = await supabase
           .from('booking_addons')
@@ -124,12 +136,33 @@ export const useBookingSystem = () => {
         }
       }
 
+      // --- Notification: Notify both student and researcher of new booking request ---
+      if (booking) {
+        // Notify researcher (provider)
+        await NotificationService.notifyConsultationRequest(
+          booking.provider_id,
+          user.user_metadata?.full_name || user.email || 'A student',
+          booking.service?.title || 'Consultation'
+        );
+        // Notify student (client)
+        await NotificationService.createNotification({
+          userId: booking.client_id,
+          title: 'Booking Request Submitted',
+          message: `Your booking request for '${booking.service?.title || 'Consultation'}' has been submitted to ${booking.provider?.name || 'the researcher'}.`,
+          type: 'info',
+          category: 'consultation',
+          actionUrl: '/dashboard?tab=upcoming',
+          actionLabel: 'View Booking'
+        });
+      }
+
       toast({
         title: "Booking Created",
         description: "Your consultation booking has been created successfully!",
       });
 
-      return { success: true, booking };
+      // Fix: Ensure status is cast to BookingSession type
+      return { success: true, booking: { ...booking, status: booking.status as BookingSession['status'], payment_status: booking.payment_status as BookingSession['payment_status'] } };
     } catch (error) {
       console.error('Error creating booking:', error);
       toast({
@@ -173,17 +206,31 @@ export const useBookingSystem = () => {
         return { success: false, error: updateError.message };
       }
 
-      // Create payment record (you might want to create a payments table)
-      // For now, we'll just log it
-      console.log('Payment processed:', {
-        payment_id,
-        booking_id: paymentData.booking_id,
-        amount: paymentData.amount,
-        currency: paymentData.currency,
-        method: paymentData.payment_method,
-        status: 'completed',
-        processed_at: new Date().toISOString()
-      });
+      // --- Notification: Notify both student and researcher of booking confirmation/payment ---
+      // Fetch booking details for notification context
+      const { data: bookingDetails } = await supabase
+        .from('service_bookings')
+        .select(`*, provider:users!service_bookings_provider_id_fkey(name), service:consultation_services(title)`)
+        .eq('id', paymentData.booking_id)
+        .single();
+      if (bookingDetails) {
+        // Notify student (client)
+        await NotificationService.notifyConsultationConfirmed(
+          bookingDetails.client_id,
+          bookingDetails.provider?.name || 'the researcher',
+          new Date(bookingDetails.scheduled_date)
+        );
+        // Notify researcher (provider)
+        await NotificationService.createNotification({
+          userId: bookingDetails.provider_id,
+          title: 'New Booking Confirmed',
+          message: `A booking for '${bookingDetails.service?.title || 'Consultation'}' has been confirmed and paid by a student.`,
+          type: 'success',
+          category: 'consultation',
+          actionUrl: '/dashboard?tab=bookings',
+          actionLabel: 'View Booking'
+        });
+      }
 
       toast({
         title: "Payment Successful",
@@ -234,7 +281,12 @@ export const useBookingSystem = () => {
         return;
       }
 
-      setBookings(data || []);
+      // Fix: Cast status and payment_status to BookingSession types
+      setBookings((data || []).map(b => ({
+        ...b,
+        status: b.status as BookingSession['status'],
+        payment_status: b.payment_status as BookingSession['payment_status']
+      })));
     } catch (error) {
       console.error('Error fetching bookings:', error);
     } finally {
@@ -273,6 +325,36 @@ export const useBookingSystem = () => {
             : booking
         )
       );
+
+      // --- Notification: Notify both student and researcher of booking cancellation ---
+      // Fetch booking details for notification context
+      const { data: bookingDetails } = await supabase
+        .from('service_bookings')
+        .select(`*, provider:users!service_bookings_provider_id_fkey(name), service:consultation_services(title)`)
+        .eq('id', bookingId)
+        .single();
+      if (bookingDetails) {
+        // Notify researcher (provider)
+        await NotificationService.createNotification({
+          userId: bookingDetails.provider_id,
+          title: 'Booking Cancelled',
+          message: `A booking for '${bookingDetails.service?.title || 'Consultation'}' was cancelled by the student.`,
+          type: 'warning',
+          category: 'consultation',
+          actionUrl: '/dashboard?tab=bookings',
+          actionLabel: 'View Bookings'
+        });
+        // Notify student (client)
+        await NotificationService.createNotification({
+          userId: bookingDetails.client_id,
+          title: 'Booking Cancelled',
+          message: `You have cancelled your booking for '${bookingDetails.service?.title || 'Consultation'}'.`,
+          type: 'info',
+          category: 'consultation',
+          actionUrl: '/dashboard?tab=upcoming',
+          actionLabel: 'View Bookings'
+        });
+      }
 
       toast({
         title: "Booking Cancelled",
@@ -321,6 +403,36 @@ export const useBookingSystem = () => {
             : booking
         )
       );
+
+      // --- Notification: Notify both student and researcher of booking reschedule ---
+      // Fetch booking details for notification context
+      const { data: bookingDetails } = await supabase
+        .from('service_bookings')
+        .select(`*, provider:users!service_bookings_provider_id_fkey(name), service:consultation_services(title)`)
+        .eq('id', bookingId)
+        .single();
+      if (bookingDetails) {
+        // Notify researcher (provider)
+        await NotificationService.createNotification({
+          userId: bookingDetails.provider_id,
+          title: 'Booking Rescheduled',
+          message: `A booking for '${bookingDetails.service?.title || 'Consultation'}' was rescheduled by the student.`,
+          type: 'info',
+          category: 'consultation',
+          actionUrl: '/dashboard?tab=bookings',
+          actionLabel: 'View Bookings'
+        });
+        // Notify student (client)
+        await NotificationService.createNotification({
+          userId: bookingDetails.client_id,
+          title: 'Booking Rescheduled',
+          message: `You have rescheduled your booking for '${bookingDetails.service?.title || 'Consultation'}'.`,
+          type: 'info',
+          category: 'consultation',
+          actionUrl: '/dashboard?tab=upcoming',
+          actionLabel: 'View Bookings'
+        });
+      }
 
       toast({
         title: "Booking Rescheduled",
@@ -395,6 +507,36 @@ export const useBookingSystem = () => {
           variant: "destructive"
         });
         return false;
+      }
+
+      // --- Notification: Notify both student and researcher of review submission ---
+      // Fetch booking details for notification context
+      const { data: bookingDetails } = await supabase
+        .from('service_bookings')
+        .select(`*, provider:users!service_bookings_provider_id_fkey(name), service:consultation_services(title)`)
+        .eq('id', bookingId)
+        .single();
+      if (bookingDetails) {
+        // Notify researcher (provider)
+        await NotificationService.createNotification({
+          userId: bookingDetails.provider_id,
+          title: 'New Review Received',
+          message: `You received a new review for '${bookingDetails.service?.title || 'Consultation'}'.`,
+          type: 'info',
+          category: 'consultation',
+          actionUrl: '/dashboard?tab=reviews',
+          actionLabel: 'View Reviews'
+        });
+        // Notify student (client)
+        await NotificationService.createNotification({
+          userId: bookingDetails.client_id,
+          title: 'Review Submitted',
+          message: `Your review for '${bookingDetails.service?.title || 'Consultation'}' has been submitted.`,
+          type: 'success',
+          category: 'consultation',
+          actionUrl: '/dashboard?tab=reviews',
+          actionLabel: 'View Reviews'
+        });
       }
 
       toast({

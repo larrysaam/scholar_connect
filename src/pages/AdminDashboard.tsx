@@ -13,6 +13,7 @@ import ReportsAnalytics from "@/components/admin/tabs/ReportsAnalytics";
 import MembershipSettings from "@/components/admin/tabs/MembershipSettings";
 import SupportFeedback from "@/components/admin/tabs/SupportFeedback";
 import SecurityCompliance from "@/components/admin/tabs/SecurityCompliance";
+import VerificationManagement from "@/components/admin/tabs/VerificationManagement";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -39,6 +40,8 @@ const AdminDashboard = () => {
         return <SupportFeedback />;
       case "security":
         return <SecurityCompliance />;
+      case "verification":
+        return <VerificationManagement />;
       default:
         return <DashboardOverview />;
     }

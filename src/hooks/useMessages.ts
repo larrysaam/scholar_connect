@@ -75,6 +75,67 @@ export const useMessages = () => {
     };
   }, [user, selectedConversation]);
 
+  // Listen for real-time read receipts (for both student and researcher)
+  useEffect(() => {
+    if (!socketRef.current) return;
+    const handleMessageRead = (msg: any) => {
+      setMessages((prev: any[]) =>
+        prev.map((m) => (m.id === msg.id ? { ...m, status: msg.status } : m))
+      );
+    };
+    socketRef.current.on('message_read', handleMessageRead);
+    return () => {
+      socketRef.current?.off('message_read', handleMessageRead);
+    };
+  }, [setMessages]);
+
+  // --- Push & in-app notifications for new messages, bookings, and events ---
+  useEffect(() => {
+    if (!socketRef.current) return;
+    // Browser push notification helper
+    const showBrowserNotification = (title: string, body: string) => {
+      if (window.Notification && Notification.permission === 'granted') {
+        new Notification(title, { body });
+      }
+    };
+    // Request permission on mount if not already granted
+    if (window.Notification && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+    // In-app notification helper (replace with your toast/alert system if needed)
+    const showInAppNotification = (title: string, body: string) => {
+      try {
+        // Use the toast utility from our UI system
+        // Dynamically import to avoid circular deps
+        import("@/components/ui/use-toast").then(({ toast }) => {
+          toast({ title, description: body });
+        });
+      } catch {}
+    };
+    // Listen for new messages (notification only)
+    const handleNewMessageNotification = (msg: any) => {
+      // Only notify if not sent by self
+      if (!user || msg.sender_id === user.id) return;
+      const sender = msg.sender_name || 'New Message';
+      const content = msg.content || '';
+      showBrowserNotification(sender, content);
+      showInAppNotification(sender, content);
+    };
+    // Listen for new bookings (custom event, if implemented)
+    const handleNewBooking = (booking: any) => {
+      showBrowserNotification('New Booking', 'You have a new booking request.');
+      showInAppNotification('New Booking', 'You have a new booking request.');
+    };
+    // Listen for other events (customize as needed)
+    socketRef.current.on('new_message', handleNewMessageNotification);
+    socketRef.current.on('new_booking', handleNewBooking);
+    // Add more event listeners as needed
+    return () => {
+      socketRef.current?.off('new_message', handleNewMessageNotification);
+      socketRef.current?.off('new_booking', handleNewBooking);
+    };
+  }, [user]);
+
   // Fetch conversations for researcher or student
   const fetchConversations = useCallback(async () => {
     if (!user) return;
@@ -208,5 +269,6 @@ export const useMessages = () => {
     loadingConversations,
     loadingMessages,
     socketConnected,
+    setMessages, // <-- expose setMessages for real-time updates
   };
 };

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Upload, Send, Paperclip, Clock } from "lucide-react";
+import { MessageCircle, Upload, Send, Paperclip, Clock, Check, CheckCheck } from "lucide-react";
 import { useMessages } from "@/hooks/useMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from 'date-fns';
@@ -22,7 +22,15 @@ const StudentMessagesTab = () => {
     fetchMessages,
     selectedConversation,
     setSelectedConversation,
+    socketConnected,
+    setMessages, // <-- add this line
   } = useMessages();
+
+  // Get socket from useMessages' socketRef
+  const socket = (window as any).socketRef?.current;
+
+  // Find the active conversation object
+  const activeConv = conversations.find(conv => conv.id === activeConversation);
 
   // When a conversation is selected, set it in the hook as well
   useEffect(() => {
@@ -31,6 +39,38 @@ const StudentMessagesTab = () => {
       fetchMessages(activeConversation);
     }
   }, [activeConversation, conversations, setSelectedConversation, fetchMessages]);
+
+  // --- WhatsApp-style read receipt logic with socket and DB update ---
+  useEffect(() => {
+    if (activeConv && user) {
+      // Find all messages sent to the current user that are not yet read
+      const unreadMessages = messages.filter(
+        (msg: any) => msg.recipient_id === user.id && msg.status !== 'read'
+      );
+      if (unreadMessages.length > 0 && socket) {
+        // Emit socket event to mark as read (real-time, DB handled by socket server)
+        socket.emit('markAsRead', {
+          bookingId: activeConv.id,
+          userId: user.id,
+          messageIds: unreadMessages.map((m: any) => m.id),
+        });
+      }
+    }
+  }, [activeConv, user, messages, socket]);
+
+  useEffect(() => {
+    if (!socket) return;
+    // Listen for real-time read receipts
+    const handleMessageRead = (msg: any) => {
+      setMessages((prev: any[]) =>
+        prev.map((m) => (m.id === msg.id ? { ...m, status: msg.status } : m))
+      );
+    };
+    socket.on('message_read', handleMessageRead);
+    return () => {
+      socket.off('message_read', handleMessageRead);
+    };
+  }, [socket, setMessages]);
 
   const handleSendMessage = async () => {
     if (newMessage.trim() && selectedConversation) {
@@ -42,9 +82,6 @@ const StudentMessagesTab = () => {
   const handleFileUpload = () => {
     // Implementation for file upload (optional)
   };
-
-  // Find the active conversation object
-  const activeConv = conversations.find(conv => conv.id === activeConversation);
 
   return (
     <div className="space-y-6">
@@ -74,7 +111,7 @@ const StudentMessagesTab = () => {
                 >
                   <div className="flex items-start space-x-3">
                     <img
-                      src={conversation.avatar_url || '/placeholder.svg'}
+                      src={(conversation as any).avatar_url || '/placeholder.svg'}
                       alt={conversation.other_user_name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
@@ -105,7 +142,7 @@ const StudentMessagesTab = () => {
               <CardHeader className="border-b">
                 <div className="flex items-center space-x-3">
                   <img
-                    src={activeConv?.avatar_url || '/placeholder.svg'}
+                    src={(activeConv as any)?.avatar_url || '/placeholder.svg'}
                     alt={activeConv?.other_user_name}
                     className="w-10 h-10 rounded-full object-cover"
                   />
@@ -155,6 +192,11 @@ const StudentMessagesTab = () => {
                                 <span className="text-xs opacity-75">
                                   {msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                                 </span>
+                                {msg.sender_id === user?.id && (
+                                  <span className="ml-2 text-xs flex items-center">
+                                    {getMessageStatusIcon(msg, idx, messages, user.id)}
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -214,6 +256,25 @@ const StudentMessagesTab = () => {
       </Card>
     </div>
   );
+};
+
+// WhatsApp-style double tick logic for sent messages
+const getMessageStatusIcon = (msg: any, idx: number, messages: any[], userId: string) => {
+  if (msg.sender_id !== userId) return null;
+  // Find all messages sent by the user in this conversation
+  const userMessages = messages.filter((m: any) => m.sender_id === userId);
+  // Find the last message that is read
+  const lastReadIdx = userMessages.map((m: any) => m.status).lastIndexOf('read');
+  const isLastRead = userMessages[lastReadIdx]?.id === msg.id;
+  if (msg.status === 'read' && isLastRead) {
+    return <CheckCheck className="h-4 w-4 text-blue-400" />;
+  } else if (msg.status === 'read' || msg.status === 'delivered') {
+    return <CheckCheck className="h-4 w-4 text-gray-400" />;
+  } else if (msg.status === 'sent') {
+    return <Check className="h-4 w-4 text-gray-400" />;
+  } else {
+    return <Check className="h-4 w-4 text-gray-300" />;
+  }
 };
 
 export default StudentMessagesTab;

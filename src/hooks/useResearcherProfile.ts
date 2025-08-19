@@ -169,7 +169,7 @@ export const useResearcherProfile = (researcherId: string) => {
               research_interests: userData.expertise || [],
               specialties: userData.expertise || [],
               education: [],
-              experience_history: [],
+              experience: [],
               publications: [],
               awards: [],
               fellowships: [],
@@ -302,11 +302,17 @@ export const useResearcherProfile = (researcherId: string) => {
   const updateProfile = async (updates: Partial<any>) => {
     if (!researcher) return false;
 
+    const dbUpdates = { ...updates };
+    if (dbUpdates.experience_history !== undefined) {
+      dbUpdates.experience = dbUpdates.experience_history;
+      delete dbUpdates.experience_history;
+    }
+
     try {
       const { error } = await supabase
         .from('researcher_profiles')
         .update({
-          ...updates,
+          ...dbUpdates,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', researcherId);
