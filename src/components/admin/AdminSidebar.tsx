@@ -12,7 +12,8 @@ import {
   MessageSquare,
   Shield,
   Home,
-  Settings
+  Settings,
+  CheckCircle
 } from "lucide-react";
 
 interface AdminSidebarProps {

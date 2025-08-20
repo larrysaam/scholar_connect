@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export type AppRole = 'admin' | 'student' | 'expert' | 'aid';
@@ -7,17 +6,17 @@ export const roleService = {
   async hasRole(userId: string, role: AppRole): Promise<boolean> {
     try {
       const { data, error } = await supabase
-        .rpc('has_role', {
-          _user_id: userId,
-          _role: role
-        });
+        .from('users')
+        .select('role')
+        .eq('id', userId)
+        .single();
 
       if (error) {
         console.error('Error checking role:', error);
         return false;
       }
 
-      return data || false;
+      return data?.role === role;
     } catch (error) {
       console.error('Error in hasRole:', error);
       return false;
@@ -27,16 +26,17 @@ export const roleService = {
   async getUserRoles(userId: string): Promise<AppRole[]> {
     try {
       const { data, error } = await supabase
-        .from('user_roles')
+        .from('users')
         .select('role')
-        .eq('user_id', userId);
+        .eq('id', userId)
+        .single();
 
       if (error) {
         console.error('Error fetching user roles:', error);
         return [];
       }
 
-      return data?.map(r => r.role as AppRole) || [];
+      return data?.role ? [data.role as AppRole] : [];
     } catch (error) {
       console.error('Error in getUserRoles:', error);
       return [];
@@ -46,11 +46,9 @@ export const roleService = {
   async assignRole(userId: string, role: AppRole): Promise<boolean> {
     try {
       const { error } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: userId,
-          role
-        });
+        .from('users')
+        .update({ role })
+        .eq('id', userId);
 
       if (error) {
         console.error('Error assigning role:', error);
@@ -64,13 +62,12 @@ export const roleService = {
     }
   },
 
-  async removeRole(userId: string, role: AppRole): Promise<boolean> {
+  async removeRole(userId: string): Promise<boolean> {
     try {
       const { error } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId)
-        .eq('role', role);
+        .from('users')
+        .update({ role: null })
+        .eq('id', userId);
 
       if (error) {
         console.error('Error removing role:', error);

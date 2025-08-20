@@ -77,7 +77,9 @@ const Login = () => {
             console.log('User profile:', profile);
             
             // Redirect based on user role
-            if (profile?.role === 'expert') {
+            if (profile?.role === 'admin') {
+              navigate('/admin');
+            } else if (profile?.role === 'expert') {
               navigate('/researcher-dashboard');
             } else if (profile?.role === 'aid') {
               navigate('/research-aids-dashboard');

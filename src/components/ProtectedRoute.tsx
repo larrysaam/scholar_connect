@@ -16,15 +16,20 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        navigate('/login');
+        // If trying to access a protected route, redirect to the appropriate login
+        const loginPath = requiredRole === 'admin' ? '/admin/login' : '/login';
+        navigate(loginPath);
         return;
       }
 
-      if (requiredRole && profile?.role !== requiredRole) {
-        // Redirect to appropriate dashboard based on actual user role
-        if (profile?.role === 'expert') {
+      // Only check for role and redirect if the profile is fully loaded
+      if (profile && requiredRole && !profile.roles.includes(requiredRole)) {
+        // Redirect to appropriate dashboard based on the user's actual role
+        if (profile.roles.includes('admin')) {
+          navigate('/admin');
+        } else if (profile.roles.includes('expert')) {
           navigate('/researcher-dashboard');
-        } else if (profile?.role === 'aid') {
+        } else if (profile.roles.includes('aid')) {
           navigate('/research-aids-dashboard');
         } else {
           navigate('/dashboard');
@@ -33,7 +38,8 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     }
   }, [user, profile, loading, navigate, requiredRole]);
 
-  if (loading) {
+  // Show loading spinner while auth state or profile is loading
+  if (loading || (user && !profile)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" />
@@ -41,15 +47,13 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     );
   }
 
-  if (!user) {
-    return null;
+  // If all checks pass, render the children
+  if (user && (!requiredRole || profile?.roles.includes(requiredRole))) {
+    return <>{children}</>;
   }
 
-  if (requiredRole && profile?.role !== requiredRole) {
-    return null;
-  }
-
-  return <>{children}</>;
+  // Fallback, should not be reached if logic is correct
+  return null;
 };
 
 export default ProtectedRoute;

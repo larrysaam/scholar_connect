@@ -37,6 +37,11 @@ const StudentSignup = lazy(() => import("./pages/StudentSignup"));
 const ResearcherSignup = lazy(() => import("./pages/ResearcherSignup"));
 const ResearchAidSignup = lazy(() => import("./pages/ResearchAidSignup"));
 
+// Admin pages
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const AdminSignup = lazy(() => import("./pages/AdminSignup"));
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
@@ -61,6 +66,8 @@ const App = () => (
                 <Route path="/student-signup" element={<StudentSignup />} />
                 <Route path="/researcher-signup" element={<ResearcherSignup />} />
                 <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin/signup" element={<AdminSignup />} />
                 
                 {/* Protected routes - require authentication */}
                 <Route path="/researchers" element={
@@ -98,6 +105,13 @@ const App = () => (
                 <Route path="/research-aids-dashboard" element={
                   <ProtectedRoute>
                     <ResearchAidsDashboard />
+                  </ProtectedRoute>
+                } />
+
+                {/* Admin route */}
+                <Route path="/admin" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
                   </ProtectedRoute>
                 } />
               </Routes>

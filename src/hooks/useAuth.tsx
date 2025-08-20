@@ -42,21 +42,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return null;
       }
 
-      // Fetch user roles
-      const { data: rolesData, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId);
-
-      if (rolesError) {
-        console.error('Error fetching user roles:', rolesError);
-      }
-
-      const roles = rolesData?.map(r => r.role) || [];
-      
       return {
         ...profileData,
-        roles
+        roles: profileData.role ? [profileData.role] : []
       };
     } catch (error) {
       console.error('Error in fetchProfile:', error);
