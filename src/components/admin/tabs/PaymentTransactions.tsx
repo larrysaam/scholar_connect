@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,12 +19,8 @@ interface Transaction {
   status: string;
   created_at: string;
   recipient_id: string;
-  users: {
-    name: string;
-  } | null;
-  recipient: {
-    name: string;
-  } | null;
+  user_name: string;
+  recipient_name: string;
 }
 
 interface Payout {
@@ -34,9 +31,7 @@ interface Payout {
   scheduled_date: string;
   status: string;
   sessions: number;
-  users: {
-    name: string;
-  } | null;
+  recipient_name: string;
 }
 
 const PaymentTransactions = () => {
@@ -49,30 +44,64 @@ const PaymentTransactions = () => {
     try {
       setLoading(true);
 
-      const { data: transactions, error: transactionsError } = await supabase
+      // Fetch transactions
+      const { data: transactionsData, error: transactionsError } = await supabase
         .from('transactions')
-        .select(`
-          *,
-          users ( name ),
-          recipient:recipient_id ( name )
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(10);
 
       if (transactionsError) throw transactionsError;
-      setRecentTransactions(transactions || []);
 
-      const { data: payouts, error: payoutsError } = await supabase
+      // Fetch user and recipient names for transactions
+      const transactionsWithNames = await Promise.all(
+        (transactionsData || []).map(async (transaction) => {
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('name')
+            .eq('id', transaction.user_id)
+            .single();
+
+          const { data: recipientData, error: recipientError } = await supabase
+            .from('users')
+            .select('name')
+            .eq('id', transaction.recipient_id)
+            .single();
+
+          return {
+            ...transaction,
+            user_name: userError ? 'Unknown User' : userData.name,
+            recipient_name: recipientError ? 'N/A' : recipientData.name,
+          };
+        })
+      );
+      setRecentTransactions(transactionsWithNames);
+
+      // Fetch payouts
+      const { data: payoutsData, error: payoutsError } = await supabase
         .from('payouts')
-        .select(`
-          *,
-          users ( name )
-        `)
+        .select('*')
         .order('scheduled_date', { ascending: true })
         .limit(10);
 
       if (payoutsError) throw payoutsError;
-      setPayoutSchedule(payouts || []);
+
+      // Fetch recipient names for payouts
+      const payoutsWithNames = await Promise.all(
+        (payoutsData || []).map(async (payout) => {
+          const { data: recipientData, error: recipientError } = await supabase
+            .from('users')
+            .select('name')
+            .eq('id', payout.recipient_id)
+            .single();
+
+          return {
+            ...payout,
+            recipient_name: recipientError ? 'Unknown User' : recipientData.name,
+          };
+        })
+      );
+      setPayoutSchedule(payoutsWithNames);
 
     } catch (err: any) {
       setError(err.message || 'Failed to fetch payment data.');
@@ -146,11 +175,11 @@ const PaymentTransactions = () => {
                   {recentTransactions.map((transaction) => (
                     <TableRow key={transaction.id}>
                       <TableCell className="font-mono">{transaction.id}</TableCell>
-                      <TableCell>{transaction.users?.name || 'Unknown User'}</TableCell>
+                      <TableCell>{transaction.user_name}</TableCell>
                       <TableCell>{transaction.type}</TableCell>
                       <TableCell className="font-semibold">{new Intl.NumberFormat('fr-CM', { style: 'currency', currency: 'XAF' }).format(transaction.amount)}</TableCell>
                       <TableCell>{transaction.method}</TableCell>
-                      <TableCell>{transaction.recipient?.name || 'N/A'}</TableCell>
+                      <TableCell>{transaction.recipient_name}</TableCell>
                       <TableCell>
                         <Badge 
                           variant={
@@ -202,7 +231,7 @@ const PaymentTransactions = () => {
                   {payoutSchedule.map((payout) => (
                     <TableRow key={payout.id}>
                       <TableCell className="font-mono">{payout.id}</TableCell>
-                      <TableCell>{payout.users?.name || 'Unknown User'}</TableCell>
+                      <TableCell>{payout.recipient_name}</TableCell>
                       <TableCell className="font-semibold">{new Intl.NumberFormat('fr-CM', { style: 'currency', currency: 'XAF' }).format(payout.amount)}</TableCell>
                       <TableCell>{payout.method}</TableCell>
                       <TableCell>{payout.sessions} sessions</TableCell>

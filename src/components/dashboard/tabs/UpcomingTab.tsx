@@ -24,8 +24,8 @@ const UpcomingTab = () => {
   } = useConsultationActions();
 
   const {
-    uploadedDocuments,
-    isUploading,
+    uploadedDocuments = {},
+    isUploading = {},
     handleUploadDocument
   } = useDocumentUpload();
 
