@@ -1,103 +1,114 @@
 
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Download, FileText, File, Image } from "lucide-react";
+import { Download, FileText, File, Image, Loader2, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
+interface Document {
+  id: string;
+  name: string;
+  type: string;
+  size: string;
+  sharedBy: string;
+  date: string;
+  url: string;
+}
 
 const DocumentsTab = () => {
   const { toast } = useToast();
+  const { user, profile } = useAuth();
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const documents = [
-    {
-      id: 1,
-      name: "Research Paper Template",
-      type: "PDF",
-      size: "2.3 MB",
-      sharedBy: "Dr. Marie Ngono",
-      date: "2024-01-28",
-      url: "/research-paper-template.pdf",
-      icon: FileText
-    },
-    {
-      id: 2,
-      name: "Data Analysis Guidelines",
-      type: "DOCX",
-      size: "1.8 MB", 
-      sharedBy: "Dr. Paul Mbarga",
-      date: "2024-01-25",
-      url: "/data-analysis-guidelines.docx",
-      icon: File
-    },
-    {
-      id: 3,
-      name: "Bibliography Format Guide",
-      type: "PDF",
-      size: "0.9 MB",
-      sharedBy: "Prof. Sarah Tankou",
-      date: "2024-01-20",
-      url: "/bibliography-format-guide.pdf",
-      icon: FileText
-    },
-    {
-      id: 4,
-      name: "Statistical Analysis Results",
-      type: "XLSX",
-      size: "3.2 MB",
-      sharedBy: "Dr. Michael Chen",
-      date: "2024-01-18",
-      url: "/statistical-analysis-results.xlsx",
-      icon: File
-    },
-    {
-      id: 5,
-      name: "Research Presentation",
-      type: "PPTX",
-      size: "5.1 MB",
-      sharedBy: "Dr. Sarah Johnson",
-      date: "2024-01-15",
-      url: "/research-presentation.pptx",
-      icon: File
-    }
-  ];
+  const formatBytes = (bytes: number, decimals = 2) => {
+    if (!bytes || bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  };
 
-  const handleDownload = (document: any) => {
+  useEffect(() => {
+    if (!user || !profile) return;
+
+    const fetchDocuments = async () => {
+      setLoading(true);
+      setError(null);
+
+      const isResearcher = profile.role === 'expert' || profile.role === 'aid';
+      const userIdField = isResearcher ? 'provider_id' : 'client_id';
+      const otherUserSelect = isResearcher 
+        ? 'client:users!service_bookings_client_id_fkey(name)' 
+        : 'provider:users!service_bookings_provider_id_fkey(name)';
+
+      try {
+        const { data, error } = await supabase
+          .from('service_bookings')
+          .select(`id, shared_documents, ${otherUserSelect}`)
+          .eq(userIdField, user.id)
+          .not('shared_documents', 'is', null);
+
+        if (error) throw error;
+
+        const allDocuments = data.flatMap(booking => {
+          if (!booking.shared_documents || booking.shared_documents.length === 0) {
+            return [];
+          }
+          const sharedBy = isResearcher ? (booking as any).client?.name : (booking as any).provider?.name;
+          return booking.shared_documents.map((doc: any) => ({
+            ...doc,
+            id: `${booking.id}-${doc.name}`,
+            sharedBy: sharedBy || 'Unknown',
+          }));
+        });
+
+        const mappedDocuments: Document[] = allDocuments.map(doc => ({
+          id: doc.id,
+          name: doc.name,
+          type: doc.name.split('.').pop()?.toUpperCase() || 'FILE',
+          size: formatBytes(doc.size),
+          sharedBy: doc.sharedBy,
+          date: new Date(doc.uploadedAt).toLocaleDateString(),
+          url: doc.url,
+        }));
+
+        setDocuments(mappedDocuments);
+      } catch (err: any) {
+        setError(err.message);
+        console.error("Error fetching documents:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDocuments();
+  }, [user, profile]);
+
+  const handleDownload = (docToDownload: any) => {
     toast({
       title: "Downloading Document",
-      description: `Downloading ${document.name}...`
+      description: `Downloading ${docToDownload.name}...`
     });
-
-    // In a real app, this would handle the actual file download
-    console.log("Downloading document:", document.url);
-    
-    // Simulate download by creating a temporary link
     const link = document.createElement('a');
-    link.href = document.url;
-    link.download = document.name;
+    link.href = docToDownload.url;
+    link.download = docToDownload.name;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
     link.click();
-    
-    // Show success message after simulated download
-    setTimeout(() => {
-      toast({
-        title: "Download Complete",
-        description: `${document.name} has been downloaded successfully`
-      });
-    }, 1000);
   };
 
   const getFileIcon = (type: string) => {
     switch (type.toLowerCase()) {
       case 'pdf':
         return FileText;
-      case 'docx':
-      case 'doc':
-        return File;
-      case 'xlsx':
-      case 'xls':
-        return File;
-      case 'pptx':
-      case 'ppt':
-        return File;
       case 'jpg':
       case 'jpeg':
       case 'png':
@@ -126,6 +137,21 @@ const DocumentsTab = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-1/3" />
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <Alert variant="destructive"><AlertTriangle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -134,7 +160,7 @@ const DocumentsTab = () => {
           {documents.length} Documents
         </Badge>
       </div>
-      
+
       <p className="text-gray-600">Access shared documents and resources from your consultations.</p>
 
       <div className="space-y-4">
