@@ -268,10 +268,10 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-          <Button onClick={handleTriggerAllNotifications} variant="outline" size="sm">
+          {/* <Button onClick={handleTriggerAllNotifications} variant="outline" size="sm">
             <Bell className="h-4 w-4 mr-2" />
             Trigger All Notifications
-          </Button>
+          </Button> */}
           {unreadCount > 0 && (
             <Button onClick={handleMarkAllAsRead} variant="outline" size="sm">
               <CheckCheck className="h-4 w-4 mr-2" />

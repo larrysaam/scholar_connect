@@ -3,10 +3,14 @@ import { useState, useMemo } from 'react';
 import PastConsultationCard from "../consultation/PastConsultationCard";
 import { useConsultationServices } from "@/hooks/useConsultationServices";
 import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+const ITEMS_PER_PAGE = 5;
 
 const PastTab = () => {
   const [uploadedResources, setUploadedResources] = useState<{[key: string]: string[]}>({});
   const { bookings, loading } = useConsultationServices();
+  const [currentPage, setCurrentPage] = useState(1);
 
   const pastConsultations = useMemo(() => {
     return bookings
@@ -28,6 +32,13 @@ const PastTab = () => {
         hasAINotes: true, // Placeholder
       }));
   }, [bookings]);
+
+  const paginatedConsultations = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return pastConsultations.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [pastConsultations, currentPage]);
+
+  const totalPages = Math.ceil(pastConsultations.length / ITEMS_PER_PAGE);
 
   const handleViewRecording = (consultationId: string) => {
     console.log("Viewing Google Meet recording for consultation:", consultationId);
@@ -82,22 +93,47 @@ const PastTab = () => {
     <div className="bg-white p-6 rounded-lg shadow-sm">
       <h2 className="text-xl font-semibold mb-4">Past Consultations</h2>
       
-      {pastConsultations.length > 0 ? (
-        <div className="space-y-6">
-          {pastConsultations.map((consultation) => (
-            <PastConsultationCard
-              key={consultation.id}
-              consultation={consultation}
-              uploadedResources={uploadedResources[consultation.id] || []}
-              userType="researcher"
-              onViewRecording={handleViewRecording}
-              onViewAINotes={handleViewAINotes}
-              onUploadResources={handleUploadResources}
-              onSendMessage={handleSendMessage}
-              onOpenChat={handleOpenChat}
-            />
-          ))}
-        </div>
+      {paginatedConsultations.length > 0 ? (
+        <>
+          <div className="space-y-6">
+            {paginatedConsultations.map((consultation) => (
+              <PastConsultationCard
+                key={consultation.id}
+                consultation={consultation}
+                uploadedResources={uploadedResources[consultation.id] || []}
+                userType="researcher"
+                onViewRecording={handleViewRecording}
+                onViewAINotes={handleViewAINotes}
+                onUploadResources={handleUploadResources}
+                onSendMessage={handleSendMessage}
+                onOpenChat={handleOpenChat}
+              />
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <div className="flex justify-end items-center mt-6">
+              <Button 
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="mr-2"
+              >
+                Previous
+              </Button>
+              <span className="text-sm text-gray-600">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button 
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="ml-2"
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </>
       ) : (
         <div className="text-center py-8">
           <p className="text-gray-500">No past consultations available.</p>

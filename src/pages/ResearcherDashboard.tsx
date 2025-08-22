@@ -77,6 +77,7 @@ const ResearcherDashboard = () => {
       default:
         return <WelcomeOverviewTab />;
     }
+    
   };
 
   return (

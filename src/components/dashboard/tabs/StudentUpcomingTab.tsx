@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +7,7 @@ import ConsultationCard from "../consultation/ConsultationCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Assuming this is the shape ConsultationCard expects
 export interface Consultation {
@@ -20,6 +21,8 @@ export interface Consultation {
   sharedDocuments?: any[];
 }
 
+const ITEMS_PER_PAGE = 5;
+
 const StudentUpcomingTab = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -27,6 +30,7 @@ const StudentUpcomingTab = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState<{ [key: string]: boolean }>({});
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (!user) return;
@@ -84,6 +88,13 @@ const StudentUpcomingTab = () => {
     fetchConsultations();
   }, [user]);
 
+  const paginatedConsultations = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return consultations.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [consultations, currentPage]);
+
+  const totalPages = Math.ceil(consultations.length / ITEMS_PER_PAGE);
+
   const handleJoinMeet = (meetLink: string | undefined) => {
     if (meetLink) {
       window.open(meetLink, '_blank');
@@ -132,13 +143,7 @@ const StudentUpcomingTab = () => {
         if (fetchError) throw fetchError;
 
         const existingDocs = currentBooking?.shared_documents || [];
-        const newDoc = {
-          name: file.name,
-          url: urlData.publicUrl,
-          uploadedAt: new Date().toISOString(),
-          uploaderId: user.id,
-          size: file.size,
-        };
+        const newDoc = { name: file.name, url: urlData.publicUrl };
 
         const updatedDocs = [...existingDocs, newDoc];
 
@@ -201,9 +206,9 @@ const StudentUpcomingTab = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">4
-        {console.log(consultations)}
-          {consultations.map((consultation) => (
+        <>
+          <div className="space-y-4">
+          {paginatedConsultations.map((consultation) => (
             <ConsultationCard
               key={consultation.id}
               consultation={consultation}
@@ -216,7 +221,31 @@ const StudentUpcomingTab = () => {
               onAccessDocument={handleAccessDocument}
             />
           ))}
-        </div>
+          </div>
+          {totalPages > 1 && (
+            <div className="flex justify-end items-center mt-6">
+              <Button 
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="mr-2"
+              >
+                Previous
+              </Button>
+              <span className="text-sm text-gray-600">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button 
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="ml-2"
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -21,9 +21,14 @@ interface Consultation {
   status: 'confirmed' | 'pending';
 }
 
+interface SharedDocument {
+  name: string;
+  url: string;
+}
+
 interface UpcomingConsultationCardProps {
   consultation: Consultation;
-  uploadedDocuments: string[];
+  uploadedDocuments: SharedDocument[]; // Changed type
   isUploading?: boolean;
   actionLoading?: {[key: string]: boolean};
   onJoinWithGoogleMeet: (consultationId: string) => void;
@@ -97,9 +102,12 @@ const UpcomingConsultationCard = memo(({
             <p className="font-medium text-sm text-green-700">Uploaded Documents:</p>
             <div className="flex flex-wrap gap-2 mt-1">
               {uploadedDocuments.map((doc, index) => (
-                <Badge key={index} variant="outline" className="bg-green-50 text-green-700">
-                  {doc}
-                </Badge>
+                <a href={doc.url} target="_blank" rel="noopener noreferrer" key={index}>
+                  <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-100 cursor-pointer">
+                    <FileText className="h-3 w-3 mr-1" />
+                    {doc.name}
+                  </Badge>
+                </a>
               ))}
             </div>
           </div>

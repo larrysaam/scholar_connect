@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +18,10 @@ interface Document {
   sharedBy: string;
   date: string;
   url: string;
+  uploadedAt: string;
 }
+
+const ITEMS_PER_PAGE = 10;
 
 const DocumentsTab = () => {
   const { toast } = useToast();
@@ -26,6 +29,7 @@ const DocumentsTab = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const formatBytes = (bytes: number, decimals = 2) => {
     if (!bytes || bytes === 0) return '0 Bytes';
@@ -78,6 +82,7 @@ const DocumentsTab = () => {
           sharedBy: doc.sharedBy,
           date: new Date(doc.uploadedAt).toLocaleDateString(),
           url: doc.url,
+          uploadedAt: doc.uploadedAt
         }));
 
         setDocuments(mappedDocuments);
@@ -91,6 +96,17 @@ const DocumentsTab = () => {
 
     fetchDocuments();
   }, [user, profile]);
+
+  const sortedDocuments = useMemo(() => {
+    return [...documents].sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+  }, [documents]);
+
+  const paginatedDocuments = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return sortedDocuments.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [sortedDocuments, currentPage]);
+
+  const totalPages = Math.ceil(sortedDocuments.length / ITEMS_PER_PAGE);
 
   const handleDownload = (docToDownload: any) => {
     toast({
@@ -164,7 +180,7 @@ const DocumentsTab = () => {
       <p className="text-gray-600">Access shared documents and resources from your consultations.</p>
 
       <div className="space-y-4">
-        {documents.map((document) => {
+        {paginatedDocuments.map((document) => {
           const IconComponent = getFileIcon(document.type);
           return (
             <Card key={document.id} className="hover:shadow-md transition-shadow">
@@ -202,6 +218,30 @@ const DocumentsTab = () => {
           );
         })}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-end items-center mt-6">
+          <Button 
+            variant="outline"
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="mr-2"
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button 
+            variant="outline"
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="ml-2"
+          >
+            Next
+          </Button>
+        </div>
+      )}
 
       {documents.length === 0 && (
         <Card>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import PastConsultationCard from "../consultation/PastConsultationCard";
@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 // This interface matches the props expected by PastConsultationCard
 export interface PastConsultation {
@@ -20,12 +21,15 @@ export interface PastConsultation {
   hasAINotes: boolean;
 }
 
+const ITEMS_PER_PAGE = 5;
+
 const StudentPastTab = () => {
   const { user } = useAuth();
   const [consultations, setConsultations] = useState<PastConsultation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uploadedResources, setUploadedResources] = useState<{[key: string]: string[]}>({});
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (!user) return;
@@ -76,6 +80,13 @@ const StudentPastTab = () => {
     fetchPastConsultations();
   }, [user]);
 
+  const paginatedConsultations = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return consultations.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [consultations, currentPage]);
+
+  const totalPages = Math.ceil(consultations.length / ITEMS_PER_PAGE);
+
   // Handlers remain the same, but would need real logic
   const handleViewRecording = (consultationId: string) => console.log("Viewing recording for:", consultationId);
   const handleViewAINotes = (consultationId: string) => console.log("Viewing AI notes for:", consultationId);
@@ -102,23 +113,48 @@ const StudentPastTab = () => {
     <div className="bg-white p-6 rounded-lg shadow-sm">
       <h2 className="text-xl font-semibold mb-4">Past Consultations</h2>
       
-      {consultations.length > 0 ? (
-        <div className="space-y-6">
-          {consultations.map((consultation) => (
-            <PastConsultationCard
-              key={consultation.id}
-              consultation={consultation}
-              uploadedResources={uploadedResources[consultation.id] || []}
-              userType="student"
-              onViewRecording={handleViewRecording}
-              onViewAINotes={handleViewAINotes}
-              onUploadResources={handleUploadResources}
-              onSendMessage={handleSendMessage}
-              onOpenChat={handleOpenChat}
-              onFollowUpSession={handleFollowUpSession}
-            />
-          ))}
-        </div>
+      {paginatedConsultations.length > 0 ? (
+        <>
+          <div className="space-y-6">
+            {paginatedConsultations.map((consultation) => (
+              <PastConsultationCard
+                key={consultation.id}
+                consultation={consultation}
+                uploadedResources={uploadedResources[consultation.id] || []}
+                userType="student"
+                onViewRecording={handleViewRecording}
+                onViewAINotes={handleViewAINotes}
+                onUploadResources={handleUploadResources}
+                onSendMessage={handleSendMessage}
+                onOpenChat={handleOpenChat}
+                onFollowUpSession={handleFollowUpSession}
+              />
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <div className="flex justify-end items-center mt-6">
+              <Button 
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="mr-2"
+              >
+                Previous
+              </Button>
+              <span className="text-sm text-gray-600">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button 
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="ml-2"
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </>
       ) : (
         <Card>
             <CardContent className="text-center py-12">

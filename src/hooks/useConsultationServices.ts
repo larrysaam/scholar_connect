@@ -49,6 +49,7 @@ export interface ServiceBooking {
     name: string;
     email: string;
   };
+  shared_documents?: { name: string; url: string }[]; // Added shared_documents
 }
 
 export const useConsultationServices = () => {
@@ -113,7 +114,7 @@ export const useConsultationServices = () => {
     try {
       const { data, error } = await supabase
         .from('service_bookings')
-        .select(`*, client:users!service_bookings_client_id_fkey(name, email)`) // Join client user
+        .select(`*, client:users!service_bookings_client_id_fkey(name, email), shared_documents`) // Join client user and select shared_documents
         .eq('provider_id', user.id)
         .order('scheduled_date', { ascending: true });
       if (error) {
