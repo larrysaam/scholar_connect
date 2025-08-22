@@ -9,34 +9,15 @@ import StudentInfoModal from "../StudentInfoModal";
 
 interface Consultation {
   id: string;
-  student?: {
-    id: string;
-    name: string;
-    field: string;
-    imageUrl: string;
-    researchSummary?: {
-      level: string;
-      researchTitle: string;
-      projectLocation: string;
-      problemStatement: string;
-      researchQuestions: string;
-      objectives: string;
-      hypotheses: string;
-      methodology: string;
-      comments: string;
-    };
-  };
-  researcher?: {
-    id: string;
-    name: string;
-    field: string;
-    imageUrl: string;
-  };
-  date: string;
-  time: string;
-  topic: string;
   status: string;
-  sharedDocumentLink?: string;
+  datetime: string;
+  duration: number;
+  researcher: { id: string; name: string; title: string; imageUrl: string; };
+  service: { title: string; };
+  topic: string;
+  meetLink?: string;
+  sharedDocuments?: any[];
+  student?: { id: string; name: string; title: string; imageUrl: string; };
 }
 
 interface ConsultationCardProps {
@@ -80,7 +61,8 @@ const ConsultationCard = ({
             </div>
             <div>
               <CardTitle className="text-lg">{person.name}</CardTitle>
-              <CardDescription>{person.field}</CardDescription>
+              <CardDescription>{person.title}</CardDescription>
+              <p className="text-sm font-semibold text-blue-600 mt-1">{consultation.service.title}</p>
             </div>
           </div>
           <Badge 
@@ -94,11 +76,11 @@ const ConsultationCard = ({
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center text-gray-700">
             <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-            <span>{consultation.date}</span>
+            <span>{new Date(consultation.datetime).toLocaleDateString()}</span>
           </div>
           <div className="flex items-center text-gray-700">
             <Clock className="h-4 w-4 mr-2 text-gray-500" />
-            <span>{consultation.time}</span>
+            <span>{new Date(consultation.datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
           </div>
         </div>
         <div className="mt-4">

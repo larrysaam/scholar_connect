@@ -61,7 +61,7 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
           <div className="flex items-start space-x-4">
             <div className="relative">
               <img 
-                src={aid.imageUrl} 
+                src={aid.imageUrl || '/placeholder.svg'} 
                 alt={aid.name}
                 className="w-16 h-16 rounded-full object-cover border-2 border-green-100"
               />
@@ -78,7 +78,7 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
                   <p className="text-sm text-green-600 font-medium">{aid.title}</p>
                   <p className="text-sm text-gray-500 flex items-center mt-1">
                     <MapPin className="h-3 w-3 mr-1" />
-                    {aid.location}
+                    {aid.location || 'Location not set'}
                   </p>
                 </div>
                 {aid.featured && (
@@ -89,7 +89,7 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
               </div>
               
               <div className="flex flex-wrap gap-1 mb-3">
-                {aid.specializations.map((spec, index) => (
+                {(aid.specializations || []).map((spec, index) => (
                   <Badge key={index} variant="secondary" className="text-xs bg-green-100 text-green-700">
                     {spec}
                   </Badge>
@@ -100,21 +100,21 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-1">
                     <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                    <span className="text-sm font-medium">{aid.rating}</span>
-                    <span className="text-sm text-gray-500">({aid.reviewCount})</span>
+                    <span className="text-sm font-medium">{(aid.rating || 0).toFixed(1)}</span>
+                    <span className="text-sm text-gray-500">({aid.reviewCount || 0})</span>
                   </div>
                   <div className="text-sm text-gray-600">
-                    {aid.completedJobs} jobs completed
+                    {(aid.completedJobs || 0)} jobs completed
                   </div>
                 </div>
                 <div className="text-sm font-bold text-green-600">
-                  {aid.hourlyRate.toLocaleString()} XAF/hr
+                  {(aid.hourlyRate || 0).toLocaleString()} XAF/hr
                 </div>
               </div>
               
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-500">
-                  Response time: {aid.responseTime}
+                  Response time: {aid.responseTime || 'N/A'}
                 </div>
                 <div className="flex space-x-2">
                   <Button size="sm" variant="outline" onClick={() => setShowMessage(true)}>
@@ -141,7 +141,7 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
           <div className="space-y-4">
             <div className="flex items-center space-x-4">
               <img 
-                src={aid.imageUrl} 
+                src={aid.imageUrl || '/placeholder.svg'} 
                 alt={aid.name}
                 className="w-20 h-20 rounded-full object-cover"
               />
@@ -150,7 +150,7 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
                 <p className="text-green-600 font-medium">{aid.title}</p>
                 <p className="text-gray-500 flex items-center">
                   <MapPin className="h-4 w-4 mr-1" />
-                  {aid.location}
+                  {aid.location || 'Location not set'}
                 </p>
               </div>
             </div>
@@ -160,27 +160,27 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
                 <h4 className="font-medium mb-2">Rating & Reviews</h4>
                 <div className="flex items-center space-x-2">
                   <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                  <span>{aid.rating} ({aid.reviewCount} reviews)</span>
+                  <span>{(aid.rating || 0).toFixed(1)} ({aid.reviewCount || 0} reviews)</span>
                 </div>
               </div>
               <div>
                 <h4 className="font-medium mb-2">Experience</h4>
-                <p>{aid.completedJobs} jobs completed</p>
+                <p>{(aid.completedJobs || 0)} jobs completed</p>
               </div>
               <div>
                 <h4 className="font-medium mb-2">Response Time</h4>
-                <p>{aid.responseTime}</p>
+                <p>{aid.responseTime || 'N/A'}</p>
               </div>
               <div>
                 <h4 className="font-medium mb-2">Rate</h4>
-                <p className="text-green-600 font-bold">{aid.hourlyRate.toLocaleString()} XAF/hr</p>
+                <p className="text-green-600 font-bold">{(aid.hourlyRate || 0).toLocaleString()} XAF/hr</p>
               </div>
             </div>
 
             <div>
               <h4 className="font-medium mb-2">Specializations</h4>
               <div className="flex flex-wrap gap-2">
-                {aid.specializations.map((spec, index) => (
+                {(aid.specializations || []).map((spec, index) => (
                   <Badge key={index} variant="secondary" className="bg-green-100 text-green-700">
                     {spec}
                   </Badge>

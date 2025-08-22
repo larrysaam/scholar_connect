@@ -61,7 +61,7 @@ const ConsultationManagement = () => {
               { data: researcherData },
               { data: serviceData }
             ] = await Promise.all([
-              supabase.from('users').select('name').eq('id', booking.user_id).single(),
+              supabase.from('users').select('name').eq('id', booking.client_id).single(),
               supabase.from('users').select('name').eq('id', booking.provider_id).single(),
               supabase.from('consultation_services').select('title').eq('id', booking.service_id).single()
             ]);
@@ -166,7 +166,7 @@ const ConsultationManagement = () => {
                 <TableHead>Duration</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Amount</TableHead>
-                <TableHead>Actions</TableHead>
+                {/* <TableHead>Actions</TableHead> */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -190,9 +190,9 @@ const ConsultationManagement = () => {
                   <TableCell>{session.amount}</TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
-                      <Button size="sm" variant="outline">View</Button>
+                      {/* <Button size="sm" variant="outline">View</Button>
                       <Button size="sm" variant="outline">Reschedule</Button>
-                      <Button size="sm" variant="destructive">Cancel</Button>
+                      <Button size="sm" variant="destructive">Cancel</Button> */}
                     </div>
                   </TableCell>
                 </TableRow>
