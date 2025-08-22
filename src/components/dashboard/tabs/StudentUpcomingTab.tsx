@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import ConsultationCard from "../consultation/ConsultationCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 
 // Assuming this is the shape ConsultationCard expects
 export interface Consultation {
@@ -26,6 +26,7 @@ const StudentUpcomingTab = () => {
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     if (!user) return;
@@ -92,8 +93,76 @@ const StudentUpcomingTab = () => {
   };
 
   // Other handlers can be updated to use real data as well
-  const handleUploadDocument = (consultationId: string) => {
-    toast({ title: "Upload Document", description: "Feature not implemented." });
+  const handleUploadDocument = async (consultationId: string) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.txt';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file || !user) return;
+
+      setIsUploading(prev => ({ ...prev, [consultationId]: true }));
+
+      try {
+        const filePath = `consultation_documents/${consultationId}/${user.id}/${file.name}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('lovable-uploads')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: true,
+          });
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('lovable-uploads')
+          .getPublicUrl(filePath);
+
+        if (!urlData.publicUrl) {
+          throw new Error("Could not get public URL for the uploaded file.");
+        }
+
+        const { data: currentBooking, error: fetchError } = await supabase
+          .from('service_bookings')
+          .select('shared_documents')
+          .eq('id', consultationId)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        const existingDocs = currentBooking?.shared_documents || [];
+        const newDoc = {
+          name: file.name,
+          url: urlData.publicUrl,
+          uploadedAt: new Date().toISOString(),
+          uploaderId: user.id,
+          size: file.size,
+        };
+
+        const updatedDocs = [...existingDocs, newDoc];
+
+        const { error: updateError } = await supabase
+          .from('service_bookings')
+          .update({ shared_documents: updatedDocs })
+          .eq('id', consultationId);
+
+        if (updateError) throw updateError;
+
+        setConsultations(prev => prev.map(c =>
+          c.id === consultationId ? { ...c, sharedDocuments: updatedDocs } : c
+        ));
+
+        toast({ title: "Success", description: "Document uploaded successfully." });
+
+      } catch (err: any) {
+        console.error("Error uploading document:", err);
+        toast({ title: "Upload Failed", description: err.message, variant: "destructive" });
+      } finally {
+        setIsUploading(prev => ({ ...prev, [consultationId]: false }));
+      }
+    };
+    input.click();
   };
   const handleSubmitDocumentLink = (consultationId: string, documentLink: string) => {
     toast({ title: "Document Link Shared", description: "Feature not implemented." });
@@ -138,10 +207,10 @@ const StudentUpcomingTab = () => {
             <ConsultationCard
               key={consultation.id}
               consultation={consultation}
-              uploadedDocuments={consultation.sharedDocuments}
               userType="student"
               onJoinMeet={() => handleJoinMeet(consultation.meetLink)}
               onUploadDocument={() => handleUploadDocument(consultation.id)}
+              isUploading={isUploading[consultation.id] || false}
               onSubmitDocumentLink={(link) => handleSubmitDocumentLink(consultation.id, link)}
               onContactResearcher={() => handleContactResearcher(consultation.researcher.name, consultation.id)} // Assuming name is unique for now
               onAccessDocument={handleAccessDocument}

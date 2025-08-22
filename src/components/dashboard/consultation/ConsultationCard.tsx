@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, Video, MessageSquare, Upload, FileText } from "lucide-react";
+import { Calendar, Clock, Video, MessageSquare, Upload, FileText, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import ConsultationActions from "./ConsultationActions";
 import LiveDocumentReviewDialog from "./LiveDocumentReviewDialog";
@@ -20,9 +20,13 @@ interface Consultation {
   student?: { id: string; name: string; title: string; imageUrl: string; };
 }
 
+interface SharedDocument {
+  name: string;
+  url: string;
+}
+
 interface ConsultationCardProps {
   consultation: Consultation;
-  uploadedDocuments: string[];
   userType: "student" | "researcher";
   onJoinMeet: (consultationId: string) => void;
   onUploadDocument: (consultationId: string) => void;
@@ -30,18 +34,19 @@ interface ConsultationCardProps {
   onContactResearcher: (researcherId: string, consultationId: string) => void;
   onContactStudent?: (studentId: string, consultationId: string) => void;
   onAccessDocument?: (documentLink: string) => void;
+  isUploading?: boolean;
 }
 
 const ConsultationCard = ({
   consultation,
-  uploadedDocuments,
   userType,
   onJoinMeet,
   onUploadDocument,
   onSubmitDocumentLink,
   onContactResearcher,
   onContactStudent,
-  onAccessDocument
+  onAccessDocument,
+  isUploading = false,
 }: ConsultationCardProps) => {
   const person = userType === "student" ? consultation.researcher : consultation.student;
   
@@ -88,14 +93,17 @@ const ConsultationCard = ({
           <p className="text-gray-700">{consultation.topic}</p>
         </div>
         
-        {uploadedDocuments.length > 0 && (
+        {consultation.sharedDocuments && consultation.sharedDocuments.length > 0 && (
           <div className="mt-4">
             <p className="font-medium text-sm text-blue-700">Documents Uploaded:</p>
             <div className="flex flex-wrap gap-2 mt-1">
-              {uploadedDocuments.map((doc, index) => (
-                <Badge key={index} variant="outline" className="bg-blue-50 text-blue-700">
-                  {doc}
-                </Badge>
+              {consultation.sharedDocuments.map((doc: SharedDocument, index) => (
+                <a href={doc.url} target="_blank" rel="noopener noreferrer" key={index}>
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer">
+                    <FileText className="h-3 w-3 mr-1" />
+                    {doc.name}
+                  </Badge>
+                </a>
               ))}
             </div>
           </div>
@@ -131,8 +139,13 @@ const ConsultationCard = ({
           <Button 
             variant="outline" 
             onClick={() => onUploadDocument(consultation.id)}
+            disabled={isUploading}
           >
-            <Upload className="h-4 w-4 mr-2" />
+            {isUploading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Upload className="h-4 w-4 mr-2" />
+            )}
             Upload Document
           </Button>
           
