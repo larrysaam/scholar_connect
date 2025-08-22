@@ -67,8 +67,8 @@ const UpcomingConsultationCard = memo(({
               />
             </div>
             <div>
-              <CardTitle className="text-lg">{consultation.researcher.name}</CardTitle>
-              <CardDescription>{consultation.researcher.field}</CardDescription>
+              <CardTitle className="text-lg">Student: {consultation.researcher.name}</CardTitle>
+              <CardDescription>Field: {consultation.researcher.field}</CardDescription>
             </div>
           </div>
           <Badge className={consultation.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
@@ -88,7 +88,7 @@ const UpcomingConsultationCard = memo(({
           </div>
         </div>
         <div className="mt-4">
-          <p className="font-medium">Topic:</p>
+          <p className="font-medium">Consultation Title:</p>
           <p className="text-gray-700">{consultation.topic}</p>
         </div>
         

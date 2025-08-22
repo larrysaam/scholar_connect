@@ -122,7 +122,7 @@ const StudentUpcomingTab = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Upcoming Consultations</h2>
+        <h2 className="text-2xl font-bold">Upcoming Consultation</h2>
       </div>
       
       {consultations.length === 0 ? (
@@ -132,7 +132,8 @@ const StudentUpcomingTab = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4">4
+        {console.log(consultations)}
           {consultations.map((consultation) => (
             <ConsultationCard
               key={consultation.id}

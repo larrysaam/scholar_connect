@@ -44,6 +44,10 @@ const UpcomingTab = () => {
         time: booking.scheduled_time,
         topic: booking.service?.title || 'N/A',
         status: booking.status,
+        meetingLink: booking.meeting_link,
+        academicLevel: booking.academic_level,
+        duration: booking.duration_minutes,
+        serviceTitle: booking.service?.title || 'N/A',
       }));
   }, [bookings]);
 
@@ -68,14 +72,14 @@ const UpcomingTab = () => {
               uploadedDocuments={uploadedDocuments[consultation.id] || []}
               isUploading={isUploading[consultation.id] || false}
               actionLoading={actionLoading}
-              onJoinWithGoogleMeet={handleJoinWithGoogleMeet}
-              onLiveDocumentReview={handleLiveDocumentReview}
-              onViewRecording={handleViewRecording}
-              onViewAINotes={handleViewAINotes}
-              onAcceptConsultation={handleAcceptConsultation}
-              onDeclineConsultation={handleDeclineConsultation}
-              onRescheduleWithGoogleCalendar={handleRescheduleWithGoogleCalendar}
-              onUploadDocument={handleUploadDocument}
+              onJoinWithGoogleMeet={() => handleJoinWithGoogleMeet(consultation.id, consultation.meetingLink)}
+              onLiveDocumentReview={() => handleLiveDocumentReview(consultation.id)}
+              onViewRecording={() => handleViewRecording(consultation.id)}
+              onViewAINotes={() => handleViewAINotes(consultation.id)}
+              onAcceptConsultation={(comment) => handleAcceptConsultation(consultation.id, comment)}
+              onDeclineConsultation={(comment) => handleDeclineConsultation(consultation.id, comment)}
+              onRescheduleWithGoogleCalendar={() => handleRescheduleWithGoogleCalendar(consultation.id)}
+              onUploadDocument={(file) => handleUploadDocument(consultation.id, file)}
             />
           ))}
         </div>

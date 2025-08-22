@@ -30,12 +30,18 @@ export const useConsultationActions = () => {
     }, 500);
   };
 
-  const handleJoinWithGoogleMeet = (consultationId: string) => {
+  const handleJoinWithGoogleMeet = (consultationId: string, meetingLink?: string | null) => {
     setActionLoading(`join-${consultationId}`, true);
     console.log("Joining with Google Meet for consultation:", consultationId);
     
     setTimeout(() => {
-      window.open(CONSULTATION_CONSTANTS.GOOGLE_MEET.BASE_URL, '_blank');
+      if (meetingLink) {
+        window.open(meetingLink, '_blank');
+      } else {
+        // Fallback or error handling
+        console.warn("Meeting link not provided, opening default Meet page.");
+        window.open(CONSULTATION_CONSTANTS.GOOGLE_MEET.BASE_URL, '_blank');
+      }
       setActionLoading(`join-${consultationId}`, false);
     }, 500);
   };

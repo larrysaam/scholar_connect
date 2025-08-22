@@ -206,6 +206,27 @@ export const useBookingSystem = () => {
         return { success: false, error: updateError.message };
       }
 
+      // --- Generate Google Meet Link by calling the Edge Function ---
+      try {
+        const { data, error: functionError } = await supabase.functions.invoke('generate-meet-link', {
+          body: { booking_id: paymentData.booking_id },
+        });
+
+        if (functionError) {
+          // Log the error, but don't fail the whole process since the payment was successful
+          console.error('Error generating Google Meet link:', functionError);
+          toast({
+            title: "Meeting Link Failed",
+            description: "Could not create a Google Meet link. Please contact support.",
+            variant: "destructive"
+          });
+        } else {
+          console.log('Generated Meet Link:', data.meetLink);
+        }
+      } catch (e) {
+          console.error('Error invoking generate-meet-link function:', e);
+      }
+
       // --- Notification: Notify both student and researcher of booking confirmation/payment ---
       // Fetch booking details for notification context
       const { data: bookingDetails } = await supabase
@@ -457,18 +478,11 @@ export const useBookingSystem = () => {
         window.open(booking.meeting_link, '_blank');
         return booking.meeting_link;
       } else {
-        // Generate meeting link if not exists (in real app, this would be done by the researcher)
-        const meetingLink = `https://meet.google.com/${Math.random().toString(36).substr(2, 10)}`;
-        
-        const { error } = await supabase
-          .from('service_bookings')
-          .update({ meeting_link: meetingLink })
-          .eq('id', bookingId);
-
-        if (!error) {
-          window.open(meetingLink, '_blank');
-          return meetingLink;
-        }
+        toast({
+          title: "Error",
+          description: "Meeting link not available yet. Please try again shortly.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Error joining meeting:', error);

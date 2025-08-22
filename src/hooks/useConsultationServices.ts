@@ -2,47 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/ui/use-toast';
-
-export interface AcademicLevelPrice {
-  id?: string;
-  academic_level: 'Undergraduate' | 'Masters' | 'PhD' | 'Postdoc';
-  price: number;
-  currency: string;
-}
-
-export interface ServiceAddon {
-  id?: string;
-  name: string;
-  description?: string;
-  price: number;
-  currency: string;
-  is_active: boolean;
-}
-
-export interface ServiceAvailability {
-  id?: string;
-  day_of_week: number; // 0 = Sunday, 6 = Saturday
-  start_time: string;
-  end_time: string;
-  timezone: string;
-  is_active: boolean;
-}
-
-export interface ConsultationService {
-  id: string;
-  user_id: string;
-  category: 'General Consultation' | 'Chapter Review' | 'Full Thesis Cycle Support' | 'Full Thesis Review';
-  title: string;
-  description: string;
-  duration_minutes: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  pricing: AcademicLevelPrice[];
-  addons: ServiceAddon[];
-  availability: ServiceAvailability[];
-  google_meet_link?: string;
-}
+import { AcademicLevelPrice, ConsultationService, ServiceAddon, ServiceAvailability } from '@/types/consultations';
 
 export interface CreateServiceData {
   category: 'General Consultation' | 'Chapter Review' | 'Full Thesis Cycle Support' | 'Full Thesis Review';
@@ -109,11 +69,11 @@ export const useConsultationServices = () => {
     availability: (service.availability || []).map((av: any) => ({ ...av })),
   });
 
-  const normalizeBooking = (booking: any): ServiceBooking => ({
+  const normalizeBooking = useCallback((booking: any): ServiceBooking => ({
     ...booking,
     status: booking.status as ServiceBooking['status'],
     payment_status: booking.payment_status as ServiceBooking['payment_status'],
-  });
+  }), []);
 
   const fetchServices = useCallback(async () => {
     if (!user) return;
@@ -164,10 +124,26 @@ export const useConsultationServices = () => {
         });
         return;
       }
-      setBookings((data || []).map((b: any) => ({
-        ...b,
-        client: b.client || { name: '', email: '' },
-      })));
+      const bookingsWithClientNames = await Promise.all(
+        (data || []).map(async (booking) => {
+          let client = booking.client;
+          if (!client) {
+            const { data: userData, error: userError } = await supabase
+              .from('users')
+              .select('name, email')
+              .eq('id', booking.client_id)
+              .single();
+            if (userError) {
+              console.error(`Error fetching user ${booking.client_id}:`, userError);
+              client = { name: 'N/A', email: '' };
+            } else {
+              client = userData;
+            }
+          }
+          return normalizeBooking({ ...booking, client });
+        })
+      );
+      setBookings(bookingsWithClientNames);
     } catch (error) {
       console.error('Error fetching bookings:', error);
       toast({
@@ -176,7 +152,7 @@ export const useConsultationServices = () => {
         variant: 'destructive'
       });
     }
-  }, [user, toast]);
+  }, [user, toast, normalizeBooking]);
 
   const fetchStudentBookings = useCallback(async () => {
     if (!user) return;
@@ -199,7 +175,7 @@ export const useConsultationServices = () => {
     } catch (error) {
       console.error('Error fetching student bookings:', error);
     }
-  }, [user]);
+  }, [user, normalizeBooking]);
 
   const createService = async (serviceData: CreateServiceData): Promise<boolean> => {
     if (!user) return false;
