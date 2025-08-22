@@ -25,9 +25,10 @@ interface DashboardSidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   userType: "student" | "researcher" | "research-aide";
+  notificationCount: number;
 }
 
-const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSidebarProps) => {
+const DashboardSidebar = ({ activeTab, setActiveTab, userType, notificationCount }: DashboardSidebarProps) => {
   const studentMenuItems = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "ai-assistant", label: "AI Assistant", icon: MessageSquare },
@@ -41,7 +42,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
     { id: "payments", label: "Payments", icon: DollarSign },
     { id: "messages", label: "Messages", icon: MessageSquare },
     { id: "performance", label: "My Progress", icon: TrendingUp },
-    { id: "notifications", label: "Notifications", icon: Bell, badge: 3 },
+    { id: "notifications", label: "Notifications", icon: Bell, badge: notificationCount },
     { id: "thesis-information", label: "Thesis Information", icon: BookOpen },
     { id: "documents", label: "Documents", icon: FileText },
     { id: "settings", label: "Account Settings", icon: Settings },
@@ -59,7 +60,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
     { id: "messaging", label: "Messaging", icon: MessageSquare }, // <-- Added Messaging tab
     { id: "discussion", label: "Discussion Board", icon: MessageSquare },
     { id: "verification", label: "Verification", icon: Shield },
-    { id: "notifications", label: "Notifications", icon: Bell, badge: 3 },
+    { id: "notifications", label: "Notifications", icon: Bell, badge: notificationCount },
     { id: "co-author-invitations", label: "Co-author Invitations", icon: UserPlus, badge: 2 },
     { id: "documents", label: "Documents", icon: FileText },
     { id: "profile", label: "Profile Information", icon: User },
@@ -76,7 +77,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType }: DashboardSideba
     { id: "messages", label: "Messages", icon: MessageSquare },
     { id: "previous-works", label: "Previous Works", icon: Star },
     { id: "profile-ratings", label: "Profile & Ratings", icon: User },
-    { id: "notifications", label: "Notifications", icon: Bell, badge: 3 },
+    { id: "notifications", label: "Notifications", icon: Bell, badge: notificationCount },
     { id: "settings", label: "Settings", icon: Settings },
   ];
 

@@ -17,13 +17,18 @@ import {
   Search, 
   Settings, 
   ExternalLink,
-  Loader2,
-  RefreshCw
+  Loader2, 
+  RefreshCw,
+  ArrowRight
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { formatDistanceToNow } from "date-fns";
 
-const NotificationsTab = () => {
+interface NotificationsTabProps {
+  setActiveTab: (tab: string) => void;
+}
+
+const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
   const {
     notifications,
     preferences,
@@ -80,6 +85,28 @@ const NotificationsTab = () => {
     await fetchNotifications();
   };
 
+  const handleActionClick = (actionUrl: string | null | undefined) => {
+    if (!actionUrl) return;
+
+    // Check for external links
+    if (actionUrl.startsWith('http')) {
+      window.open(actionUrl, '_blank');
+      return;
+    }
+
+    // Handle internal navigation for tab switching
+    try {
+      const url = new URL(actionUrl, window.location.origin);
+      const tab = url.searchParams.get('tab');
+
+      if (tab) {
+        setActiveTab(tab);
+      }
+    } catch (e) {
+      console.error("Could not handle notification action:", e);
+    }
+  };
+
   // --- DEMO: Trigger all notification types for this user ---
   const handleTriggerAllNotifications = async () => {
     if (!preferences) return;
@@ -106,24 +133,28 @@ const NotificationsTab = () => {
       action_label: "View Conversation"
     });
     await trigger({
-      title: "Booking Confirmed",
-      message: "Your consultation with Dr. Smith is confirmed for tomorrow.",
-      type: "success",
-      category: "consultation",
-      action_url: "/dashboard?tab=upcoming",
-      action_label: "View Details"
+        title: "Booking Confirmed",
+        message: "Your consultation with Dr. Smith is confirmed for tomorrow.",
+        type: "success",
+        category: "consultation",
+        action_url: "/dashboard?tab=my-bookings",
+        action_label: "View Booking"
     });
     await trigger({
-      title: "Booking Cancelled",
-      message: "Your booking with Dr. Smith was cancelled.",
-      type: "warning",
-      category: "consultation"
+        title: "Booking Cancelled",
+        message: "Your booking with Dr. Smith was cancelled.",
+        type: "warning",
+        category: "consultation",
+        action_url: "/dashboard?tab=my-bookings",
+        action_label: "View Details"
     });
     await trigger({
-      title: "Booking Reminder",
-      message: "Reminder: You have a consultation scheduled with Dr. Smith in 1 hour.",
-      type: "warning",
-      category: "consultation"
+        title: "Booking Reminder",
+        message: "Reminder: You have a consultation scheduled with Dr. Smith in 1 hour.",
+        type: "warning",
+        category: "consultation",
+        action_url: "/dashboard?tab=upcoming",
+        action_label: "View Details"
     });
     await trigger({
       title: "Payment Received",
@@ -463,11 +494,11 @@ const NotificationsTab = () => {
                         <Button
                           size="sm"
                           variant="link"
-                          className="p-0 h-auto text-blue-600"
-                          onClick={() => window.open(notification.action_url, '_blank')}
+                          className="p-0 h-auto text-blue-600 font-medium"
+                          onClick={() => handleActionClick(notification.action_url)}
                         >
-                          <ExternalLink className="h-3 w-3 mr-1" />
                           {notification.action_label}
+                          <ArrowRight className="h-3 w-3 ml-1" />
                         </Button>
                       </div>
                     )}

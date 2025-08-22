@@ -83,7 +83,7 @@ const StudentDashboard = () => {
       case "performance":
         return <StudentPerformanceTab />;
       case "notifications":
-        return <NotificationsTab />;
+        return <NotificationsTab setActiveTab={setActiveTab} />;
       case "profile":
         return <ProfileTab />;
       case "documents":

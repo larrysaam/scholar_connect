@@ -65,7 +65,7 @@ const ResearcherDashboard = () => {
       case "verification":
         return <VerificationTab />;
       case "notifications":
-        return <NotificationsTab />;
+        return <NotificationsTab setActiveTab={setActiveTab} />;
       case "co-author-invitations":
         return <CoAuthorInvitationsTab />;
       case "documents":

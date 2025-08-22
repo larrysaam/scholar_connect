@@ -35,7 +35,7 @@ const DashboardContent = ({ activeTab, setActiveTab }: DashboardContentProps) =>
       </TabsContent>
       
       <TabsContent value="notifications" className="mt-0">
-        <NotificationsTab />
+        <NotificationsTab setActiveTab={setActiveTab} />
       </TabsContent>
       
       <TabsContent value="research-summary" className="mt-0">

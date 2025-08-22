@@ -3,12 +3,14 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotifications } from '@/hooks/useNotifications'; // Import useNotifications
 import LanguageToggle from './LanguageToggle';
 import GetStartedModal from './GetStartedModal';
 import ResearchWhoaLogo from './ResearchWhoaLogo';
 
 const Navbar = () => {
   const { user, profile, signOut } = useAuth();
+  const { unreadCount } = useNotifications(); // Use the hook to get unreadCount
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -49,6 +51,9 @@ const Navbar = () => {
             <Link to="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
               Dashboard
             </Link>
+            <Link to="/dashboard?tab=notifications" className="text-gray-600 hover:text-gray-900 transition-colors relative">
+              Notifications {unreadCount > 0 && <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs px-2 py-1 rounded-full">{unreadCount}</span>}
+            </Link>
           </div>
         );
       
@@ -64,6 +69,9 @@ const Navbar = () => {
             <Link to="/researcher-dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
               Dashboard
             </Link>
+            <Link to="/researcher-dashboard?tab=notifications" className="text-gray-600 hover:text-gray-900 transition-colors relative">
+              Notifications {unreadCount > 0 && <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs px-2 py-1 rounded-full">{unreadCount}</span>}
+            </Link>
           </div>
         );
       
@@ -78,6 +86,9 @@ const Navbar = () => {
             </Link>
             <Link to="/research-aids-dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
               Dashboard
+            </Link>
+            <Link to="/research-aids-dashboard?tab=notifications" className="text-gray-600 hover:text-gray-900 transition-colors relative">
+              Notifications {unreadCount > 0 && <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs px-2 py-1 rounded-full">{unreadCount}</span>}
             </Link>
           </div>
         );

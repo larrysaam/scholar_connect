@@ -18,11 +18,13 @@ import NotificationsTab from "@/components/dashboard/tabs/NotificationsTab";
 import ResearchAidOverviewTab from "@/components/dashboard/tabs/ResearchAidOverviewTab";
 import ResearchAidJobRequestsTab from "@/components/dashboard/tabs/ResearchAidJobRequestsTab";
 import ResearchAidPaymentsTab from "@/components/dashboard/tabs/ResearchAidPaymentsTab";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const ResearchAideDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { profile } = useAuth();
+  const { unreadCount } = useNotifications();
 
   const getWelcomeMessage = () => {
     if (!profile?.name) return "Research Aid Dashboard";
@@ -91,7 +93,7 @@ const ResearchAideDashboard = () => {
       case "discussion":
         return <DiscussionTab />;
       case "notifications":
-        return <NotificationsTab />;
+        return <NotificationsTab setActiveTab={setActiveTab} />;
       case "profile":
         return <ProfileTab />;
       case "documents":
@@ -135,6 +137,7 @@ const ResearchAideDashboard = () => {
                 activeTab={activeTab} 
                 setActiveTab={setActiveTab} 
                 userType="research-aide"
+                notificationCount={unreadCount}
               />
             </div>
             

@@ -29,6 +29,7 @@ import MyBookingsTab from "@/components/dashboard/tabs/MyBookingsTab";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -37,6 +38,7 @@ const Dashboard = () => {
 
   const { toast } = useToast();
   const { user } = useAuth();
+  const { unreadCount } = useNotifications();
   
   useEffect(() => {
     fetchUserProfile();
@@ -77,18 +79,6 @@ const Dashboard = () => {
     if (!hasCompletedOnboarding) {
       setShowOnboarding(true);
     }
-  }, []);
-
-  // Listen for tab change events from child components
-  useEffect(() => {
-    const handleSetActiveTab = (event: CustomEvent) => {
-      setActiveTab(event.detail);
-    };
-
-    window.addEventListener('setActiveTab', handleSetActiveTab as EventListener);
-    return () => {
-      window.removeEventListener('setActiveTab', handleSetActiveTab as EventListener);
-    };
   }, []);
 
   const handleOnboardingComplete = () => {
@@ -136,7 +126,7 @@ const Dashboard = () => {
       case "discussion":
         return <DiscussionTab />;
       case "notifications":
-        return <NotificationsTab />;
+        return <NotificationsTab setActiveTab={setActiveTab} />;
       case "research-summary":
         return <ResearchSummaryTab />;
       case "thesis-information":
@@ -189,6 +179,7 @@ const Dashboard = () => {
                 activeTab={activeTab} 
                 setActiveTab={handleTabChange} 
                 userType="student"
+                notificationCount={unreadCount}
               />
             </div>
             
