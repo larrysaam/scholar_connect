@@ -42,6 +42,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return null;
       }
 
+      if (!profileData) {
+        console.warn(`No profile found for user ID: ${userId}`);
+        return null;
+      }
+
       return {
         ...profileData,
         roles: profileData.role ? [profileData.role] : []

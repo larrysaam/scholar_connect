@@ -1,54 +1,147 @@
 
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, User, FileText } from "lucide-react";
+import { Calendar, Clock, FileText, AlertTriangle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
+interface Session {
+  id: string;
+  student: string;
+  researcher: string;
+  topic: string;
+  datetime: string;
+  duration: string;
+  status: string;
+  amount: string;
+}
+
+interface Feedback {
+  id: number;
+  student: string;
+  researcher: string;
+  session: string;
+  rating: number;
+  feedback: string;
+  flagged: boolean;
+}
 
 const ConsultationManagement = () => {
-  const upcomingSessions = [
-    {
-      id: 1,
-      student: "John Doe",
-      researcher: "Dr. Marie Ngono",
-      topic: "GIS Data Analysis",
-      datetime: "2024-01-20 14:00",
-      duration: "2 hours",
-      status: "confirmed",
-      amount: "15,000 XAF"
-    },
-    {
-      id: 2,
-      student: "Sarah Wilson",
-      researcher: "Prof. James Akinyemi",
-      topic: "Epidemiological Study Design",
-      datetime: "2024-01-20 16:00",
-      duration: "1.5 hours",
-      status: "pending",
-      amount: "18,000 XAF"
-    }
-  ];
+  const [upcomingSessions, setUpcomingSessions] = useState<Session[]>([]);
+  const [recentFeedback, setRecentFeedback] = useState<Feedback[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const recentFeedback = [
-    {
-      id: 1,
-      student: "Alice Johnson",
-      researcher: "Dr. Fatima Al-Rashid",
-      session: "Machine Learning Consultation",
-      rating: 5,
-      feedback: "Excellent session, very helpful with my research methodology.",
-      flagged: false
-    },
-    {
-      id: 2,
-      student: "Bob Smith",
-      researcher: "Dr. Sarah Osei",
-      session: "Economics Research",
-      rating: 2,
-      feedback: "Session was too short and not very informative.",
-      flagged: true
-    }
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // 1. Fetch upcoming sessions (bookings)
+        const { data: bookingsData, error: bookingsError } = await supabase
+          .from('service_bookings')
+          .select('*')
+          .in('status', ['pending', 'confirmed'])
+          .gte('scheduled_date', new Date().toISOString().split('T')[0])
+          .order('scheduled_date', { ascending: true });
+
+          console.log("Bookings Data:", bookingsData);
+          console.log("Bookings Error:", bookingsError);
+
+        if (bookingsError) throw bookingsError;
+
+        const sessionsWithDetails = await Promise.all(
+          (bookingsData || []).map(async (booking) => {
+            const [
+              { data: studentData },
+              { data: researcherData },
+              { data: serviceData }
+            ] = await Promise.all([
+              supabase.from('users').select('name').eq('id', booking.user_id).single(),
+              supabase.from('users').select('name').eq('id', booking.provider_id).single(),
+              supabase.from('consultation_services').select('title').eq('id', booking.service_id).single()
+            ]);
+
+            return {
+              id: booking.id,
+              student: studentData?.name || 'Unknown Student',
+              researcher: researcherData?.name || 'Unknown Researcher',
+              topic: serviceData?.title || 'Unknown Topic',
+              datetime: `${booking.scheduled_date} ${booking.scheduled_time}`,
+              duration: `${booking.duration_minutes} minutes`,
+              status: booking.status,
+              amount: `${booking.total_price.toLocaleString()} XAF`
+            };
+          })
+        );
+        setUpcomingSessions(sessionsWithDetails);
+
+        // 2. Fetch recent feedback (assuming a 'session_feedback' table)
+        const { data: feedbackData, error: feedbackError } = await supabase
+          .from('session_feedback')
+          .select('*, service_bookings(*)')
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (feedbackError) {
+          console.warn("Could not fetch feedback data. This may be expected if the table doesn't exist or is empty.", feedbackError.message);
+          setRecentFeedback([]);
+        } else {
+          const feedbackWithDetails = await Promise.all(
+            (feedbackData || []).map(async (feedback) => {
+              if (!feedback.service_bookings) return null;
+
+              const { data: studentData } = await supabase.from('users').select('name').eq('id', feedback.service_bookings.user_id).single();
+              const { data: researcherData } = await supabase.from('users').select('name').eq('id', feedback.service_bookings.provider_id).single();
+              const { data: serviceData } = await supabase.from('consultation_services').select('title').eq('id', feedback.service_bookings.service_id).single();
+
+              return {
+                id: feedback.id,
+                student: studentData?.name || 'Unknown Student',
+                researcher: researcherData?.name || 'Unknown Researcher',
+                session: serviceData?.title || 'Unknown Session',
+                rating: feedback.rating,
+                feedback: feedback.comment,
+                flagged: feedback.is_flagged || false
+              };
+            })
+          );
+          setRecentFeedback(feedbackWithDetails.filter((item): item is Feedback => item !== null));
+        }
+      } catch (err: any) {
+        setError(err.message);
+        console.error("Error fetching consultation data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold">Consultation Management</h2>
+        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-48 w-full" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -105,6 +198,11 @@ const ConsultationManagement = () => {
                 </TableRow>
               ))}
             </TableBody>
+            {upcomingSessions.length === 0 && !loading && (
+              <TableBody>
+                <TableRow><TableCell colSpan={8} className="text-center">No upcoming sessions.</TableCell></TableRow>
+              </TableBody>
+            )}
           </Table>
         </CardContent>
       </Card>
@@ -158,6 +256,11 @@ const ConsultationManagement = () => {
                 </TableRow>
               ))}
             </TableBody>
+            {recentFeedback.length === 0 && !loading && (
+              <TableBody>
+                <TableRow><TableCell colSpan={7} className="text-center">No recent feedback.</TableCell></TableRow>
+              </TableBody>
+            )}
           </Table>
         </CardContent>
       </Card>
