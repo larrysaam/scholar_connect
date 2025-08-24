@@ -1,40 +1,52 @@
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Calendar, MessageSquare, Target, DollarSign, Mail, CheckCircle, Clock, Plus } from "lucide-react";
+import { Calendar, MessageSquare, Target, DollarSign, Mail, CheckCircle, Clock, Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useConsultationServices } from "@/hooks/useConsultationServices";
+import { useThesisGoals } from "@/hooks/useThesisGoals";
 
 const FullThesisSupportTab = () => {
   const { toast } = useToast();
+  const { bookings, loading: bookingsLoading } = useConsultationServices();
   const [newGoal, setNewGoal] = useState("");
   const [emailSubject, setEmailSubject] = useState("");
   const [emailContent, setEmailContent] = useState("");
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
 
-  const activeProjects = [
-    {
-      id: "1",
-      title: "AI in Healthcare Research",
-      student: "Marie Kouadio",
-      progress: 65,
-      nextMilestone: "Literature Review Completion",
-      dueDate: "2024-07-15"
-    },
-    {
-      id: "2", 
-      title: "Machine Learning Applications",
-      student: "Jean Baptiste",
-      progress: 40,
-      nextMilestone: "Data Collection Phase",
-      dueDate: "2024-07-20"
-    }
-  ];
+  const activeProjects = useMemo(() => {
+    if (bookingsLoading) return [];
+    return bookings.filter(booking => 
+      booking.service?.category === 'Full Thesis Cycle Support' && 
+      (booking.status === 'confirmed' || booking.status === 'pending')
+    ).map(booking => {
+      let progress = 0;
+      if (booking.status === 'confirmed') progress = 50;
+      if (booking.status === 'completed') progress = 100; // Assuming completed means 100% for now
+
+      return {
+        id: booking.id,
+        title: booking.service?.title || 'Untitled Thesis Project',
+        student: booking.client?.name || 'Unknown Student',
+        progress: progress,
+        nextMilestone: `Session on ${new Date(booking.scheduled_date).toLocaleDateString()} at ${booking.scheduled_time}`,
+        dueDate: booking.scheduled_date,
+        paymentStatus: booking.payment_status,
+        totalPrice: booking.total_price,
+        currency: booking.currency,
+      };
+    });
+  }, [bookings, bookingsLoading]);
+
+  // For simplicity, manage goals for the first active project found
+  const firstActiveProjectId = useMemo(() => activeProjects.length > 0 ? activeProjects[0].id : undefined, [activeProjects]);
+  const { goals, loading: goalsLoading, addGoal, updateGoalStatus, deleteGoal } = useThesisGoals(firstActiveProjectId);
 
   const handleScheduleSession = (projectId: string) => {
     toast({
@@ -76,7 +88,7 @@ const FullThesisSupportTab = () => {
     });
   };
 
-  const handleAddGoal = () => {
+  const handleAddGoal = async () => {
     if (!newGoal) {
       toast({
         title: "Missing Goal",
@@ -85,13 +97,29 @@ const FullThesisSupportTab = () => {
       });
       return;
     }
+    if (!firstActiveProjectId) {
+      toast({
+        title: "No Active Project",
+        description: "Please select an active project to add a goal.",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    toast({
-      title: "Goal Added",
-      description: "New goal has been added to tracking"
-    });
-    setNewGoal("");
-    setIsGoalDialogOpen(false);
+    const added = await addGoal(newGoal);
+    if (added) {
+      setNewGoal("");
+      setIsGoalDialogOpen(false);
+    }
+  };
+
+  const handleToggleGoalStatus = async (goalId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
+    await updateGoalStatus(goalId, newStatus as 'pending' | 'completed' | 'in_progress');
+  };
+
+  const handleDeleteGoal = async (goalId: string) => {
+    await deleteGoal(goalId);
   };
 
   const handleOpenMessages = () => {
@@ -115,6 +143,7 @@ const FullThesisSupportTab = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            {activeProjects.length === 0 && <p className="text-gray-500">No active thesis support projects found.</p>}
             {activeProjects.map((project) => (
               <div key={project.id} className="border rounded-lg p-4">
                 <div className="flex justify-between items-start mb-3">
@@ -161,20 +190,20 @@ const FullThesisSupportTab = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div className="flex justify-between items-center p-3 bg-green-50 rounded">
-              <div>
-                <p className="font-medium">Initial Payment - Marie Kouadio</p>
-                <p className="text-sm text-gray-600">Received: $500</p>
+            {activeProjects.length === 0 && <p className="text-gray-500">No active projects with payment milestones.</p>}
+            {activeProjects.map((project) => (
+              <div key={project.id} className={`flex justify-between items-center p-3 rounded ${project.paymentStatus === 'paid' ? 'bg-green-50' : 'bg-yellow-50'}`}>
+                <div>
+                  <p className="font-medium">{project.title} - {project.student}</p>
+                  <p className="text-sm text-gray-600">
+                    {project.paymentStatus === 'paid' ? 'Received' : 'Expected'}: {project.currency} {project.totalPrice}
+                  </p>
+                </div>
+                <Badge className={`${project.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                  {project.paymentStatus === 'paid' ? 'Completed' : 'Pending'}
+                </Badge>
               </div>
-              <Badge className="bg-green-100 text-green-800">Completed</Badge>
-            </div>
-            <div className="flex justify-between items-center p-3 bg-yellow-50 rounded">
-              <div>
-                <p className="font-medium">Mid-term Payment - Jean Baptiste</p>
-                <p className="text-sm text-gray-600">Expected: $300</p>
-              </div>
-              <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>
-            </div>
+            ))}
           </div>
         </CardContent>
       </Card>
@@ -189,7 +218,7 @@ const FullThesisSupportTab = () => {
             </CardTitle>
             <Dialog open={isGoalDialogOpen} onOpenChange={setIsGoalDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
+                <Button disabled={!firstActiveProjectId}>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Goal
                 </Button>
@@ -206,7 +235,7 @@ const FullThesisSupportTab = () => {
                     rows={3}
                   />
                   <div className="flex gap-2">
-                    <Button onClick={handleAddGoal}>Add Goal</Button>
+                    <Button onClick={handleAddGoal} disabled={!newGoal || !firstActiveProjectId}>Add Goal</Button>
                     <Button variant="outline" onClick={() => setIsGoalDialogOpen(false)}>
                       Cancel
                     </Button>
@@ -218,22 +247,31 @@ const FullThesisSupportTab = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div className="flex items-center p-3 border rounded">
-              <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
-              <div className="flex-1">
-                <p className="font-medium">Complete literature review</p>
-                <p className="text-sm text-gray-600">Marie Kouadio - Due: July 15</p>
-              </div>
-              <Badge className="bg-green-100 text-green-800">Completed</Badge>
-            </div>
-            <div className="flex items-center p-3 border rounded">
-              <Clock className="h-5 w-5 text-yellow-600 mr-3" />
-              <div className="flex-1">
-                <p className="font-medium">Data collection phase</p>
-                <p className="text-sm text-gray-600">Jean Baptiste - Due: July 20</p>
-              </div>
-              <Badge className="bg-yellow-100 text-yellow-800">In Progress</Badge>
-            </div>
+            {goalsLoading ? (
+              <p className="text-gray-500">Loading goals...</p>
+            ) : goals.length === 0 ? (
+              <p className="text-gray-500">No goals tracked yet. Add a new goal above.</p>
+            ) : (
+              goals.map((goal) => (
+                <div key={goal.id} className="flex items-center p-3 border rounded">
+                  {goal.status === 'completed' ? (
+                    <CheckCircle className="h-5 w-5 text-green-600 mr-3 cursor-pointer" onClick={() => handleToggleGoalStatus(goal.id, goal.status)} />
+                  ) : (
+                    <Clock className="h-5 w-5 text-yellow-600 mr-3 cursor-pointer" onClick={() => handleToggleGoalStatus(goal.id, goal.status)} />
+                  )}
+                  <div className="flex-1">
+                    <p className="font-medium">{goal.description}</p>
+                    <p className="text-sm text-gray-600">Status: {goal.status}</p>
+                  </div>
+                  <Badge className={`${goal.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                    {goal.status === 'completed' ? 'Completed' : 'In Progress'}
+                  </Badge>
+                  <Button variant="ghost" size="sm" onClick={() => handleDeleteGoal(goal.id)} className="ml-2">
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

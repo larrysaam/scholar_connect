@@ -190,14 +190,6 @@ export const useConsultationServices = () => {
     if (!user) return false;
     setCreating(true);
     try {
-      // Generate Google Meet link
-      const { data: meetLinkData, error: meetLinkError } = await supabase.functions.invoke('generate-meet-link');
-      if (meetLinkError || !meetLinkData.meetLink) {
-        toast({ title: 'Error', description: 'Failed to generate Google Meet link', variant: 'destructive' });
-        setCreating(false);
-        return false;
-      }
-
       // Insert the main service
       const { data: service, error } = await supabase
         .from('consultation_services')
@@ -208,7 +200,6 @@ export const useConsultationServices = () => {
           description: serviceData.description,
           duration_minutes: serviceData.duration_minutes || 60,
           is_active: true,
-          google_meet_link: meetLinkData.meetLink,
         })
         .select()
         .single();
