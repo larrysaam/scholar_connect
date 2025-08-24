@@ -27,7 +27,8 @@ const PastTab = () => {
         time: booking.scheduled_time,
         topic: booking.service?.title || 'N/A',
         status: "completed" as const,
-        rating: 5, // Placeholder
+        rating: booking.review?.rating || 0, // Use actual rating from review
+        reviewText: booking.review?.text || '', // Use actual review text
         hasRecording: true, // Placeholder
         hasAINotes: true, // Placeholder
       }));

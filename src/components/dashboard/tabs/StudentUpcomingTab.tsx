@@ -32,59 +32,58 @@ const StudentUpcomingTab = () => {
   const [isUploading, setIsUploading] = useState<{ [key: string]: boolean }>({});
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
+  const fetchConsultations = async () => {
     if (!user) return;
-
-    const fetchConsultations = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const { data, error } = await supabase
-          .from('service_bookings')
-          .select(`
-            id, status, scheduled_date, scheduled_time, duration_minutes, meeting_link, shared_documents, client_notes,
-            provider:users!service_bookings_provider_id_fkey(name, topic_title, payout_details),
-            service:consultation_services(title)
-          `)
-          .eq('client_id', user.id)
-          .in('status', ['pending', 'confirmed'])
-          .order('scheduled_date', { ascending: true });
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('service_bookings')
+        .select(`
+          id, status, scheduled_date, scheduled_time, duration_minutes, meeting_link, shared_documents, client_notes,
+          provider:users!service_bookings_provider_id_fkey(name, topic_title, payout_details),
+          service:consultation_services(title)
+        `)
+        .eq('client_id', user.id)
+        .in('status', ['pending', 'confirmed'])
+        .order('scheduled_date', { ascending: true });
 
 
-          console.log("Fetched consultations:", data);
+      console.log("Fetched consultations:", data);
 
-        if (error) throw error;
+      if (error) throw error;
 
-        const mappedConsultations: Consultation[] = data.map(c => {
-          const notes = c.client_notes || {};
-          return {
-            id: c.id,
-            status: c.status,
-            datetime: `${c.scheduled_date}T${c.scheduled_time}`,
-            duration: c.duration_minutes,
-            researcher: {
-              name: c.provider?.name || 'N/A',
-              title: c.provider?.topic_title || 'Researcher',
-              imageUrl: c.provider?.payout_details?.avatar_url || '/placeholder.svg'
-            },
-            service: {
-              title: c.service?.title || 'Consultation'
-            },
-            topic: notes.topic || 'No topic provided',
-            meetLink: c.meeting_link,
-            sharedDocuments: c.shared_documents || []
-          }
-        });
+      const mappedConsultations: Consultation[] = data.map(c => {
+        const notes = c.client_notes || {};
+        return {
+          id: c.id,
+          status: c.status,
+          datetime: `${c.scheduled_date}T${c.scheduled_time}`,
+          duration: c.duration_minutes,
+          researcher: {
+            name: c.provider?.name || 'N/A',
+            title: c.provider?.topic_title || 'Researcher',
+            imageUrl: c.provider?.payout_details?.avatar_url || '/placeholder.svg'
+          },
+          service: {
+            title: c.service?.title || 'Consultation'
+          },
+          topic: notes.topic || 'No topic provided',
+          meetLink: c.meeting_link,
+          sharedDocuments: c.shared_documents || []
+        }
+      });
 
-        setConsultations(mappedConsultations);
-      } catch (err: any) {
-        setError(err.message);
-        console.error("Error fetching consultations:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+      setConsultations(mappedConsultations);
+    } catch (err: any) {
+      setError(err.message);
+      console.error("Error fetching consultations:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchConsultations();
   }, [user]);
 
@@ -169,9 +168,44 @@ const StudentUpcomingTab = () => {
     };
     input.click();
   };
-  const handleSubmitDocumentLink = (consultationId: string, documentLink: string) => {
-    toast({ title: "Document Link Shared", description: "Feature not implemented." });
+
+  const handleSubmitDocumentLink = async (consultationId: string, documentLink: string) => {
+    let fullUrl = documentLink;
+    if (!/^https?:\/\//i.test(documentLink)) {
+      fullUrl = 'https://' + documentLink;
+    }
+
+    try {
+      const { data: currentBooking, error: fetchError } = await supabase
+        .from('service_bookings')
+        .select('shared_documents')
+        .eq('id', consultationId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const existingDocs = currentBooking?.shared_documents || [];
+      const newDoc = { name: "Live Review Document", url: fullUrl };
+
+      const updatedDocs = [...existingDocs, newDoc];
+
+      const { error: updateError } = await supabase
+        .from('service_bookings')
+        .update({ shared_documents: updatedDocs })
+        .eq('id', consultationId);
+
+      if (updateError) throw updateError;
+
+      fetchConsultations(); // Refresh consultations
+
+      toast({ title: "Success", description: "Document link shared successfully." });
+
+    } catch (err: any) {
+      console.error("Error sharing document link:", err);
+      toast({ title: "Sharing Failed", description: err.message, variant: "destructive" });
+    }
   };
+
   const handleContactResearcher = (researcherId: string, consultationId: string) => {
     window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'messages' }));
   };
@@ -216,7 +250,7 @@ const StudentUpcomingTab = () => {
               onJoinMeet={() => handleJoinMeet(consultation.meetLink)}
               onUploadDocument={() => handleUploadDocument(consultation.id)}
               isUploading={isUploading[consultation.id] || false}
-              onSubmitDocumentLink={(link) => handleSubmitDocumentLink(consultation.id, link)}
+              onSubmitDocumentLink={handleSubmitDocumentLink}
               onContactResearcher={() => handleContactResearcher(consultation.researcher.name, consultation.id)} // Assuming name is unique for now
               onAccessDocument={handleAccessDocument}
             />

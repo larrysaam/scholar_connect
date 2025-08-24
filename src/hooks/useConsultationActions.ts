@@ -1,9 +1,12 @@
 
 import { useState } from 'react';
 import { CONSULTATION_CONSTANTS } from '@/constants/consultationConstants';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
 
 export const useConsultationActions = () => {
   const [isLoading, setIsLoading] = useState<{[key: string]: boolean}>({});
+  const { toast } = useToast();
 
   const setActionLoading = (action: string, loading: boolean) => {
     setIsLoading(prev => ({ ...prev, [action]: loading }));
@@ -62,9 +65,27 @@ export const useConsultationActions = () => {
     alert(`${CONSULTATION_CONSTANTS.MESSAGES.AI_NOTES_OPENING} ${consultationId}...`);
   };
 
-  const handleLiveDocumentReview = (consultationId: string) => {
-    console.log("Accessing live document review for consultation:", consultationId);
-    alert(CONSULTATION_CONSTANTS.MESSAGES.LIVE_DOCUMENT_OPENING);
+  const handleLiveDocumentReview = async (consultationId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('service_bookings')
+        .select('shared_documents')
+        .eq('id', consultationId)
+        .single();
+
+      if (error) throw error;
+
+      const sharedDocs = data?.shared_documents || [];
+      if (sharedDocs.length > 0) {
+        const lastDoc = sharedDocs[sharedDocs.length - 1];
+        window.open(lastDoc.url, '_blank');
+      } else {
+        toast({ title: "No Documents", description: "No documents have been shared for this consultation yet.", variant: "default" });
+      }
+    } catch (err: any) {
+      console.error("Error accessing live document review:", err);
+      toast({ title: "Error", description: "Could not access the document.", variant: "destructive" });
+    }
   };
 
   return {

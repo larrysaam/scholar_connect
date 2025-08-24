@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Clock, Video, MessageSquare, Upload, FileText, Loader2 } from "lucide-react";
@@ -17,7 +16,7 @@ interface Consultation {
   topic: string;
   meetLink?: string;
   sharedDocuments?: any[];
-  student?: { id: string; name: string; title: string; imageUrl: string; };
+  student?: { id: string; name: string; title: string; imageUrl: string; researchSummary: string; };
 }
 
 interface SharedDocument {
@@ -49,8 +48,16 @@ const ConsultationCard = ({
   isUploading = false,
 }: ConsultationCardProps) => {
   const person = userType === "student" ? consultation.researcher : consultation.student;
-  
+
   if (!person) return null;
+
+  const handleAccessDocumentClick = (documentLink: string) => {
+    let fullUrl = documentLink;
+    if (!/^https?:\/\//i.test(documentLink)) {
+      fullUrl = 'https://' + documentLink;
+    }
+    window.open(fullUrl, '_blank');
+  };
 
   return (
     <Card>
@@ -58,10 +65,10 @@ const ConsultationCard = ({
         <div className="flex justify-between items-start">
           <div className="flex items-center space-x-4">
             <div className="h-10 w-10 rounded-full overflow-hidden">
-              <img 
-                src={person.imageUrl} 
+              <img
+                src={person.imageUrl}
                 alt={person.name}
-                className="h-full w-full object-cover" 
+                className="h-full w-full object-cover"
               />
             </div>
             <div>
@@ -70,7 +77,7 @@ const ConsultationCard = ({
               <p className="text-sm font-semibold text-blue-600 mt-1">{consultation.service.title}</p>
             </div>
           </div>
-          <Badge 
+          <Badge
             className={consultation.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}
           >
             {consultation.status}
@@ -92,18 +99,21 @@ const ConsultationCard = ({
           <p className="font-medium">Topic:</p>
           <p className="text-gray-700">{consultation.topic}</p>
         </div>
-        
+
         {consultation.sharedDocuments && consultation.sharedDocuments.length > 0 && (
           <div className="mt-4">
             <p className="font-medium text-sm text-blue-700">Documents Uploaded:</p>
             <div className="flex flex-wrap gap-2 mt-1">
               {consultation.sharedDocuments.map((doc: SharedDocument, index) => (
-                <a href={doc.url} target="_blank" rel="noopener noreferrer" key={index}>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer">
-                    <FileText className="h-3 w-3 mr-1" />
-                    {doc.name}
-                  </Badge>
-                </a>
+                <Badge
+                  key={index}
+                  variant="outline"
+                  className="bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer"
+                  onClick={() => handleAccessDocumentClick(doc.url)}
+                >
+                  <FileText className="h-3 w-3 mr-1" />
+                  {doc.name}
+                </Badge>
               ))}
             </div>
           </div>
@@ -112,7 +122,7 @@ const ConsultationCard = ({
         {consultation.sharedDocumentLink && userType === "researcher" && (
           <div className="mt-4 p-3 bg-blue-50 rounded-lg">
             <p className="font-medium text-sm text-blue-700 mb-2">Shared Document:</p>
-            <Button 
+            <Button
               onClick={() => onAccessDocument?.(consultation.sharedDocumentLink!)}
               variant="outline"
               size="sm"
@@ -127,7 +137,7 @@ const ConsultationCard = ({
       <CardFooter className="flex justify-between border-t pt-4">
         <div className="flex gap-2 flex-wrap">
           {consultation.status === 'confirmed' && (
-            <Button 
+            <Button
               onClick={() => onJoinMeet(consultation.id)}
               className="bg-green-600 hover:bg-green-700"
             >
@@ -135,9 +145,9 @@ const ConsultationCard = ({
               Join with Google Meet
             </Button>
           )}
-          
-          <Button 
-            variant="outline" 
+
+          <Button
+            variant="outline"
             onClick={() => onUploadDocument(consultation.id)}
             disabled={isUploading}
           >
@@ -148,17 +158,17 @@ const ConsultationCard = ({
             )}
             Upload Document
           </Button>
-          
+
           {userType === "student" && (
             <LiveDocumentReviewDialog
               consultationId={consultation.id}
               onSubmitDocumentLink={onSubmitDocumentLink}
             />
           )}
-          
-          <Button 
-            variant="outline" 
-            onClick={() => userType === "student" 
+
+          <Button
+            variant="outline"
+            onClick={() => userType === "student"
               ? onContactResearcher(person.id, consultation.id)
               : onContactStudent?.(person.id, consultation.id)
             }

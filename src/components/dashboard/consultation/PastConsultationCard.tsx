@@ -25,6 +25,7 @@ interface PastConsultation {
   topic: string;
   status: "completed";
   rating: number;
+  reviewText?: string; // Added reviewText
   hasRecording: boolean;
   hasAINotes: boolean;
 }
@@ -98,6 +99,13 @@ const PastConsultationCard = ({
           <p className="font-medium">Topic:</p>
           <p className="text-gray-700">{consultation.topic}</p>
         </div>
+
+        {consultation.reviewText && (
+          <div className="mt-4">
+            <p className="font-medium">Review:</p>
+            <p className="text-gray-700 italic">"{consultation.reviewText}"</p>
+          </div>
+        )}
         
         {uploadedResources.length > 0 && (
           <div className="mt-4">

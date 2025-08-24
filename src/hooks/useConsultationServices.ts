@@ -50,6 +50,10 @@ export interface ServiceBooking {
     email: string;
   };
   shared_documents?: { name: string; url: string }[]; // Added shared_documents
+  review?: {
+    rating: number;
+    text: string;
+  };
 }
 
 export const useConsultationServices = () => {
@@ -74,6 +78,10 @@ export const useConsultationServices = () => {
     ...booking,
     status: booking.status as ServiceBooking['status'],
     payment_status: booking.payment_status as ServiceBooking['payment_status'],
+    review: booking.researcher_reviews && booking.researcher_reviews.length > 0 ? {
+      rating: booking.researcher_reviews[0].rating,
+      text: booking.researcher_reviews[0].comment,
+    } : undefined,
   }), []);
 
   const fetchServices = useCallback(async () => {
@@ -114,7 +122,7 @@ export const useConsultationServices = () => {
     try {
       const { data, error } = await supabase
         .from('service_bookings')
-        .select(`*, client:users!service_bookings_client_id_fkey(name, email), shared_documents`) // Join client user and select shared_documents
+        .select(`*, client:users!service_bookings_client_id_fkey(name, email), shared_documents, researcher_reviews!left(rating, comment)`) // Join client user, shared_documents, and researcher_reviews (left join)
         .eq('provider_id', user.id)
         .order('scheduled_date', { ascending: true });
       if (error) {

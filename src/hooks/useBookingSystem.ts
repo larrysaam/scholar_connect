@@ -503,9 +503,11 @@ export const useBookingSystem = () => {
     comment: string
   ): Promise<boolean> => {
     try {
-      const { error } = await supabase
+      // Step 1: Insert the review
+      const { error: reviewError } = await supabase
         .from('researcher_reviews')
         .insert({
+          booking_id: bookingId,
           researcher_id: researcherId,
           reviewer_id: user?.id,
           rating,
@@ -513,14 +515,30 @@ export const useBookingSystem = () => {
           service_type: 'consultation'
         });
 
-      if (error) {
-        console.error('Error adding review:', error);
+      if (reviewError) {
+        console.error('Error adding review:', reviewError);
         toast({
           title: "Error",
-          description: "Failed to add review. Please try again.",
+          description: "Failed to add review. You may have already reviewed this consultation.",
           variant: "destructive"
         });
         return false;
+      }
+
+      // Step 2: Update the booking to mark it as reviewed
+      const { error: updateError } = await supabase
+        .from('service_bookings')
+        .update({ has_review: true })
+        .eq('id', bookingId);
+
+      if (updateError) {
+        console.error('Error updating booking review status:', updateError);
+        // The review was still added, so we don't return false, but we should log this
+        toast({
+          title: "Warning",
+          description: "Your review was submitted, but there was an issue updating the booking status.",
+          variant: "default"
+        });
       }
 
       // --- Notification: Notify both student and researcher of review submission ---
@@ -557,6 +575,9 @@ export const useBookingSystem = () => {
         title: "Review Added",
         description: "Thank you for your feedback!",
       });
+
+      // Step 3: Refresh bookings to get the updated has_review status
+      fetchUserBookings();
 
       return true;
     } catch (error) {

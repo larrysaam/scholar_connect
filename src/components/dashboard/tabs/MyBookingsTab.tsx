@@ -51,6 +51,8 @@ import {
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { useBookingSystem } from "@/hooks/useBookingSystem";
+import { AddReviewDialog } from "./AddReviewDialog";
+import { Booking } from "@/types/bookings";
 
 const MyBookingsTab = () => {
   const {
@@ -66,13 +68,11 @@ const MyBookingsTab = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [rescheduleDate, setRescheduleDate] = useState<Date | undefined>(undefined);
   const [rescheduleTime, setRescheduleTime] = useState("");
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [cancelReason, setCancelReason] = useState("");
-  const [reviewRating, setReviewRating] = useState(0);
-  const [reviewComment, setReviewComment] = useState("");
 
   // Filter bookings
   const filteredBookings = useMemo(() => {
@@ -159,20 +159,16 @@ const MyBookingsTab = () => {
   };
 
   // Handle add review
-  const handleAddReview = async () => {
-    if (!selectedBooking || reviewRating === 0) return;
-
+  const handleAddReview = async (bookingId: string, providerId: string, rating: number, comment: string) => {
     const success = await addBookingReview(
-      selectedBooking.id,
-      selectedBooking.provider_id,
-      reviewRating,
-      reviewComment
+      bookingId,
+      providerId,
+      rating,
+      comment
     );
 
     if (success) {
       setSelectedBooking(null);
-      setReviewRating(0);
-      setReviewComment("");
     }
   };
 
@@ -187,7 +183,7 @@ const MyBookingsTab = () => {
     setAvailableSlots(slots);
   };
 
-  const BookingCard = ({ booking }: { booking: any }) => (
+  const BookingCard = ({ booking }: { booking: Booking }) => (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
@@ -368,73 +364,30 @@ const MyBookingsTab = () => {
               </div>
             )}
 
-            {booking.status === 'completed' && (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setSelectedBooking(booking)}
-                  >
-                    <Star className="h-4 w-4 mr-1" />
-                    Add Review
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Rate Your Consultation</DialogTitle>
-                    <DialogDescription>
-                      How was your consultation with {booking.provider?.name}?
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Rating</Label>
-                      <div className="flex gap-1 mt-2">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Button
-                            key={star}
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setReviewRating(star)}
-                            className="p-1"
-                          >
-                            <Star
-                              className={`h-6 w-6 ${
-                                star <= reviewRating
-                                  ? 'fill-yellow-400 text-yellow-400'
-                                  : 'text-gray-300'
-                              }`}
-                            />
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="reviewComment">Comment</Label>
-                      <Textarea
-                        id="reviewComment"
-                        value={reviewComment}
-                        onChange={(e) => setReviewComment(e.target.value)}
-                        placeholder="Share your experience with this consultation..."
-                        rows={4}
-                        className="mt-2"
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setSelectedBooking(null)}>
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleAddReview}
-                      disabled={reviewRating === 0}
-                    >
-                      Submit Review
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+            {booking.status === 'completed' && !booking.has_review && (
+              <AddReviewDialog
+                booking={booking}
+                onAddReview={handleAddReview}
+              >
+                <Button
+                  size="sm"
+                  variant="outline"
+                >
+                  <Star className="h-4 w-4 mr-1" />
+                  Add Review
+                </Button>
+              </AddReviewDialog>
+            )}
+
+            {booking.status === 'completed' && booking.has_review && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled
+              >
+                <Star className="h-4 w-4 mr-1 text-yellow-400 fill-yellow-400" />
+                Reviewed
+              </Button>
             )}
 
             <Button size="sm" variant="outline">
