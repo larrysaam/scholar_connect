@@ -320,8 +320,44 @@ export const useConsultationServices = () => {
   };
 
   const deleteService = async (serviceId: string): Promise<boolean> => {
-    // Placeholder implementation
-    return false;
+    if (!user) return false;
+    setUpdating(true); // Use updating state for deletion as well
+    try {
+      const { error } = await supabase
+        .from('consultation_services')
+        .delete()
+        .eq('id', serviceId)
+        .eq('user_id', user.id); // Ensure only the owner can delete their service
+
+      if (error) {
+        toast({
+          title: 'Error',
+          description: `Failed to delete service: ${error.message}`,
+          variant: 'destructive',
+        });
+        setUpdating(false);
+        return false;
+      }
+
+      // Remove the deleted service from the local state
+      setServices(prevServices => prevServices.filter(service => service.id !== serviceId));
+
+      toast({
+        title: 'Service Deleted',
+        description: 'Your service has been successfully deleted.',
+      });
+      setUpdating(false);
+      return true;
+    } catch (err) {
+      console.error('Error deleting service:', err);
+      toast({
+        title: 'Error',
+        description: 'Unexpected error deleting service.',
+        variant: 'destructive',
+      });
+      setUpdating(false);
+      return false;
+    }
   };
 
   const updateBookingStatus = async (bookingId: string, status: ServiceBooking['status']): Promise<boolean> => {
