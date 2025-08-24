@@ -110,6 +110,39 @@ const UpcomingTab = () => {
     input.click();
   };
 
+  const handleDeleteDocument = async (consultationId: string, documentUrl: string) => {
+    try {
+      const { data: currentBooking, error: fetchError } = await supabase
+        .from('service_bookings')
+        .select('shared_documents')
+        .eq('id', consultationId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const existingDocs = currentBooking?.shared_documents || [];
+      const updatedDocs = existingDocs.filter((doc: any) => doc.url !== documentUrl);
+
+      const { error: updateError } = await supabase
+        .from('service_bookings')
+        .update({ shared_documents: updatedDocs })
+        .eq('id', consultationId);
+
+      if (updateError) throw updateError;
+
+      // Refresh consultations
+      setConsultations(prev => prev.map(c =>
+        c.id === consultationId ? { ...c, shared_documents: updatedDocs } : c
+      ));
+
+      toast({ title: "Success", description: "Document deleted successfully." });
+
+    } catch (err: any) {
+      console.error("Error deleting document:", err);
+      toast({ title: "Deletion Failed", description: err.message, variant: "destructive" });
+    }
+  };
+
   const upcomingConsultations = useMemo(() => {
     return consultations
       .filter(booking => booking.status === 'confirmed' && new Date(booking.scheduled_date) > new Date())
@@ -170,6 +203,7 @@ const UpcomingTab = () => {
                 onAcceptConsultation={(comment) => handleAcceptConsultation(consultation.id, comment)}
                 onDeclineConsultation={(comment) => handleDeclineConsultation(consultation.id, comment)}
                 onRescheduleWithGoogleCalendar={() => handleRescheduleWithGoogleCalendar(consultation.id)}
+                onDeleteDocument={handleDeleteDocument}
                 />
             ))}
           </div>

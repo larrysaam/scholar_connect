@@ -39,6 +39,7 @@ interface UpcomingConsultationCardProps {
   onDeclineConsultation: (consultationId: string, comment: string) => void;
   onRescheduleWithGoogleCalendar: (consultationId: string) => void;
   onUploadDocument: (consultationId: string) => void;
+  onDeleteDocument?: (consultationId: string, documentUrl: string) => void;
 }
 
 const UpcomingConsultationCard = memo(({
@@ -54,6 +55,7 @@ const UpcomingConsultationCard = memo(({
   onDeclineConsultation,
   onRescheduleWithGoogleCalendar,
   onUploadDocument,
+  onDeleteDocument,
 }: UpcomingConsultationCardProps) => {
   const isJoinLoading = actionLoading[`join-${consultation.id}`];
   const isRescheduleLoading = actionLoading[`reschedule-${consultation.id}`];
@@ -110,15 +112,24 @@ const UpcomingConsultationCard = memo(({
             <p className="font-medium text-sm text-green-700">Uploaded Documents:</p>
             <div className="flex flex-wrap gap-2 mt-1">
               {uploadedDocuments.map((doc, index) => (
-                <Badge
-                  key={index}
-                  variant="outline"
-                  className="bg-green-50 text-green-700 hover:bg-green-100 cursor-pointer"
-                  onClick={() => handleAccessDocumentClick(doc.url)}
-                >
-                  <FileText className="h-3 w-3 mr-1" />
-                  {doc.name}
-                </Badge>
+                <div key={index} className="flex items-center">
+                  <Badge
+                    variant="outline"
+                    className="bg-green-50 text-green-700 hover:bg-green-100 cursor-pointer"
+                    onClick={() => handleAccessDocumentClick(doc.url)}
+                  >
+                    <FileText className="h-3 w-3 mr-1" />
+                    {doc.name}
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-5 w-5 ml-1"
+                    onClick={() => onDeleteDocument?.(consultation.id, doc.url)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
               ))}
             </div>
           </div>

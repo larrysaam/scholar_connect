@@ -206,8 +206,34 @@ const StudentUpcomingTab = () => {
     }
   };
 
-  const handleContactResearcher = (researcherId: string, consultationId: string) => {
-    window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'messages' }));
+  const handleDeleteDocument = async (consultationId: string, documentUrl: string) => {
+    try {
+      const { data: currentBooking, error: fetchError } = await supabase
+        .from('service_bookings')
+        .select('shared_documents')
+        .eq('id', consultationId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const existingDocs = currentBooking?.shared_documents || [];
+      const updatedDocs = existingDocs.filter((doc: any) => doc.url !== documentUrl);
+
+      const { error: updateError } = await supabase
+        .from('service_bookings')
+        .update({ shared_documents: updatedDocs })
+        .eq('id', consultationId);
+
+      if (updateError) throw updateError;
+
+      fetchConsultations(); // Refresh consultations
+
+      toast({ title: "Success", description: "Document deleted successfully." });
+
+    } catch (err: any) {
+      console.error("Error deleting document:", err);
+      toast({ title: "Deletion Failed", description: err.message, variant: "destructive" });
+    }
   };
   const handleAccessDocument = (documentLink: string) => {
     window.open(documentLink, '_blank');
@@ -251,7 +277,7 @@ const StudentUpcomingTab = () => {
               onUploadDocument={() => handleUploadDocument(consultation.id)}
               isUploading={isUploading[consultation.id] || false}
               onSubmitDocumentLink={handleSubmitDocumentLink}
-              onContactResearcher={() => handleContactResearcher(consultation.researcher.name, consultation.id)} // Assuming name is unique for now
+              onDeleteDocument={handleDeleteDocument}
               onAccessDocument={handleAccessDocument}
             />
           ))}

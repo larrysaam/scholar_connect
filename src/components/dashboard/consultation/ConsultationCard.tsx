@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, Video, MessageSquare, Upload, FileText, Loader2 } from "lucide-react";
+import { Calendar, Clock, Video, MessageSquare, Upload, FileText, Loader2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import ConsultationActions from "./ConsultationActions";
 import LiveDocumentReviewDialog from "./LiveDocumentReviewDialog";
@@ -33,6 +33,7 @@ interface ConsultationCardProps {
   onContactResearcher: (researcherId: string, consultationId: string) => void;
   onContactStudent?: (studentId: string, consultationId: string) => void;
   onAccessDocument?: (documentLink: string) => void;
+  onDeleteDocument?: (consultationId: string, documentUrl: string) => void;
   isUploading?: boolean;
 }
 
@@ -45,6 +46,7 @@ const ConsultationCard = ({
   onContactResearcher,
   onContactStudent,
   onAccessDocument,
+  onDeleteDocument,
   isUploading = false,
 }: ConsultationCardProps) => {
   const person = userType === "student" ? consultation.researcher : consultation.student;
@@ -105,15 +107,24 @@ const ConsultationCard = ({
             <p className="font-medium text-sm text-blue-700">Documents Uploaded:</p>
             <div className="flex flex-wrap gap-2 mt-1">
               {consultation.sharedDocuments.map((doc: SharedDocument, index) => (
-                <Badge
-                  key={index}
-                  variant="outline"
-                  className="bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer"
-                  onClick={() => handleAccessDocumentClick(doc.url)}
-                >
-                  <FileText className="h-3 w-3 mr-1" />
-                  {doc.name}
-                </Badge>
+                <div key={index} className="flex items-center">
+                  <Badge
+                    variant="outline"
+                    className="bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer"
+                    onClick={() => handleAccessDocumentClick(doc.url)}
+                  >
+                    <FileText className="h-3 w-3 mr-1" />
+                    {doc.name}
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-5 w-5 ml-1"
+                    onClick={() => onDeleteDocument?.(consultation.id, doc.url)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
               ))}
             </div>
           </div>
