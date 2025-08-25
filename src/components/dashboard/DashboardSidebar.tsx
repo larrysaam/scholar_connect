@@ -51,8 +51,6 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole, notificationCount
   const researcherMenuItems = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "consultation-services", label: "Consultation Service Setup", icon: MessageSquare },
-    { id: "set-milestones", label: "Set Milestones", icon: Calendar },
-    { id: "send-email", label: "Send Email", icon: MessageSquare },
     { id: "upcoming", label: "Upcoming Consultations", icon: Calendar },
     { id: "past", label: "Past Consultations", icon: Clock },
     { id: "full-thesis-support", label: "Full Thesis Support", icon: GraduationCap },

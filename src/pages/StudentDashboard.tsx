@@ -127,7 +127,7 @@ const StudentDashboard = () => {
               <DashboardSidebar 
                 activeTab={activeTab} 
                 setActiveTab={handleTabChange} 
-                userType="student"
+                userRole="student"
               />
             </div>
             
@@ -144,7 +144,7 @@ const StudentDashboard = () => {
         </div>
       </main>
       
-      <IntelligentChatAssistant userType="student" currentTab={activeTab} />
+      <IntelligentChatAssistant userRole="student" currentTab={activeTab} />
       
       <Footer />
     </div>

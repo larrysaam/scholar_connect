@@ -136,7 +136,7 @@ const ResearchAideDashboard = () => {
               <DashboardSidebar 
                 activeTab={activeTab} 
                 setActiveTab={setActiveTab} 
-                userType="research-aide"
+                userRole="research-aide"
                 notificationCount={unreadCount}
               />
             </div>

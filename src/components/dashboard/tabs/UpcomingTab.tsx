@@ -15,7 +15,11 @@ interface SharedDocument {
 
 const ITEMS_PER_PAGE = 5;
 
-const UpcomingTab = () => {
+interface UpcomingTabProps {
+  userRole: "student" | "researcher";
+}
+
+const UpcomingTab = ({ userRole }: UpcomingTabProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const {

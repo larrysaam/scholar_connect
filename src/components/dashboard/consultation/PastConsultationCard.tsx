@@ -33,7 +33,7 @@ interface PastConsultation {
 interface PastConsultationCardProps {
   consultation: PastConsultation;
   uploadedResources: string[];
-  userType: "student" | "researcher";
+  userRole: "student" | "researcher";
   onViewRecording: (consultationId: string) => void;
   onViewAINotes: (consultationId: string) => void;
   onUploadResources: (consultationId: string) => void;
@@ -45,7 +45,7 @@ interface PastConsultationCardProps {
 const PastConsultationCard = ({
   consultation,
   uploadedResources,
-  userType,
+  userRole,
   onViewRecording,
   onViewAINotes,
   onUploadResources,
@@ -53,9 +53,9 @@ const PastConsultationCard = ({
   onOpenChat,
   onFollowUpSession
 }: PastConsultationCardProps) => {
-  const person = userType === "student" ? consultation.researcher : consultation.student;
-  const resourceLabel = userType === "student" ? "Resources Shared" : "Additional Resources Shared";
-  const uploadButtonLabel = userType === "student" ? "Share Resources" : "Upload Resources";
+  const person = userRole === "student" ? consultation.researcher : consultation.student;
+  const resourceLabel = userRole === "student" ? "Resources Shared" : "Additional Resources Shared";
+  const uploadButtonLabel = userRole === "student" ? "Share Resources" : "Upload Resources";
 
   if (!person) return null;
 
@@ -144,7 +144,7 @@ const PastConsultationCard = ({
           
           <ContactDialog
             personName={person.name}
-            personType={userType === "student" ? "researcher" : "student"}
+            personType={userRole === "student" ? "researcher" : "student"}
             consultationId={consultation.id}
             onSendMessage={onSendMessage}
             onOpenChat={onOpenChat}
@@ -159,7 +159,7 @@ const PastConsultationCard = ({
             {uploadButtonLabel}
           </Button>
 
-          {userType === "student" && onFollowUpSession && (
+          {userRole === "student" && onFollowUpSession && (
             <Button 
               variant="outline" 
               onClick={() => onFollowUpSession(consultation.id)}

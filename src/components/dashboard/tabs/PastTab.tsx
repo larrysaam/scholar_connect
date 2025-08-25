@@ -7,7 +7,11 @@ import { Button } from "@/components/ui/button";
 
 const ITEMS_PER_PAGE = 5;
 
-const PastTab = () => {
+interface PastTabProps {
+  userRole: "student" | "researcher";
+}
+
+const PastTab = ({ userRole }: PastTabProps) => {
   const [uploadedResources, setUploadedResources] = useState<{[key: string]: string[]}>({});
   const { bookings, loading } = useConsultationServices();
   const [currentPage, setCurrentPage] = useState(1);

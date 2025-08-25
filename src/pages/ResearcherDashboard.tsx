@@ -45,11 +45,11 @@ const ResearcherDashboard = () => {
       case "overview":
         return <WelcomeOverviewTab />;
       case "consultation-services":
-        return <ConsultationServicesTab userType="researcher" />;
+        return <ConsultationServicesTab userRole="researcher" />;
       case "upcoming":
-        return <UpcomingTab userType="researcher" />;
+        return <UpcomingTab userRole="researcher" />;
       case "past":
-        return <PastTab userType="researcher" />;
+        return <PastTab userRole="researcher" />;
       case "full-thesis-support":
         return <FullThesisSupportTab />;
       case "payments":
@@ -86,7 +86,7 @@ const ResearcherDashboard = () => {
       
       <main className="flex-grow bg-gray-50 py-12">
         <div className="container mx-auto px-4 md:px-6">
-          <DashboardHeader userType="researcher" />
+          <DashboardHeader userRole="researcher" />
           
           {showOnboarding && (
             <div className="mb-8">
@@ -110,7 +110,7 @@ const ResearcherDashboard = () => {
               <DashboardSidebar 
                 activeTab={activeTab} 
                 setActiveTab={setActiveTab} 
-                userType="researcher"
+                userRole="researcher"
               />
             </div>
             
@@ -125,7 +125,7 @@ const ResearcherDashboard = () => {
         </div>
       </main>
       
-      <IntelligentChatAssistant userType="researcher" currentTab={activeTab} />
+      <IntelligentChatAssistant userRole="researcher" currentTab={activeTab} />
       
       <Footer />
     </div>
