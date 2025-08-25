@@ -122,9 +122,10 @@ export const useConsultationServices = () => {
     try {
       const { data, error } = await supabase
         .from('service_bookings')
-        .select(`*, client:users!service_bookings_client_id_fkey(name, email), shared_documents, researcher_reviews!left(rating, comment)`) // Join client user, shared_documents, and researcher_reviews (left join)
+        .select(`*, client:users!service_bookings_client_id_fkey(name, email), shared_documents, researcher_reviews!left(rating, comment), service:consultation_services(title, category)`) // Added service category for filtering
         .eq('provider_id', user.id)
         .order('scheduled_date', { ascending: true });
+
       if (error) {
         toast({
           title: 'Error',
