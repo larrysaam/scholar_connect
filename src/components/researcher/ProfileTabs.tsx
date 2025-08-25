@@ -10,6 +10,7 @@ import ConsultationServicesDisplay from "./ConsultationServicesDisplay";
 
 interface ProfileTabsProps {
   researcher: {
+    id: string;
     bio: string;
     specialties: string[];
     education: {
@@ -60,12 +61,6 @@ interface ProfileTabsProps {
 }
 
 const ProfileTabs = ({ researcher }: ProfileTabsProps) => {
-  const verifications = researcher.verifications || {
-    academic: "unverified",
-    publication: "unverified", 
-    institutional: "unverified"
-  };
-
   return (
     <Tabs defaultValue="about" className="w-full">
       <TabsList className="mb-8 bg-gray-100 grid grid-cols-4 md:grid-cols-8 w-full">
@@ -84,7 +79,7 @@ const ProfileTabs = ({ researcher }: ProfileTabsProps) => {
       </TabsContent>
 
       <TabsContent value="verification" className="mt-0">
-        <VerificationTab verifications={verifications} />
+        <VerificationTab researcherId={researcher.id} />
       </TabsContent>
       
       <TabsContent value="education" className="mt-0">

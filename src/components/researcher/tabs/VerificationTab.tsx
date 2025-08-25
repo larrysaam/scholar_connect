@@ -4,55 +4,89 @@ import { Badge } from "@/components/ui/badge";
 import VerificationBadge from "@/components/verification/VerificationBadge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Award, FileText, Building, CheckCircle, Clock, Upload, Shield } from "lucide-react";
+import { useResearcherProfile } from "@/hooks/useResearcherProfile";
+import { useParams } from "react-router-dom";
+import { useEffect } from "react";
 
 interface VerificationTabProps {
-  verifications: {
-    academic: "verified" | "pending" | "unverified";
-    publication: "verified" | "pending" | "unverified";
-    institutional: "verified" | "pending" | "unverified";
-  };
+  researcherId: string;
 }
 
-const VerificationTab = ({ verifications }: VerificationTabProps) => {
+const VerificationTab = ({ researcherId }: VerificationTabProps) => {
   const { t } = useLanguage();
+  const { researcher, loading, error } = useResearcherProfile(researcherId);
+
+  if (loading) {
+    return <div>Loading verifications...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading verifications: {error}</div>;
+  }
+
+  if (!researcher || !researcher.verifications) {
+    return <div>No verification data available.</div>;
+  }
+
+  const verifications = researcher.verifications;
+
+  // Helper to map 'rejected' to 'unverified' for display purposes
+  const hasVerifiedDocuments = (documents?: { status: 'pending' | 'verified' | 'rejected'; }[]) => {
+    return documents?.some(doc => doc.status === 'verified') || false;
+  };
+
+  const getDisplayStatus = (
+    topLevelStatus: 'pending' | 'verified' | 'rejected',
+    documents?: { status: 'pending' | 'verified' | 'rejected'; }[]
+  ) => {
+    if (topLevelStatus === 'verified' || hasVerifiedDocuments(documents)) {
+      return 'verified';
+    }
+    if (topLevelStatus === 'pending' || documents?.some(doc => doc.status === 'pending')) {
+      return 'pending';
+    }
+    return 'unverified';
+  };
 
   const verificationItems = [
     {
       type: "academic" as const,
-      status: verifications.academic,
+      status: getDisplayStatus(verifications.academic, verifications.education?.documents),
       icon: <Award className="h-5 w-5" />,
-      documents: verifications.academic === "unverified" ? [] : ["PhD_Certificate.pdf", "Academic_Transcripts.pdf"],
+      documents: verifications.education?.documents || [],
       description: "Academic credentials including degrees, certifications, and institutional affiliations verified through official transcripts and certificates."
     },
     {
       type: "publication" as const,
-      status: verifications.publication,
+      status: getDisplayStatus(verifications.publication, verifications.publications?.documents),
       icon: <FileText className="h-5 w-5" />,
-      documents: verifications.publication === "unverified" ? [] : ["Publication_List.pdf", "ORCID_Profile.pdf", "Citation_Report.pdf"],
+      documents: verifications.publications?.documents || [],
       description: "Research output and academic contributions verified through publication databases, ORCID profiles, and citation metrics."
     },
     {
       type: "institutional" as const,
-      status: verifications.institutional,
+      status: getDisplayStatus(verifications.institutional, verifications.employment?.documents),
       icon: <Building className="h-5 w-5" />,
-      documents: verifications.institutional === "unverified" ? [] : ["Employment_Letter.pdf", "Institutional_Email_Verification.pdf"],
+      documents: verifications.employment?.documents || [],
       description: "Current institutional affiliation verified through institutional email confirmation and official appointment letters."
     }
   ];
 
   // Calculate overall verification status
   const getOverallStatus = () => {
-    const { academic, publication, institutional } = verifications;
-    
-    if (academic === "verified" && publication === "verified" && institutional === "verified") {
+    const academicStatus = getDisplayStatus(verifications.academic, verifications.education?.documents);
+    const publicationStatus = getDisplayStatus(verifications.publication, verifications.publications?.documents);
+    const institutionalStatus = getDisplayStatus(verifications.institutional, verifications.employment?.documents);
+
+    if (academicStatus === "verified" && publicationStatus === "verified" && institutionalStatus === "verified") {
       return "verified";
     }
     
-    if (academic === "pending" || publication === "pending" || institutional === "pending") {
+    if (academicStatus === "pending" || publicationStatus === "pending" || institutionalStatus === "pending") {
       return "pending";
     }
     
-    if (academic === "verified" || publication === "verified" || institutional === "verified") {
+    if (academicStatus === "verified" || publicationStatus === "verified" || institutionalStatus === "verified") {
       return "verified";
     }
     
@@ -60,7 +94,11 @@ const VerificationTab = ({ verifications }: VerificationTabProps) => {
   };
 
   const overallStatus = getOverallStatus();
-  const verifiedCount = Object.values(verifications).filter(v => v === "verified").length;
+  const verifiedCount = [
+    getDisplayStatus(verifications.academic, verifications.education?.documents),
+    getDisplayStatus(verifications.publication, verifications.publications?.documents),
+    getDisplayStatus(verifications.institutional, verifications.employment?.documents)
+  ].filter(status => status === "verified").length;
 
   return (
     <div className="space-y-6">
@@ -131,10 +169,10 @@ const VerificationTab = ({ verifications }: VerificationTabProps) => {
                 {item.documents.length > 0 ? (
                   <div className="space-y-1">
                     {item.documents.map((doc, index) => (
-                      <div key={index} className="flex items-center text-sm text-gray-600">
+                      <a key={index} href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center text-sm text-gray-600 hover:text-blue-600 hover:underline">
                         <FileText className="h-4 w-4 mr-2 text-green-600" />
-                        {doc}
-                      </div>
+                        {doc.fileName}
+                      </a>
                     ))}
                   </div>
                 ) : (

@@ -61,15 +61,7 @@ const ResearcherProfile = () => {
     );
   }
 
-  const fixVerification = (v) => {
-    if (!v) return undefined;
-    const fix = (val) => val === 'rejected' ? 'unverified' : val;
-    return {
-      academic: fix(v.academic),
-      publication: fix(v.publication),
-      institutional: fix(v.institutional)
-    };
-  };
+  
   const safeArray = (val, fallback = []) => Array.isArray(val) ? val : fallback;
   const safeExperience = safeArray(researcher.experience).map(e =>
     typeof e === 'object' && e !== null && 'position' in e && 'institution' in e && 'period' in e
@@ -114,7 +106,7 @@ const ResearcherProfile = () => {
     memberships: safeArray(researcher.memberships),
     supervision: safeArray(researcher.supervision),
     publications: safeArray(researcher.publications),
-    verifications: fixVerification(researcher.verifications),
+    verifications: researcher.verifications,
     imageUrl: researcher.imageUrl || '',
     isOnline: researcher.isOnline || false,
     languages: researcher.languages || [],

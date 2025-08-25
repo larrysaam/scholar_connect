@@ -92,7 +92,43 @@ export interface ResearcherProfileData {
   available_times: any[];
   verifications: {
     academic: 'pending' | 'verified' | 'rejected';
+    identity?: {
+      documents: {
+        status: 'pending' | 'verified' | 'rejected';
+        fileUrl: string;
+        fileName: string;
+        uploadedAt: string;
+        documentType: string;
+      }[];
+    };
+    education?: {
+      documents: {
+        status: 'pending' | 'verified' | 'rejected';
+        fileUrl: string;
+        fileName: string;
+        uploadedAt: string;
+        documentType: string;
+      }[];
+    };
+    employment?: {
+      documents: {
+        status: 'pending' | 'verified' | 'rejected';
+        fileUrl: string;
+        fileName: string;
+        uploadedAt: string;
+        documentType: string;
+      }[];
+    };
     publication: 'pending' | 'verified' | 'rejected';
+    publications?: { // Note: This is 'publications' for the documents, while 'publication' is for the overall status
+      documents: {
+        status: 'pending' | 'verified' | 'rejected';
+        fileUrl: string;
+        fileName: string;
+        uploadedAt: string;
+        documentType: string;
+      }[];
+    };
     institutional: 'pending' | 'verified' | 'rejected';
   };
   rating: number;

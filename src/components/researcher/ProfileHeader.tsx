@@ -1,38 +1,47 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Star, Users, Calendar } from "lucide-react";
+import { MapPin, Star, Users, Calendar, CheckCircle } from "lucide-react"; // Added CheckCircle
 import StatusIndicator from "./StatusIndicator";
 import ComprehensiveBookingModal from "./booking/ComprehensiveBookingModal";
 import MessageModal from "./MessageModal";
 import CoAuthorInvitationModal from "./CoAuthorInvitationModal";
+import { ResearcherProfileData } from "@/hooks/useResearcherProfile";
 
 interface ProfileHeaderProps {
-  researcher: {
-    id: string;
-    name: string;
-    title: string;
-    affiliation: string;
-    location: string;
-    rating: number;
-    totalReviews: number;
-    studentsSupervised: number;
-    yearsExperience: number;
-    expertise: string[];
-    bio: string;
-    imageUrl: string;
-    isOnline: boolean;
-    responseTime: string;
-    languages: string[];
-    hourlyRate: number;
-    availableTimes: {
-      date: Date;
-      slots: string[];
-    }[];
-  };
+  researcher: ResearcherProfileData;
 }
 
 const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
+  // Helper functions for verification status (copied from VerificationTab.tsx)
+  const hasVerifiedDocuments = (documents?: { status: 'pending' | 'verified' | 'rejected'; }[]) => {
+    return documents?.some(doc => doc.status === 'verified') || false;
+  };
+
+  const getDisplayStatus = (
+    topLevelStatus: 'pending' | 'verified' | 'rejected',
+    documents?: { status: 'pending' | 'verified' | 'rejected'; }[]
+  ) => {
+    if (topLevelStatus === 'verified' || hasVerifiedDocuments(documents)) {
+      return 'verified';
+    }
+    if (topLevelStatus === 'pending' || documents?.some(doc => doc.status === 'pending')) {
+      return 'pending';
+    }
+    return 'unverified';
+  };
+
+  const isOverallVerified = () => {
+    const academicStatus = getDisplayStatus(researcher.verifications.academic, researcher.verifications.education?.documents);
+    const publicationStatus = getDisplayStatus(researcher.verifications.publication, researcher.verifications.publications?.documents);
+    const institutionalStatus = getDisplayStatus(researcher.verifications.institutional, researcher.verifications.employment?.documents);
+
+    console.log("Verification statuses:", { academicStatus, publicationStatus, institutionalStatus })
+    return academicStatus === "verified" && publicationStatus === "verified" && institutionalStatus === "verified";
+  };
+
+  const showVerifiedBadge = isOverallVerified();
+
   return (
     <Card>
       <CardContent className="p-6">
@@ -45,6 +54,11 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
                 alt={researcher.name}
                 className="w-32 h-32 rounded-full object-cover"
               />
+              {showVerifiedBadge && (
+                <div className="absolute bottom-0 right-0 bg-blue-500 rounded-full p-1 border-2 border-white shadow-md">
+                  <CheckCircle className="h-5 w-5 text-white" />
+                </div>
+              )}
               {/* <StatusIndicator 
                 isOnline={researcher.isOnline} 
                 className="absolute -bottom-2 -right-2"
