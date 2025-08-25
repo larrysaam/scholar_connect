@@ -25,7 +25,7 @@ const PastTab = ({ userRole }: PastTabProps) => {
           id: booking.client_id,
           name: booking.client?.name || 'N/A',
           field: booking.service?.category || 'N/A',
-          imageUrl: '/placeholder.svg',
+          imageUrl: booking.client?.avatar_url || '/placeholder.svg',
         },
         date: new Date(booking.scheduled_date).toLocaleDateString(),
         time: booking.scheduled_time,
