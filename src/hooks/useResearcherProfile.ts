@@ -212,6 +212,17 @@ export const useResearcherProfile = (researcherId: string) => {
         console.error('Error fetching reviews:', reviewsError);
       }
 
+      // Fetch supervised students count
+      const { count: studentsSupervisedCount, error: supervisedStudentsError } = await supabase
+        .from('service_bookings')
+        .select('client_id', { count: 'exact', head: true })
+        .eq('provider_id', researcherId)
+        .in('status', ['completed', 'confirmed']);
+
+      if (supervisedStudentsError) {
+        console.error('Error fetching supervised students count:', supervisedStudentsError);
+      }
+
       // Transform data to match component interface
       const transformedResearcher: ResearcherProfileData = {
         // Basic user info
@@ -234,7 +245,7 @@ export const useResearcherProfile = (researcherId: string) => {
         title: profile?.title || userData.experience || 'Research Expert',
         department: profile?.department,
         years_experience: profile?.years_experience || 0,
-        students_supervised: profile?.students_supervised || 0,
+        students_supervised: studentsSupervisedCount || 0,
         hourly_rate: profile?.hourly_rate || 15000,
         response_time: profile?.response_time || 'Usually responds within 24 hours',
         is_online: profile?.is_online || false,
@@ -277,7 +288,7 @@ export const useResearcherProfile = (researcherId: string) => {
         affiliation: userData.institution || 'Institution not specified',
         location: userData.country || 'Location not specified',
         totalReviews: profile?.total_reviews || 0,
-        studentsSupervised: profile?.students_supervised || 0,
+        studentsSupervised: studentsSupervisedCount || 0,
         yearsExperience: profile?.years_experience || 0,
         imageUrl: userData.avatar_url || '/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png',
         isOnline: profile?.is_online || false,

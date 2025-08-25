@@ -45,10 +45,10 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
                 alt={researcher.name}
                 className="w-32 h-32 rounded-full object-cover"
               />
-              <StatusIndicator 
+              {/* <StatusIndicator 
                 isOnline={researcher.isOnline} 
                 className="absolute -bottom-2 -right-2"
-              />
+              /> */}
             </div>
           </div>
 
@@ -117,8 +117,9 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
             <ComprehensiveBookingModal researcher={researcher} />
             
             <MessageModal researcher={researcher} />
-            
-            <CoAuthorInvitationModal researcher={researcher} />
+
+            {/* sudo disabled co-author invitation */}
+            {/* <CoAuthorInvitationModal researcher={researcher} /> */}
           </div>
         </div>
 
