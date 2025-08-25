@@ -83,7 +83,7 @@ const UpcomingConsultationCard = memo(({
               />
             </div>
             <div>
-              <CardTitle className="text-lg">Student: {consultation.researcher.name}</CardTitle>
+              <CardTitle className="text-lg">Student: {consultation.researcher.subtitle} {consultation.researcher.name}</CardTitle>
               <CardDescription>Field: {consultation.researcher.field}</CardDescription>
             </div>
           </div>

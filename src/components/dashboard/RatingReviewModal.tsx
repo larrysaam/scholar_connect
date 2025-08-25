@@ -18,6 +18,7 @@ interface RatingReviewModalProps {
     id: string;
     researcher: {
       name: string;
+      subtitle: string; // Added this line
     };
   };
 }
@@ -45,7 +46,7 @@ const RatingReviewModal = ({ consultation }: RatingReviewModalProps) => {
         <DialogHeader>
           <DialogTitle>Rate Your Consultation</DialogTitle>
           <DialogDescription>
-            How was your consultation with {consultation.researcher.name}?
+            How was your consultation with {consultation.researcher.subtitle} {consultation.researcher.name}?
           </DialogDescription>
         </DialogHeader>
         

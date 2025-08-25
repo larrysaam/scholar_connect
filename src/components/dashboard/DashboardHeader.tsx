@@ -23,7 +23,7 @@ const DashboardHeader = ({ userType }: DashboardHeaderProps) => {
       }
       
       // Check for PhD/Postdoc in level_of_study or highest_education
-      const hasPhD = profile.level_of_study?.toLowerCase().includes('phd') ||
+      const hasPhD = profile.study_level?.toLowerCase().includes('phd') ||
                      profile.level_of_study?.toLowerCase().includes('postdoc') ||
                      profile.highest_education?.toLowerCase().includes('phd') ||
                      profile.highest_education?.toLowerCase().includes('postdoc');

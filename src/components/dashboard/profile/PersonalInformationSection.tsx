@@ -8,6 +8,7 @@ import { User } from "lucide-react";
 interface PersonalInformationSectionProps {
   formData: {
     title: string;
+    subtitle: string; // Added this line
     name: string;
     email: string;
     phone: string;
@@ -45,6 +46,22 @@ const PersonalInformationSection = ({ formData, isEditing, onInputChange }: Pers
                 <SelectItem value="Dr.">Dr.</SelectItem>
                 <SelectItem value="Prof.">Prof.</SelectItem>
                 <SelectItem value="Eng.">Eng.</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div> {/* New div for subtitle */}
+            <Label htmlFor="subtitle">Subtitle</Label>
+            <Select
+              value={formData.subtitle}
+              onValueChange={(value) => onInputChange("subtitle", value)}
+              disabled={!isEditing}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select subtitle" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Dr.">Dr.</SelectItem>
+                <SelectItem value="Prof.">Prof.</SelectItem>
               </SelectContent>
             </Select>
           </div>

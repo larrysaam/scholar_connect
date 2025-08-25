@@ -183,16 +183,13 @@ const NDAModal = ({ isOpen, onClose, onAccept }: NDAModalProps) => {
             </label>
           </div>
 
-          <div className="flex justify-end space-x-3">
-            <Button variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
+          <div className="flex justify-end">
             <Button 
               onClick={handleAccept}
               disabled={!hasRead || !hasAgreed}
               className="bg-blue-600 hover:bg-blue-700"
             >
-              Sign NDA Agreement
+              Accept and Continue
             </Button>
           </div>
         </div>

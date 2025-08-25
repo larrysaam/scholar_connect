@@ -71,6 +71,7 @@ export interface ResearcherProfileData {
   
   // Extended profile info
   title?: string;
+  subtitle?: string;
   department?: string;
   years_experience: number;
   students_supervised: number;
@@ -185,7 +186,7 @@ export const useResearcherProfile = (researcherId: string) => {
       // Fetch extended profile info
       const { data: profileData, error: profileError } = await supabase
         .from('researcher_profiles')
-        .select('*')
+        .select('*, subtitle')
         .eq('user_id', researcherId)
         .single();
 
@@ -201,6 +202,7 @@ export const useResearcherProfile = (researcherId: string) => {
             .insert({
               user_id: researcherId,
               title: userData.experience || 'Research Expert',
+              subtitle: 'Dr.', // Added this line
               bio: 'Experienced researcher ready to help with your academic projects.',
               research_interests: userData.expertise || [],
               specialties: userData.expertise || [],
@@ -279,6 +281,7 @@ export const useResearcherProfile = (researcherId: string) => {
         
         // Extended profile info
         title: profile?.title || userData.experience || 'Research Expert',
+        subtitle: profile?.subtitle || 'Dr.', // Added this line
         department: profile?.department,
         years_experience: profile?.years_experience || 0,
         students_supervised: studentsSupervisedCount || 0,

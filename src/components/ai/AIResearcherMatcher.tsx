@@ -12,6 +12,7 @@ interface MatchedResearcher {
   id: string;
   name: string;
   title: string;
+  subtitle: string; // Added this line
   institution: string;
   field: string;
   rating: number;
@@ -98,7 +99,7 @@ const AIResearcherMatcher = () => {
   const handleBookConsultation = (researcher: MatchedResearcher) => {
     toast({
       title: "Booking Consultation",
-      description: `Initiating booking process with ${researcher.name}`
+      description: `Initiating booking process with ${researcher.subtitle} ${researcher.name}`
     });
   };
 
@@ -155,7 +156,7 @@ const AIResearcherMatcher = () => {
                       
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
-                          <h4 className="font-semibold text-lg">{researcher.name}</h4>
+                          <h4 className="font-semibold text-lg">{researcher.subtitle} {researcher.name}</h4>
                           <Badge className="bg-purple-100 text-purple-800">
                             {researcher.matchScore}% Match
                           </Badge>

@@ -98,9 +98,34 @@ const ResearchAidSignup = () => {
         logSecurityEvent(`Research Aid signup failed for ${formData.email}: ${error.message}`);
         toast.error(error.message);
       } else {
-        logSecurityEvent(`Research Aid signup successful for ${formData.email}`);
-        toast.success('Account created successfully! Please check your email for verification.');
-        navigate('/research-aids-dashboard');
+        // Insert user profile into public.users table
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert({
+            id: data.user.id,
+            email: formData.email,
+            name: formData.fullName,
+            role: 'aid',
+            phone_number: `${formData.countryCode}${formData.phoneNumber}`,
+            country: formData.country === 'other' ? formData.otherCountry : formData.country,
+            institution: formData.university === 'other' ? formData.otherUniversity : formData.university,
+            study_level: formData.highestEducation,
+            expertise: formData.fieldsOfExpertise.split(',').map(item => item.trim()), // Convert comma-separated string to array
+            sex: formData.sex,
+            date_of_birth: formData.dateOfBirth,
+            linkedin_url: formData.linkedinAccount,
+            // Add other fields as necessary from formData to match public.users table
+          });
+
+        if (profileError) {
+          logSecurityEvent(`Failed to save Research Aid profile to public.users for ${formData.email}: ${profileError.message}`);
+          toast.error('Account created, but failed to save profile details. Please contact support.');
+          // Optionally, you might want to delete the auth user here if profile creation is critical
+        } else {
+          logSecurityEvent(`Research Aid signup successful and profile saved for ${formData.email}`);
+          toast.success('Account created successfully! Please check your email for verification.');
+          navigate('/login');
+        }
       }
     } catch (error) {
       logSecurityEvent(`Research Aid signup error: ${error.message}`);

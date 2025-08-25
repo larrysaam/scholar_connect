@@ -43,6 +43,7 @@ export interface SupervisionDetailEntry {
 
 export interface ProfileFormData {
   title: string;
+  subtitle: string;
   name: string;
   email: string;
   phone: string;
@@ -61,6 +62,7 @@ export interface ProfileFormData {
 
 export const defaultProfileFormData: ProfileFormData = {
   title: "Dr.",
+  subtitle: "Dr.",
   name: "John Researcher",
   email: "john.researcher@university.cm",
   phone: "+237 6XX XXX XXX",

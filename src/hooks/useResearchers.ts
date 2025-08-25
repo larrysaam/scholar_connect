@@ -91,6 +91,7 @@ export const useResearchers = () => {
           updated_at: user.updated_at,
           // Computed fields for compatibility with existing component
           title: (profile && profile.title) || user.experience || 'Research Expert',
+          subtitle: (profile && profile.subtitle) || 'Dr.', // Added subtitle here
           field: user.expertise?.[0] || 'General Research',
           specializations: user.expertise || ['Research Guidance'],
           rating: (profile && typeof profile.rating === 'number') ? profile.rating : 0,
@@ -153,6 +154,7 @@ export const useResearchers = () => {
         
         // Computed fields
         title: data.experience || 'Research Expert',
+        subtitle: (profileData && profileData.subtitle) || 'Dr.', // Added subtitle here
         field: data.expertise?.[0] || 'General Research',
         specializations: data.expertise || ['Research Guidance'],
         rating: 4.5 + Math.random() * 0.5,
