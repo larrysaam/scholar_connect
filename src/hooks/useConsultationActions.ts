@@ -78,7 +78,12 @@ export const useConsultationActions = () => {
       const sharedDocs = data?.shared_documents || [];
       if (sharedDocs.length > 0) {
         const lastDoc = sharedDocs[sharedDocs.length - 1];
-        window.open(lastDoc.url, '_blank');
+        let urlToOpen = lastDoc.url;
+        // Remove http://localhost:8080/ if it exists
+        if (urlToOpen.startsWith("http://localhost:8080/")) {
+          urlToOpen = urlToOpen.substring("http://localhost:8080/".length);
+        }
+        window.open(urlToOpen, '_blank');
       } else {
         toast({ title: "No Documents", description: "No documents have been shared for this consultation yet.", variant: "default" });
       }
