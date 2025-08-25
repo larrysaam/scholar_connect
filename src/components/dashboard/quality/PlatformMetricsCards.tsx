@@ -16,7 +16,7 @@ const PlatformMetricsCards = ({ metrics }: PlatformMetricsCardsProps) => {
             <Star className="h-8 w-8 text-yellow-500" />
             <div>
               <p className="text-sm text-gray-600">Platform Rating</p>
-              <p className="text-2xl font-bold">{metrics.overallRating}/5</p>
+              <p className="text-2xl font-bold">{metrics.overall_rating}/5</p>
             </div>
           </div>
         </CardContent>
@@ -28,7 +28,7 @@ const PlatformMetricsCards = ({ metrics }: PlatformMetricsCardsProps) => {
             <Users className="h-8 w-8 text-blue-600" />
             <div>
               <p className="text-sm text-gray-600">User Feedback</p>
-              <p className="text-2xl font-bold">{metrics.totalFeedbacks}</p>
+              <p className="text-2xl font-bold">{metrics.total_feedbacks}</p>
             </div>
           </div>
         </CardContent>
@@ -40,7 +40,7 @@ const PlatformMetricsCards = ({ metrics }: PlatformMetricsCardsProps) => {
             <TrendingUp className="h-8 w-8 text-green-600" />
             <div>
               <p className="text-sm text-gray-600">Improvement Rate</p>
-              <p className="text-2xl font-bold">{metrics.improvementRate}%</p>
+              <p className="text-2xl font-bold">{metrics.improvement_rate}%</p>
             </div>
           </div>
         </CardContent>
@@ -52,7 +52,7 @@ const PlatformMetricsCards = ({ metrics }: PlatformMetricsCardsProps) => {
             <Award className="h-8 w-8 text-purple-600" />
             <div>
               <p className="text-sm text-gray-600">Satisfaction</p>
-              <p className="text-2xl font-bold">{metrics.userSatisfaction}%</p>
+              <p className="text-2xl font-bold">{metrics.user_satisfaction}%</p>
             </div>
           </div>
         </CardContent>

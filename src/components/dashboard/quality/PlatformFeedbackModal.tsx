@@ -1,41 +1,96 @@
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Star, MessageSquare, Send } from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { FeedbackFormData } from "@/types/qualityFeedback";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PlatformFeedbackModalProps {
   feedbackCategories: string[];
 }
 
-const PlatformFeedbackModal = ({ feedbackCategories }: PlatformFeedbackModalProps) => {
+const PlatformFeedbackModal: React.FC<PlatformFeedbackModalProps> = ({ feedbackCategories }) => {
+  const [isOpen, setIsOpen] = useState(false); // State to control dialog open/close
   const [selectedRating, setSelectedRating] = useState(0);
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackCategory, setFeedbackCategory] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
   const { toast } = useToast();
 
-  const handleSubmitPlatformFeedback = () => {
-    if (!selectedRating || !feedbackText.trim() || !feedbackCategory) {
+  const handleSubmitPlatformFeedback = async () => {
+    if (!user) {
       toast({
-        title: "Error",
-        description: "Please fill in all required fields",
+        title: "Authentication Required",
+        description: "Please log in to submit feedback.",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (selectedRating === 0) {
+      toast({
+        title: "Rating Required",
+        description: "Please select a star rating.",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (!feedbackCategory) {
+      toast({
+        title: "Category Required",
+        description: "Please select a feedback category.",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (!feedbackText.trim()) {
+      toast({
+        title: "Feedback Required",
+        description: "Please provide some feedback text.",
         variant: "destructive"
       });
       return;
     }
 
-    toast({
-      title: "Feedback Submitted",
-      description: "Thank you for helping us improve ScholarConnect!"
-    });
+    setIsSubmitting(true);
+    console.log("Attempting to submit feedback...");
+    console.log("Current user:", user);
+    try {
+      const { error } = await supabase.from("feedback").insert({
+        user_id: user.id,
+        rating: selectedRating,
+        category: feedbackCategory,
+        text: feedbackText,
+      });
 
-    setSelectedRating(0);
-    setFeedbackText("");
-    setFeedbackCategory("");
+      if (error) {
+        console.error("Supabase insert error:", error);
+        throw error;
+      }
+
+      toast({
+        title: "Feedback Submitted",
+        description: "Thank you for helping us improve ScholarConnect!"
+      });
+
+      // Reset form and close dialog
+      setSelectedRating(0);
+      setFeedbackText("");
+      setFeedbackCategory("");
+      setIsOpen(false); // Close the dialog
+
+    } catch (err: any) {
+      toast({
+        title: "Submission Error",
+        description: err.message || "Failed to submit feedback. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderStars = (rating: number, interactive = false, size = "h-4 w-4") => {
@@ -55,7 +110,7 @@ const PlatformFeedbackModal = ({ feedbackCategories }: PlatformFeedbackModalProp
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button>
           <MessageSquare className="h-4 w-4 mr-2" />
@@ -103,11 +158,12 @@ const PlatformFeedbackModal = ({ feedbackCategories }: PlatformFeedbackModalProp
               value={feedbackText}
               onChange={(e) => setFeedbackText(e.target.value)}
               rows={4}
+              disabled={isSubmitting}
             />
           </div>
-          <Button onClick={handleSubmitPlatformFeedback} className="w-full">
+          <Button onClick={handleSubmitPlatformFeedback} className="w-full" disabled={isSubmitting}>
             <Send className="h-4 w-4 mr-2" />
-            Submit Feedback
+            {isSubmitting ? "Submitting..." : "Submit Feedback"}
           </Button>
         </div>
       </DialogContent>

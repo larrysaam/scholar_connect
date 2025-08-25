@@ -1,16 +1,16 @@
 
 export interface PlatformMetrics {
-  overallRating: number;
-  totalFeedbacks: number;
-  improvementRate: number;
-  userSatisfaction: number;
+  overall_rating: number;
+  total_feedbacks: number;
+  improvement_rate: number;
+  user_satisfaction: number;
 }
 
 export interface Improvement {
   title: string;
   description: string;
-  implementedDate: string;
-  userRequests: number;
+  implemented_date: string;
+  user_requests: number;
 }
 
 export interface FeedbackFormData {

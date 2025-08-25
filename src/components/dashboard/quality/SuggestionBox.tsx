@@ -6,12 +6,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Lightbulb, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client"; // Import supabase
+import { useAuth } from "@/hooks/useAuth"; // Import useAuth
 
 const SuggestionBox = () => {
   const [suggestionText, setSuggestionText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false); // New state for submission loading
   const { toast } = useToast();
+  const { user } = useAuth(); // Get current user
 
-  const handleSubmitSuggestion = () => {
+  const handleSubmitSuggestion = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to submit a suggestion.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!suggestionText.trim()) {
       toast({
         title: "Error",
@@ -21,12 +34,37 @@ const SuggestionBox = () => {
       return;
     }
 
-    toast({
-      title: "Suggestion Submitted",
-      description: "Your suggestion has been forwarded to our development team"
-    });
+    setIsSubmitting(true);
+    console.log("Attempting to submit suggestion...");
+    console.log("Current user:", user);
+    try {
+      const { error } = await supabase.from("feedback").insert({
+        user_id: user.id,
+        rating: 0, // Default rating for suggestions
+        category: "Suggestion", // Default category for suggestions
+        text: suggestionText,
+      });
 
-    setSuggestionText("");
+      if (error) {
+        console.error("Supabase insert error:", error);
+        throw error;
+      }
+
+      toast({
+        title: "Suggestion Submitted",
+        description: "Your suggestion has been forwarded to our development team"
+      });
+
+      setSuggestionText("");
+    } catch (err: any) {
+      toast({
+        title: "Submission Error",
+        description: err.message || "Failed to submit suggestion. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -47,11 +85,12 @@ const SuggestionBox = () => {
               value={suggestionText}
               onChange={(e) => setSuggestionText(e.target.value)}
               rows={4}
+              disabled={isSubmitting}
             />
           </div>
-          <Button onClick={handleSubmitSuggestion}>
+          <Button onClick={handleSubmitSuggestion} disabled={isSubmitting}>
             <Send className="h-4 w-4 mr-2" />
-            Submit Suggestion
+            {isSubmitting ? "Submitting..." : "Submit Suggestion"}
           </Button>
         </div>
       </CardContent>
