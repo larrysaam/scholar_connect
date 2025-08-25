@@ -1,9 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Star, Clock, Users, Globe, Award, TrendingUp } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useResearcherProfile } from "@/hooks/useResearcherProfile";
+import { Skeleton } from "@/components/ui/skeleton"; // Assuming you have a Skeleton component for loading states
 
 interface PerformanceMetrics {
   averageRating: number;
@@ -15,24 +18,71 @@ interface PerformanceMetrics {
     country: string;
     sessions: number;
   }>;
-  rankingStatus: "top-expert" | "expert" | "rising" | "new";
+  rankingStatus: "top-expert" | "expert" | "rising" | "new" | string; // Added string for flexibility
 }
 
 const PerformanceReputationTab = () => {
-  const [metrics] = useState<PerformanceMetrics>({
-    averageRating: 4.8,
-    totalReviews: 47,
-    responseTime: 2.5,
-    noShowRate: 2,
-    completionRate: 98,
-    regionalReach: [
-      { country: "Cameroon", sessions: 28 },
-      { country: "Nigeria", sessions: 15 },
-      { country: "Ghana", sessions: 8 },
-      { country: "Ivory Coast", sessions: 6 }
-    ],
-    rankingStatus: "top-expert"
+  const { user, loading: authLoading } = useAuth();
+  const { researcher, loading: researcherLoading, error: researcherError } = useResearcherProfile(user?.id || '');
+
+  const [metrics, setMetrics] = useState<PerformanceMetrics>({
+    averageRating: 0,
+    totalReviews: 0,
+    responseTime: 0,
+    noShowRate: 0, // Placeholder, needs real data
+    completionRate: 0, // Placeholder, needs real data
+    regionalReach: [], // Placeholder, needs real data
+    rankingStatus: "new"
   });
+
+  useEffect(() => {
+    if (researcher) {
+      const parseResponseTime = (responseTimeStr: string): number => {
+        const match = responseTimeStr.match(/(\d+)\s*hours/);
+        if (match && match[1]) {
+          return parseInt(match[1], 10);
+        }
+        return 24; // Default if parsing fails
+      };
+
+      setMetrics({
+        averageRating: researcher.rating || 0,
+        totalReviews: researcher.total_reviews || 0,
+        responseTime: parseResponseTime(researcher.response_time || ""),
+        noShowRate: 0, // TODO: Integrate real no-show rate data
+        completionRate: 0, // TODO: Integrate real completion rate data
+        regionalReach: [], // TODO: Integrate real regional reach data
+        rankingStatus: researcher.rankingStatus || "new" // Assuming researcher profile might have a ranking status
+      });
+    }
+  }, [researcher]);
+
+  if (authLoading || researcherLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-1/3" />
+        <Skeleton className="h-6 w-1/2" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+        </div>
+        <Skeleton className="h-64" />
+        <Skeleton className="h-64" />
+        <Skeleton className="h-64" />
+      </div>
+    );
+  }
+
+  if (researcherError) {
+    return <div className="text-red-500">Error loading performance data: {researcherError.message}</div>;
+  }
+
+  if (!researcher) {
+    return <div className="text-gray-500">No researcher profile found.</div>;
+  }
+
 
   const getRankingBadge = (status: string) => {
     switch (status) {
@@ -78,7 +128,7 @@ const PerformanceReputationTab = () => {
               <div>
                 <p className="text-sm text-gray-600">Average Rating</p>
                 <div className="flex items-center space-x-1">
-                  <p className="text-2xl font-bold">{metrics.averageRating}</p>
+                  <p className="text-2xl font-bold">{metrics.averageRating.toFixed(1)}</p>
                   <span className="text-sm text-gray-500">({metrics.totalReviews} reviews)</span>
                 </div>
               </div>
@@ -144,20 +194,24 @@ const PerformanceReputationTab = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {metrics.regionalReach.map((region, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <span className="font-medium">{region.country}</span>
-                  <Badge variant="outline">{region.sessions} sessions</Badge>
+            {metrics.regionalReach.length > 0 ? (
+              metrics.regionalReach.map((region, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <span className="font-medium">{region.country}</span>
+                    <Badge variant="outline">{region.sessions} sessions</Badge>
+                  </div>
+                  <div className="w-32">
+                    <Progress 
+                      value={(region.sessions / Math.max(...metrics.regionalReach.map(r => r.sessions))) * 100} 
+                      className="h-2"
+                    />
+                  </div>
                 </div>
-                <div className="w-32">
-                  <Progress 
-                    value={(region.sessions / Math.max(...metrics.regionalReach.map(r => r.sessions))) * 100} 
-                    className="h-2"
-                  />
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-gray-500">No regional reach data available.</p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -174,11 +228,11 @@ const PerformanceReputationTab = () => {
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center space-x-2">
                   <span className="w-2 h-2 bg-green-600 rounded-full"></span>
-                  <span>Excellent response time (under 3 hours)</span>
+                  <span>Excellent response time ({metrics.responseTime} hours)</span>
                 </li>
                 <li className="flex items-center space-x-2">
                   <span className="w-2 h-2 bg-green-600 rounded-full"></span>
-                  <span>High completion rate (98%)</span>
+                  <span>High completion rate ({metrics.completionRate}%)</span>
                 </li>
                 <li className="flex items-center space-x-2">
                   <span className="w-2 h-2 bg-green-600 rounded-full"></span>

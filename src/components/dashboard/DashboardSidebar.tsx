@@ -55,13 +55,15 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole, notificationCount
     { id: "past", label: "Past Consultations", icon: Clock },
     { id: "full-thesis-support", label: "Full Thesis Support", icon: GraduationCap },
     { id: "payments", label: "Payments & Earnings", icon: DollarSign },
-    { id: "performance", label: "Performance & Reputation", icon: TrendingUp },
+    // sudo disabledd for now
+    // { id: "performance", label: "Performance & Reputation", icon: TrendingUp },
     { id: "quality", label: "Quality & Feedback", icon: Star },
     { id: "messaging", label: "Messaging", icon: MessageSquare }, // <-- Added Messaging tab
     { id: "discussion", label: "Discussion Board", icon: MessageSquare },
     { id: "verification", label: "Verification", icon: Shield },
     { id: "notifications", label: "Notifications", icon: Bell, badge: notificationCount },
-    { id: "co-author-invitations", label: "Co-author Invitations", icon: UserPlus, badge: 2 },
+    // sudo disabled for now
+    // { id: "co-author-invitations", label: "Co-author Invitations", icon: UserPlus, badge: 2 },
     { id: "documents", label: "Documents", icon: FileText },
     { id: "profile", label: "Profile Information", icon: User },
     { id: "settings", label: "Account Settings", icon: Settings },
