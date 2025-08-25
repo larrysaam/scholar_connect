@@ -10,6 +10,7 @@ import { Calendar, MessageSquare, Target, DollarSign, Mail, CheckCircle, Clock, 
 import { useToast } from "@/hooks/use-toast";
 import { useConsultationServices } from "@/hooks/useConsultationServices";
 import { useThesisGoals } from "@/hooks/useThesisGoals";
+import { useThesisMilestones } from "@/hooks/useThesisMilestones";
 
 const FullThesisSupportTab = () => {
   const { toast } = useToast();
@@ -19,6 +20,9 @@ const FullThesisSupportTab = () => {
   const [emailContent, setEmailContent] = useState("");
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [isMilestoneDialogOpen, setIsMilestoneDialogOpen] = useState(false);
+  const [newMilestoneDescription, setNewMilestoneDescription] = useState("");
+  const [newMilestoneDueDate, setNewMilestoneDueDate] = useState("");
 
   const activeProjects = useMemo(() => {
     if (bookingsLoading) return [];
@@ -44,9 +48,10 @@ const FullThesisSupportTab = () => {
     });
   }, [bookings, bookingsLoading]);
 
-  // For simplicity, manage goals for the first active project found
+  // For simplicity, manage goals and milestones for the first active project found
   const firstActiveProjectId = useMemo(() => activeProjects.length > 0 ? activeProjects[0].id : undefined, [activeProjects]);
   const { goals, loading: goalsLoading, addGoal, updateGoalStatus, deleteGoal } = useThesisGoals(firstActiveProjectId);
+  const { milestones, loading: milestonesLoading, addMilestone, updateMilestoneStatus, deleteMilestone } = useThesisMilestones(firstActiveProjectId);
 
   const handleScheduleSession = (projectId: string) => {
     toast({
@@ -56,10 +61,52 @@ const FullThesisSupportTab = () => {
   };
 
   const handleSetMilestone = (projectId: string) => {
-    toast({
-      title: "Milestone Set",
-      description: "New milestone has been added to the project timeline"
-    });
+    // This will now open the dialog instead of directly setting a milestone
+    setIsMilestoneDialogOpen(true);
+  };
+
+  const handleAddMilestone = async () => {
+    if (!newMilestoneDescription) {
+      toast({
+        title: "Missing Milestone",
+        description: "Please enter a milestone description",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (!firstActiveProjectId) {
+      toast({
+        title: "No Active Project",
+        description: "Please select an active project to add a milestone.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const added = await addMilestone(newMilestoneDescription, newMilestoneDueDate);
+    if (added) {
+      setNewMilestoneDescription("");
+      setNewMilestoneDueDate("");
+      setIsMilestoneDialogOpen(false);
+    }
+  };
+
+  const handleToggleGoalStatus = async (goalId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
+    await updateGoalStatus(goalId, newStatus as 'pending' | 'completed' | 'in_progress');
+  };
+
+  const handleDeleteGoal = async (goalId: string) => {
+    await deleteGoal(goalId);
+  };
+
+  const handleToggleMilestoneStatus = async (milestoneId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
+    await updateMilestoneStatus(milestoneId, newStatus as 'pending' | 'completed' | 'in_progress');
+  };
+
+  const handleDeleteMilestone = async (milestoneId: string) => {
+    await deleteMilestone(milestoneId);
   };
 
   const handleSendEmail = () => {
@@ -111,15 +158,6 @@ const FullThesisSupportTab = () => {
       setNewGoal("");
       setIsGoalDialogOpen(false);
     }
-  };
-
-  const handleToggleGoalStatus = async (goalId: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
-    await updateGoalStatus(goalId, newStatus as 'pending' | 'completed' | 'in_progress');
-  };
-
-  const handleDeleteGoal = async (goalId: string) => {
-    await deleteGoal(goalId);
   };
 
   const handleOpenMessages = () => {
@@ -208,45 +246,81 @@ const FullThesisSupportTab = () => {
         </CardContent>
       </Card>
 
-      {/* Goal and Tracking */}
+      {/* Goals and Milestones */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle className="flex items-center">
               <Target className="h-5 w-5 mr-2" />
-              Goal and Tracking
+              Goals and Milestones
             </CardTitle>
-            <Dialog open={isGoalDialogOpen} onOpenChange={setIsGoalDialogOpen}>
-              <DialogTrigger asChild>
-                <Button disabled={!firstActiveProjectId}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Goal
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add New Goal</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <Textarea
-                    value={newGoal}
-                    onChange={(e) => setNewGoal(e.target.value)}
-                    placeholder="Enter goal description..."
-                    rows={3}
-                  />
-                  <div className="flex gap-2">
-                    <Button onClick={handleAddGoal} disabled={!newGoal || !firstActiveProjectId}>Add Goal</Button>
-                    <Button variant="outline" onClick={() => setIsGoalDialogOpen(false)}>
-                      Cancel
-                    </Button>
+            <div className="flex gap-2">
+              <Dialog open={isGoalDialogOpen} onOpenChange={setIsGoalDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button disabled={!firstActiveProjectId}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Goal
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add New Goal</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <Textarea
+                      value={newGoal}
+                      onChange={(e) => setNewGoal(e.target.value)}
+                      placeholder="Enter goal description..."
+                      rows={3}
+                    />
+                    <div className="flex gap-2">
+                      <Button onClick={handleAddGoal} disabled={!newGoal || !firstActiveProjectId}>Add Goal</Button>
+                      <Button variant="outline" onClick={() => setIsGoalDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+                </DialogContent>
+              </Dialog>
+              <Dialog open={isMilestoneDialogOpen} onOpenChange={setIsMilestoneDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button disabled={!firstActiveProjectId}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Milestone
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add New Milestone</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <Textarea
+                      value={newMilestoneDescription}
+                      onChange={(e) => setNewMilestoneDescription(e.target.value)}
+                      placeholder="Enter milestone description..."
+                      rows={3}
+                    />
+                    <Input
+                      type="date"
+                      value={newMilestoneDueDate}
+                      onChange={(e) => setNewMilestoneDueDate(e.target.value)}
+                      placeholder="Due Date"
+                    />
+                    <div className="flex gap-2">
+                      <Button onClick={handleAddMilestone} disabled={!newMilestoneDescription || !firstActiveProjectId}>Add Milestone</Button>
+                      <Button variant="outline" onClick={() => setIsMilestoneDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
+            <h4 className="font-semibold text-lg mb-2">Goals</h4>
             {goalsLoading ? (
               <p className="text-gray-500">Loading goals...</p>
             ) : goals.length === 0 ? (
@@ -267,6 +341,36 @@ const FullThesisSupportTab = () => {
                     {goal.status === 'completed' ? 'Completed' : 'In Progress'}
                   </Badge>
                   <Button variant="ghost" size="sm" onClick={() => handleDeleteGoal(goal.id)} className="ml-2">
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
+                </div>
+              ))
+            )}
+
+            <h4 className="font-semibold text-lg mt-6 mb-2">Milestones</h4>
+            {milestonesLoading ? (
+              <p className="text-gray-500">Loading milestones...</p>
+            ) : milestones.length === 0 ? (
+              <p className="text-gray-500">No milestones tracked yet. Add a new milestone above.</p>
+            ) : (
+              milestones.map((milestone) => (
+                <div key={milestone.id} className="flex items-center p-3 border rounded">
+                  {milestone.status === 'completed' ? (
+                    <CheckCircle className="h-5 w-5 text-green-600 mr-3 cursor-pointer" onClick={() => handleToggleMilestoneStatus(milestone.id, milestone.status)} />
+                  ) : (
+                    <Clock className="h-5 w-5 text-yellow-600 mr-3 cursor-pointer" onClick={() => handleToggleMilestoneStatus(milestone.id, milestone.status)} />
+                  )}
+                  <div className="flex-1">
+                    <p className="font-medium">{milestone.description}</p>
+                    <p className="text-sm text-gray-600">
+                      {milestone.due_date ? `Due: ${new Date(milestone.due_date).toLocaleDateString()}` : 'No due date'}
+                    </p>
+                    <p className="text-sm text-gray-600">Status: {milestone.status}</p>
+                  </div>
+                  <Badge className={`${milestone.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                    {milestone.status === 'completed' ? 'Completed' : 'In Progress'}
+                  </Badge>
+                  <Button variant="ghost" size="sm" onClick={() => handleDeleteMilestone(milestone.id)} className="ml-2">
                     <Trash2 className="h-4 w-4 text-red-500" />
                   </Button>
                 </div>
