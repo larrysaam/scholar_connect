@@ -19,6 +19,7 @@ interface Consultation {
   time: string;
   topic: string;
   status: 'confirmed' | 'pending';
+  clientId: string; // Added clientId
 }
 
 interface SharedDocument {
@@ -234,7 +235,7 @@ const UpcomingConsultationCard = memo(({
           </Button>
           
           <StudentResearchSummaryModal 
-            studentId={`student-${consultation.id}`}
+            studentId={consultation.clientId}
             consultationId={consultation.id}
           />
         </div>

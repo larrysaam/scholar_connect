@@ -158,6 +158,7 @@ const UpcomingTab = () => {
         time: booking.scheduled_time,
         topic: booking.service?.title || 'N/A',
         status: booking.status,
+        clientId: booking.client_id, // Added clientId
         meetingLink: booking.meeting_link,
         academicLevel: booking.academic_level,
         duration: booking.duration_minutes,
