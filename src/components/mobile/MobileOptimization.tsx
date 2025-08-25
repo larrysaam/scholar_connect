@@ -80,12 +80,12 @@ const MobileOptimization = () => {
             {getDeviceIcon()}
             <span>Mobile Experience</span>
           </div>
-          <div className="flex items-center space-x-2">
+          {/* <div className="flex items-center space-x-2">
             {isOnline ? <Wifi className="h-4 w-4 text-green-600" /> : <WifiOff className="h-4 w-4 text-red-600" />}
             <Badge variant={isOnline ? "default" : "destructive"}>
               {isOnline ? "Online" : "Offline"}
             </Badge>
-          </div>
+          </div> */}
         </CardTitle>
       </CardHeader>
       <CardContent>

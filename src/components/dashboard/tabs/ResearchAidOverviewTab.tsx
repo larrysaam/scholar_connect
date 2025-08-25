@@ -57,9 +57,9 @@ const ResearchAidOverviewTab = () => {
                 onCheckedChange={setIsAvailable}
                 className="data-[state=checked]:bg-green-600"
               />
-              <Badge variant={isAvailable ? "default" : "secondary"} className={isAvailable ? "bg-green-600" : ""}>
+              {/* <Badge variant={isAvailable ? "default" : "secondary"} className={isAvailable ? "bg-green-600" : ""}>
                 {isAvailable ? "Online" : "Offline"}
-              </Badge>
+              </Badge> */}
             </div>
           </div>
         </CardContent>
