@@ -9,6 +9,7 @@ export interface Conversation {
   id: string; // booking_id
   other_user_id: string;
   other_user_name: string;
+  avatar_url?: string; // Add avatar_url
   last_message: string;
   last_message_at: string;
 }
@@ -146,10 +147,18 @@ export const useMessages = () => {
       const map = new Map<string, Conversation>();
       for (const booking of researcherBookings) {
         if (!map.has(booking.client_id)) {
+          // Fetch client's avatar_url
+          const { data: clientProfile, error: clientError } = await supabase
+            .from('users')
+            .select('avatar_url')
+            .eq('id', booking.client_id)
+            .single();
+
           map.set(booking.client_id, {
             id: booking.id, // booking_id
             other_user_id: booking.client_id,
             other_user_name: booking.client?.name || 'Student',
+            avatar_url: clientProfile?.avatar_url || undefined, // Add avatar_url
             last_message: '',
             last_message_at: '',
           });
@@ -161,10 +170,18 @@ export const useMessages = () => {
       const map = new Map<string, Conversation>();
       for (const booking of studentBookings) {
         if (!map.has(booking.provider_id)) {
+          // Fetch provider's avatar_url
+          const { data: providerProfile, error: providerError } = await supabase
+            .from('users')
+            .select('avatar_url')
+            .eq('id', booking.provider_id)
+            .single();
+
           map.set(booking.provider_id, {
             id: booking.id, // booking_id
             other_user_id: booking.provider_id,
             other_user_name: booking.provider?.name || 'Researcher',
+            avatar_url: providerProfile?.avatar_url || undefined, // Add avatar_url
             last_message: '',
             last_message_at: '',
           });
