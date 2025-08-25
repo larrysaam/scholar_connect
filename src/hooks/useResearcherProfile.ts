@@ -279,7 +279,7 @@ export const useResearcherProfile = (researcherId: string) => {
         totalReviews: profile?.total_reviews || 0,
         studentsSupervised: profile?.students_supervised || 0,
         yearsExperience: profile?.years_experience || 0,
-        imageUrl: '/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png',
+        imageUrl: userData.avatar_url || '/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png',
         isOnline: profile?.is_online || false,
         responseTime: profile?.response_time || 'Usually responds within 24 hours',
         field: userData.expertise?.[0] || 'General Research'

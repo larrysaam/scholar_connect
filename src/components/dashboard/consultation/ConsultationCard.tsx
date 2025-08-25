@@ -11,12 +11,12 @@ interface Consultation {
   status: string;
   datetime: string;
   duration: number;
-  researcher: { id: string; name: string; title: string; imageUrl: string; };
+  researcher: { id: string; name: string; title: string; avatar_url: string; };
   service: { title: string; };
   topic: string;
   meetLink?: string;
   sharedDocuments?: any[];
-  student?: { id: string; name: string; title: string; imageUrl: string; researchSummary: string; };
+  student?: { id: string; name: string; title: string; avatar_url: string; researchSummary: string; };
 }
 
 interface SharedDocument {
@@ -61,6 +61,8 @@ const ConsultationCard = ({
     window.open(fullUrl, '_blank');
   };
 
+  
+  
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -68,7 +70,7 @@ const ConsultationCard = ({
           <div className="flex items-center space-x-4">
             <div className="h-10 w-10 rounded-full overflow-hidden">
               <img
-                src={person.imageUrl}
+                src={person.avatar_url}
                 alt={person.name}
                 className="h-full w-full object-cover"
               />

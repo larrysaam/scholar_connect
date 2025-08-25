@@ -14,6 +14,7 @@ import { AlertTriangle, LogOut, Trash2, User, Edit, Save, X, Plus } from "lucide
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import ProfileImage from "../ProfileImage";
 import type { Database } from "@/integrations/supabase/types";
 
 type UserProfile = Database['public']['Tables']['users']['Row'];
@@ -277,6 +278,9 @@ const SettingsTab = () => {
             )}
           </Button>
         </CardHeader>
+        <CardContent>
+          {user && <ProfileImage userId={user.id} />}
+        </CardContent>
         <CardContent>
           {profileLoading ? (
             <div className="flex justify-center py-8">

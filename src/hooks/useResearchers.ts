@@ -97,7 +97,7 @@ export const useResearchers = () => {
           reviewCount: (profile && typeof profile.total_reviews === 'number') ? profile.total_reviews : 0,
           hourlyRate: minPrice,
           location: user.country || 'Location not specified',
-          imageUrl: '/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png',
+          imageUrl: (user.avatar_url)? user.avatar_url : '/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png',
           featured: Math.random() > 0.7 // 30% chance of being featured
         };
       });
@@ -159,7 +159,7 @@ export const useResearchers = () => {
         reviewCount: Math.floor(Math.random() * 50) + 5,
         hourlyRate: Math.floor(Math.random() * 10000) + 10000,
         location: data.country || 'Location not specified',
-        imageUrl: '/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png',
+        imageUrl: data.avatar_url || '/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png',
         featured: Math.random() > 0.7
       };
 

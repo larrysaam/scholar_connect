@@ -15,7 +15,7 @@ export interface Consultation {
   status: string;
   datetime: string;
   duration: number;
-  researcher: { name: string; title: string; imageUrl: string; };
+  researcher: { name: string; title: string; avatar_url: string; };
   service: { title: string; };
   meetLink?: string;
   sharedDocuments?: any[];
@@ -41,7 +41,7 @@ const StudentUpcomingTab = () => {
         .from('service_bookings')
         .select(`
           id, status, scheduled_date, scheduled_time, duration_minutes, meeting_link, shared_documents, client_notes,
-          provider:users!service_bookings_provider_id_fkey(name, topic_title, payout_details),
+          provider:users!service_bookings_provider_id_fkey(name, topic_title, avatar_url),
           service:consultation_services(title)
         `)
         .eq('client_id', user.id)
@@ -63,12 +63,12 @@ const StudentUpcomingTab = () => {
           researcher: {
             name: c.provider?.name || 'N/A',
             title: c.provider?.topic_title || 'Researcher',
-            imageUrl: c.provider?.payout_details?.avatar_url || '/placeholder.svg'
+            avatar_url: c.provider?.avatar_url || '/placeholder.svg'
           },
           service: {
             title: c.service?.title || 'Consultation'
           },
-          topic: notes.topic || 'No topic provided',
+          topic: c.service?.title || 'No topic provided',
           meetLink: c.meeting_link,
           sharedDocuments: c.shared_documents || []
         }
@@ -256,7 +256,7 @@ const StudentUpcomingTab = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Upcoming Consultation</h2>
+        <h2 className="text-2xl font-bold">Upcoming Consultations</h2>
       </div>
       
       {consultations.length === 0 ? (
