@@ -1,3 +1,4 @@
+import 'dotenv/config';
 // Minimal ScholarConnect socket.io server for real-time messaging (ESM version)
 import { Server } from 'socket.io';
 import http from 'http';
@@ -10,7 +11,7 @@ const io = new Server(server, {
 
 // --- Supabase client setup ---
 const SUPABASE_URL = process.env.SUPABASE_URL || '<YOUR_SUPABASE_URL>';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '<YOUR_SUPABASE_SERVICE_ROLE_KEY>';
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 // --- end supabase setup ---
 

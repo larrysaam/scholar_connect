@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Clock, DollarSign, FileText, Eye, MessageSquare, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useJobManagement, Job } from "@/hooks/useJobManagement"; // Import Job interface
+import { useJobManagement, Job, JobApplication } from "@/hooks/useJobManagement"; // Import Job and JobApplication interfaces
+import { useAuth } from "@/hooks/useAuth"; // Import useAuth to get current user ID
 
 const ResearchAidsJobRequests = () => {
   const [filter, setFilter] = useState("all");
@@ -16,16 +17,23 @@ const ResearchAidsJobRequests = () => {
   const [applicationMessage, setApplicationMessage] = useState("");
   const [responseMessage, setResponseMessage] = useState("");
   const { toast } = useToast();
-  const { fetchAllJobsForResearchAids, loading } = useJobManagement(); // Use the hook
+  const { user } = useAuth(); // Get current user
+  const { fetchAllJobsForResearchAids, fetchJobApplicationsByUserId, applyForJob, loading } = useJobManagement(); // Use the hook
   const [allJobs, setAllJobs] = useState<Job[]>([]); // State to store all jobs
+  const [userApplications, setUserApplications] = useState<JobApplication[]>([]); // State to store user's applications
 
   useEffect(() => {
-    const getJobs = async () => {
+    const fetchData = async () => {
       const jobsData = await fetchAllJobsForResearchAids();
       setAllJobs(jobsData);
+
+      if (user) {
+        const applicationsData = await fetchJobApplicationsByUserId(user.id); // Corrected function name
+        setUserApplications(applicationsData);
+      }
     };
-    getJobs();
-  }, []);
+    fetchData();
+  }, [user]); // Depend on user to refetch when user changes
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -48,7 +56,7 @@ const ResearchAidsJobRequests = () => {
     setSelectedJob(job);
   };
 
-  const handleApply = (jobId: string) => { // Job ID is string
+  const handleApply = async (jobId: string) => { // Job ID is string
     if (!applicationMessage.trim()) {
       toast({
         title: "Error",
@@ -58,12 +66,16 @@ const ResearchAidsJobRequests = () => {
       return;
     }
 
-    toast({
-      title: "Application Submitted",
-      description: "Your job application has been submitted successfully"
-    });
-    setApplicationMessage("");
-    setSelectedJob(null);
+    const success = await applyForJob(jobId, applicationMessage);
+    if (success) {
+      // Refresh applications after successful submission
+      if (user) {
+        const applicationsData = await fetchJobApplicationsByUserId(user.id);
+        setUserApplications(applicationsData);
+      }
+      setApplicationMessage("");
+      setSelectedJob(null);
+    }
   };
 
   const handleRespond = (jobId: string) => { // Job ID is string
@@ -195,32 +207,54 @@ const ResearchAidsJobRequests = () => {
                       </Dialog>
 
                       {job.status === "active" && ( // Check for "active" status
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button size="sm">Apply Now</Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Apply for Job</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <div>
-                                <Label htmlFor="application">Application Message</Label>
-                                <Textarea
-                                  id="application"
-                                  placeholder="Tell the client why you're the right person for this job..."
-                                  value={applicationMessage}
-                                  onChange={(e) => setApplicationMessage(e.target.value)}
-                                  rows={4}
-                                />
-                              </div>
-                              <Button onClick={() => handleApply(job.id)} className="w-full">
-                                <Send className="h-4 w-4 mr-2" />
-                                Submit Application
-                              </Button>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
+                        (() => {
+                          const userApplication = userApplications.find(app => app.job_id === job.id && app.applicant_id === user?.id);
+
+                          if (userApplication) {
+                            return (
+                              <Badge
+                                className={
+                                  userApplication.status === "accepted"
+                                    ? "bg-green-500 hover:bg-green-500"
+                                    : userApplication.status === "rejected"
+                                    ? "bg-red-500 hover:bg-red-500"
+                                    : "bg-yellow-500 hover:bg-yellow-500"
+                                }
+                              >
+                                Application {userApplication.status}
+                              </Badge>
+                            );
+                          } else {
+                            return (
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm">Apply Now</Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Apply for Job</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    <div>
+                                      <Label htmlFor="application">Application Message</Label>
+                                      <Textarea
+                                        id="application"
+                                        placeholder="Tell the client why you're the right person for this job..."
+                                        value={applicationMessage}
+                                        onChange={(e) => setApplicationMessage(e.target.value)}
+                                        rows={4}
+                                      />
+                                    </div>
+                                    <Button onClick={() => handleApply(job.id)} className="w-full">
+                                      <Send className="h-4 w-4 mr-2" />
+                                      Submit Application
+                                    </Button>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            );
+                          }
+                        })()
                       )}
 
                       {job.status === "paused" && ( // Check for "paused" status
