@@ -158,9 +158,7 @@ const NDAModal = ({ isOpen, onClose, onAccept }: NDAModalProps) => {
               </p>
             </div>
           </div>
-        </ScrollArea>
-
-        <div className="space-y-4 pt-4 border-t">
+          <div className="space-y-4 pt-4 border-t">
           <div className="flex items-center space-x-2">
             <Checkbox 
               id="has-read" 
@@ -193,6 +191,9 @@ const NDAModal = ({ isOpen, onClose, onAccept }: NDAModalProps) => {
             </Button>
           </div>
         </div>
+        </ScrollArea>
+
+        
       </DialogContent>
     </Dialog>
   );

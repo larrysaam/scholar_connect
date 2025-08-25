@@ -3,6 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
+export interface UserProfile {
+  id: string;
+  name: string;
+  // Add other user fields you might need, e.g., avatar_url
+}
+
 export interface Job {
   id: string;
   user_id: string;
@@ -21,6 +27,7 @@ export interface Job {
   deadline?: string;
   created_at: string;
   updated_at: string;
+  client?: UserProfile; // Add client profile
 }
 
 export interface JobApplication {
@@ -65,7 +72,7 @@ export const useJobManagement = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('jobs')
-        .select('*')
+        .select('*, client:users(id, name)') // Fetch client details
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -288,6 +295,39 @@ export const useJobManagement = () => {
     }
   };
 
+  // Fetch all jobs for research aids, including client names
+  const fetchAllJobsForResearchAids = async (): Promise<Job[]> => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('jobs')
+        .select('*, client:users(id, name)') // Fetch client details
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching all jobs:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load all jobs",
+          variant: "destructive"
+        });
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching all jobs:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while fetching all jobs",
+        variant: "destructive"
+      });
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Initialize data fetch
   useEffect(() => {
     if (user) {
@@ -305,6 +345,7 @@ export const useJobManagement = () => {
     updateJobStatus,
     deleteJob,
     fetchJobs,
-    fetchJobApplications
+    fetchJobApplications,
+    fetchAllJobsForResearchAids
   };
 };

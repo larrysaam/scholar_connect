@@ -11,7 +11,8 @@ import DashboardLayout from "@/components/dashboard/research-aids/DashboardLayou
 import DashboardTabRenderer from "@/components/dashboard/research-aids/DashboardTabRenderer";
 import { NotificationService } from "@/services/notificationService";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
+import { useResearchAidDashboardData } from "@/hooks/useResearchAidDashboardData"; // New import
+import { useAuth } from "@/hooks/useAuth"; // Keep useAuth for initial profile check
 
 const ResearchAidsDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -19,26 +20,31 @@ const ResearchAidsDashboard = () => {
   const [showNDA, setShowNDA] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { profile } = useAuth();
+  const { profile: authProfile } = useAuth(); // Use authProfile for initial checks
+
+  // Use the new hook to fetch dashboard data
+  const { userProfile, researchAidProfile, assignedConsultations, notifications, loading, error } = useResearchAidDashboardData();
 
   const getWelcomeMessage = () => {
-    if (!profile?.name) return "Welcome!";
+    if (loading) return "Loading...";
+    if (error) return "Welcome!"; // Fallback if data fetching fails
+    if (!userProfile?.name) return "Welcome!";
     
-    const nameParts = profile.name.split(' ');
+    const nameParts = userProfile.name.split(' ');
     const lastName = nameParts[nameParts.length - 1];
     
-    // Check for academic rank first (Professor takes precedence)
-    if (profile.academic_rank && 
-        (profile.academic_rank.includes('Professor') || 
-         profile.academic_rank.includes('Prof'))) {
+    // Check for academic rank from researchAidProfile or userProfile if available
+    const academicRank = researchAidProfile?.academic_rank || authProfile?.academic_rank; // Assuming academic_rank might be in researchAidProfile or authProfile
+    const highestEducation = researchAidProfile?.highest_education || authProfile?.highest_education; // Assuming highest_education might be in researchAidProfile or authProfile
+
+    if (academicRank && 
+        (academicRank.includes('Professor') || 
+         academicRank.includes('Prof'))) {
       return `Welcome, Prof. ${lastName}!`;
     }
     
-    // Check for PhD/Postdoc in level_of_study or highest_education
-    const hasPhD = profile.level_of_study?.toLowerCase().includes('phd') ||
-                   profile.level_of_study?.toLowerCase().includes('postdoc') ||
-                   profile.highest_education?.toLowerCase().includes('phd') ||
-                   profile.highest_education?.toLowerCase().includes('postdoc');
+    const hasPhD = highestEducation?.toLowerCase().includes('phd') ||
+                   highestEducation?.toLowerCase().includes('postdoc');
     
     if (hasPhD) {
       return `Welcome, Dr. ${lastName}!`;
@@ -48,22 +54,25 @@ const ResearchAidsDashboard = () => {
   };
 
   useEffect(() => {
-    const hasCompletedOnboarding = localStorage.getItem('research_aids_onboarding_complete');
-    const hasSignedNDA = localStorage.getItem('research_aids_nda_signed');
-    
-    if (!hasCompletedOnboarding) {
-      setShowOnboarding(true);
-    }
-    
-    if (!hasSignedNDA) {
-      setShowNDA(true);
-    }
+    // Only run onboarding/NDA checks if data is not loading and no error
+    if (!loading && !error) {
+      const hasCompletedOnboarding = localStorage.getItem('research_aids_onboarding_complete');
+      const hasSignedNDA = localStorage.getItem('research_aids_nda_signed');
+      
+      if (!hasCompletedOnboarding) {
+        setShowOnboarding(true);
+      }
+      
+      if (!hasSignedNDA) {
+        setShowNDA(true);
+      }
 
-    // Example: Create a welcome notification for new users
-    if (profile?.id && !hasCompletedOnboarding) {
-      NotificationService.notifyProfileIncomplete(profile.id);
+      // Example: Create a welcome notification for new users
+      if (userProfile?.id && !hasCompletedOnboarding) {
+        NotificationService.notifyProfileIncomplete(userProfile.id);
+      }
     }
-  }, [toast]);
+  }, [loading, error, userProfile?.id, toast]); // Add dependencies
 
   const handleOnboardingComplete = () => {
     localStorage.setItem('research_aids_onboarding_complete', 'true');
@@ -79,6 +88,22 @@ const ResearchAidsDashboard = () => {
   const handleViewJobBoard = () => {
     navigate('/job-board');
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading dashboard data...</p> {/* Replace with a proper spinner */}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-600">
+        <p>Error loading dashboard: {error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -98,6 +123,43 @@ const ResearchAidsDashboard = () => {
           <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
             <DashboardTabRenderer activeTab={activeTab} setActiveTab={setActiveTab} />
           </DashboardLayout>
+
+          {/* Placeholder for Assigned Consultations */}
+          <section className="mt-8">
+            <h2 className="text-2xl font-bold mb-4">My Assigned Consultations</h2>
+            {assignedConsultations.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {assignedConsultations.map((consultation) => (
+                  <div key={consultation.id} className="bg-white p-4 rounded-lg shadow">
+                    <h3 className="font-semibold">{consultation.title}</h3>
+                    <p className="text-sm text-gray-600">Status: {consultation.status}</p>
+                    {/* Add more consultation details here */}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-600">No assigned consultations yet.</p>
+            )}
+          </section>
+
+          {/* Placeholder for Notifications */}
+          <section className="mt-8">
+            <h2 className="text-2xl font-bold mb-4">Notifications</h2>
+            {notifications.length > 0 ? (
+              <div className="space-y-3">
+                {notifications.map((notification) => (
+                  <div key={notification.id} className="bg-white p-3 rounded-lg shadow-sm">
+                    <p className="font-semibold">{notification.title}</p>
+                    <p className="text-sm text-gray-600">{notification.message}</p>
+                    {/* Add more notification details here */}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-600">No new notifications.</p>
+            )}
+          </section>
+
         </div>
       </main>
       
