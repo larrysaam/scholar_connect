@@ -8,56 +8,10 @@ import ReviewsTab from "./tabs/ReviewsTab";
 import VerificationTab from "./tabs/VerificationTab";
 import ConsultationServicesDisplay from "./ConsultationServicesDisplay";
 
+import { ResearcherProfileData } from "@/hooks/useResearcherProfile";
+
 interface ProfileTabsProps {
-  researcher: {
-    id: string;
-    bio: string;
-    specialties: string[];
-    education: {
-      degree: string;
-      institution: string;
-      year: string;
-    }[];
-    experience: {
-      position: string;
-      institution: string;
-      period: string;
-    }[];
-    awards: {
-      title: string;
-      year: string;
-    }[];
-    fellowships: {
-      title: string;
-      period: string;
-    }[];
-    grants: {
-      title: string;
-      amount: string;
-      period: string;
-    }[];
-    memberships: string[];
-    supervision: {
-      type: string;
-      count: number;
-    }[];
-    publications: {
-      title: string;
-      journal: string;
-      year: string;
-    }[];
-    rating: number;
-    reviews: {
-      name: string;
-      rating: number;
-      comment: string;
-    }[];
-    verifications?: {
-      academic: "verified" | "pending" | "unverified";
-      publication: "verified" | "pending" | "unverified";
-      institutional: "verified" | "pending" | "unverified";
-    };
-  };
+  researcher: ResearcherProfileData;
 }
 
 const ProfileTabs = ({ researcher }: ProfileTabsProps) => {
