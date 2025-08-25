@@ -24,11 +24,11 @@ import {
 interface DashboardSidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  userType: "student" | "researcher" | "research-aide";
+  userRole: "student" | "researcher" | "research-aide";
   notificationCount: number;
 }
 
-const DashboardSidebar = ({ activeTab, setActiveTab, userType, notificationCount }: DashboardSidebarProps) => {
+const DashboardSidebar = ({ activeTab, setActiveTab, userRole, notificationCount }: DashboardSidebarProps) => {
   const studentMenuItems = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "ai-assistant", label: "AI Assistant", icon: MessageSquare },
@@ -51,6 +51,8 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType, notificationCount
   const researcherMenuItems = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "consultation-services", label: "Consultation Service Setup", icon: MessageSquare },
+    { id: "set-milestones", label: "Set Milestones", icon: Calendar },
+    { id: "send-email", label: "Send Email", icon: MessageSquare },
     { id: "upcoming", label: "Upcoming Consultations", icon: Calendar },
     { id: "past", label: "Past Consultations", icon: Clock },
     { id: "full-thesis-support", label: "Full Thesis Support", icon: GraduationCap },
@@ -82,7 +84,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userType, notificationCount
   ];
 
   const getMenuItems = () => {
-    switch (userType) {
+    switch (userRole) {
       case "student":
         return studentMenuItems;
       case "researcher":

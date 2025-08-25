@@ -2,21 +2,26 @@ import { useState, useEffect, useCallback } from 'react';
 import { ThesisMilestonesService, ThesisMilestone } from '@/services/thesisMilestonesService';
 import { useToast } from '@/components/ui/use-toast';
 
-export const useThesisMilestones = (bookingId: string | undefined) => {
+export const useThesisMilestones = (bookingId: string | undefined, userId: string | undefined, isStudent: boolean) => {
   const { toast } = useToast();
   const [milestones, setMilestones] = useState<ThesisMilestone[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchMilestones = useCallback(async () => {
-    if (!bookingId) {
+    if (!bookingId || !userId) {
+      setMilestones([]);
+      setLoading(false);
+      return;
+    }
+    if (userId === '') { // Added check for empty string userId
       setMilestones([]);
       setLoading(false);
       return;
     }
     setLoading(true);
     setError(null);
-    const fetchedMilestones = await ThesisMilestonesService.getMilestonesByBookingId(bookingId);
+    const fetchedMilestones = await ThesisMilestonesService.getMilestonesByBookingId(bookingId, userId, isStudent);
     if (fetchedMilestones) {
       setMilestones(fetchedMilestones);
     } else {
@@ -28,7 +33,7 @@ export const useThesisMilestones = (bookingId: string | undefined) => {
       });
     }
     setLoading(false);
-  }, [bookingId, toast]);
+  }, [bookingId, userId, isStudent, toast]);
 
   useEffect(() => {
     fetchMilestones();

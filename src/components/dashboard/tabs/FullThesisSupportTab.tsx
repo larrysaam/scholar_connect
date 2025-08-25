@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,10 +10,18 @@ import { useToast } from "@/hooks/use-toast";
 import { useConsultationServices } from "@/hooks/useConsultationServices";
 import { useThesisGoals } from "@/hooks/useThesisGoals";
 import { useThesisMilestones } from "@/hooks/useThesisMilestones";
+import { useAuth } from "@/hooks/useAuth"; // Import useAuth
 
-const FullThesisSupportTab = () => {
+interface FullThesisSupportTabProps {
+  userRole: string;
+}
+
+const FullThesisSupportTab = ({ userRole }: FullThesisSupportTabProps) => {
   const { toast } = useToast();
-  const { bookings, loading: bookingsLoading } = useConsultationServices();
+  const { user, profile } = useAuth(); // Get the current user and profile
+  const isStudent = profile?.roles?.includes('student');
+
+  const { bookings, studentBookings, loading: bookingsLoading } = useConsultationServices();
   const [newGoal, setNewGoal] = useState("");
   const [emailSubject, setEmailSubject] = useState("");
   const [emailContent, setEmailContent] = useState("");
@@ -24,9 +31,11 @@ const FullThesisSupportTab = () => {
   const [newMilestoneDescription, setNewMilestoneDescription] = useState("");
   const [newMilestoneDueDate, setNewMilestoneDueDate] = useState("");
 
+  const projectsToDisplay = isStudent ? studentBookings : bookings;
+
   const activeProjects = useMemo(() => {
     if (bookingsLoading) return [];
-    return bookings.filter(booking => 
+    return projectsToDisplay.filter(booking => 
       booking.service?.category === 'Full Thesis Cycle Support' && 
       (booking.status === 'confirmed' || booking.status === 'pending')
     ).map(booking => {
@@ -46,12 +55,12 @@ const FullThesisSupportTab = () => {
         currency: booking.currency,
       };
     });
-  }, [bookings, bookingsLoading]);
+  }, [projectsToDisplay, bookingsLoading]);
 
   // For simplicity, manage goals and milestones for the first active project found
   const firstActiveProjectId = useMemo(() => activeProjects.length > 0 ? activeProjects[0].id : undefined, [activeProjects]);
-  const { goals, loading: goalsLoading, addGoal, updateGoalStatus, deleteGoal } = useThesisGoals(firstActiveProjectId);
-  const { milestones, loading: milestonesLoading, addMilestone, updateMilestoneStatus, deleteMilestone } = useThesisMilestones(firstActiveProjectId);
+  const { goals, loading: goalsLoading, addGoal, updateGoalStatus, deleteGoal } = useThesisGoals(firstActiveProjectId, user?.id || '', isStudent);
+  const { milestones, loading: milestonesLoading, addMilestone, updateMilestoneStatus, deleteMilestone } = useThesisMilestones(firstActiveProjectId, user?.id || '', isStudent);
 
   const handleScheduleSession = (projectId: string) => {
     toast({
@@ -195,22 +204,30 @@ const FullThesisSupportTab = () => {
                 </div>
                 
                 <div className="flex gap-2 flex-wrap">
-                  <Button size="sm" onClick={() => handleScheduleSession(project.id)}>
-                    <Calendar className="h-4 w-4 mr-1" />
-                    Schedule Session
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleSetMilestone(project.id)}>
-                    <Target className="h-4 w-4 mr-1" />
-                    Set Milestones
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => setIsEmailDialogOpen(true)}>
-                    <Mail className="h-4 w-4 mr-1" />
-                    Send Email
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleOpenChat(project.id)}>
-                    <MessageSquare className="h-4 w-4 mr-1" />
-                    Open Chat
-                  </Button>
+                  {userRole !== 'student' && (
+                    <Button size="sm" onClick={() => handleScheduleSession(project.id)}>
+                      <Calendar className="h-4 w-4 mr-1" />
+                      Schedule Session
+                    </Button>
+                  )}
+                  {userRole !== 'student' && (
+                    <Button size="sm" variant="outline" onClick={() => handleSetMilestone(project.id)}>
+                      <Target className="h-4 w-4 mr-1" />
+                      Set Milestones
+                    </Button>
+                  )}
+                  {userRole !== 'student' && (
+                    <Button size="sm" variant="outline" onClick={() => setIsEmailDialogOpen(true)}>
+                      <Mail className="h-4 w-4 mr-1" />
+                      Send Email
+                    </Button>
+                  )}
+                  { (
+                    <Button size="sm" variant="outline" onClick={() => handleOpenChat(project.id)}>
+                      <MessageSquare className="h-4 w-4 mr-1" />
+                      Open Chat
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
@@ -284,10 +301,8 @@ const FullThesisSupportTab = () => {
               </Dialog>
               <Dialog open={isMilestoneDialogOpen} onOpenChange={setIsMilestoneDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button disabled={!firstActiveProjectId}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Milestone
-                  </Button>
+                  {/* This trigger is intentionally hidden as the button in the project card will open it */}
+                  <Button className="hidden">Set Milestone Trigger</Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -304,7 +319,6 @@ const FullThesisSupportTab = () => {
                       type="date"
                       value={newMilestoneDueDate}
                       onChange={(e) => setNewMilestoneDueDate(e.target.value)}
-                      placeholder="Due Date"
                     />
                     <div className="flex gap-2">
                       <Button onClick={handleAddMilestone} disabled={!newMilestoneDescription || !firstActiveProjectId}>Add Milestone</Button>
@@ -390,14 +404,18 @@ const FullThesisSupportTab = () => {
         </CardHeader>
         <CardContent>
           <div className="flex gap-2">
-            <Button onClick={() => setIsEmailDialogOpen(true)}>
-              <Mail className="h-4 w-4 mr-2" />
-              Compose Email
-            </Button>
-            <Button variant="outline" onClick={handleOpenMessages}>
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Open Messages
-            </Button>
+            {!isStudent && (
+              <Button onClick={() => setIsEmailDialogOpen(true)}>
+                <Mail className="h-4 w-4 mr-2" />
+                Compose Email
+              </Button>
+            )}
+            {userRole === 'researcher' && (
+              <Button variant="outline" onClick={handleOpenMessages}>
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Open Messages
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

@@ -37,7 +37,7 @@ const Dashboard = () => {
   const [userName, setUserName] = useState("");
 
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { unreadCount } = useNotifications();
   
   useEffect(() => {
@@ -116,7 +116,7 @@ const Dashboard = () => {
       case "past":
         return <StudentPastTab />;
       case "full-thesis-support":
-        return <FullThesisSupportTab />;
+        return <FullThesisSupportTab userRole={profile?.role} />;
       case "payments":
         return <PaymentsTab />;
       case "messages":
@@ -178,7 +178,7 @@ const Dashboard = () => {
               <DashboardSidebar 
                 activeTab={activeTab} 
                 setActiveTab={handleTabChange} 
-                userType="student"
+                userRole={profile?.role}
                 notificationCount={unreadCount}
               />
             </div>

@@ -2,21 +2,26 @@ import { useState, useEffect, useCallback } from 'react';
 import { ThesisGoalsService, ThesisGoal } from '@/services/thesisGoalsService';
 import { useToast } from '@/components/ui/use-toast';
 
-export const useThesisGoals = (bookingId: string | undefined) => {
+export const useThesisGoals = (bookingId: string | undefined, userId: string | undefined, isStudent: boolean) => {
   const { toast } = useToast();
   const [goals, setGoals] = useState<ThesisGoal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchGoals = useCallback(async () => {
-    if (!bookingId) {
+    if (!bookingId || !userId) {
+      setGoals([]);
+      setLoading(false);
+      return;
+    }
+    if (userId === '') { // Added check for empty string userId
       setGoals([]);
       setLoading(false);
       return;
     }
     setLoading(true);
     setError(null);
-    const fetchedGoals = await ThesisGoalsService.getGoalsByBookingId(bookingId);
+    const fetchedGoals = await ThesisGoalsService.getGoalsByBookingId(bookingId, userId, isStudent);
     if (fetchedGoals) {
       setGoals(fetchedGoals);
     } else {
@@ -28,7 +33,7 @@ export const useThesisGoals = (bookingId: string | undefined) => {
       });
     }
     setLoading(false);
-  }, [bookingId, toast]);
+  }, [bookingId, userId, isStudent, toast]);
 
   useEffect(() => {
     fetchGoals();
