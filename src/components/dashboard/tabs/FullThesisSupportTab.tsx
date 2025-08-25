@@ -14,9 +14,10 @@ import { useAuth } from "@/hooks/useAuth"; // Import useAuth
 
 interface FullThesisSupportTabProps {
   userRole: string;
+  setActiveTab: (tab: string) => void;
 }
 
-const FullThesisSupportTab = ({ userRole }: FullThesisSupportTabProps) => {
+const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabProps) => {
   const { toast } = useToast();
   const { user, profile } = useAuth(); // Get the current user and profile
   const isStudent = profile?.roles?.includes('student');
@@ -46,7 +47,7 @@ const FullThesisSupportTab = ({ userRole }: FullThesisSupportTabProps) => {
       return {
         id: booking.id,
         title: booking.service?.title || 'Untitled Thesis Project',
-        student: booking.client?.name || 'Unknown Student',
+        student: isStudent ? booking.provider?.name || 'Unknown Researcher' : booking.client?.name || 'Unknown Student',
         progress: progress,
         nextMilestone: `Session on ${new Date(booking.scheduled_date).toLocaleDateString()} at ${booking.scheduled_time}`,
         dueDate: booking.scheduled_date,
@@ -138,9 +139,10 @@ const FullThesisSupportTab = ({ userRole }: FullThesisSupportTabProps) => {
   };
 
   const handleOpenChat = (projectId: string) => {
+    setActiveTab("messages");
     toast({
       title: "Chat Opened",
-      description: "Opening chat with the student"
+      description: "Navigating to messages..."
     });
   };
 
@@ -196,7 +198,7 @@ const FullThesisSupportTab = ({ userRole }: FullThesisSupportTabProps) => {
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <h4 className="font-semibold">{project.title}</h4>
-                    <p className="text-sm text-gray-600">Student: {project.student}</p>
+                    <p className="text-sm text-gray-600">{isStudent ? "Researcher:" : "Student:"} {project.student}</p>
                     <p className="text-sm text-gray-600">Next: {project.nextMilestone}</p>
                     <p className="text-xs text-gray-500">Due: {project.dueDate}</p>
                   </div>

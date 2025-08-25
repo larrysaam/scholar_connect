@@ -116,7 +116,7 @@ const Dashboard = () => {
       case "past":
         return <StudentPastTab />;
       case "full-thesis-support":
-        return <FullThesisSupportTab userRole={profile?.role} />;
+        return <FullThesisSupportTab userRole={profile?.role} setActiveTab={handleTabChange} />;
       case "payments":
         return <PaymentsTab />;
       case "messages":
