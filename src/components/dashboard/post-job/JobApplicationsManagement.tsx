@@ -26,6 +26,7 @@ const JobApplicationsManagement = () => {
   const [isConfirming, setIsConfirming] = useState(false);
   const [meetingLink, setMeetingLink] = useState<string | null>(null);
   const [bookingId, setBookingId] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // State to control dialog open/close
 
   useEffect(() => {
     const loadData = async () => {
@@ -99,6 +100,8 @@ const JobApplicationsManagement = () => {
           applicationsMap[j.id] = apps;
         }
         setJobApplications(applicationsMap);
+        // Update the selected application's status to 'approved'
+        setSelectedApplication(prev => prev ? { ...prev, status: 'accepted' } : null);
       } else {
         toast({
           title: "Error",

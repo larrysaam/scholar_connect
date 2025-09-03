@@ -35,6 +35,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole, notificationCount
     { id: "find-researcher", label: "Find Researcher", icon: Search },
     { id: "find-research-aid", label: "Find Research Aid", icon: Users },
     { id: "post-job", label: "Post a Job", icon: Briefcase },
+    { id: "my-applications", label: "My Applications", icon: Briefcase }, // New item
     { id: "my-bookings", label: "My Bookings", icon: Calendar },
     { id: "upcoming", label: "Upcoming Sessions", icon: Calendar },
     { id: "past", label: "Past Sessions", icon: Clock },

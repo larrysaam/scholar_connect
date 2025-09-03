@@ -70,6 +70,8 @@ const StudentDashboard = () => {
         return <FindResearchAidTab />;
       case "post-job":
         return <PostJobTab />;
+      case "my-applications": // New case
+        return <StudentJobApplicationsTab />;
       case "session-booking":
         return <SessionBookingTab />;
       case "upcoming":

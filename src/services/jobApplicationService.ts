@@ -32,6 +32,7 @@ export class JobApplicationService {
             status: "approved",
             appliedDate: "2025-08-22",
             coverLetter: "My expertise in climate change research...",
+            file_path: "https://example.com/student_deliverable_job002.pdf", // Added file_path
           },
           {
             id: "app_003",
@@ -52,6 +53,7 @@ export class JobApplicationService {
             status: "completed",
             appliedDate: "2025-08-10",
             coverLetter: "Experienced in academic proofreading...",
+            file_path: "https://example.com/student_deliverable_job004.docx", // Added file_path
           },
         ]);
       }, 1000);

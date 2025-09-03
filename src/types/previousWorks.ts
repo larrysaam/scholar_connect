@@ -9,7 +9,7 @@ export interface PlatformWork {
   rating: number;
   review: string;
   tags: string[];
-  deliverables: string[];
+  deliverables: { name: string; url: string; }[];
   projectValue: string;
 }
 
@@ -31,5 +31,5 @@ export interface NewWork {
   institution: string;
   duration: string;
   outcomes: string;
-  projectType: string;
+  file: File | null;
 }

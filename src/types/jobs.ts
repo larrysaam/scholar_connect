@@ -7,6 +7,7 @@ export interface JobApplication {
   status: "pending" | "approved" | "rejected" | "completed";
   appliedDate: string;
   coverLetter: string;
+  file_path?: string; // Added file_path to JobApplication
 }
 
 export interface Job {

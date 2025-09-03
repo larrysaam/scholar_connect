@@ -1,9 +1,8 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, FileText, Eye, Download } from "lucide-react";
+import { Calendar, FileText, Download, Upload, X } from "lucide-react"; // Removed Eye
 import StarRating from "./StarRating";
 import { PlatformWork } from "@/types/previousWorks";
 
@@ -11,9 +10,13 @@ interface PlatformWorkCardProps {
   work: PlatformWork;
   onViewDetails: (workId: number, type: string) => void;
   onDownloadPortfolio: (workId: number, title: string) => void;
+  onPreviewDeliverable: (url: string, name: string) => void;
+  onUploadFile: (workId: string) => void; // New prop
+  onDeleteDeliverable: (workId: string, deliverableUrl: string) => void; // New prop
 }
 
-const PlatformWorkCard = ({ work, onViewDetails, onDownloadPortfolio }: PlatformWorkCardProps) => {
+const PlatformWorkCard = ({ work, onViewDetails, onDownloadPortfolio, onPreviewDeliverable, onUploadFile, onDeleteDeliverable }: PlatformWorkCardProps) => { // Added onUploadFile to destructuring
+  console.log("PlatformWorkCard - work.deliverables:", work.deliverables); // Added console.log
   return (
     <Card className="border-l-4 border-l-green-500">
       <CardHeader>
@@ -63,31 +66,56 @@ const PlatformWorkCard = ({ work, onViewDetails, onDownloadPortfolio }: Platform
         <div>
           <h4 className="font-medium mb-2">Deliverables</h4>
           <div className="flex flex-wrap gap-2">
+            {console.log("Deliverables:", work.deliverables)}
             {work.deliverables.map((deliverable, index) => (
-              <div key={index} className="flex items-center space-x-1 text-sm bg-blue-50 px-2 py-1 rounded">
-                <FileText className="h-3 w-3 text-blue-600" />
-                <span>{deliverable}</span>
+              <div key={index} className="flex items-center space-x-1">
+                <a
+                  href={deliverable.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-1 text-sm bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-colors duration-200"
+                >
+                  <FileText className="h-3 w-3 text-blue-600" />
+                  <span>{deliverable.name}</span>
+                </a>
+                {/* Removed Eye Button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onDeleteDeliverable(work.id.toString(), deliverable.url)}
+                  className="h-6 w-6 text-red-500 hover:text-red-700"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
               </div>
             ))}
           </div>
         </div>
 
         <div className="flex space-x-2 pt-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => onViewDetails(work.id, "platform")}
           >
-            <Eye className="h-4 w-4 mr-1" />
+            {/* Removed Eye icon */}
             View Details
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => onDownloadPortfolio(work.id, work.title)}
           >
             <Download className="h-4 w-4 mr-1" />
             Download Portfolio
+          </Button>
+          <Button // New Upload Button
+            variant="outline"
+            size="sm"
+            onClick={() => onUploadFile(work.id.toString())}
+          >
+            <Upload className="h-4 w-4 mr-1" />
+            Upload File
           </Button>
         </div>
       </CardContent>

@@ -10,7 +10,11 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
-    react(),
+    react({
+      jsc: {
+        target: 'es2020',
+      },
+    }),
     // mode === 'development' &&
     // componentTagger(), // Temporarily disabled
   ].filter(Boolean),

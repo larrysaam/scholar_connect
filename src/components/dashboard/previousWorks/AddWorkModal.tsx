@@ -102,6 +102,14 @@ const AddWorkModal = ({ isOpen, onOpenChange, newWork, onNewWorkChange, onAddWor
               rows={2}
             />
           </div>
+          <div>
+            <Label htmlFor="file">Upload File (Optional)</Label>
+            <Input
+              id="file"
+              type="file"
+              onChange={(e) => onNewWorkChange({ ...newWork, file: e.target.files ? e.target.files[0] : null })}
+            />
+          </div>
           <div className="flex space-x-2">
             <Button onClick={onAddWork} className="flex-1">
               Add Work
