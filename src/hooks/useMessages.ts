@@ -38,6 +38,7 @@ export const useMessages = () => {
   // Determine user type by presence of bookings
   const isResearcher = (researcherBookings && researcherBookings.length > 0) || false;
   const isStudent = (studentBookings && studentBookings.length > 0) || false;
+  const isResearchAid = user?.user_metadata?.role === 'research-aid'; // Assuming role is in user_metadata
 
   // Connect to socket.io server
   useEffect(() => {
@@ -182,6 +183,34 @@ export const useMessages = () => {
             other_user_id: booking.provider_id,
             other_user_name: booking.provider?.name || 'Researcher',
             avatar_url: providerProfile?.avatar_url || undefined, // Add avatar_url
+            last_message: '',
+            last_message_at: '',
+          });
+        }
+      }
+      convs = Array.from(map.values());
+    } else if (isResearchAid) {
+      // Research Aid: show all students whose job applications they've approved
+      const { JobApplicationService } = await import('@/services/jobApplicationService');
+      const jobApplicationService = new JobApplicationService();
+      const aidId = user.id; // Assuming user.id is the aid's ID
+      const approvedApplications = await jobApplicationService.getAidJobApplications(aidId);
+      
+      const map = new Map<string, Conversation>();
+      for (const app of approvedApplications.filter(a => a.status === 'approved')) {
+        if (!map.has(app.studentId)) {
+          // Fetch student's avatar_url
+          const { data: studentProfile, error: studentError } = await supabase
+            .from('users')
+            .select('avatar_url')
+            .eq('id', app.studentId)
+            .single();
+
+          map.set(app.studentId, {
+            id: app.id, // Use application ID as conversation ID
+            other_user_id: app.studentId,
+            other_user_name: app.studentName,
+            avatar_url: studentProfile?.avatar_url || undefined,
             last_message: '',
             last_message_at: '',
           });

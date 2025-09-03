@@ -1,9 +1,11 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { PlatformWork, PrePlatformWork, NewWork } from "@/types/previousWorks";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./useAuth";
 
 export const usePreviousWorks = () => {
+  const { user } = useAuth();
   const [isAddWorkOpen, setIsAddWorkOpen] = useState(false);
   const [newWork, setNewWork] = useState<NewWork>({
     title: "",
@@ -14,82 +16,73 @@ export const usePreviousWorks = () => {
     outcomes: "",
     projectType: ""
   });
+  const [platformWorks, setPlatformWorks] = useState<PlatformWork[]>([]);
+  const [prePlatformWorks, setPrePlatformWorks] = useState<PrePlatformWork[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const platformWorks: PlatformWork[] = [
-    {
-      id: 1,
-      title: "Statistical Analysis for Agricultural Study",
-      client: "Dr. Sarah Johnson",
-      clientAvatar: "/placeholder-avatar.jpg",
-      completedDate: "2024-01-15",
-      duration: "3 weeks",
-      rating: 5,
-      review: "Excellent work on the statistical analysis. Very thorough and professional.",
-      tags: ["Statistics", "Agriculture", "Data Analysis"],
-      deliverables: ["Final Report", "SPSS Output", "Presentation"],
-      projectValue: "75,000 XAF"
-    },
-    {
-      id: 2,
-      title: "Literature Review on Climate Change",
-      client: "Prof. Michael Chen",
-      clientAvatar: "/placeholder-avatar.jpg",
-      completedDate: "2024-01-08",
-      duration: "2 weeks",
-      rating: 4,
-      review: "Good quality literature review with comprehensive coverage of recent studies.",
-      tags: ["Literature Review", "Climate Change", "Environmental Science"],
-      deliverables: ["Literature Review Document", "Bibliography", "Summary"],
-      projectValue: "50,000 XAF"
-    },
-    {
-      id: 3,
-      title: "Survey Data Collection",
-      client: "Dr. Marie Dubois",
-      clientAvatar: "/placeholder-avatar.jpg",
-      completedDate: "2023-12-20",
-      duration: "4 weeks",
-      rating: 5,
-      review: "Outstanding data collection work. Very organized and efficient.",
-      tags: ["Data Collection", "Surveys", "Field Work"],
-      deliverables: ["Raw Data", "Data Entry", "Quality Report"],
-      projectValue: "120,000 XAF"
-    }
-  ];
+  useEffect(() => {
+    const fetchPreviousWorks = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("job_applications")
+          .select(`
+            *,
+            jobs!left (
+              *,
+              client:users (
+                name,
+                avatar_url
+              )
+            )
+          `)
+          .in("status", ["completed", "accepted"])
+          .eq("applicant_id", user.id);
 
-  const prePlatformWorks: PrePlatformWork[] = [
-    {
-      id: 1,
-      title: "PhD Dissertation Research Support",
-      institution: "University of Yaoundé I",
-      completedDate: "2023-06-15",
-      duration: "6 months",
-      description: "Provided comprehensive research support for doctoral dissertation on agricultural productivity in Cameroon.",
-      tags: ["PhD Support", "Agricultural Research", "Statistical Analysis"],
-      outcomes: ["Successful PhD Defense", "2 Publications", "Conference Presentation"]
-    },
-    {
-      id: 2,
-      title: "Research Project for Ministry of Agriculture",
-      institution: "Ministry of Agriculture",
-      completedDate: "2023-03-10",
-      duration: "4 months",
-      description: "Conducted impact assessment study on agricultural extension programs in rural communities.",
-      tags: ["Impact Assessment", "Government Project", "Rural Development"],
-      outcomes: ["Policy Recommendations", "Government Report", "Community Feedback"]
-    },
-    {
-      id: 3,
-      title: "NGO Research Initiative",
-      institution: "Green Earth Foundation",
-      completedDate: "2022-11-20",
-      duration: "3 months",
-      description: "Led research on sustainable farming practices and their economic impact on smallholder farmers.",
-      tags: ["Sustainability", "NGO", "Economic Impact"],
-      outcomes: ["Research Report", "Training Materials", "Impact Metrics"]
-    }
-  ];
+        if (error) {
+          console.error("Error fetching job applications:", error);
+          throw error;
+        }
+
+        const mappedPlatformWorks: PlatformWork[] = data
+          .filter((app: any) => app.jobs) // Filter out applications where jobs is null
+          .map((application: any) => ({
+            id: application.id,
+            title: application.jobs.title || "N/A",
+            client: application.jobs.client?.name || "N/A",
+            clientAvatar: application.jobs.client?.avatar_url || "/placeholder-avatar.jpg",
+            completedDate: application.updated_at || "N/A",
+            duration: application.jobs.duration || "N/A",
+            rating: 0, // Placeholder - you might need to fetch this from a reviews table
+            review: "No review yet.", // Placeholder
+            tags: application.jobs.skills_required || [],
+            deliverables: [], // Placeholder
+            projectValue: application.jobs.budget ? `$${application.jobs.budget}` : "N/A"
+        }));
+        
+        setPlatformWorks(mappedPlatformWorks);
+        setPrePlatformWorks([]);
+
+      } catch (err: any) {
+        setError(err.message);
+        toast({
+          title: "Error fetching previous works",
+          description: err.message,
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPreviousWorks();
+  }, [user, toast]);
 
   const handleAddWork = () => {
     if (!newWork.title.trim() || !newWork.description.trim() || !newWork.projectType) {
@@ -101,6 +94,8 @@ export const usePreviousWorks = () => {
       return;
     }
 
+    // Here you would typically send the newWork data to your backend/Supabase
+    // For now, we'll just show a toast and clear the form
     toast({
       title: "Work Added",
       description: `Your ${newWork.projectType === "platform" ? "platform project" : "previous experience"} has been added to your portfolio`
@@ -140,6 +135,8 @@ export const usePreviousWorks = () => {
     handleAddWork,
     handleViewDetails,
     handleDownloadPortfolio,
-    handleViewCertificate
+    handleViewCertificate,
+    loading,
+    error
   };
 };

@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useJobManagement, Job, JobApplication } from "@/hooks/useJobManagement";
 import { useAuth } from "@/hooks/useAuth";
 import { CheckCircle, XCircle, Info } from "lucide-react";
+import { Chat } from "@/components/Chat";
 
 const JobApplicationsManagement = () => {
   const { user } = useAuth();
@@ -24,6 +25,7 @@ const JobApplicationsManagement = () => {
   const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [meetingLink, setMeetingLink] = useState<string | null>(null);
+  const [bookingId, setBookingId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -64,7 +66,7 @@ const JobApplicationsManagement = () => {
         return;
       }
 
-      const { success, meetLink } = await confirmJobApplication(
+      const { success, meetLink, bookingId: newBookingId } = await confirmJobApplication(
         selectedApplication.id,
         selectedApplication.applicant_id,
         job.id,
@@ -84,6 +86,9 @@ const JobApplicationsManagement = () => {
         });
         if (meetLink) {
           setMeetingLink(meetLink);
+        }
+        if (newBookingId) {
+          setBookingId(newBookingId);
         }
         // Refresh data after confirmation
         const jobsData = await fetchJobs();
@@ -200,6 +205,13 @@ const JobApplicationsManagement = () => {
                               )}
                             </DialogContent>
                           </Dialog>
+                        )}
+                        {application.status === "accepted" && bookingId && (
+                          <Chat
+                            bookingId={bookingId}
+                            receiverId={application.applicant_id}
+                            receiverName={application.applicant.name}
+                          />
                         )}
                       </div>
                     </Card>

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useJobManagement, CreateJobData } from "@/hooks/useJobManagement";
+import { useDocumentUpload } from "@/hooks/useDocumentUpload";
 import BasicInfoSection from "./BasicInfoSection";
 import JobDescriptionSection from "./JobDescriptionSection";
 import AdditionalDetailsSection from "./AdditionalDetailsSection";
@@ -28,6 +29,7 @@ const JobPostingForm = () => {
   
   const { createJob, creating } = useJobManagement();
   const { toast } = useToast();
+  const { uploadDocument, isUploading } = useDocumentUpload();
 
   const handleSubmit = async () => {
     if (!jobData.title || !jobData.description || !jobData.category || !jobData.budget) {
@@ -49,6 +51,22 @@ const JobPostingForm = () => {
       return;
     }
 
+    let filePath;
+    if (jobData.files.length > 0) {
+      const file = jobData.files[0];
+      const path = `public/${Date.now()}-${file.name}`;
+      const uploadedFilePath = await uploadDocument(file, 'lovable-uploads', path);
+      if (!uploadedFilePath) {
+        toast({
+          title: "File Upload Failed",
+          description: "Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      filePath = uploadedFilePath;
+    }
+
     const createJobData: CreateJobData = {
       title: jobData.title,
       description: jobData.description,
@@ -60,7 +78,8 @@ const JobPostingForm = () => {
       skills_required: jobData.skills,
       experience_level: jobData.experience_level || undefined,
       urgency: jobData.urgency as "low" | "medium" | "high",
-      deadline: jobData.deadline ? new Date(jobData.deadline).toISOString() : undefined
+      deadline: jobData.deadline ? new Date(jobData.deadline).toISOString() : undefined,
+      file_path: filePath,
     };
 
     const success = await createJob(createJobData);
@@ -130,7 +149,7 @@ const JobPostingForm = () => {
         <FormActions
           onSubmit={handleSubmit}
           onClear={clearForm}
-          isSubmitting={creating}
+          isSubmitting={creating || isUploading}
         />
       </CardContent>
     </Card>

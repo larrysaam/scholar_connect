@@ -62,6 +62,7 @@ export interface CreateJobData {
   experience_level?: string;
   urgency?: string;
   deadline?: string;
+  file_path?: string; // Add file_path here
 }
 
 export const useJobManagement = () => {
@@ -121,7 +122,8 @@ export const useJobManagement = () => {
           ...jobData,
           user_id: user.id,
           currency: jobData.currency || 'XAF',
-          urgency: jobData.urgency || 'medium'
+          urgency: jobData.urgency || 'medium',
+          file_path: jobData.file_path
         })
         .select()
         .single();
@@ -317,7 +319,7 @@ export const useJobManagement = () => {
     jobCategory: string,
     jobDuration?: string,
     jobDeadline?: string
-  ): Promise<{success: boolean, meetLink?: string}> => {
+  ): Promise<{success: boolean, meetLink?: string, bookingId?: string}> => {
     if (!user) return {success: false};
 
     try {
@@ -346,17 +348,53 @@ export const useJobManagement = () => {
         return {success: false};
       }
 
-      // Step 3: Create a new booking
+      // Step 3: Create a new consultation service from the job
+      const { data: service, error: serviceError } = await supabase
+        .from('consultation_services')
+        .insert({
+          user_id: applicantId, // The provider is the applicant
+          title: jobTitle,
+          description: jobDescription,
+          category: jobCategory as any, // Make sure this category is valid
+          duration_minutes: jobDuration ? parseInt(jobDuration, 10) : 60,
+          is_active: true,
+        })
+        .select('id')
+        .single();
+
+      if (serviceError || !service) {
+        console.error('Error creating consultation service:', serviceError);
+        toast({ title: "Error", description: "Failed to create a service for the booking.", variant: "destructive" });
+        return {success: false};
+      }
+
+      // Step 4: Create pricing for the new service
+      const { error: pricingError } = await supabase
+        .from('service_pricing')
+        .insert({
+          service_id: service.id,
+          academic_level: 'PhD', // Default or derive from job if possible
+          price: jobBudget,
+          currency: jobCurrency,
+        });
+
+      if (pricingError) {
+        console.error('Error creating service pricing:', pricingError);
+        toast({ title: "Error", description: "Failed to set pricing for the service.", variant: "destructive" });
+        return {success: false};
+      }
+
+      // Step 5: Create a new booking
       const { data: booking, error: bookingError } = await supabase
         .from('service_bookings')
         .insert({
           provider_id: applicantId,
           client_id: user.id,
-          service_id: jobId, // Using job_id as a stand-in for service_id
+          service_id: service.id, // Use the newly created service_id
           academic_level: 'PhD', // This might need to be dynamic
           scheduled_date: new Date().toISOString().split('T')[0], // Placeholder
           scheduled_time: '12:00', // Placeholder
-          duration_minutes: 60, // Placeholder
+          duration_minutes: jobDuration ? parseInt(jobDuration, 10) : 60, // Placeholder
           base_price: jobBudget,
           total_price: jobBudget,
           currency: jobCurrency,
@@ -372,7 +410,7 @@ export const useJobManagement = () => {
         return {success: false};
       }
 
-      // Step 4: Generate Google Meet Link
+      // Step 6: Generate Google Meet Link
       try {
         const { data, error: functionError } = await supabase.functions.invoke('generate-meet-link', {
           body: { booking_id: booking.id },
@@ -383,28 +421,96 @@ export const useJobManagement = () => {
           toast({ title: "Warning", description: "Booking created, but failed to generate a meeting link.", variant: "default" });
         } else {
           console.log('Generated Meet Link:', data.meetLink);
-          return {success: true, meetLink: data.meetLink};
+          // Optionally, update the booking with the meet link
+          await supabase.from('service_bookings').update({ meeting_link: data.meetLink }).eq('id', booking.id);
+          return {success: true, meetLink: data.meetLink, bookingId: booking.id};
         }
       } catch (e) {
         console.error('Error invoking generate-meet-link function:', e);
       }
 
-      // Step 5: Notify the researcher
+      // Step 7: Notify the researcher
       await NotificationService.createNotification({
         userId: applicantId,
         title: 'You have been hired!',
-        message: `You have been confirmed for the job: "${jobTitle}".`,
+        message: `You have been confirmed for the job: "${jobTitle}". A new service and booking have been created.`,
         type: 'success',
         category: 'job_application',
         actionUrl: `/dashboard?tab=bookings`,
         actionLabel: 'View Booking'
       });
 
-      return {success: true};
+      return {success: true, bookingId: booking.id};
     } catch (error) {
       console.error('Error confirming job application:', error);
       toast({ title: "Error", description: "An unexpected error occurred during confirmation.", variant: "destructive" });
       return {success: false};
+    }
+  };
+
+  // Apply for a job
+  const applyForJob = async (jobId: string, coverLetter: string): Promise<boolean> => {
+    if (!user) return false;
+
+    try {
+      // Check if the user has already applied for this job
+      const { data: existingApplication, error: existingAppError } = await supabase
+        .from('job_applications')
+        .select('id')
+        .eq('job_id', jobId)
+        .eq('applicant_id', user.id)
+        .single();
+
+      if (existingAppError && existingAppError.code !== 'PGRST116') { // PGRST116 means no rows found, which is what we want
+        console.error('Error checking for existing application:', existingAppError);
+        toast({
+          title: "Error",
+          description: "Failed to apply for job",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      if (existingApplication) {
+        toast({
+          title: "Error",
+          description: "You have already applied for this job.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      const { error } = await supabase
+        .from('job_applications')
+        .insert({
+          job_id: jobId,
+          applicant_id: user.id,
+          cover_letter: coverLetter,
+        });
+
+      if (error) {
+        console.error('Error applying for job:', error);
+        toast({
+          title: "Error",
+          description: "Failed to apply for job",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      toast({
+        title: "Success",
+        description: "Your application has been submitted!"
+      });
+      return true;
+    } catch (error) {
+      console.error('Error applying for job:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      });
+      return false;
     }
   };
 
@@ -460,6 +566,7 @@ export const useJobManagement = () => {
     fetchJobs,
     fetchJobApplications,
     fetchAllJobsForResearchAids,
-    confirmJobApplication
+    confirmJobApplication,
+    applyForJob
   };
 };

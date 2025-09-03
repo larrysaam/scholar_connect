@@ -31,6 +31,7 @@ const ResearchAidsSidebar = ({ activeTab, setActiveTab }: ResearchAidsSidebarPro
 
   const menuItems = [
     { id: "overview", label: "Dashboard Overview", icon: BarChart3 },
+    { id: "job-management", label: "Job Management", icon: Briefcase }, // New item
     { id: "job-requests", label: "Job Requests", icon: Briefcase },
     { id: "messages", label: "Messages", icon: MessageSquare },
     { id: "appointments", label: "Appointments", icon: Calendar },

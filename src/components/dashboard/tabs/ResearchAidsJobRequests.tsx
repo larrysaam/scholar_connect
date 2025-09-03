@@ -208,7 +208,7 @@ const ResearchAidsJobRequests = () => {
 
                       {job.status === "active" && ( // Check for "active" status
                         (() => {
-                          const userApplication = userApplications.find(app => app.job_id === job.id && app.applicant_id === user?.id);
+                          const userApplication = userApplications.find(app => app.job_id === job.id);
 
                           if (userApplication) {
                             return (

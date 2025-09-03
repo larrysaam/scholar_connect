@@ -6,6 +6,7 @@ import PrePlatformWorkCard from "../previousWorks/PrePlatformWorkCard";
 import AddWorkModal from "../previousWorks/AddWorkModal";
 import PortfolioSummary from "../previousWorks/PortfolioSummary";
 import { usePreviousWorks } from "@/hooks/usePreviousWorks";
+import LoadingSpinner from "@/components/LoadingSpinner"; // Assuming this component exists
 
 const ResearchAidsPreviousWorks = () => {
   const [activeTab, setActiveTab] = useState("platform");
@@ -20,8 +21,18 @@ const ResearchAidsPreviousWorks = () => {
     handleAddWork,
     handleViewDetails,
     handleDownloadPortfolio,
-    handleViewCertificate
+    handleViewCertificate,
+    loading,
+    error
   } = usePreviousWorks();
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return <div className="text-red-500">Error: {error}</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -53,14 +64,18 @@ const ResearchAidsPreviousWorks = () => {
       {activeTab === "platform" && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-6">
-            {platformWorks.map((work) => (
-              <PlatformWorkCard
-                key={work.id}
-                work={work}
-                onViewDetails={handleViewDetails}
-                onDownloadPortfolio={handleDownloadPortfolio}
-              />
-            ))}
+            {platformWorks.length === 0 ? (
+              <p>No platform projects found.</p>
+            ) : (
+              platformWorks.map((work) => (
+                <PlatformWorkCard
+                  key={work.id}
+                  work={work}
+                  onViewDetails={handleViewDetails}
+                  onDownloadPortfolio={handleDownloadPortfolio}
+                />
+              ))
+            )}
           </div>
         </div>
       )}
@@ -68,14 +83,18 @@ const ResearchAidsPreviousWorks = () => {
       {activeTab === "pre-platform" && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-6">
-            {prePlatformWorks.map((work) => (
-              <PrePlatformWorkCard
-                key={work.id}
-                work={work}
-                onViewDetails={handleViewDetails}
-                onViewCertificate={handleViewCertificate}
-              />
-            ))}
+            {prePlatformWorks.length === 0 ? (
+              <p>No previous experience found.</p>
+            ) : (
+              prePlatformWorks.map((work) => (
+                <PrePlatformWorkCard
+                  key={work.id}
+                  work={work}
+                  onViewDetails={handleViewDetails}
+                  onViewCertificate={handleViewCertificate}
+                />
+              ))
+            )}
           </div>
         </div>
       )}

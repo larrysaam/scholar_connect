@@ -71,16 +71,14 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole, notificationCount
 
   const researchAideMenuItems = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
-    { id: "job-requests", label: "Job Requests", icon: Briefcase },
-    { id: "active-tasks", label: "Active Tasks", icon: Clock },
-    { id: "appointments", label: "Appointments", icon: Calendar },
-    { id: "files-deliverables", label: "Files & Deliverables", icon: FileText },
-    { id: "payments-earnings", label: "Payments & Earnings", icon: DollarSign },
+    { id: "job-applications", label: "Job Applications", icon: Briefcase },
+    { id: "current-jobs", label: "Current Jobs", icon: Clock },
+    { id: "completed-jobs", label: "Completed Jobs", icon: Calendar },
     { id: "messages", label: "Messages", icon: MessageSquare },
-    { id: "previous-works", label: "Previous Works", icon: Star },
-    { id: "profile-ratings", label: "Profile & Ratings", icon: User },
     { id: "notifications", label: "Notifications", icon: Bell, badge: notificationCount },
-    { id: "settings", label: "Settings", icon: Settings },
+    { id: "documents", label: "Documents", icon: FileText },
+    { id: "profile", label: "Profile Information", icon: User },
+    { id: "settings", label: "Account Settings", icon: Settings },
   ];
 
   const getMenuItems = () => {

@@ -21,6 +21,7 @@ import ResearchAidsPreviousWorks from "@/components/dashboard/tabs/ResearchAidsP
 import ResearchAidsNotifications from "@/components/dashboard/tabs/ResearchAidsNotifications";
 import QualityAssuranceAndFeedbackTab from "@/components/dashboard/tabs/QualityAssuranceAndFeedbackTab";
 import VerificationTab from "@/components/dashboard/tabs/VerificationTab";
+import AidJobManagement from "@/pages/AidJobManagement"; // Import the new component
 
 interface DashboardTabRendererProps {
   activeTab: string;
