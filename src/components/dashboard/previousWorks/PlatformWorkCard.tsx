@@ -41,7 +41,7 @@ const PlatformWorkCard = ({ work, onViewDetails, onDownloadPortfolio, onPreviewD
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
           <div className="flex items-center space-x-2">
             <Calendar className="h-4 w-4 text-gray-500" />
-            <span>Completed: {work.completedDate}</span>
+            <span>Completed: {new Date(work.completedDate).toLocaleDateString()}</span>
           </div>
           <div className="flex items-center space-x-2">
             <Calendar className="h-4 w-4 text-gray-500" />
