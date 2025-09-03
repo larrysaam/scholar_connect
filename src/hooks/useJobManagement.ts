@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { NotificationService } from '@/services/notificationService';
+import { v4 as uuidv4 } from 'uuid'; // Import uuid for unique file names
 
 export interface UserProfile {
   id: string;
@@ -29,6 +30,7 @@ export interface Job {
   created_at: string;
   updated_at: string;
   client?: UserProfile; // Add client profile
+  file_path?: { url: string; name: string }[]; // Add file_path to Job interface
 }
 
 export interface JobApplication {
@@ -48,6 +50,7 @@ export interface JobApplication {
     expertise: string[];
     experience: string;
   };
+  job: Job; // Add job details to JobApplication
 }
 
 export interface CreateJobData {
@@ -290,7 +293,8 @@ export const useJobManagement = () => {
             email,
             expertise,
             experience
-          )
+          ),
+          job:jobs!inner(*) // Select all fields from the jobs table
         `)
         .eq('job_id', jobId)
         .order('created_at', { ascending: false });
@@ -300,12 +304,201 @@ export const useJobManagement = () => {
         return [];
       }
 
+      console.log("fetchJobApplications - Raw data from Supabase:", data);
       return data || [];
     } catch (error) {
       console.error('Error fetching job applications:', error);
       return [];
     }
   }, [user]);
+
+  // Handle file upload for a job application
+  const handleUploadDeliverableForJobApplication = async (jobId: string, file: File) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to upload files.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const fileExtension = file.name.split('.').pop();
+      const fileName = `${uuidv4()}.${fileExtension}`;
+      // Store files under a path that includes job ID
+      const filePath = `lovable-uploads/${user.id}/jobs/${jobId}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('lovable-uploads')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('lovable-uploads')
+        .getPublicUrl(filePath);
+
+      const newDeliverable = {
+        name: file.name,
+        url: publicUrlData.publicUrl,
+      };
+
+      // Fetch current job's file_path to append new deliverable
+      const { data: currentJob, error: fetchJobError } = await supabase
+        .from('jobs')
+        .select('file_path')
+        .eq('id', jobId)
+        .single();
+
+      if (fetchJobError) {
+        throw fetchJobError;
+      }
+
+      let updatedDeliverables: { url: string; name: string }[] = [];
+      const existingFilePath = currentJob?.file_path;
+
+      if (existingFilePath) {
+        if (Array.isArray(existingFilePath)) {
+          updatedDeliverables = existingFilePath;
+        } else if (typeof existingFilePath === 'string') {
+          try {
+            const parsed = JSON.parse(existingFilePath);
+            if (Array.isArray(parsed)) {
+              updatedDeliverables = parsed;
+            } else {
+              console.warn("Unexpected type for existingFilePath after JSON.parse:", parsed);
+            }
+          } catch (e) {
+            console.error("Error parsing existing file_path (fallback):", e);
+          }
+        }
+      }
+      updatedDeliverables.push(newDeliverable);
+
+      // Update the jobs table with the new file_path
+      const { error: updateError } = await supabase
+        .from('jobs')
+        .update({ file_path: updatedDeliverables })
+        .eq('id', jobId);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      toast({
+        title: "Success",
+        description: "Deliverable uploaded successfully!",
+      });
+
+      // Re-fetch jobs to update the UI with new deliverables
+      fetchJobs();
+
+    } catch (err: any) {
+      console.error("Error uploading deliverable for job application:", err);
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteDeliverableForJobApplication = async (jobId: string, fileUrl: string) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to delete files.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Extract the file path from the URL for Supabase storage deletion
+      // Assuming the URL format is something like:
+      // https://[project_ref].supabase.co/storage/v1/object/public/lovable-uploads/[user_id]/jobs/[jobId]/[fileName]
+      const urlParts = fileUrl.split('/');
+      const fileNameWithJobId = urlParts.slice(urlParts.indexOf('jobs') + 1).join('/');
+      const filePathInStorage = `lovable-uploads/${user.id}/jobs/${fileNameWithJobId}`;
+
+      const { error: deleteError } = await supabase.storage
+        .from('lovable-uploads')
+        .remove([filePathInStorage]);
+
+      if (deleteError) {
+        throw deleteError;
+      }
+
+      // Fetch current job's file_path
+      const { data: currentJob, error: fetchJobError } = await supabase
+        .from('jobs')
+        .select('file_path')
+        .eq('id', jobId)
+        .single();
+
+      if (fetchJobError) {
+        throw fetchJobError;
+      }
+
+      let updatedDeliverables: { url: string; name: string }[] = [];
+      const existingFilePath = currentJob?.file_path;
+
+      if (existingFilePath) {
+        if (Array.isArray(existingFilePath)) {
+          updatedDeliverables = existingFilePath.filter(deliverable => deliverable.url !== fileUrl);
+        } else if (typeof existingFilePath === 'string') {
+          try {
+            const parsed = JSON.parse(existingFilePath);
+            if (Array.isArray(parsed)) {
+              updatedDeliverables = parsed.filter(deliverable => deliverable.url !== fileUrl);
+            } else {
+              console.warn("Unexpected type for existingFilePath after JSON.parse:", parsed);
+            }
+          } catch (e) {
+            console.error("Error parsing existing file_path (fallback):", e);
+          }
+        }
+      }
+
+      // Update the jobs table with the new file_path
+      const { error: updateError } = await supabase
+        .from('jobs')
+        .update({ file_path: updatedDeliverables })
+        .eq('id', jobId);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      toast({
+        title: "Success",
+        description: "Deliverable deleted successfully!",
+      });
+
+      // Re-fetch jobs to update the UI with new deliverables
+      fetchJobs();
+
+    } catch (err: any) {
+      console.error("Error deleting deliverable for job application:", err);
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Confirm a job application and create a booking
   const confirmJobApplication = async (
@@ -567,6 +760,8 @@ export const useJobManagement = () => {
     fetchJobApplications,
     fetchAllJobsForResearchAids,
     confirmJobApplication,
-    applyForJob
+    applyForJob,
+    handleUploadDeliverableForJobApplication,
+    handleDeleteDeliverableForJobApplication
   };
 };
