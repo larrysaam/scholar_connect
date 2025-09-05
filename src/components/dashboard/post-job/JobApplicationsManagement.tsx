@@ -88,10 +88,15 @@ const JobApplicationsManagement = () => {
       // );
 
       const { success } = await confirmJobApplication(
-        selectedApplication.id,
+       selectedApplication.id,
         selectedApplication.applicant_id,
         job.id,
-        job.title
+        job.title,
+        job.description,
+        job.budget,
+        job.currency,
+        job.category,
+        job.duration
       );
 
       if (success) {

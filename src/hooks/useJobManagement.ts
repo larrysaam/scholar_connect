@@ -505,13 +505,22 @@ export const useJobManagement = () => {
     applicationId: string,
     applicantId: string,
     jobId: string,
-    jobTitle: string
-  
+    jobTitle: string,
+    jobDescription: string,
+    jobBudget: number,
+    jobCurrency: string,
+    jobCategory: string,
+    jobDuration?: string
   ): Promise<{success: boolean, meetLink?: string, bookingId?: string}> => {
-    if (!user) return {success: false};
+    if (!user) {
+      toast({ title: "Error", description: "You must be logged in to confirm a job.", variant: "destructive" });
+      return {success: false};
+    }
 
     try {
-      // Step 1: Update job application status to 'accepted'
+      setUpdating(true);
+
+      // --- Step 1: Update job application status to 'accepted' ---
       const { error: updateApplicationError } = await supabase
         .from('job_applications')
         .update({ status: 'accepted' })
@@ -523,7 +532,7 @@ export const useJobManagement = () => {
         return {success: false};
       }
 
-      // Step 2: Update job status to 'closed'
+      // --- Step 2: Update job status to 'closed' ---
       const { error: updateJobError } = await supabase
         .from('jobs')
         .update({ status: 'closed' })
@@ -531,129 +540,125 @@ export const useJobManagement = () => {
 
       if (updateJobError) {
         console.error('Error closing job:', updateJobError);
-        // Optionally, revert the application status change here
         toast({ title: "Error", description: "Failed to close job posting.", variant: "destructive" });
+        // Optionally, revert the application status change here
         return {success: false};
       }
 
+      // --- Step 3: Create a new consultation service from the job ---
+      const { data: service, error: serviceError } = await supabase
+        .from('consultation_services')
+        .insert({
+          user_id: applicantId, // The provider is the applicant
+          title: jobTitle,
+          description: jobDescription,
+          category: 'General Consultation', // Default category for services created from jobs
+          duration_minutes: jobDuration ? parseInt(jobDuration, 10) : 60,
+          is_active: true,
+        })
+        .select('id')
+        .single();
 
-       // Step 2: Send a message to the aid
+      if (serviceError || !service) {
+        console.error('Error creating consultation service:', serviceError);
+        toast({ title: "Error", description: "Failed to create a service for the booking.", variant: "destructive" });
+        return {success: false};
+      }
+
+      // --- Step 4: Create pricing for the new service ---
+      const { error: pricingError } = await supabase
+        .from('service_pricing')
+        .insert({
+          service_id: service.id,
+          academic_level: 'PhD', // Default or derive from job if possible
+          price: jobBudget,
+          currency: jobCurrency,
+        });
+
+      if (pricingError) {
+        console.error('Error creating service pricing:', pricingError);
+        toast({ title: "Error", description: "Failed to set pricing for the service.", variant: "destructive" });
+        return {success: false};
+      }
+
+      // --- Step 5: Create a new booking ---
+      const { data: booking, error: bookingError } = await supabase
+        .from('service_bookings')
+        .insert({
+          provider_id: applicantId,
+          client_id: user.id,
+          service_id: service.id,
+          academic_level: 'PhD',
+          scheduled_date: new Date().toISOString().split('T')[0],
+          scheduled_time: '12:00',
+          duration_minutes: jobDuration ? parseInt(jobDuration, 10) : 60,
+          base_price: jobBudget,
+          total_price: jobBudget,
+          currency: jobCurrency,
+          status: 'confirmed',
+          payment_status: 'paid'
+        })
+        .select('id')
+        .single();
+
+      if (bookingError || !booking) {
+        console.error('Error creating booking:', bookingError);
+        toast({ title: "Error", description: "Failed to create a booking.", variant: "destructive" });
+        return {success: false};
+      }
+      
+      // --- Step 6: Send a message to the aid ---
       const { error: messageError } = await supabase.from('messages').insert([
         {
-          id: jobId,
           sender_id: user.id,
           recipient_id: applicantId,
           content: 'job confirmed',
+          booking_id: booking.id, // Correctly pass the booking_id
         },
       ]);
 
       if (messageError) {
         console.error('Error sending message:', messageError);
         toast({ title: "Warning", description: "Job confirmed, but failed to send message.", variant: "default" });
-      } else {
-        toast({
-          title: "Success",
-          description: "Job confirmed and message sent to the aid."
+      }
+
+      // --- Step 7: Generate Google Meet Link ---
+      let meetLink: string | undefined;
+      try {
+        const { data, error: functionError } = await supabase.functions.invoke('generate-meet-link', {
+          body: { booking_id: booking.id },
         });
+
+        if (functionError) {
+          throw functionError;
+        }
+        meetLink = data.meetLink;
+        await supabase.from('service_bookings').update({ meeting_link: meetLink }).eq('id', booking.id);
+
+      } catch (e) {
+        console.error('Error invoking generate-meet-link function:', e);
+        toast({ title: "Warning", description: "Booking created, but failed to generate a meeting link.", variant: "default" });
       }
 
-      // // Step 3: Create a new consultation service from the job
-      // const { data: service, error: serviceError } = await supabase
-      //   .from('consultation_services')
-      //   .insert({
-      //     user_id: applicantId, // The provider is the applicant
-      //     title: jobTitle,
-      //     description: jobDescription,
-      //     category: jobCategory as any, // Make sure this category is valid
-      //     duration_minutes: jobDuration ? parseInt(jobDuration, 10) : 60,
-      //     is_active: true,
-      //   })
-      //   .select('id')
-      //   .single();
-
-      // if (serviceError || !service) {
-      //   console.error('Error creating consultation service:', serviceError);
-      //   toast({ title: "Error", description: "Failed to create a service for the booking.", variant: "destructive" });
-      //   return {success: false};
-      // }
-
-      // // Step 4: Create pricing for the new service
-      // const { error: pricingError } = await supabase
-      //   .from('service_pricing')
-      //   .insert({
-      //     service_id: service.id,
-      //     academic_level: 'PhD', // Default or derive from job if possible
-      //     price: jobBudget,
-      //     currency: jobCurrency,
-      //   });
-
-      // if (pricingError) {
-      //   console.error('Error creating service pricing:', pricingError);
-      //   toast({ title: "Error", description: "Failed to set pricing for the service.", variant: "destructive" });
-      //   return {success: false};
-      // }
-
-      // Step 5: Create a new booking
-      const { data: booking, error: bookingError } = await supabase
-        .from('service_bookings')
-        .insert({
-          provider_id: applicantId,
-          client_id: user.id,
-          service_id: service.id, // Use the newly created service_id
-          academic_level: 'PhD', // This might need to be dynamic
-          scheduled_date: new Date().toISOString().split('T')[0], // Placeholder
-          scheduled_time: '12:00', // Placeholder
-          duration_minutes: jobDuration ? parseInt(jobDuration, 10) : 60, // Placeholder
-          base_price: jobBudget,
-          total_price: jobBudget,
-          currency: jobCurrency,
-          status: 'confirmed',
-          payment_status: 'paid' // Assuming payment is handled separately or not required
-        })
-        .select('id')
-        .single();
-
-      if (bookingError) {
-        console.error('Error creating booking:', bookingError);
-        toast({ title: "Error", description: "Failed to create a booking.", variant: "destructive" });
-        return {success: false};
-      }
-
-      // // Step 6: Generate Google Meet Link
-      // try {
-      //   const { data, error: functionError } = await supabase.functions.invoke('generate-meet-link', {
-      //     body: { booking_id: booking.id },
-      //   });
-
-      //   if (functionError) {
-      //     console.error('Error generating Google Meet link:', functionError);
-      //     toast({ title: "Warning", description: "Booking created, but failed to generate a meeting link.", variant: "default" });
-      //   } else {
-      //     console.log('Generated Meet Link:', data.meetLink);
-      //     // Optionally, update the booking with the meet link
-      //     await supabase.from('service_bookings').update({ meeting_link: data.meetLink }).eq('id', booking.id);
-      //     return {success: true, meetLink: data.meetLink, bookingId: booking.id};
-      //   }
-      // } catch (e) {
-      //   console.error('Error invoking generate-meet-link function:', e);
-      // }
-
-      // Step 7: Notify the researcher
+      // --- Step 8: Notify the researcher ---
       await NotificationService.createNotification({
         userId: applicantId,
         title: 'You have been hired!',
         message: `You have been confirmed for the job: "${jobTitle}". A new service and booking have been created.`,
-        type: 'success',
-        category: 'job_application',
+        type: 'job_invitation', // Use a valid notification type
         actionUrl: `/dashboard?tab=bookings`,
         actionLabel: 'View Booking'
       });
 
-      return {success: true};
+      toast({ title: "Success", description: "Job confirmed and booking created successfully!" });
+      return {success: true, bookingId: booking.id, meetLink: meetLink };
+
     } catch (error) {
       console.error('Error confirming job application:', error);
       toast({ title: "Error", description: "An unexpected error occurred during confirmation.", variant: "destructive" });
       return {success: false};
+    } finally {
+      setUpdating(false);
     }
   };
 
