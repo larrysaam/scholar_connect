@@ -2,11 +2,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin, Award, MessageCircle, Eye } from "lucide-react";
+import { Star, MapPin, Award, MessageCircle, Eye, Calendar } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Link } from "react-router-dom";
 
 interface ResearchAid {
   id: string;
@@ -116,14 +117,20 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
                 <div className="text-sm text-gray-500">
                   Response time: {aid.responseTime || 'N/A'}
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex flex-wrap gap-2">
                   <Button size="sm" variant="outline" onClick={() => setShowMessage(true)}>
                     <MessageCircle className="h-4 w-4 mr-1" />
                     Message
                   </Button>
-                  <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={handleViewProfile}>
+                  <Button size="sm" variant="outline" onClick={handleViewProfile}>
                     <Eye className="h-4 w-4 mr-1" />
-                    View Profile
+                    Quick View
+                  </Button>
+                  <Button asChild size="sm" className="bg-green-600 hover:bg-green-700">
+                    <Link to={`/research-aids/${aid.id}`}>
+                      <Calendar className="h-4 w-4 mr-1" />
+                      Book Appointment
+                    </Link>
                   </Button>
                 </div>
               </div>

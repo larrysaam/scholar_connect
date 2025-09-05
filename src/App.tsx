@@ -42,6 +42,12 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminSignup = lazy(() => import("./pages/AdminSignup"));
 
+// Student appointment pages
+const StudentAppointmentsPage = lazy(() => import("./pages/StudentAppointmentsPage"));
+
+// Research Aid Profile page
+const ResearchAidProfile = lazy(() => import("./pages/ResearchAidProfile"));
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
@@ -85,6 +91,11 @@ const App = () => (
                     <ResearcherProfile />
                   </ProtectedRoute>
                 } />
+                <Route path="/research-aids/:id" element={
+                  <ProtectedRoute>
+                    <ResearchAidProfile />
+                  </ProtectedRoute>
+                } />
                 <Route path="/workspace/:projectId" element={
                   <ProtectedRoute>
                     <WorkspaceDetails />
@@ -105,6 +116,13 @@ const App = () => (
                 <Route path="/research-aids-dashboard" element={
                   <ProtectedRoute>
                     <ResearchAidsDashboard />
+                  </ProtectedRoute>
+                } />
+
+                {/* Student appointment routes */}
+                <Route path="/appointments" element={
+                  <ProtectedRoute>
+                    <StudentAppointmentsPage />
                   </ProtectedRoute>
                 } />
 

@@ -2,20 +2,37 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Calendar, Clock, MapPin, Video, Phone, MessageSquare, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Calendar, Clock, MapPin, Video, Phone, MessageSquare, Loader2, Star, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
-interface AppointmentData {
+interface AppointmentRequest {
+  id: string;
+  research_aid_name: string;
+  research_aid_id: string;
+  service_title: string;
+  requested_date: string;
+  requested_time: string;
+  duration_minutes: number;
+  meeting_type: 'video' | 'phone' | 'in-person';
+  project_description: string;
+  specific_requirements?: string;
+  status: string;
+  payment_status: string;
+  rejection_reason?: string;
+  created_at: string;
+}
+
+interface ConfirmedAppointment {
   id: string;
   title: string;
-  client_name: string;
-  client_id: string;
+  provider_name: string;
+  provider_id: string;
   scheduled_date: string;
   scheduled_time: string;
   duration_minutes: number;
@@ -26,46 +43,49 @@ interface AppointmentData {
   location?: string;
   project_description?: string;
   payment_status: string;
-  service_title?: string;
 }
 
-interface AppointmentRequest {
-  id: string;
-  student_name: string;
-  student_id: string;
-  service_title: string;
-  requested_date: string;
-  requested_time: string;
-  duration_minutes: number;
-  meeting_type: 'video' | 'phone' | 'in-person';
-  project_description: string;
-  specific_requirements?: string;
-  payment_status: string;
-  created_at: string;
-}
-
-const ResearchAidsAppointments = () => {
+const StudentAppointments = () => {
   const [view, setView] = useState("requests"); // requests, upcoming, past
-  const [appointments, setAppointments] = useState<AppointmentData[]>([]);
   const [appointmentRequests, setAppointmentRequests] = useState<AppointmentRequest[]>([]);
+  const [confirmedAppointments, setConfirmedAppointments] = useState<ConfirmedAppointment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [changeRequestMessage, setChangeRequestMessage] = useState("");
-  const [clientMessage, setClientMessage] = useState("");
-  const [processingRequest, setProcessingRequest] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
   const { toast } = useToast();
   const { user } = useAuth();
 
   useEffect(() => {
     if (user) {
-      fetchAppointmentsAndRequests();
+      fetchAppointments();
     }
   }, [user]);
 
-  const fetchAppointmentsAndRequests = async () => {
+  const fetchAppointments = async () => {
     if (!user) return;
 
     setLoading(true);
     try {
+      // Fetch appointment requests
+      const { data: requests, error: requestsError } = await supabase
+        .from('appointment_requests')
+        .select(`
+          *,
+          research_aid:research_aid_id (
+            name,
+            email
+          ),
+          consultation_services:service_id (
+            title,
+            description
+          )
+        `)
+        .eq('student_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (requestsError) {
+        console.error('Error fetching requests:', requestsError);
+      }
+
       // Fetch confirmed appointments (service bookings)
       const { data: bookings, error: bookingsError } = await supabase
         .from('service_bookings')
@@ -75,46 +95,42 @@ const ResearchAidsAppointments = () => {
             title,
             description
           ),
-          client:client_id (
+          provider:provider_id (
             name,
             email
           )
         `)
-        .eq('provider_id', user.id)
+        .eq('client_id', user.id)
         .order('scheduled_date', { ascending: true });
 
       if (bookingsError) {
         console.error('Error fetching bookings:', bookingsError);
       }
 
-      // Fetch pending appointment requests
-      const { data: requests, error: requestsError } = await supabase
-        .from('appointment_requests')
-        .select(`
-          *,
-          student:student_id (
-            name,
-            email
-          ),
-          consultation_services:service_id (
-            title,
-            description
-          )
-        `)
-        .eq('research_aid_id', user.id)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
+      // Process appointment requests
+      const processedRequests: AppointmentRequest[] = (requests || []).map(request => ({
+        id: request.id,
+        research_aid_name: request.research_aid?.name || 'Unknown Research Aid',
+        research_aid_id: request.research_aid_id,
+        service_title: request.consultation_services?.title || 'Consultation',
+        requested_date: request.requested_date,
+        requested_time: request.requested_time,
+        duration_minutes: request.duration_minutes || 60,
+        meeting_type: request.meeting_type || 'video',
+        project_description: request.project_description || '',
+        specific_requirements: request.specific_requirements,
+        status: request.status,
+        payment_status: request.payment_status,
+        rejection_reason: request.rejection_reason,
+        created_at: request.created_at
+      }));
 
-      if (requestsError) {
-        console.error('Error fetching requests:', requestsError);
-      }
-
-      // Process appointments
-      const processedAppointments: AppointmentData[] = (bookings || []).map(booking => ({
+      // Process confirmed appointments
+      const processedAppointments: ConfirmedAppointment[] = (bookings || []).map(booking => ({
         id: booking.id,
         title: booking.consultation_services?.title || 'Consultation',
-        client_name: booking.client?.name || 'Unknown Client',
-        client_id: booking.client_id,
+        provider_name: booking.provider?.name || 'Unknown Provider',
+        provider_id: booking.provider_id,
         scheduled_date: booking.scheduled_date,
         scheduled_time: booking.scheduled_time,
         duration_minutes: booking.duration_minutes || 60,
@@ -124,28 +140,11 @@ const ResearchAidsAppointments = () => {
         meeting_link: booking.meeting_link,
         location: booking.location,
         project_description: booking.project_description,
-        payment_status: booking.payment_status,
-        service_title: booking.consultation_services?.title
+        payment_status: booking.payment_status
       }));
 
-      // Process appointment requests
-      const processedRequests: AppointmentRequest[] = (requests || []).map(request => ({
-        id: request.id,
-        student_name: request.student?.name || 'Unknown Student',
-        student_id: request.student_id,
-        service_title: request.consultation_services?.title || 'Consultation',
-        requested_date: request.requested_date,
-        requested_time: request.requested_time,
-        duration_minutes: request.duration_minutes || 60,
-        meeting_type: request.meeting_type || 'video',
-        project_description: request.project_description || '',
-        specific_requirements: request.specific_requirements,
-        payment_status: request.payment_status || 'pending',
-        created_at: request.created_at
-      }));
-
-      setAppointments(processedAppointments);
       setAppointmentRequests(processedRequests);
+      setConfirmedAppointments(processedAppointments);
 
     } catch (error) {
       console.error('Error fetching appointments:', error);
@@ -161,10 +160,13 @@ const ResearchAidsAppointments = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
+      case "pending":
+        return <Badge variant="secondary">Pending Review</Badge>;
+      case "accepted":
       case "confirmed":
         return <Badge className="bg-green-600">Confirmed</Badge>;
-      case "pending":
-        return <Badge variant="secondary">Pending Confirmation</Badge>;
+      case "rejected":
+        return <Badge variant="destructive">Declined</Badge>;
       case "completed":
         return <Badge className="bg-blue-600">Completed</Badge>;
       case "cancelled":
@@ -187,122 +189,6 @@ const ResearchAidsAppointments = () => {
     }
   };
 
-  const handleAcceptRequest = async (requestId: string) => {
-    setProcessingRequest(requestId);
-    try {
-      const request = appointmentRequests.find(r => r.id === requestId);
-      if (!request) return;
-
-      // Generate meeting link for video calls
-      const meetingLink = request.meeting_type === 'video' 
-        ? `https://meet.google.com/${Math.random().toString(36).substring(2, 15)}`
-        : null;
-
-      // Create service booking from request
-      const { data: booking, error: bookingError } = await supabase
-        .from('service_bookings')
-        .insert({
-          client_id: request.student_id,
-          provider_id: user!.id,
-          service_id: null, // We'll need to link this properly
-          scheduled_date: request.requested_date,
-          scheduled_time: request.requested_time,
-          duration_minutes: request.duration_minutes,
-          meeting_type: request.meeting_type,
-          status: 'confirmed',
-          payment_status: 'paid', // Mock payment
-          meeting_link: meetingLink,
-          project_description: request.project_description,
-          notes: request.specific_requirements
-        })
-        .select()
-        .single();
-
-      if (bookingError) throw bookingError;
-
-      // Update request status
-      const { error: updateError } = await supabase
-        .from('appointment_requests')
-        .update({ status: 'accepted' })
-        .eq('id', requestId);
-
-      if (updateError) throw updateError;
-
-      // Send notification to student
-      await supabase.from('notifications').insert({
-        user_id: request.student_id,
-        title: 'Appointment Confirmed',
-        message: `Your appointment request has been accepted and confirmed for ${request.requested_date} at ${request.requested_time}`,
-        type: 'appointment',
-        category: 'booking'
-      });
-
-      toast({
-        title: "Request Accepted",
-        description: "Appointment has been confirmed and student notified"
-      });
-
-      // Refresh data
-      fetchAppointmentsAndRequests();
-
-    } catch (error) {
-      console.error('Error accepting request:', error);
-      toast({
-        title: "Error",
-        description: "Failed to accept appointment request",
-        variant: "destructive"
-      });
-    } finally {
-      setProcessingRequest(null);
-    }
-  };
-
-  const handleRejectRequest = async (requestId: string, reason?: string) => {
-    setProcessingRequest(requestId);
-    try {
-      const request = appointmentRequests.find(r => r.id === requestId);
-      if (!request) return;
-
-      // Update request status
-      const { error: updateError } = await supabase
-        .from('appointment_requests')
-        .update({ 
-          status: 'rejected',
-          rejection_reason: reason 
-        })
-        .eq('id', requestId);
-
-      if (updateError) throw updateError;
-
-      // Send notification to student
-      await supabase.from('notifications').insert({
-        user_id: request.student_id,
-        title: 'Appointment Request Declined',
-        message: `Your appointment request for ${request.requested_date} has been declined. ${reason ? `Reason: ${reason}` : ''}`,
-        type: 'appointment',
-        category: 'booking'
-      });
-
-      toast({
-        title: "Request Rejected",
-        description: "Student has been notified of the rejection"
-      });
-
-      // Refresh data
-      fetchAppointmentsAndRequests();
-
-    } catch (error) {
-      console.error('Error rejecting request:', error);
-      toast({
-        title: "Error",
-        description: "Failed to reject appointment request",
-        variant: "destructive"
-      });
-    } finally {
-      setProcessingRequest(null);
-    }
-  };
-
   const handleJoinMeeting = (meetingLink: string) => {
     window.open(meetingLink, '_blank');
     toast({
@@ -311,8 +197,8 @@ const ResearchAidsAppointments = () => {
     });
   };
 
-  const handleMessageClient = async (clientId: string, clientName: string) => {
-    if (!clientMessage.trim()) {
+  const handleMessageProvider = async (providerId: string, providerName: string) => {
+    if (!message.trim()) {
       toast({
         title: "Error",
         description: "Please write a message",
@@ -324,18 +210,18 @@ const ResearchAidsAppointments = () => {
     try {
       // Send notification as message
       await supabase.from('notifications').insert({
-        user_id: clientId,
-        title: `Message from Research Aid`,
-        message: clientMessage,
+        user_id: providerId,
+        title: `Message from Student`,
+        message: message,
         type: 'message',
         category: 'communication'
       });
 
       toast({
         title: "Message Sent",
-        description: `Your message has been sent to ${clientName}`
+        description: `Your message has been sent to ${providerName}`
       });
-      setClientMessage("");
+      setMessage("");
     } catch (error) {
       toast({
         title: "Error",
@@ -345,27 +231,25 @@ const ResearchAidsAppointments = () => {
     }
   };
 
-  const handleAddToCalendar = (appointment: AppointmentData) => {
+  const handleCancelRequest = async (requestId: string) => {
     try {
-      const startDate = new Date(`${appointment.scheduled_date}T${appointment.scheduled_time}`);
-      const endDate = new Date(startDate.getTime() + appointment.duration_minutes * 60000);
-      
-      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-        throw new Error('Invalid date');
-      }
-      
-      const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(appointment.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${endDate.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(appointment.description)}`;
-      
-      window.open(calendarUrl, '_blank');
-      
+      const { error } = await supabase
+        .from('appointment_requests')
+        .update({ status: 'cancelled' })
+        .eq('id', requestId);
+
+      if (error) throw error;
+
       toast({
-        title: "Calendar Event",
-        description: "Opening calendar to add event"
+        title: "Request Cancelled",
+        description: "Your appointment request has been cancelled"
       });
+
+      fetchAppointments();
     } catch (error) {
       toast({
         title: "Error",
-        description: "Unable to create calendar event",
+        description: "Failed to cancel request",
         variant: "destructive"
       });
     }
@@ -384,7 +268,7 @@ const ResearchAidsAppointments = () => {
 
   const getUpcomingAppointments = () => {
     const now = new Date();
-    return appointments.filter(apt => {
+    return confirmedAppointments.filter(apt => {
       const aptDate = new Date(`${apt.scheduled_date}T${apt.scheduled_time}`);
       return aptDate >= now && apt.status === 'confirmed';
     });
@@ -392,23 +276,10 @@ const ResearchAidsAppointments = () => {
 
   const getPastAppointments = () => {
     const now = new Date();
-    return appointments.filter(apt => {
+    return confirmedAppointments.filter(apt => {
       const aptDate = new Date(`${apt.scheduled_date}T${apt.scheduled_time}`);
       return aptDate < now || apt.status === 'completed';
     });
-  };
-
-  const getCurrentData = () => {
-    switch (view) {
-      case 'requests':
-        return appointmentRequests;
-      case 'upcoming':
-        return getUpcomingAppointments();
-      case 'past':
-        return getPastAppointments();
-      default:
-        return [];
-    }
   };
 
   if (loading) {
@@ -423,13 +294,13 @@ const ResearchAidsAppointments = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Appointments</h2>
+        <h2 className="text-2xl font-bold">My Appointments</h2>
         <div className="flex space-x-2">
           <Button 
             variant={view === "requests" ? "default" : "outline"} 
             onClick={() => setView("requests")}
           >
-            Requests ({appointmentRequests.length})
+            Requests ({appointmentRequests.filter(r => r.status === 'pending').length})
           </Button>
           <Button 
             variant={view === "upcoming" ? "default" : "outline"} 
@@ -453,7 +324,7 @@ const ResearchAidsAppointments = () => {
               <Card>
                 <CardContent className="p-8 text-center">
                   <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No pending appointment requests.</p>
+                  <p className="text-gray-600">No appointment requests yet.</p>
                 </CardContent>
               </Card>
             ) : (
@@ -462,21 +333,21 @@ const ResearchAidsAppointments = () => {
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div className="space-y-2">
-                        <CardTitle className="text-lg">New Appointment Request</CardTitle>
+                        <CardTitle className="text-lg">Appointment Request</CardTitle>
                         <div className="flex items-center space-x-2 text-sm text-gray-600">
                           <Avatar className="h-6 w-6">
-                            <AvatarFallback>{request.student_name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                            <AvatarFallback>{request.research_aid_name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                           </Avatar>
-                          <span>{request.student_name}</span>
+                          <span>{request.research_aid_name}</span>
                         </div>
                       </div>
-                      <Badge variant="secondary">New Request</Badge>
+                      {getStatusBadge(request.status)}
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       <div>
-                        <h4 className="font-medium text-sm text-gray-700">Service Requested</h4>
+                        <h4 className="font-medium text-sm text-gray-700">Service</h4>
                         <p className="text-sm">{request.service_title}</p>
                       </div>
                       
@@ -511,65 +382,35 @@ const ResearchAidsAppointments = () => {
                         </div>
                       )}
 
-                      <div className="flex items-center space-x-2 text-sm text-gray-500">
-                        <span>Payment Status:</span>
-                        <Badge variant={request.payment_status === 'paid' ? 'default' : 'secondary'}>
-                          {request.payment_status}
-                        </Badge>
-                      </div>
-
-                      <div className="flex space-x-2 pt-4">
-                        <Button 
-                          onClick={() => handleAcceptRequest(request.id)}
-                          disabled={processingRequest === request.id}
-                          className="flex-1"
-                        >
-                          {processingRequest === request.id ? (
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          ) : (
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                          )}
-                          Accept Request
-                        </Button>
-                        
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button 
-                              variant="outline" 
-                              disabled={processingRequest === request.id}
-                              className="flex-1"
-                            >
-                              <XCircle className="h-4 w-4 mr-2" />
-                              Decline
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Decline Appointment Request</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <div>
-                                <Label htmlFor="rejectionReason">Reason (Optional)</Label>
-                                <Textarea
-                                  id="rejectionReason"
-                                  placeholder="Let the student know why you're declining..."
-                                  value={changeRequestMessage}
-                                  onChange={(e) => setChangeRequestMessage(e.target.value)}
-                                  rows={3}
-                                />
-                              </div>
-                              <div className="flex space-x-2">
-                                <Button 
-                                  onClick={() => handleRejectRequest(request.id, changeRequestMessage)}
-                                  variant="destructive"
-                                  className="flex-1"
-                                >
-                                  Decline Request
-                                </Button>
-                              </div>
+                      {request.status === 'rejected' && request.rejection_reason && (
+                        <div className="p-3 bg-red-50 border border-red-200 rounded">
+                          <div className="flex items-start space-x-2">
+                            <AlertCircle className="h-4 w-4 text-red-500 mt-0.5" />
+                            <div>
+                              <h4 className="font-medium text-sm text-red-800">Request Declined</h4>
+                              <p className="text-sm text-red-700">{request.rejection_reason}</p>
                             </div>
-                          </DialogContent>
-                        </Dialog>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2 text-sm text-gray-500">
+                          <span>Payment Status:</span>
+                          <Badge variant={request.payment_status === 'paid' ? 'default' : 'secondary'}>
+                            {request.payment_status}
+                          </Badge>
+                        </div>
+                        
+                        {request.status === 'pending' && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleCancelRequest(request.id)}
+                          >
+                            Cancel Request
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -581,7 +422,7 @@ const ResearchAidsAppointments = () => {
 
         {(view === "upcoming" || view === "past") && (
           <>
-            {getCurrentData().length === 0 ? (
+            {(view === "upcoming" ? getUpcomingAppointments() : getPastAppointments()).length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
                   <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -591,7 +432,7 @@ const ResearchAidsAppointments = () => {
                 </CardContent>
               </Card>
             ) : (
-              getCurrentData().map((appointment: AppointmentData) => (
+              (view === "upcoming" ? getUpcomingAppointments() : getPastAppointments()).map((appointment) => (
                 <Card key={appointment.id}>
                   <CardHeader>
                     <div className="flex justify-between items-start">
@@ -599,9 +440,9 @@ const ResearchAidsAppointments = () => {
                         <CardTitle className="text-lg">{appointment.title}</CardTitle>
                         <div className="flex items-center space-x-2 text-sm text-gray-600">
                           <Avatar className="h-6 w-6">
-                            <AvatarFallback>{appointment.client_name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                            <AvatarFallback>{appointment.provider_name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                           </Avatar>
-                          <span>{appointment.client_name}</span>
+                          <span>{appointment.provider_name}</span>
                         </div>
                       </div>
                       {getStatusBadge(appointment.status)}
@@ -660,26 +501,26 @@ const ResearchAidsAppointments = () => {
                             <DialogTrigger asChild>
                               <Button variant="outline" size="sm">
                                 <MessageSquare className="h-4 w-4 mr-1" />
-                                Message Client
+                                Message Provider
                               </Button>
                             </DialogTrigger>
                             <DialogContent>
                               <DialogHeader>
-                                <DialogTitle>Message {appointment.client_name}</DialogTitle>
+                                <DialogTitle>Message {appointment.provider_name}</DialogTitle>
                               </DialogHeader>
                               <div className="space-y-4">
                                 <div>
-                                  <Label htmlFor="clientMessage">Message</Label>
+                                  <Label htmlFor="message">Message</Label>
                                   <Textarea
-                                    id="clientMessage"
+                                    id="message"
                                     placeholder="Write your message..."
-                                    value={clientMessage}
-                                    onChange={(e) => setClientMessage(e.target.value)}
+                                    value={message}
+                                    onChange={(e) => setMessage(e.target.value)}
                                     rows={4}
                                   />
                                 </div>
                                 <Button 
-                                  onClick={() => handleMessageClient(appointment.client_id, appointment.client_name)} 
+                                  onClick={() => handleMessageProvider(appointment.provider_id, appointment.provider_name)} 
                                   className="w-full"
                                 >
                                   Send Message
@@ -689,11 +530,29 @@ const ResearchAidsAppointments = () => {
                           </Dialog>
                         </>
                       )}
-                      
-                      <Button variant="ghost" size="sm" onClick={() => handleAddToCalendar(appointment)}>
-                        <Calendar className="h-4 w-4 mr-1" />
-                        Add to Calendar
-                      </Button>
+
+                      {view === "past" && appointment.status === "completed" && (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Star className="h-4 w-4 mr-1" />
+                              Rate & Review
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Rate Your Experience</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <p>Rate your session with {appointment.provider_name}</p>
+                              {/* Rating component would go here */}
+                              <Button className="w-full">
+                                Submit Review
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -706,4 +565,4 @@ const ResearchAidsAppointments = () => {
   );
 };
 
-export default ResearchAidsAppointments;
+export default StudentAppointments;
