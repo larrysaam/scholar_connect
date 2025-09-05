@@ -73,17 +73,25 @@ const JobApplicationsManagement = () => {
         return;
       }
 
-      const { success, meetLink, bookingId: newBookingId } = await confirmJobApplication(
+
+      //  const { success, meetLink, bookingId: newBookingId } = await confirmJobApplication(
+      //   selectedApplication.id,
+      //   selectedApplication.applicant_id,
+      //   job.id,
+      //   job.title,
+      //   job.description,
+      //   job.budget,
+      //   job.currency,
+      //   job.category,
+      //   job.duration,
+      //   job.deadline
+      // );
+
+      const { success } = await confirmJobApplication(
         selectedApplication.id,
         selectedApplication.applicant_id,
         job.id,
-        job.title,
-        job.description,
-        job.budget,
-        job.currency,
-        job.category,
-        job.duration,
-        job.deadline
+        job.title
       );
 
       if (success) {
@@ -91,12 +99,12 @@ const JobApplicationsManagement = () => {
           title: "Success",
           description: "Researcher Aid confirmed and booking created!",
         });
-        if (meetLink) {
-          setMeetingLink(meetLink);
-        }
-        if (newBookingId) {
-          setBookingId(newBookingId);
-        }
+        // if (meetLink) {
+        //   setMeetingLink(meetLink);
+        // }
+        // if (newBookingId) {
+        //   setBookingId(newBookingId);
+        // }
         const jobsData = await fetchJobs();
         setStudentJobs(jobsData);
         const applicationsMap: { [jobId: string]: JobApplication[] } = {};

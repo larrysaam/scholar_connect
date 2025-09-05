@@ -505,13 +505,8 @@ export const useJobManagement = () => {
     applicationId: string,
     applicantId: string,
     jobId: string,
-    jobTitle: string,
-    jobDescription: string,
-    jobBudget: number,
-    jobCurrency: string,
-    jobCategory: string,
-    jobDuration?: string,
-    jobDeadline?: string
+    jobTitle: string
+  
   ): Promise<{success: boolean, meetLink?: string, bookingId?: string}> => {
     if (!user) return {success: false};
 
@@ -541,41 +536,62 @@ export const useJobManagement = () => {
         return {success: false};
       }
 
-      // Step 3: Create a new consultation service from the job
-      const { data: service, error: serviceError } = await supabase
-        .from('consultation_services')
-        .insert({
-          user_id: applicantId, // The provider is the applicant
-          title: jobTitle,
-          description: jobDescription,
-          category: jobCategory as any, // Make sure this category is valid
-          duration_minutes: jobDuration ? parseInt(jobDuration, 10) : 60,
-          is_active: true,
-        })
-        .select('id')
-        .single();
 
-      if (serviceError || !service) {
-        console.error('Error creating consultation service:', serviceError);
-        toast({ title: "Error", description: "Failed to create a service for the booking.", variant: "destructive" });
-        return {success: false};
-      }
+       // Step 2: Send a message to the aid
+      const { error: messageError } = await supabase.from('messages').insert([
+        {
+          id: jobId,
+          sender_id: user.id,
+          recipient_id: applicantId,
+          content: 'job confirmed',
+        },
+      ]);
 
-      // Step 4: Create pricing for the new service
-      const { error: pricingError } = await supabase
-        .from('service_pricing')
-        .insert({
-          service_id: service.id,
-          academic_level: 'PhD', // Default or derive from job if possible
-          price: jobBudget,
-          currency: jobCurrency,
+      if (messageError) {
+        console.error('Error sending message:', messageError);
+        toast({ title: "Warning", description: "Job confirmed, but failed to send message.", variant: "default" });
+      } else {
+        toast({
+          title: "Success",
+          description: "Job confirmed and message sent to the aid."
         });
-
-      if (pricingError) {
-        console.error('Error creating service pricing:', pricingError);
-        toast({ title: "Error", description: "Failed to set pricing for the service.", variant: "destructive" });
-        return {success: false};
       }
+
+      // // Step 3: Create a new consultation service from the job
+      // const { data: service, error: serviceError } = await supabase
+      //   .from('consultation_services')
+      //   .insert({
+      //     user_id: applicantId, // The provider is the applicant
+      //     title: jobTitle,
+      //     description: jobDescription,
+      //     category: jobCategory as any, // Make sure this category is valid
+      //     duration_minutes: jobDuration ? parseInt(jobDuration, 10) : 60,
+      //     is_active: true,
+      //   })
+      //   .select('id')
+      //   .single();
+
+      // if (serviceError || !service) {
+      //   console.error('Error creating consultation service:', serviceError);
+      //   toast({ title: "Error", description: "Failed to create a service for the booking.", variant: "destructive" });
+      //   return {success: false};
+      // }
+
+      // // Step 4: Create pricing for the new service
+      // const { error: pricingError } = await supabase
+      //   .from('service_pricing')
+      //   .insert({
+      //     service_id: service.id,
+      //     academic_level: 'PhD', // Default or derive from job if possible
+      //     price: jobBudget,
+      //     currency: jobCurrency,
+      //   });
+
+      // if (pricingError) {
+      //   console.error('Error creating service pricing:', pricingError);
+      //   toast({ title: "Error", description: "Failed to set pricing for the service.", variant: "destructive" });
+      //   return {success: false};
+      // }
 
       // Step 5: Create a new booking
       const { data: booking, error: bookingError } = await supabase
@@ -603,24 +619,24 @@ export const useJobManagement = () => {
         return {success: false};
       }
 
-      // Step 6: Generate Google Meet Link
-      try {
-        const { data, error: functionError } = await supabase.functions.invoke('generate-meet-link', {
-          body: { booking_id: booking.id },
-        });
+      // // Step 6: Generate Google Meet Link
+      // try {
+      //   const { data, error: functionError } = await supabase.functions.invoke('generate-meet-link', {
+      //     body: { booking_id: booking.id },
+      //   });
 
-        if (functionError) {
-          console.error('Error generating Google Meet link:', functionError);
-          toast({ title: "Warning", description: "Booking created, but failed to generate a meeting link.", variant: "default" });
-        } else {
-          console.log('Generated Meet Link:', data.meetLink);
-          // Optionally, update the booking with the meet link
-          await supabase.from('service_bookings').update({ meeting_link: data.meetLink }).eq('id', booking.id);
-          return {success: true, meetLink: data.meetLink, bookingId: booking.id};
-        }
-      } catch (e) {
-        console.error('Error invoking generate-meet-link function:', e);
-      }
+      //   if (functionError) {
+      //     console.error('Error generating Google Meet link:', functionError);
+      //     toast({ title: "Warning", description: "Booking created, but failed to generate a meeting link.", variant: "default" });
+      //   } else {
+      //     console.log('Generated Meet Link:', data.meetLink);
+      //     // Optionally, update the booking with the meet link
+      //     await supabase.from('service_bookings').update({ meeting_link: data.meetLink }).eq('id', booking.id);
+      //     return {success: true, meetLink: data.meetLink, bookingId: booking.id};
+      //   }
+      // } catch (e) {
+      //   console.error('Error invoking generate-meet-link function:', e);
+      // }
 
       // Step 7: Notify the researcher
       await NotificationService.createNotification({
@@ -633,7 +649,7 @@ export const useJobManagement = () => {
         actionLabel: 'View Booking'
       });
 
-      return {success: true, bookingId: booking.id};
+      return {success: true};
     } catch (error) {
       console.error('Error confirming job application:', error);
       toast({ title: "Error", description: "An unexpected error occurred during confirmation.", variant: "destructive" });
@@ -747,6 +763,66 @@ export const useJobManagement = () => {
     }
   }, [user, fetchJobs]);
 
+  // Confirm a job request and send a message
+  const confirmJobRequest = async (jobId: string, aidId: string): Promise<boolean> => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to confirm a job.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    try {
+      setUpdating(true);
+      // Step 1: Update job application status to 'accepted'
+      const { error: updateApplicationError } = await supabase
+        .from('job_applications')
+        .update({ status: 'accepted' })
+        .eq('job_id', jobId)
+        .eq('applicant_id', aidId);
+
+      if (updateApplicationError) {
+        console.error('Error updating job application status:', updateApplicationError);
+        toast({ title: "Error", description: "Failed to accept application.", variant: "destructive" });
+        return false;
+      }
+
+      // Step 2: Send a message to the aid
+      const { error: messageError } = await supabase.from('messages').insert([
+        {
+          id: jobId,
+          sender_id: user.id,
+          recipient_id: aidId,
+          content: 'job confirmed',
+        },
+      ]);
+
+      if (messageError) {
+        console.error('Error sending message:', messageError);
+        toast({ title: "Warning", description: "Job confirmed, but failed to send message.", variant: "default" });
+      } else {
+        toast({
+          title: "Success",
+          description: "Job confirmed and message sent to the aid."
+        });
+      }
+
+      // Step 3: Optionally, update the job status to 'closed'
+      await updateJobStatus(jobId, 'closed');
+
+
+      return true;
+    } catch (error) {
+      console.error('Error confirming job request:', error);
+      toast({ title: "Error", description: "An unexpected error occurred during confirmation.", variant: "destructive" });
+      return false;
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   return {
     jobs,
     loading,
@@ -760,6 +836,7 @@ export const useJobManagement = () => {
     fetchJobApplications,
     fetchAllJobsForResearchAids,
     confirmJobApplication,
+    confirmJobRequest,
     applyForJob,
     handleUploadDeliverableForJobApplication,
     handleDeleteDeliverableForJobApplication
