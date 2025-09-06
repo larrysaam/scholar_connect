@@ -39,7 +39,7 @@ const ResearchAidsSidebar = ({ activeTab, setActiveTab }: ResearchAidsSidebarPro
     { id: "payments-earnings", label: "Payments & Earnings", icon: DollarSign },
     { id: "previous-works", label: "Previous Works", icon: FolderOpen },
     { id: "notifications", label: "Notifications", icon: Bell },
-    { id: "discussion", label: "Discussion", icon: MessageCircle },
+    // { id: "discussion", label: "Discussion", icon: MessageCircle },
     { id: "quality-feedback", label: "Quality Feedback", icon: Award },
     { id: "verification", label: "Verification", icon: Shield },
     { id: "profile-ratings", label: "My Profile & Ratings", icon: Star },

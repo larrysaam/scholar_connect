@@ -130,58 +130,82 @@ const VerificationTab = () => {
     }
   };
 
+  // Defensive: Only allow actions if user is profile owner
+  const isProfileOwner = user && researcher && user.id === researcher.id;
+
+  // Improved file upload with error handling and owner check
   const handleFileUpload = async (categoryKey: string, documentType: string) => {
+    if (!isProfileOwner) {
+      toast({ title: 'Permission Denied', description: 'You can only upload documents for your own profile.', variant: 'destructive' });
+      return;
+    }
     const loadingKey = `${categoryKey}-${documentType}`;
     setLoadingStates(prev => ({ ...prev, [loadingKey]: true }));
-
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file && user) {
-        const path = `public/${user.id}/${file.name}`;
-        const fileUrl = await uploadDocument(file, 'lovable-uploads', path);
-
-        if (fileUrl && researcher) {
-          let currentVerifications: Verifications = getCurrentVerifications(researcher.verifications);
-          if (!currentVerifications[categoryKey]) {
-            currentVerifications[categoryKey] = { documents: [] };
+    try {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
+      input.onchange = async (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file && user) {
+          try {
+            const path = `public/${user.id}/${file.name}`;
+            const fileUrl = await uploadDocument(file, 'lovable-uploads', path);
+            if (fileUrl && researcher) {
+              let currentVerifications: Verifications = getCurrentVerifications(researcher.verifications);
+              if (!currentVerifications[categoryKey]) {
+                currentVerifications[categoryKey] = { documents: [] };
+              }
+              const docIndex = currentVerifications[categoryKey].documents.findIndex(d => d.documentType === documentType);
+              const newDocument: VerificationDocument = {
+                documentType,
+                status: 'pending',
+                fileUrl,
+                fileName: file.name,
+                uploadedAt: new Date().toISOString(),
+              };
+              if (docIndex > -1) {
+                currentVerifications[categoryKey].documents[docIndex] = newDocument;
+              } else {
+                currentVerifications[categoryKey].documents.push(newDocument);
+              }
+              await updateProfile({ verifications: currentVerifications });
+              refetch();
+            }
+          } catch (err: any) {
+            toast({ title: 'Upload Failed', description: err?.message || 'An error occurred during upload.', variant: 'destructive' });
           }
-          const docIndex = currentVerifications[categoryKey].documents.findIndex(d => d.documentType === documentType);
-          const newDocument: VerificationDocument = {
-            documentType,
-            status: 'pending',
-            fileUrl,
-            fileName: file.name,
-            uploadedAt: new Date().toISOString(),
-          };
-          if (docIndex > -1) {
-            currentVerifications[categoryKey].documents[docIndex] = newDocument;
-          } else {
-            currentVerifications[categoryKey].documents.push(newDocument);
-          }
-          await updateProfile({ verifications: currentVerifications });
-          refetch();
         }
-      }
+        setLoadingStates(prev => ({ ...prev, [loadingKey]: false }));
+      };
+      input.click();
+      input.oncancel = () => {
+        setLoadingStates(prev => ({ ...prev, [loadingKey]: false }));
+      };
+    } catch (err: any) {
       setLoadingStates(prev => ({ ...prev, [loadingKey]: false }));
-    };
-    input.click();
-    input.oncancel = () => {
-      setLoadingStates(prev => ({ ...prev, [loadingKey]: false }));
-    };
+      toast({ title: 'Upload Error', description: err?.message || 'An error occurred.', variant: 'destructive' });
+    }
   };
 
+  // Improved remove file with error handling and owner check
   const handleRemoveFile = async (categoryKey: string, documentType: string) => {
-    if (!researcher) return;
-    let currentVerifications: Verifications = getCurrentVerifications(researcher.verifications);
-    if (!currentVerifications[categoryKey]) return;
-    currentVerifications[categoryKey].documents = currentVerifications[categoryKey].documents.filter(
-      d => d.documentType !== documentType
-    );
-    await updateProfile({ verifications: currentVerifications });
-    refetch();
+    if (!isProfileOwner) {
+      toast({ title: 'Permission Denied', description: 'You can only remove documents from your own profile.', variant: 'destructive' });
+      return;
+    }
+    try {
+      if (!researcher) return;
+      let currentVerifications: Verifications = getCurrentVerifications(researcher.verifications);
+      if (!currentVerifications[categoryKey]) return;
+      currentVerifications[categoryKey].documents = currentVerifications[categoryKey].documents.filter(
+        d => d.documentType !== documentType
+      );
+      await updateProfile({ verifications: currentVerifications });
+      refetch();
+    } catch (err: any) {
+      toast({ title: 'Remove Failed', description: err?.message || 'An error occurred while removing the file.', variant: 'destructive' });
+    }
   };
 
   const handleSaveOtherEmployment = async () => {
@@ -210,9 +234,10 @@ const VerificationTab = () => {
   // Calculate overall verification status (all required docs must be verified)
   const allCategoriesVerified = totalVerifiedDocs === totalRequiredDocs && totalRequiredDocs > 0;
 
+  // Use parsedVerifications for category status
   const getCategoryStatus = (categoryKey: string): VerificationDocument['status'] => {
-    const category = researcher?.verifications?.[categoryKey];
-    if (!category || category.documents.length === 0) return 'not_started';
+    const category = parsedVerifications?.[categoryKey];
+    if (!category || !Array.isArray(category.documents) || category.documents.length === 0) return 'not_started';
     if (category.documents.some(d => d.status === 'verified')) return 'verified';
     if (category.documents.some(d => d.status === 'pending')) return 'pending';
     if (category.documents.some(d => d.status === 'rejected')) return 'rejected';
@@ -238,7 +263,7 @@ const VerificationTab = () => {
                 <span>Overall Progress</span>
                 <span>{verificationProgress.toFixed(0)}% Complete</span>
               </div>
-              <Progress value={verificationProgress} className="h-3" />
+              <Progress value={verificationProgress} className="h-3" aria-valuenow={verificationProgress} aria-valuemin={0} aria-valuemax={100} aria-label="Verification Progress" />
             </div>
             <div className="flex items-center justify-between mt-4">
               <span className="font-medium">Verification Status</span>
@@ -246,7 +271,7 @@ const VerificationTab = () => {
                 {allCategoriesVerified ? 'VERIFIED' : 'INCOMPLETE'}
               </Badge>
             </div>
-            <Progress value={allCategoriesVerified ? 100 : 0} className="h-2 mt-2" />
+            <Progress value={allCategoriesVerified ? 100 : 0} className="h-2 mt-2" aria-valuenow={allCategoriesVerified ? 100 : 0} aria-valuemin={0} aria-valuemax={100} aria-label="Overall Verification Status" />
           </div>
         </CardContent>
       </Card>
@@ -323,7 +348,7 @@ const VerificationTab = () => {
                                 variant="outline"
                                 onClick={() => handleFileUpload(item.key, doc)}
                                 className="ml-2"
-                                disabled={isLoading}
+                                disabled={isLoading || !isProfileOwner}
                               >
                                 {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
                                 <span className="ml-1">{docData ? 'Replace' : 'Upload'}</span>
@@ -334,7 +359,7 @@ const VerificationTab = () => {
                                   variant="ghost"
                                   className="text-red-500 hover:text-red-700"
                                   onClick={() => handleRemoveFile(item.key, doc)}
-                                  disabled={isLoading}
+                                  disabled={isLoading || !isProfileOwner}
                                 >
                                   <XCircle className="h-4 w-4" />
                                 </Button>
