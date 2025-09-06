@@ -20,7 +20,10 @@ export interface ResearchAid {
   experience: string;
   rating: number;
   reviewCount: number;
+  avatar_url?: string | null; // Add avatar_url for profile picture
   payout_details?: any; // Or a more specific type
+  location?: string; // Add location
+  hourly_rate?: number; // Add hourly_rate
 }
 
 const FindResearchAidTab = () => {
@@ -40,24 +43,43 @@ const FindResearchAidTab = () => {
       setLoading(true);
       setError(null);
       try {
-        const { data, error } = await supabase
+        // 1. Fetch all aids from users
+        const { data: users, error: userError } = await supabase
           .from('users')
-          .select('*')
-          .in('role', ['expert', 'aid']);
+          .select('id, name, topic_title, expertise, experience, avatar_url')
+          .in('role', ['aid']);
+        if (userError) throw userError;
 
-        if (error) throw error;
+        // 2. Fetch all research_aid_profiles for those users
+        const userIds = users.map((u: any) => u.id);
+        // @ts-expect-error: Supabase type inference bug for .in()
+        const { data: profiles, error: profileError } = await supabase
+          .from('research_aid_profiles')
+          .select('id, location, hourly_rate')
+          .in('id', userIds);
+        if (profileError) throw profileError;
 
-        // Map the data from the 'users' table to the 'ResearchAid' shape.
-        // This mapping is a best guess and may need to be adjusted.
-        const mappedAids: ResearchAid[] = data.map(user => ({
-          id: user.id,
-          name: user.name || 'No Name Provided',
-          title: user.topic_title || 'Research Specialist',
-          specializations: user.expertise || [],
-          experience: user.experience || 'N/A',
-          rating: 4.5, // Placeholder, as rating is not in the users table
-          reviewCount: 10, // Placeholder
-        }));
+        // 3. Map id to profile
+        const profileMap = Object.fromEntries(
+          profiles.map((p: any) => [p.id, p])
+        );
+
+        // 4. Merge data
+        const mappedAids: ResearchAid[] = users.map((user: any) => {
+          const profile = profileMap[user.id];
+          return {
+            id: user.id,
+            name: user.name || 'No Name Provided',
+            title: user.topic_title || 'Research Specialist',
+            specializations: user.expertise || [],
+            rating: 4.5, // Placeholder
+            reviewCount: 10, // Placeholder
+            avatar_url: user.avatar_url || null,
+            location: profile?.location || 'Not set',
+            hourly_rate: profile?.hourly_rate ?? 0,
+            experience: user.experience || 'N/A',
+          };
+        });
 
         setResearchAids(mappedAids);
       } catch (err: any) {

@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,12 +15,13 @@ interface ResearchAid {
   specializations: string[];
   rating: number;
   reviewCount: number;
-  hourlyRate: number;
-  location: string;
-  imageUrl: string;
-  completedJobs: number;
-  responseTime: string;
-  featured: boolean;
+  avatar_url?: string | null; // Add avatar_url for profile picture
+  hourly_rate?: number; // Add hourly_rate
+  location?: string;    // Add location
+  imageUrl?: string; // Make imageUrl optional
+  completedJobs?: number;
+  responseTime?: string;
+  featured?: boolean;
 }
 
 interface ResearchAidCardProps {
@@ -33,6 +33,9 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
   const [showMessage, setShowMessage] = useState(false);
   const [message, setMessage] = useState("");
   const { toast } = useToast();
+
+  // Use avatar_url if present, fallback to imageUrl, then placeholder
+  const profileImage = aid.avatar_url || aid.imageUrl || '/placeholder.svg';
 
   const handleViewProfile = () => {
     setShowProfile(true);
@@ -62,7 +65,7 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
           <div className="flex items-start space-x-4">
             <div className="relative">
               <img 
-                src={aid.imageUrl || '/placeholder.svg'} 
+                src={profileImage} 
                 alt={aid.name}
                 className="w-16 h-16 rounded-full object-cover border-2 border-green-100"
               />
@@ -109,7 +112,7 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
                   </div>
                 </div>
                 <div className="text-sm font-bold text-green-600">
-                  {(aid.hourlyRate || 0).toLocaleString()} XAF/hr
+                  {(aid.hourly_rate || 0).toLocaleString()} XAF/hr
                 </div>
               </div>
               
@@ -148,7 +151,7 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
           <div className="space-y-4">
             <div className="flex items-center space-x-4">
               <img 
-                src={aid.imageUrl || '/placeholder.svg'} 
+                src={profileImage}
                 alt={aid.name}
                 className="w-20 h-20 rounded-full object-cover"
               />
@@ -180,7 +183,7 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
               </div>
               <div>
                 <h4 className="font-medium mb-2">Rate</h4>
-                <p className="text-green-600 font-bold">{(aid.hourlyRate || 0).toLocaleString()} XAF/hr</p>
+                <p className="text-green-600 font-bold">{(aid.hourly_rate || 0).toLocaleString()} XAF/hr</p>
               </div>
             </div>
 
