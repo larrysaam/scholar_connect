@@ -11,7 +11,10 @@ import ContactFields from './ContactFields';
 import OrganizationFields from './OrganizationFields';
 import PasswordFields from './PasswordFields';
 import TermsCheckbox from './TermsCheckbox';
-import TabPlaceholder from './TabPlaceholder';
+import ExpertiseSection from './research-aid/ExpertiseSection';
+import PersonalInfoSection from './research-aid/PersonalInfoSection';
+import CredentialsSection from './research-aid/CredentialsSection';
+import { createResearchAidProfile } from '@/services/researchAidService';
 import type { UserRole } from '@/types/signup';
 
 interface UnifiedSignupFormProps {
@@ -38,10 +41,60 @@ const UnifiedSignupForm = ({ defaultUserType }: UnifiedSignupFormProps) => {
     dateOfBirth: '',
     sex: '',
     agreedToTerms: false,
+    // Research Aid specific fields
+    fullName: '', // For PersonalInfoSection
+    languages: [] as string[], // For PersonalInfoSection
+    experience: '', // For CredentialsSection
+    linkedInUrl: '', // For CredentialsSection
+    expertise: [] as string[], // For ExpertiseSection
+    otherExpertise: '', // For ExpertiseSection
   });
+
+  const [cvFile, setCvFile] = useState<File | null>(null);
+  const [certFile, setCertFile] = useState<File | null>(null);
+
+  const availableLanguages = ['English', 'French', 'Spanish', 'German', 'Chinese', 'Arabic', 'Other'];
+  const expertiseAreas = [
+    'Academic Writing', 'Data Analysis', 'Literature Review', 'Research Design',
+    'Statistical Consulting', 'Qualitative Research', 'Quantitative Research',
+    'Editing & Proofreading', 'Grant Writing', 'Survey Design', 'Transcription',
+    'Translation', 'Coding/Programming', 'Experimental Design', 'Fieldwork'
+  ];
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleToggleLanguage = (language: string) => {
+    setFormData(prev => ({
+      ...prev,
+      languages: prev.languages.includes(language)
+        ? prev.languages.filter(lang => lang !== language)
+        : [...prev.languages, language],
+    }));
+  };
+
+  const handleRemoveLanguage = (language: string) => {
+    setFormData(prev => ({
+      ...prev,
+      languages: prev.languages.filter(lang => lang !== language),
+    }));
+  };
+
+  const handleToggleExpertise = (expertise: string) => {
+    setFormData(prev => ({
+      ...prev,
+      expertise: prev.expertise.includes(expertise)
+        ? prev.expertise.filter(exp => exp !== expertise)
+        : [...prev.expertise, expertise],
+    }));
+  };
+
+  const handleRemoveExpertise = (expertise: string) => {
+    setFormData(prev => ({
+      ...prev,
+      expertise: prev.expertise.filter(exp => exp !== expertise),
+    }));
   };
 
   const validateForm = (): boolean => {
@@ -88,6 +141,28 @@ const UnifiedSignupForm = ({ defaultUserType }: UnifiedSignupFormProps) => {
       
       if (result.success) {
         toast.success('Account created successfully! Please sign in to continue.');
+
+        if (userType === 'aid') {
+          try {
+            await createResearchAidProfile({
+              userId: result.userId, // Assuming result.userId is available after successful signup
+              fullName: formData.fullName,
+              sex: formData.sex,
+              dateOfBirth: formData.dateOfBirth,
+              phoneNumber: formData.phone,
+              country: formData.country,
+              languages: formData.languages,
+              experience: formData.experience,
+              linkedInUrl: formData.linkedInUrl,
+              expertise: formData.expertise,
+              otherExpertise: formData.otherExpertise,
+            }, cvFile, certFile);
+            toast.success('Research Aid profile created successfully!');
+          } catch (profileError) {
+            toast.error(`Failed to create Research Aid profile: ${profileError.message}`);
+            // Optionally, handle rollback of user creation or flag for manual review
+          }
+        }
         navigate('/login');
       } else {
         toast.error(result.error || 'Failed to create account');
@@ -130,7 +205,30 @@ const UnifiedSignupForm = ({ defaultUserType }: UnifiedSignupFormProps) => {
               </TabsContent>
 
               <TabsContent value="aid" className="space-y-4">
-                <TabPlaceholder userType="aid" message="Research Aid registration form coming soon. Please use the contact form to register as a research aid." />
+                <PersonalInfoSection
+                  formData={formData}
+                  availableLanguages={availableLanguages}
+                  onInputChange={handleInputChange}
+                  onToggleLanguage={handleToggleLanguage}
+                  onRemoveLanguage={handleRemoveLanguage}
+                />
+                <CredentialsSection
+                  formData={formData}
+                  onInputChange={handleInputChange}
+                  onSetCvFile={setCvFile}
+                  onSetCertFile={setCertFile}
+                />
+                <ExpertiseSection
+                  formData={formData}
+                  expertiseAreas={expertiseAreas}
+                  onInputChange={handleInputChange}
+                  onToggleExpertise={handleToggleExpertise}
+                  onRemoveExpertise={handleRemoveExpertise}
+                />
+                <TermsCheckbox
+                  agreedToTerms={formData.agreedToTerms}
+                  onInputChange={handleInputChange}
+                />
               </TabsContent>
             </Tabs>
 
