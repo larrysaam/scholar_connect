@@ -122,9 +122,51 @@ const ResearchAidSignup = () => {
           toast.error('Account created, but failed to save profile details. Please contact support.');
           // Optionally, you might want to delete the auth user here if profile creation is critical
         } else {
-          logSecurityEvent(`Research Aid signup successful and profile saved for ${formData.email}`);
-          toast.success('Account created successfully! Please check your email for verification.');
-          navigate('/login');
+          // Insert research aid profile into public.research_aid_profiles table
+          const { error: researchAidProfileError } = await supabase
+            .from('research_aid_profiles')
+            .insert({
+              user_id: data.user.id,
+              title: '', // Default or derive from highestEducation
+              department: '',
+              years_experience: 0,
+              students_supervised: 0,
+              hourly_rate: 0,
+              response_time: 'Usually responds within 24 hours',
+              is_online: false,
+              online_status: 'offline',
+              bio: '',
+              research_interests: formData.fieldsOfExpertise.split(',').map(item => item.trim()),
+              specialties: [],
+              education: [], // Initialize as empty JSONB array
+              experience: [],
+              publications: [],
+              awards: [],
+              fellowships: [],
+              grants: [],
+              memberships: [],
+              supervision: [],
+              available_times: [],
+              verifications: {
+                academic: 'pending',
+                publication: 'pending',
+                institutional: 'pending'
+              },
+              rating: 0.0,
+              total_reviews: 0,
+              profile_visibility: 'public',
+              show_contact_info: true,
+              show_hourly_rate: true,
+            });
+
+          if (researchAidProfileError) {
+            logSecurityEvent(`Failed to save Research Aid profile to public.research_aid_profiles for ${formData.email}: ${researchAidProfileError.message}`);
+            toast.error('Account created, but failed to save detailed research aid profile. Please contact support.');
+          } else {
+            logSecurityEvent(`Research Aid signup successful and profile saved for ${formData.email}`);
+            toast.success('Account created successfully! Please check your email for verification.');
+            navigate('/login');
+          }
         }
       }
     } catch (error) {

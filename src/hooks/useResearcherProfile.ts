@@ -53,104 +53,39 @@ export interface ResearcherReview {
 }
 
 export interface ResearcherProfileData {
-  // Basic user info
+  // Basic user info (from users table, but essential for profile)
   id: string;
   name: string;
   email: string;
   role: string;
-  institution: string;
-  faculty?: string;
-  study_level?: string;
-  experience?: string;
-  expertise?: string[];
-  other_expertise?: string;
-  languages?: string[];
-  linkedin_url?: string;
-  country?: string;
-  phone_number?: string;
   
-  // Extended profile info
-  title?: string;
-  subtitle?: string;
-  department?: string;
-  years_experience: number;
-  students_supervised: number;
-  hourly_rate: number;
-  response_time: string;
-  is_online: boolean;
-  online_status: 'online' | 'offline' | 'busy' | 'away';
+  // From research_aid_profiles table
   bio?: string;
-  research_interests?: string[];
-  specialties?: string[];
-  education: ResearcherEducation[];
-  experience_history: ResearcherExperience[];
-  publications: ResearcherPublication[];
-  awards: ResearcherAward[];
-  fellowships: ResearcherFellowship[];
-  grants: ResearcherGrant[];
-  memberships?: string[];
-  supervision: ResearcherSupervision[];
-  available_times: any[];
-  verifications: {
-    academic: 'pending' | 'verified' | 'rejected';
-    identity?: {
-      documents: {
-        status: 'pending' | 'verified' | 'rejected';
-        fileUrl: string;
-        fileName: string;
-        uploadedAt: string;
-        documentType: string;
-      }[];
-    };
-    education?: {
-      documents: {
-        status: 'pending' | 'verified' | 'rejected';
-        fileUrl: string;
-        fileName: string;
-        uploadedAt: string;
-        documentType: string;
-      }[];
-    };
-    employment?: {
-      documents: {
-        status: 'pending' | 'verified' | 'rejected';
-        fileUrl: string;
-        fileName: string;
-        uploadedAt: string;
-        documentType: string;
-      }[];
-    };
-    publication: 'pending' | 'verified' | 'rejected';
-    publications?: { // Note: This is 'publications' for the documents, while 'publication' is for the overall status
-      documents: {
-        status: 'pending' | 'verified' | 'rejected';
-        fileUrl: string;
-        fileName: string;
-        uploadedAt: string;
-        documentType: string;
-      }[];
-    };
-    institutional: 'pending' | 'verified' | 'rejected';
-  };
+  skills?: string[]; // maps to expertise
+  hourly_rate: number;
+  availability?: any; // maps to availability jsonb
   rating: number;
-  total_reviews: number;
-  profile_visibility: 'public' | 'private' | 'limited';
-  show_contact_info: boolean;
-  show_hourly_rate: boolean;
-  
-  // Reviews
+  total_consultations_completed: number;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
+  verifications?: any; // maps to verifications jsonb
+  title?: string;
+  job_title?: string;
+  location?: string;
+  education_summary?: string; // This is text in schema, but component uses educational_background
+  educational_background: ResearcherEducation[]; // maps to educational_background jsonb
+  work_experience: ResearcherExperience[]; // maps to work_experience jsonb
+  awards: ResearcherAward[]; // maps to awards jsonb
+  publications: ResearcherPublication[]; // maps to publications jsonb
+  scholarships: ResearcherFellowship[]; // maps to scholarships jsonb
+  affiliations?: string[]; // maps to affiliations text[]
+
+  // Reviews (from research_aid_reviews table)
   reviews: ResearcherReview[];
-  
-  // Computed fields for compatibility
-  affiliation: string;
-  location: string;
-  totalReviews: number;
-  studentsSupervised: number;
-  yearsExperience: number;
-  imageUrl: string;
-  isOnline: boolean;
-  responseTime: string;
-  field: string;
+
+  // Computed fields for compatibility (these will be removed or re-evaluated)
+  imageUrl: string; // From users table
 }
 
 export const useResearcherProfile = (researcherId: string) => {
@@ -167,9 +102,8 @@ export const useResearcherProfile = (researcherId: string) => {
       // Fetch basic user info
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('*')
+        .select('id, name, email, role, avatar_url')
         .eq('id', researcherId)
-        .eq('role', 'expert')
         .single();
 
       if (userError) {
@@ -178,43 +112,54 @@ export const useResearcherProfile = (researcherId: string) => {
         return;
       }
 
-      if (!userData) {
+      // Defensive check: userData may be an error object if the query failed
+      if (!userData || typeof userData !== 'object' || !('id' in userData)) {
         setError('Researcher not found');
+        setLoading(false);
         return;
       }
 
-      // Fetch extended profile info
+      // Fetch extended profile info from research_aid_profiles
       const { data: profileData, error: profileError } = await supabase
-        .from('researcher_profiles')
-        .select('*, subtitle')
-        .eq('user_id', researcherId)
+        .from('research_aid_profiles')
+        .select(
+          `id, bio, expertise, hourly_rate, availability, rating, total_consultations_completed, is_verified, created_at, updated_at, verifications, title, job_title, location, education_summary, skills, educational_background, work_experience, awards, publications, scholarships, affiliations`
+        )
+        .eq('id', researcherId)
         .single();
+
+      console.log('Profile data fetch result:', { profileData, profileError });
 
       // If no profile exists, create a default one
       let profile = profileData;
       if (profileError && profileError.code === 'PGRST116') {
-        // Only try to create a profile if the user is authenticated and is the owner
+        console.log('Attempting to create new profile for user:', researcherId);
         const { data: authUserData } = await supabase.auth.getUser();
         const userId = authUserData?.user?.id;
         if (userId && userId === researcherId) {
           const { data: newProfile, error: createError } = await supabase
-            .from('researcher_profiles')
+            .from('research_aid_profiles')
             .insert({
-              user_id: researcherId,
-              title: userData.experience || 'Research Expert',
-              subtitle: 'Dr.', // Added this line
+              id: researcherId,
+              title: 'Research Expert',
+              job_title: 'Dr.',
               bio: 'Experienced researcher ready to help with your academic projects.',
-              research_interests: userData.expertise || [],
-              specialties: userData.expertise || [],
-              education: [],
-              experience: [],
-              publications: [],
+              expertise: [],
+              hourly_rate: 0,
+              availability: {},
+              rating: 0,
+              total_consultations_completed: 0,
+              is_verified: false,
+              verifications: {},
+              location: '',
+              education_summary: '',
+              skills: [],
+              educational_background: [],
+              work_experience: [],
               awards: [],
-              fellowships: [],
-              grants: [],
-              memberships: [],
-              supervision: [],
-              available_times: []
+              publications: [],
+              scholarships: [],
+              affiliations: [],
             })
             .select()
             .single();
@@ -222,15 +167,16 @@ export const useResearcherProfile = (researcherId: string) => {
           if (createError) {
             console.error('Error creating profile:', createError);
           } else {
+            console.log('New profile created successfully:', newProfile);
             profile = newProfile;
           }
         } else {
-          // Not authenticated or not the owner, do not attempt to create
+          console.log('Not authenticated or not owner, skipping profile creation.');
           profile = null;
         }
       }
 
-      // Fetch reviews
+      // Fetch reviews (assuming reviews are still desired)
       const { data: reviewsData, error: reviewsError } = await supabase
         .from('researcher_reviews')
         .select(`
@@ -250,16 +196,16 @@ export const useResearcherProfile = (researcherId: string) => {
         console.error('Error fetching reviews:', reviewsError);
       }
 
-      // Fetch supervised students count
-      const { count: studentsSupervisedCount, error: supervisedStudentsError } = await supabase
-        .from('service_bookings')
-        .select('client_id', { count: 'exact', head: true })
-        .eq('provider_id', researcherId)
-        .in('status', ['completed', 'confirmed']);
-
-      if (supervisedStudentsError) {
-        console.error('Error fetching supervised students count:', supervisedStudentsError);
-      }
+      // Parse JSONB fields to correct types
+      const parseJsonArray = <T>(val: any): T[] => {
+        if (!val) return [];
+        if (Array.isArray(val)) return val as T[];
+        try {
+          return JSON.parse(val as string) as T[];
+        } catch {
+          return [];
+        }
+      };
 
       // Transform data to match component interface
       const transformedResearcher: ResearcherProfileData = {
@@ -268,50 +214,29 @@ export const useResearcherProfile = (researcherId: string) => {
         name: userData.name || 'Unknown Researcher',
         email: userData.email,
         role: userData.role,
-        institution: userData.institution || 'Institution not specified',
-        faculty: userData.faculty,
-        study_level: userData.study_level,
-        experience: userData.experience,
-        expertise: userData.expertise || [],
-        other_expertise: userData.other_expertise,
-        languages: userData.languages || ['English'],
-        linkedin_url: userData.linkedin_url,
-        country: userData.country || 'Location not specified',
-        phone_number: userData.phone_number,
         
-        // Extended profile info
-        title: profile?.title || userData.experience || 'Research Expert',
-        subtitle: profile?.subtitle || 'Dr.', // Added this line
-        department: profile?.department,
-        years_experience: profile?.years_experience || 0,
-        students_supervised: studentsSupervisedCount || 0,
-        hourly_rate: profile?.hourly_rate || 15000,
-        response_time: profile?.response_time || 'Usually responds within 24 hours',
-        is_online: profile?.is_online || false,
-        online_status: profile?.online_status || 'offline',
-        bio: profile?.bio || 'Experienced researcher ready to help with your academic projects.',
-        research_interests: profile?.research_interests || userData.expertise || [],
-        specialties: profile?.specialties || userData.expertise || [],
-        education: profile?.education || [],
-        experience_history: profile?.experience || [],
-        publications: profile?.publications || [],
-        awards: profile?.awards || [],
-        fellowships: profile?.fellowships || [],
-        grants: profile?.grants || [],
-        memberships: profile?.memberships || [],
-        supervision: profile?.supervision || [],
-        available_times: profile?.available_times || [],
-        verifications: profile?.verifications || {
-          academic: 'pending',
-          publication: 'pending',
-          institutional: 'pending'
-        },
+        // From research_aid_profiles
+        bio: profile?.bio || '',
+        skills: profile?.skills || [], // Mapped from expertise
+        hourly_rate: profile?.hourly_rate || 0,
+        availability: profile?.availability || {},
         rating: profile?.rating || 0,
-        total_reviews: profile?.total_reviews || 0,
-        profile_visibility: profile?.profile_visibility || 'public',
-        show_contact_info: profile?.show_contact_info ?? true,
-        show_hourly_rate: profile?.show_hourly_rate ?? true,
-        
+        total_consultations_completed: profile?.total_consultations_completed || 0,
+        is_verified: profile?.is_verified || false,
+        created_at: profile?.created_at || new Date().toISOString(),
+        updated_at: profile?.updated_at || new Date().toISOString(),
+        verifications: profile?.verifications || {},
+        title: profile?.title || '',
+        job_title: profile?.job_title || '',
+        location: profile?.location || '',
+        education_summary: profile?.education_summary || '',
+        educational_background: parseJsonArray<ResearcherEducation>(profile?.educational_background),
+        work_experience: parseJsonArray<ResearcherExperience>(profile?.work_experience),
+        awards: parseJsonArray<ResearcherAward>(profile?.awards),
+        publications: parseJsonArray<ResearcherPublication>(profile?.publications),
+        scholarships: parseJsonArray<ResearcherFellowship>(profile?.scholarships),
+        affiliations: profile?.affiliations || [],
+
         // Reviews
         reviews: (reviewsData || []).map(review => ({
           id: review.id,
@@ -324,15 +249,7 @@ export const useResearcherProfile = (researcherId: string) => {
         })),
         
         // Computed fields for compatibility
-        affiliation: userData.institution || 'Institution not specified',
-        location: userData.country || 'Location not specified',
-        totalReviews: profile?.total_reviews || 0,
-        studentsSupervised: studentsSupervisedCount || 0,
-        yearsExperience: profile?.years_experience || 0,
         imageUrl: userData.avatar_url || '/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png',
-        isOnline: profile?.is_online || false,
-        responseTime: profile?.response_time || 'Usually responds within 24 hours',
-        field: userData.expertise?.[0] || 'General Research'
       };
 
       setResearcher(transformedResearcher);
@@ -352,20 +269,39 @@ export const useResearcherProfile = (researcherId: string) => {
   const updateProfile = async (updates: Partial<any>) => {
     if (!researcher) return false;
 
-    const dbUpdates = { ...updates };
-    if (dbUpdates.experience_history !== undefined) {
-      dbUpdates.experience = dbUpdates.experience_history;
-      delete dbUpdates.experience_history;
+    const dbUpdates: Partial<typeof updates> = { ...updates };
+
+    // Remove fields not in research_aid_profiles schema or handled separately
+    delete dbUpdates.name;
+    delete dbUpdates.email;
+    delete dbUpdates.role;
+    delete dbUpdates.reviews;
+    delete dbUpdates.imageUrl;
+    // Remove languages from dbUpdates if it's not in the database schema
+    if (dbUpdates.languages !== undefined) {
+      delete dbUpdates.languages;
     }
+
+    // Explicitly stringify JSONB fields if they are arrays/objects
+    if (dbUpdates.educational_background !== undefined) dbUpdates.educational_background = JSON.stringify(dbUpdates.educational_background);
+    if (dbUpdates.work_experience !== undefined) dbUpdates.work_experience = JSON.stringify(dbUpdates.work_experience);
+    if (dbUpdates.publications !== undefined) dbUpdates.publications = JSON.stringify(dbUpdates.publications);
+    if (dbUpdates.awards !== undefined) dbUpdates.awards = JSON.stringify(dbUpdates.awards);
+    if (dbUpdates.scholarships !== undefined) dbUpdates.scholarships = JSON.stringify(dbUpdates.scholarships);
+    // Do NOT stringify text[] fields like affiliations or skills
+    // if (dbUpdates.affiliations !== undefined) dbUpdates.affiliations = JSON.stringify(dbUpdates.affiliations);
+    // if (dbUpdates.skills !== undefined) dbUpdates.skills = JSON.stringify(dbUpdates.skills);
+    if (dbUpdates.availability !== undefined) dbUpdates.availability = JSON.stringify(dbUpdates.availability);
+    if (dbUpdates.verifications !== undefined) dbUpdates.verifications = JSON.stringify(dbUpdates.verifications);
 
     try {
       const { error } = await supabase
-        .from('researcher_profiles')
+        .from('research_aid_profiles')
         .update({
           ...dbUpdates,
           updated_at: new Date().toISOString()
         })
-        .eq('user_id', researcherId);
+        .eq('id', researcherId);
 
       if (error) {
         console.error('Error updating profile:', error);

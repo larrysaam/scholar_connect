@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,73 +10,46 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Star, Edit2, MapPin, Calendar, Award, BookOpen, Users, CheckCircle, Plus, X, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useResearcherProfile, ResearcherProfileData } from "@/hooks/useResearcherProfile";
+import LoadingSpinner from "@/components/LoadingSpinner"; // Corrected import path
 
 const ResearchAidsProfileRatings = () => {
+  const { user, loading: authLoading } = useAuth();
+  const researcherId = user?.id;
+
+  const {
+    researcher,
+    loading: profileLoading,
+    error: profileError,
+    updateProfile,
+    refetch: refetchProfile
+  } = useResearcherProfile(researcherId || "");
+
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
-  const [profileData, setProfileData] = useState({
-    title: "Dr.",
-    name: "Neba Emmanuel",
-    jobTitle: "Academic Editor & Research Consultant",
-    bio: "Experienced academic editor and research consultant with expertise in statistical analysis, academic writing, and data interpretation. Specialized in agricultural research and environmental studies.",
-    location: "Yaoundé, Cameroon",
-    experience: "5+ years",
-    education: "PhD in Agricultural Sciences",
-    skills: ["Statistical Analysis", "Data Analysis", "Literature Review", "Academic Writing", "SPSS", "Research Design"],
-    languages: ["English", "French"],
-    educationalBackground: [
-      { degree: "PhD in Agricultural Sciences", institution: "University of Yaoundé I", year: "2018" }
-    ],
-    workExperience: [
-      { position: "Research Consultant", company: "Independent", period: "2020-Present" }
-    ],
-    awards: [
-      { title: "Best Research Paper Award", organization: "Agricultural Research Society", year: "2022" }
-    ],
-    publications: [
-      { title: "Impact of Climate Change on Agricultural Productivity", journal: "Journal of Agricultural Research", year: "2023" }
-    ],
-    scholarships: [
-      { title: "Government Scholarship", organization: "Ministry of Higher Education", period: "2015-2018" }
-    ],
-    affiliations: ["International Agricultural Research Association", "Statistical Analysis Society"]
-  });
+  const [editableProfileData, setEditableProfileData] = useState<ResearcherProfileData | null>(null);
+
   const { toast } = useToast();
 
-  const profileStats = {
-    completedJobs: 24,
-    totalEarnings: "245,000 XAF",
-    averageRating: 4.8,
-    responseTime: "2 hours",
-    completionRate: "98%",
-    clientRetention: "85%"
-  };
-
-  const recentReviews = [
-    {
-      id: 1,
-      client: "Dr. Sarah Johnson",
-      project: "Statistical Analysis for Agricultural Study",
-      rating: 5,
-      review: "Excellent work on the statistical analysis. Very thorough and professional approach to data interpretation.",
-      date: "2024-01-15"
-    },
-    {
-      id: 2,
-      client: "Prof. Michael Chen",
-      project: "Literature Review on Climate Change",
-      rating: 4,
-      review: "Good quality literature review with comprehensive coverage. Delivered on time with clear documentation.",
-      date: "2024-01-08"
-    },
-    {
-      id: 3,
-      client: "Dr. Marie Dubois",
-      project: "Survey Data Collection",
-      rating: 5,
-      review: "Outstanding data collection work. Very organized and efficient. Highly recommend for future projects.",
-      date: "2023-12-20"
+  useEffect(() => {
+    if (researcher) {
+      setEditableProfileData({
+        ...researcher,
+      });
     }
-  ];
+  }, [researcher]);
+
+  if (authLoading || profileLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (profileError) {
+    return <div className="text-red-500">Error: {profileError}</div>;
+  }
+
+  if (!researcher || !editableProfileData) {
+    return <div className="text-gray-500">No researcher profile found.</div>;
+  }
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, index) => (
@@ -89,196 +62,215 @@ const ResearchAidsProfileRatings = () => {
     ));
   };
 
-  const handleProfileUpdate = () => {
-    toast({
-      title: "Profile Updated",
-      description: "Your profile information has been successfully updated"
-    });
-    setIsEditProfileOpen(false);
+  const handleProfileUpdate = async () => {
+    if (!editableProfileData) return;
+
+    const updates: any = {
+      title: editableProfileData.title,
+      job_title: editableProfileData.job_title,
+      bio: editableProfileData.bio,
+      location: editableProfileData.location,
+      years_experience: editableProfileData.years_experience,
+      educational_background: editableProfileData.educational_background,
+      work_experience: editableProfileData.work_experience,
+      awards: editableProfileData.awards,
+      publications: editableProfileData.publications,
+      scholarships: editableProfileData.scholarships,
+      affiliations: editableProfileData.affiliations,
+      skills: editableProfileData.skills,
+    };
+
+    const success = await updateProfile(updates);
+    if (success) {
+      toast({
+        title: "Profile Updated",
+        description: "Your profile information has been successfully updated"
+      });
+      setIsEditProfileOpen(false);
+      refetchProfile();
+    } else {
+      toast({
+        title: "Update Failed",
+        description: "There was an error updating your profile. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleAddEducation = () => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
-      educationalBackground: [...prev.educationalBackground, { degree: "", institution: "", year: "" }]
-    }));
+      educational_background: [
+        ...prev.educational_background,
+        { degree: '', institution: '', year: '' }
+      ]
+    }) : null);
   };
 
   const handleUpdateEducation = (index: number, field: string, value: string) => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
-      educationalBackground: prev.educationalBackground.map((edu, i) =>
+      educational_background: prev.educational_background.map((edu, i) =>
         i === index ? { ...edu, [field]: value } : edu
       )
-    }));
+    }) : null);
   };
 
   const handleRemoveEducation = (index: number) => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
-      educationalBackground: prev.educationalBackground.filter((_, i) => i !== index)
-    }));
+      educational_background: prev.educational_background.filter((_, i) => i !== index)
+    }) : null);
   };
 
   const handleAddWorkExperience = () => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
-      workExperience: [...prev.workExperience, { position: "", company: "", period: "" }]
-    }));
+      work_experience: [
+        ...prev.work_experience,
+        { position: '', institution: '', period: '' }
+      ]
+    }) : null);
   };
 
   const handleUpdateWorkExperience = (index: number, field: string, value: string) => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
-      workExperience: prev.workExperience.map((exp, i) =>
+      work_experience: prev.work_experience.map((exp, i) =>
         i === index ? { ...exp, [field]: value } : exp
       )
-    }));
+    }) : null);
   };
 
   const handleRemoveWorkExperience = (index: number) => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
-      workExperience: prev.workExperience.filter((_, i) => i !== index)
-    }));
+      work_experience: prev.work_experience.filter((_, i) => i !== index)
+    }) : null);
   };
 
   const handleAddAward = () => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
-      awards: [...prev.awards, { title: "", organization: "", year: "" }]
-    }));
+      awards: [
+        ...prev.awards,
+        { title: '', year: '' }
+      ]
+    }) : null);
   };
 
   const handleUpdateAward = (index: number, field: string, value: string) => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
       awards: prev.awards.map((award, i) =>
         i === index ? { ...award, [field]: value } : award
       )
-    }));
+    }) : null);
   };
 
   const handleRemoveAward = (index: number) => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
       awards: prev.awards.filter((_, i) => i !== index)
-    }));
+    }) : null);
   };
 
   const handleAddPublication = () => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
-      publications: [...prev.publications, { title: "", journal: "", year: "" }]
-    }));
+      publications: [
+        ...prev.publications,
+        { title: '', journal: '', year: '', citations: 0 }
+      ]
+    }) : null);
   };
 
   const handleUpdatePublication = (index: number, field: string, value: string) => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
       publications: prev.publications.map((pub, i) =>
         i === index ? { ...pub, [field]: value } : pub
       )
-    }));
+    }) : null);
   };
 
   const handleRemovePublication = (index: number) => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
       publications: prev.publications.filter((_, i) => i !== index)
-    }));
+    }) : null);
   };
 
   const handleAddScholarship = () => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
-      scholarships: [...prev.scholarships, { title: "", organization: "", period: "" }]
-    }));
+      scholarships: [
+        ...prev.scholarships,
+        { title: '', period: '' }
+      ]
+    }) : null);
   };
 
   const handleUpdateScholarship = (index: number, field: string, value: string) => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
       scholarships: prev.scholarships.map((scholarship, i) =>
         i === index ? { ...scholarship, [field]: value } : scholarship
       )
-    }));
+    }) : null);
   };
 
   const handleRemoveScholarship = (index: number) => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
       scholarships: prev.scholarships.filter((_, i) => i !== index)
-    }));
+    }) : null);
   };
 
   const handleAddAffiliation = () => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
-      affiliations: [...prev.affiliations, ""]
-    }));
+      affiliations: [...prev.affiliations, '']
+    }) : null);
   };
 
   const handleUpdateAffiliation = (index: number, value: string) => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
       affiliations: prev.affiliations.map((aff, i) =>
         i === index ? value : aff
       )
-    }));
+    }) : null);
   };
 
   const handleRemoveAffiliation = (index: number) => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
       affiliations: prev.affiliations.filter((_, i) => i !== index)
-    }));
-  };
-
-  const handleAddLanguage = () => {
-    setProfileData(prev => ({
-      ...prev,
-      languages: [...prev.languages, ""]
-    }));
-  };
-
-  const handleUpdateLanguage = (index: number, value: string) => {
-    setProfileData(prev => ({
-      ...prev,
-      languages: prev.languages.map((lang, i) =>
-        i === index ? value : lang
-      )
-    }));
-  };
-
-  const handleRemoveLanguage = (index: number) => {
-    setProfileData(prev => ({
-      ...prev,
-      languages: prev.languages.filter((_, i) => i !== index)
-    }));
+    }) : null);
   };
 
   const handleAddSkill = () => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
-      skills: [...prev.skills, ""]
-    }));
+      skills: [...(prev.skills || []), '']
+    }) : null);
   };
 
   const handleUpdateSkill = (index: number, value: string) => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
       skills: prev.skills.map((skill, i) =>
         i === index ? value : skill
       )
-    }));
+    }) : null);
   };
 
   const handleRemoveSkill = (index: number) => {
-    setProfileData(prev => ({
+    setEditableProfileData(prev => prev ? ({
       ...prev,
       skills: prev.skills.filter((_, i) => i !== index)
-    }));
+    }) : null);
   };
 
   return (
@@ -304,8 +296,8 @@ const ResearchAidsProfileRatings = () => {
                   <div>
                     <Label htmlFor="title">Title</Label>
                     <Select
-                      value={profileData.title}
-                      onValueChange={(value) => setProfileData(prev => ({ ...prev, title: value }))}
+                      value={editableProfileData.title}
+                      onValueChange={(value) => setEditableProfileData(prev => prev ? ({ ...prev, title: value }) : null)}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -324,8 +316,8 @@ const ResearchAidsProfileRatings = () => {
                     <Label htmlFor="name">Full Name</Label>
                     <Input
                       id="name"
-                      value={profileData.name}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
+                      value={editableProfileData.name}
+                      onChange={(e) => setEditableProfileData(prev => prev ? ({ ...prev, name: e.target.value }) : null)}
                     />
                   </div>
                 </div>
@@ -333,16 +325,16 @@ const ResearchAidsProfileRatings = () => {
                   <Label htmlFor="jobTitle">Professional Title</Label>
                   <Input
                     id="jobTitle"
-                    value={profileData.jobTitle}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, jobTitle: e.target.value }))}
+                    value={editableProfileData.job_title}
+                    onChange={(e) => setEditableProfileData(prev => prev ? ({ ...prev, job_title: e.target.value }) : null)}
                   />
                 </div>
                 <div>
                   <Label htmlFor="bio">Professional Bio</Label>
                   <Textarea
                     id="bio"
-                    value={profileData.bio}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
+                    value={editableProfileData.bio}
+                    onChange={(e) => setEditableProfileData(prev => prev ? ({ ...prev, bio: e.target.value }) : null)}
                     rows={4}
                   />
                 </div>
@@ -350,8 +342,8 @@ const ResearchAidsProfileRatings = () => {
                   <Label htmlFor="location">Location</Label>
                   <Input
                     id="location"
-                    value={profileData.location}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, location: e.target.value }))}
+                    value={editableProfileData.location}
+                    onChange={(e) => setEditableProfileData(prev => prev ? ({ ...prev, location: e.target.value }) : null)}
                   />
                 </div>
               </div>
@@ -365,7 +357,7 @@ const ResearchAidsProfileRatings = () => {
                     Add Education
                   </Button>
                 </div>
-                {profileData.educationalBackground.map((edu, index) => (
+                {(Array.isArray(editableProfileData.educational_background) ? editableProfileData.educational_background : []).map((edu, index) => (
                   <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
                     <div>
                       <Label>Degree</Label>
@@ -414,7 +406,7 @@ const ResearchAidsProfileRatings = () => {
                     Add Experience
                   </Button>
                 </div>
-                {profileData.workExperience.map((exp, index) => (
+                {(Array.isArray(editableProfileData.work_experience) ? editableProfileData.work_experience : []).map((exp, index) => (
                   <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
                     <div>
                       <Label>Position</Label>
@@ -425,10 +417,10 @@ const ResearchAidsProfileRatings = () => {
                       />
                     </div>
                     <div>
-                      <Label>Company</Label>
+                      <Label>Institution</Label>
                       <Input
-                        value={exp.company}
-                        onChange={(e) => handleUpdateWorkExperience(index, 'company', e.target.value)}
+                        value={exp.institution}
+                        onChange={(e) => handleUpdateWorkExperience(index, 'institution', e.target.value)}
                         placeholder="Company name"
                       />
                     </div>
@@ -463,22 +455,14 @@ const ResearchAidsProfileRatings = () => {
                     Add Award
                   </Button>
                 </div>
-                {profileData.awards.map((award, index) => (
-                  <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
+                {(Array.isArray(editableProfileData.awards) ? editableProfileData.awards : []).map((award, index) => (
+                  <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg">
                     <div>
                       <Label>Award Title</Label>
                       <Input
                         value={award.title}
                         onChange={(e) => handleUpdateAward(index, 'title', e.target.value)}
                         placeholder="Award name"
-                      />
-                    </div>
-                    <div>
-                      <Label>Organization</Label>
-                      <Input
-                        value={award.organization}
-                        onChange={(e) => handleUpdateAward(index, 'organization', e.target.value)}
-                        placeholder="Awarding organization"
                       />
                     </div>
                     <div>
@@ -512,7 +496,7 @@ const ResearchAidsProfileRatings = () => {
                     Add Publication
                   </Button>
                 </div>
-                {profileData.publications.map((pub, index) => (
+                {(Array.isArray(editableProfileData.publications) ? editableProfileData.publications : []).map((pub, index) => (
                   <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
                     <div>
                       <Label>Title</Label>
@@ -561,22 +545,14 @@ const ResearchAidsProfileRatings = () => {
                     Add Scholarship
                   </Button>
                 </div>
-                {profileData.scholarships.map((scholarship, index) => (
-                  <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
+                {(Array.isArray(editableProfileData.scholarships) ? editableProfileData.scholarships : []).map((scholarship, index) => (
+                  <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg">
                     <div>
                       <Label>Title</Label>
                       <Input
                         value={scholarship.title}
                         onChange={(e) => handleUpdateScholarship(index, 'title', e.target.value)}
                         placeholder="Scholarship/Fellowship title"
-                      />
-                    </div>
-                    <div>
-                      <Label>Organization</Label>
-                      <Input
-                        value={scholarship.organization}
-                        onChange={(e) => handleUpdateScholarship(index, 'organization', e.target.value)}
-                        placeholder="Granting organization"
                       />
                     </div>
                     <div>
@@ -610,7 +586,7 @@ const ResearchAidsProfileRatings = () => {
                     Add Affiliation
                   </Button>
                 </div>
-                {profileData.affiliations.map((affiliation, index) => (
+                {(Array.isArray(editableProfileData.affiliations) ? editableProfileData.affiliations : []).map((affiliation, index) => (
                   <div key={index} className="flex gap-2 items-center">
                     <Input
                       value={affiliation}
@@ -630,35 +606,6 @@ const ResearchAidsProfileRatings = () => {
                 ))}
               </div>
 
-              {/* Languages */}
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Languages</h3>
-                  <Button type="button" variant="outline" size="sm" onClick={handleAddLanguage}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Language
-                  </Button>
-                </div>
-                {profileData.languages.map((language, index) => (
-                  <div key={index} className="flex gap-2 items-center">
-                    <Input
-                      value={language}
-                      onChange={(e) => handleUpdateLanguage(index, e.target.value)}
-                      placeholder="Language"
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRemoveLanguage(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-
               {/* Skills */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
@@ -668,7 +615,7 @@ const ResearchAidsProfileRatings = () => {
                     Add Skill
                   </Button>
                 </div>
-                {profileData.skills.map((skill, index) => (
+                {(Array.isArray(editableProfileData.skills) ? editableProfileData.skills : []).map((skill, index) => (
                   <div key={index} className="flex gap-2 items-center">
                     <Input
                       value={skill}
@@ -706,46 +653,46 @@ const ResearchAidsProfileRatings = () => {
         <CardContent className="p-6">
           <div className="flex items-start space-x-6">
             <Avatar className="h-24 w-24">
-              <AvatarImage src="/placeholder-avatar.jpg" alt={`${profileData.title} ${profileData.name}`} />
+              <AvatarImage src={researcher.imageUrl || "/placeholder-avatar.jpg"} alt={`${researcher.title} ${researcher.name}`} />
               <AvatarFallback className="text-lg">
-                {profileData.name.split(' ').map(n => n[0]).join('')}
+                {researcher.name.split(' ').map(n => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
             
             <div className="flex-1">
               <div className="flex items-center space-x-3 mb-2">
-                <h3 className="text-xl font-bold">{profileData.title} {profileData.name}</h3>
+                <h3 className="text-xl font-bold">{researcher.title} {researcher.name}</h3>
                 <Badge className="bg-green-600">
                   <CheckCircle className="h-3 w-3 mr-1" />
                   Verified
                 </Badge>
               </div>
               
-              <p className="text-gray-600 font-medium mb-3">{profileData.jobTitle}</p>
-              <p className="text-gray-700 mb-4">{profileData.bio}</p>
+              <p className="text-gray-600 font-medium mb-3">{researcher.job_title}</p>
+              <p className="text-gray-700 mb-4">{researcher.bio}</p>
               
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 <div className="flex items-center space-x-2">
                   <MapPin className="h-4 w-4 text-gray-500" />
-                  <span>{profileData.location}</span>
+                  <span>{researcher.location}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Calendar className="h-4 w-4 text-gray-500" />
-                  <span>{profileData.experience} experience</span>
+                  <span>{typeof researcher.total_consultations_completed === 'number' ? researcher.total_consultations_completed : 0} jobs completed</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <BookOpen className="h-4 w-4 text-gray-500" />
-                  <span>{profileData.education}</span>
+                  <span>{typeof researcher.hourly_rate === 'number' ? researcher.hourly_rate : 0} XAF/hr</span>
                 </div>
               </div>
             </div>
             
             <div className="text-right">
               <div className="flex items-center space-x-1 mb-1">
-                {renderStars(Math.floor(profileStats.averageRating))}
+                {renderStars(Math.floor(researcher.rating))}
               </div>
-              <p className="text-lg font-bold">{profileStats.averageRating}/5.0</p>
-              <p className="text-sm text-gray-600">{profileStats.completedJobs} reviews</p>
+              <p className="text-lg font-bold">{researcher.rating}/5.0</p>
+              <p className="text-sm text-gray-600">{typeof researcher.total_consultations_completed === 'number' ? researcher.total_consultations_completed : 0} jobs completed</p>
             </div>
           </div>
         </CardContent>
@@ -759,7 +706,7 @@ const ResearchAidsProfileRatings = () => {
               <Award className="h-8 w-8 text-blue-600" />
               <div>
                 <p className="text-sm text-gray-600">Completed Jobs</p>
-                <p className="text-2xl font-bold">{profileStats.completedJobs}</p>
+                <p className="text-2xl font-bold">{researcher.total_consultations_completed}</p>
               </div>
             </div>
           </CardContent>
@@ -770,8 +717,8 @@ const ResearchAidsProfileRatings = () => {
             <div className="flex items-center space-x-3">
               <Users className="h-8 w-8 text-green-600" />
               <div>
-                <p className="text-sm text-gray-600">Total Earnings</p>
-                <p className="text-2xl font-bold">{profileStats.totalEarnings}</p>
+                <p className="text-sm text-gray-600">Hourly Rate</p>
+                <p className="text-2xl font-bold">{researcher.hourly_rate} XAF</p>
               </div>
             </div>
           </CardContent>
@@ -782,8 +729,8 @@ const ResearchAidsProfileRatings = () => {
             <div className="flex items-center space-x-3">
               <CheckCircle className="h-8 w-8 text-purple-600" />
               <div>
-                <p className="text-sm text-gray-600">Success Rate</p>
-                <p className="text-2xl font-bold">{profileStats.completionRate}</p>
+                <p className="text-sm text-gray-600">Response Time</p>
+                <p className="text-2xl font-bold">{researcher.response_time}</p>
               </div>
             </div>
           </CardContent>
@@ -799,7 +746,7 @@ const ResearchAidsProfileRatings = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {profileData.educationalBackground.map((edu, index) => (
+              {(Array.isArray(researcher.educational_background) ? researcher.educational_background : []).map((edu, index) => (
                 <div key={index} className="border-l-2 border-blue-600 pl-4 py-2">
                   <h4 className="font-medium">{edu.degree}</h4>
                   <p className="text-sm text-gray-600">{edu.institution}</p>
@@ -817,10 +764,10 @@ const ResearchAidsProfileRatings = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {profileData.workExperience.map((exp, index) => (
+              {(Array.isArray(researcher.work_experience) ? researcher.work_experience : []).map((exp, index) => (
                 <div key={index} className="border-l-2 border-green-600 pl-4 py-2">
                   <h4 className="font-medium">{exp.position}</h4>
-                  <p className="text-sm text-gray-600">{exp.company}</p>
+                  <p className="text-sm text-gray-600">{exp.institution}</p>
                   <p className="text-xs text-gray-500">{exp.period}</p>
                 </div>
               ))}
@@ -835,10 +782,9 @@ const ResearchAidsProfileRatings = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {profileData.awards.map((award, index) => (
+              {(Array.isArray(researcher.awards) ? researcher.awards : []).map((award, index) => (
                 <div key={index} className="border-l-2 border-yellow-500 pl-4 py-2">
                   <h4 className="font-medium">{award.title}</h4>
-                  <p className="text-sm text-gray-600">{award.organization}</p>
                   <p className="text-xs text-gray-500">{award.year}</p>
                 </div>
               ))}
@@ -853,7 +799,7 @@ const ResearchAidsProfileRatings = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {profileData.publications.map((pub, index) => (
+              {(Array.isArray(researcher.publications) ? researcher.publications : []).map((pub, index) => (
                 <div key={index} className="border-l-2 border-purple-600 pl-4 py-2">
                   <h4 className="font-medium">{pub.title}</h4>
                   <p className="text-sm text-gray-600">{pub.journal}</p>
@@ -871,10 +817,9 @@ const ResearchAidsProfileRatings = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {profileData.scholarships.map((scholarship, index) => (
+              {(Array.isArray(researcher.scholarships) ? researcher.scholarships : []).map((scholarship, index) => (
                 <div key={index} className="border-l-2 border-indigo-600 pl-4 py-2">
                   <h4 className="font-medium">{scholarship.title}</h4>
-                  <p className="text-sm text-gray-600">{scholarship.organization}</p>
                   <p className="text-xs text-gray-500">{scholarship.period}</p>
                 </div>
               ))}
@@ -889,7 +834,7 @@ const ResearchAidsProfileRatings = () => {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {profileData.affiliations.map((affiliation, index) => (
+              {(Array.isArray(researcher.affiliations) ? researcher.affiliations : []).map((affiliation, index) => (
                 <Badge key={index} variant="outline" className="text-sm">
                   {affiliation}
                 </Badge>
@@ -899,7 +844,7 @@ const ResearchAidsProfileRatings = () => {
         </Card>
       </div>
 
-      {/* Skills & Languages */}
+      {/* Skills */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -907,24 +852,9 @@ const ResearchAidsProfileRatings = () => {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {profileData.skills.map((skill, index) => (
+              {(Array.isArray(researcher.skills) ? researcher.skills : []).map((skill, index) => (
                 <Badge key={index} variant="secondary" className="px-3 py-1">
                   {skill}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Languages</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {profileData.languages.map((language, index) => (
-                <Badge key={index} variant="outline" className="px-3 py-1">
-                  {language}
                 </Badge>
               ))}
             </div>
@@ -939,21 +869,21 @@ const ResearchAidsProfileRatings = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {recentReviews.map((review) => (
+            {(Array.isArray(researcher.reviews) ? researcher.reviews : []).map((review) => (
               <div key={review.id} className="border-b pb-4 last:border-b-0">
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <p className="font-medium">{review.client}</p>
-                    <p className="text-sm text-gray-600">{review.project}</p>
+                    <p className="font-medium">{review.reviewer_name}</p>
+                    <p className="text-sm text-gray-600">{review.service_type || "N/A"}</p>
                   </div>
                   <div className="text-right">
                     <div className="flex items-center space-x-1">
                       {renderStars(review.rating)}
                     </div>
-                    <p className="text-sm text-gray-500">{review.date}</p>
+                    <p className="text-sm text-gray-500">{new Date(review.created_at).toLocaleDateString()}</p>
                   </div>
                 </div>
-                <p className="text-gray-700 italic">"{review.review}"</p>
+                <p className="text-gray-700 italic">"{review.comment}"</p>
               </div>
             ))}
           </div>

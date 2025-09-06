@@ -47,7 +47,43 @@ const VerificationTab = () => {
     }
   }, [researcher]);
 
-  const verificationItems = [
+  // Helper to always get verifications as an object
+  function getCurrentVerifications(verifications: any): Verifications {
+    if (typeof verifications === 'string') {
+      try {
+        return JSON.parse(verifications);
+      } catch {
+        return {};
+      }
+    } else if (typeof verifications === 'object' && verifications !== null) {
+      return { ...verifications };
+    }
+    return {};
+  }
+
+  // Helper to get file preview type
+  function getFilePreview(fileUrl: string, fileName?: string) {
+    const ext = (fileName || fileUrl).split('.').pop()?.toLowerCase();
+    if (!ext) return null;
+    if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(ext)) {
+      return <img src={fileUrl} alt={fileName} className="max-h-32 max-w-xs rounded border" />;
+    }
+    if (["pdf"].includes(ext)) {
+      return (
+        <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="block text-blue-600 underline">
+          PDF Preview
+        </a>
+      );
+    }
+    // For doc, docx, etc.
+    return (
+      <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="block text-blue-600 underline">
+        Download {fileName || 'File'}
+      </a>
+    );
+  }
+
+  const aidVerificationItems = [
     {
       key: 'identity',
       title: "Identity Verification",
@@ -58,26 +94,28 @@ const VerificationTab = () => {
     {
       key: 'education',
       title: "Educational Background",
-      description: "Academic credentials and degrees",
+      description: "Academic credentials and degrees (e.g., BSc, MSc, PhD)",
       icon: GraduationCap,
-      documents: ["PhD Certificate", "Academic Credentials"]
+      documents: ["Degree Certificate", "Academic Transcript"]
     },
     {
       key: 'employment',
       title: "Employment Verification",
-      description: "Current institutional affiliation",
+      description: "Current or previous institutional affiliation (if any)",
       icon: Building,
-      documents: ["Employment Letter", "Faculty ID"],
+      documents: ["Employment Letter", "Institutional ID"],
       hasOtherField: true
     },
     {
-      key: 'publications',
-      title: "Research Publications",
-      description: "Published academic work verification",
+      key: 'skills',
+      title: "Skills & Certifications",
+      description: "Professional certifications or proof of skills",
       icon: Award,
-      documents: ["Publication List", "ORCID Profile"]
+      documents: ["Certification Document", "Reference Letter"]
     }
   ];
+
+  const verificationItems = aidVerificationItems;
 
   const getStatusInfo = (status: VerificationDocument['status']) => {
     switch (status) {
@@ -106,14 +144,11 @@ const VerificationTab = () => {
         const fileUrl = await uploadDocument(file, 'lovable-uploads', path);
 
         if (fileUrl && researcher) {
-          const currentVerifications: Verifications = JSON.parse(JSON.stringify(researcher.verifications || {}));
-          
+          let currentVerifications: Verifications = getCurrentVerifications(researcher.verifications);
           if (!currentVerifications[categoryKey]) {
             currentVerifications[categoryKey] = { documents: [] };
           }
-          
           const docIndex = currentVerifications[categoryKey].documents.findIndex(d => d.documentType === documentType);
-
           const newDocument: VerificationDocument = {
             documentType,
             status: 'pending',
@@ -121,13 +156,11 @@ const VerificationTab = () => {
             fileName: file.name,
             uploadedAt: new Date().toISOString(),
           };
-
           if (docIndex > -1) {
             currentVerifications[categoryKey].documents[docIndex] = newDocument;
           } else {
             currentVerifications[categoryKey].documents.push(newDocument);
           }
-
           await updateProfile({ verifications: currentVerifications });
           refetch();
         }
@@ -135,7 +168,6 @@ const VerificationTab = () => {
       setLoadingStates(prev => ({ ...prev, [loadingKey]: false }));
     };
     input.click();
-    // In case user closes file dialog without selecting
     input.oncancel = () => {
       setLoadingStates(prev => ({ ...prev, [loadingKey]: false }));
     };
@@ -143,21 +175,18 @@ const VerificationTab = () => {
 
   const handleRemoveFile = async (categoryKey: string, documentType: string) => {
     if (!researcher) return;
-
-    const currentVerifications: Verifications = JSON.parse(JSON.stringify(researcher.verifications || {}));
+    let currentVerifications: Verifications = getCurrentVerifications(researcher.verifications);
     if (!currentVerifications[categoryKey]) return;
-
     currentVerifications[categoryKey].documents = currentVerifications[categoryKey].documents.filter(
       d => d.documentType !== documentType
     );
-
     await updateProfile({ verifications: currentVerifications });
     refetch();
   };
 
   const handleSaveOtherEmployment = async () => {
     if (!researcher) return;
-    const currentVerifications: Verifications = JSON.parse(JSON.stringify(researcher.verifications || {}));
+    let currentVerifications: Verifications = getCurrentVerifications(researcher.verifications);
     if (!currentVerifications.employment) {
       currentVerifications.employment = { documents: [] };
     }
@@ -170,11 +199,16 @@ const VerificationTab = () => {
     return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   }
 
-  const verificationProgress = researcher?.verifications ? 
-    (Object.values(researcher.verifications)
-      .flatMap(c => c.documents || [])
-      .filter(d => d.status === 'verified').length / verificationItems.flatMap(item => item.documents).length) * 100 
-    : 0;
+  // Use parsed verifications for progress calculation
+  const parsedVerifications: Verifications = getCurrentVerifications(researcher?.verifications);
+  const totalRequiredDocs = verificationItems.flatMap(item => item.documents).length;
+  const totalVerifiedDocs = Object.values(parsedVerifications)
+    .flatMap((c: any) => Array.isArray(c.documents) ? c.documents : [])
+    .filter((d: any) => d.status === 'verified').length;
+  const verificationProgress = totalRequiredDocs > 0 ? (totalVerifiedDocs / totalRequiredDocs) * 100 : 0;
+
+  // Calculate overall verification status (all required docs must be verified)
+  const allCategoriesVerified = totalVerifiedDocs === totalRequiredDocs && totalRequiredDocs > 0;
 
   const getCategoryStatus = (categoryKey: string): VerificationDocument['status'] => {
     const category = researcher?.verifications?.[categoryKey];
@@ -206,6 +240,13 @@ const VerificationTab = () => {
               </div>
               <Progress value={verificationProgress} className="h-3" />
             </div>
+            <div className="flex items-center justify-between mt-4">
+              <span className="font-medium">Verification Status</span>
+              <Badge className={allCategoriesVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                {allCategoriesVerified ? 'VERIFIED' : 'INCOMPLETE'}
+              </Badge>
+            </div>
+            <Progress value={allCategoriesVerified ? 100 : 0} className="h-2 mt-2" />
           </div>
         </CardContent>
       </Card>
@@ -251,7 +292,7 @@ const VerificationTab = () => {
                     <h4 className="font-medium text-sm mb-2">Required Documents:</h4>
                     <div className="space-y-2">
                       {item.documents.map((doc) => {
-                        const docData = researcher?.verifications?.[item.key]?.documents.find(d => d.documentType === doc);
+                        const docData = parsedVerifications?.[item.key]?.documents.find(d => d.documentType === doc);
                         const isLoading = loadingStates[`${item.key}-${doc}`];
                         const statusInfo = getStatusInfo(docData?.status || 'not_started');
 
@@ -263,11 +304,13 @@ const VerificationTab = () => {
                                 <span>{doc}</span>
                               </span>
                               {docData?.fileName && (
-                                <div className="mt-1 text-xs text-gray-600">
-                                  <a href={docData.fileUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                <div className="mt-1 text-xs text-gray-600 space-y-1">
+                                  {getFilePreview(docData.fileUrl!, docData.fileName)}
+                                  <a href={docData.fileUrl} target="_blank" rel="noopener noreferrer" className="hover:underline block">
                                     {docData.fileName}
                                   </a>
                                   <Badge variant="outline" className={`ml-2 ${statusInfo.color}`}>{docData.status}</Badge>
+                                  <Progress value={docData.status === 'verified' ? 100 : docData.status === 'pending' ? 50 : 0} className="h-2 mt-1 w-32" />
                                 </div>
                               )}
                               {docData?.status === 'rejected' && docData.rejectionReason && (
