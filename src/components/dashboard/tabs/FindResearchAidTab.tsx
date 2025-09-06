@@ -22,6 +22,7 @@ export interface ResearchAid {
   payout_details?: any; // Or a more specific type
   location?: string; // Add location
   hourly_rate?: number; // Add hourly_rate
+  isAvailable?: boolean; // Add isAvailable
 }
 
 const FindResearchAidTab = () => {
@@ -53,7 +54,7 @@ const FindResearchAidTab = () => {
         // @ts-expect-error: Supabase type inference bug for .in()
         const { data: profiles, error: profileError } = await supabase
           .from('research_aid_profiles')
-          .select('id, location, hourly_rate')
+          .select('id, location, hourly_rate, availability')
           .in('id', userIds);
         if (profileError) throw profileError;
 
@@ -62,7 +63,7 @@ const FindResearchAidTab = () => {
           profiles.map((p: any) => [p.id, p])
         );
 
-        // 4. Merge data
+        // 4. Merge data and filter for available aids
         const mappedAids: ResearchAid[] = users.map((user: any) => {
           const profile = profileMap[user.id];
           return {
@@ -76,8 +77,9 @@ const FindResearchAidTab = () => {
             location: profile?.location || 'Not set',
             hourly_rate: profile?.hourly_rate ?? 0,
             experience: user.experience || 'N/A',
+            isAvailable: profile?.availability?.isAvailable ?? false,
           };
-        });
+        }).filter(aid => aid.isAvailable);
 
         setResearchAids(mappedAids);
       } catch (err: any) {

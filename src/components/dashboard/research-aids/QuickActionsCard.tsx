@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TrendingUp } from "lucide-react";
@@ -21,7 +20,7 @@ const QuickActionsCard = ({ onViewJobBoard }: QuickActionsCardProps) => {
               </div>
             </div>
             <Button 
-              onClick={onViewJobBoard}
+              onClick={() => onViewJobBoard?.()}
               variant="outline"
               className="border-primary text-primary hover:bg-primary/10"
             >

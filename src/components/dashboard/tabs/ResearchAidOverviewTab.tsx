@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -6,10 +6,58 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star, TrendingUp, MessageSquare, Clock, DollarSign } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL!,
+  import.meta.env.VITE_SUPABASE_ANON_KEY!
+);
 
 const ResearchAidOverviewTab = () => {
   const [isAvailable, setIsAvailable] = useState(true);
+  const [pendingAppointments, setPendingAppointments] = useState(0);
   const { profile } = useAuth();
+  const { toast } = useToast();
+
+  // Fetch real availability and pending appointments from Supabase
+  useEffect(() => {
+    const fetchAvailabilityAndPending = async () => {
+      if (!profile?.id) return;
+      // Fetch availability
+      const { data, error } = await supabase
+        .from("research_aid_profiles")
+        .select("availability")
+        .eq("id", profile.id)
+        .single();
+      if (!error && data && data.availability && typeof data.availability === "object" && "isAvailable" in data.availability) {
+        setIsAvailable(!!data.availability.isAvailable);
+      }
+      // Fetch pending appointments count
+      const { count, error: countError } = await supabase
+        .from("service_bookings")
+        .select('id', { count: 'exact', head: true })
+        .eq("provider_id", profile.id)
+        .eq("status", "pending");
+      if (!countError && typeof count === 'number') {
+        setPendingAppointments(count);
+      }
+    };
+    fetchAvailabilityAndPending();
+  }, [profile?.id]);
+
+  // Handler to update availability in DB
+  const handleAvailabilityChange = async (checked: boolean) => {
+    setIsAvailable(checked);
+    if (!profile?.id) return;
+    const { error } = await supabase
+      .from("research_aid_profiles")
+      .update({ availability: { isAvailable: checked } })
+      .eq("id", profile.id);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
 
   const getWelcomeMessage = () => {
     if (!profile?.name) return "Welcome!";
@@ -46,15 +94,14 @@ const ResearchAidOverviewTab = () => {
             <div>
               <h2 className="text-2xl font-bold text-gray-900">{getWelcomeMessage()}</h2>
               <p className="text-gray-600 mt-1">
-                You have <span className="font-semibold text-blue-600">3 new job requests</span> and 
-                <span className="font-semibold text-orange-600"> 1 pending delivery</span>.
+                You have <span className="font-semibold text-orange-600">{pendingAppointments} pending appointment{pendingAppointments === 1 ? '' : 's'}</span>.
               </p>
             </div>
             <div className="flex items-center space-x-3">
               <span className="text-sm font-medium">Available</span>
               <Switch
                 checked={isAvailable}
-                onCheckedChange={setIsAvailable}
+                onCheckedChange={handleAvailabilityChange}
                 className="data-[state=checked]:bg-green-600"
               />
               {/* <Badge variant={isAvailable ? "default" : "secondary"} className={isAvailable ? "bg-green-600" : ""}>
@@ -70,12 +117,12 @@ const ResearchAidOverviewTab = () => {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Avatar className="h-10 w-10">
-              <AvatarImage src="/placeholder-avatar.jpg" alt="Dr. Neba" />
-              <AvatarFallback>DN</AvatarFallback>
+              <AvatarImage src={profile?.avatar_url || "/placeholder-avatar.jpg"} alt={profile?.name || "Research Aid"} />
+              <AvatarFallback>{profile?.name ? profile.name.split(' ').map(n => n[0]).join('') : 'RA'}</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="text-lg font-semibold">Dr. Neba Emmanuel</h3>
-              <p className="text-sm text-gray-600">Academic Editor & Statistician</p>
+              <h3 className="text-lg font-semibold">{profile?.name || 'Research Aid'}</h3>
+              <p className="text-sm text-gray-600">{profile?.title || 'Academic Editor & Statistician'}</p>
             </div>
           </CardTitle>
         </CardHeader>

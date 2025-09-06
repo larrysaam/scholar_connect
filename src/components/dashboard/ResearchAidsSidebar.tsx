@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
@@ -19,6 +18,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ResearchAidsSidebarProps {
   activeTab: string;
@@ -28,6 +28,18 @@ interface ResearchAidsSidebarProps {
 const ResearchAidsSidebar = ({ activeTab, setActiveTab }: ResearchAidsSidebarProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { profile } = useAuth();
+
+  // Ensure profile is always sourced from research_aid_profiles, not users
+  type ResearchAidProfile = {
+    name: string;
+    title: string;
+    avatar_url?: string;
+  };
+  const researchAidProfile = profile as ResearchAidProfile | null;
+  const title = researchAidProfile?.title || '';
+  const name = researchAidProfile?.name || 'Research Aid';
+  const avatarUrl = researchAidProfile?.avatar_url || '/placeholder-avatar.jpg';
 
   const menuItems = [
     { id: "overview", label: "Dashboard Overview", icon: BarChart3 },
@@ -63,16 +75,7 @@ const ResearchAidsSidebar = ({ activeTab, setActiveTab }: ResearchAidsSidebarPro
 
   return (
     <div className="bg-white p-5 rounded-lg shadow-sm">
-      <div className="flex items-center space-x-4 mb-6">
-        <Avatar className="h-12 w-12">
-          <AvatarImage src="/placeholder-avatar.jpg" alt="Dr. Neba" />
-          <AvatarFallback>DN</AvatarFallback>
-        </Avatar>
-        <div>
-          <p className="font-medium">Dr. Neba Emmanuel</p>
-          <p className="text-sm text-gray-500">Academic Editor</p>
-        </div>
-      </div>
+      
       
       <nav className="space-y-1">
         {menuItems.map((item) => {

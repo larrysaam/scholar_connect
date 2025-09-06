@@ -14,7 +14,6 @@ interface ResearchAidsOverviewProps {
 }
 
 const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
-  const [isAvailable, setIsAvailable] = useState(true);
   const { profile, user } = useAuth();
   const { toast } = useToast();
 
@@ -23,7 +22,7 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
   const [stats, setStats] = useState({
     jobsInProgress: 0,
     newMessages: 0,
-    earningsThisWeek: 0,
+    totalEarnings: 0, // changed from earningsThisWeek
     profileViews: 0,
     rating: 0,
     totalJobs: 0,
@@ -33,6 +32,8 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
     title: '',
   });
   const [loading, setLoading] = useState(true);
+  const [isAvailable, setIsAvailable] = useState(true); // Move isAvailable here for controlled state
+  const [pendingAppointments, setPendingAppointments] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -63,7 +64,7 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
           .select('id', { count: 'exact', head: true })
           .eq('provider_id', user.id)
           .eq('status', 'completed');
-        // Fetch new messages (unread) - fallback to all messages if 'messages' not in types
+        // Fetch new messages (unread)
         let newMessages = 0;
         try {
           const { count } = await supabase
@@ -75,25 +76,31 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
         } catch {
           newMessages = 0;
         }
-        // Fetch earnings this week
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
+        // Fetch earnings (total, not just this week)
         const { data: earningsRows } = await supabase
           .from('transactions')
-          .select('amount, created_at')
+          .select('amount')
           .eq('user_id', user.id)
-          .eq('status', 'completed')
-          .gte('created_at', weekAgo.toISOString());
-        const earningsThisWeek = (earningsRows || []).reduce((sum, row) => sum + (row.amount || 0), 0);
+          .eq('status', 'completed');
+        const totalEarnings = (earningsRows || []).reduce((sum, row) => sum + (row.amount || 0), 0);
         // Profile views fallback (not in schema)
         const profileViews = 0;
         // Calculate success rate
         const successRate = totalJobs + jobsInProgress > 0 ? Math.round((totalJobs / (totalJobs + jobsInProgress)) * 100) : 0;
+        // Fetch pending appointments count
+        const { count: pendingCount, error: pendingError } = await supabase
+          .from('service_bookings')
+          .select('id', { count: 'exact', head: true })
+          .eq('provider_id', user.id)
+          .eq('status', 'pending');
+        if (!pendingError && typeof pendingCount === 'number') {
+          setPendingAppointments(pendingCount);
+        }
         setAidProfile(profileData);
         setStats({
           jobsInProgress: jobsInProgress || 0,
           newMessages: newMessages || 0,
-          earningsThisWeek,
+          totalEarnings, // changed from earningsThisWeek
           profileViews,
           rating: profileData?.rating || 0,
           totalJobs: totalJobs || 0,
@@ -102,6 +109,10 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
           avatar: userData?.avatar_url || '/placeholder-avatar.jpg',
           title: profileData?.title || '',
         });
+        // Set availability from availability JSON if present
+        if (profileData && profileData.availability && typeof profileData.availability === 'object' && 'isAvailable' in profileData.availability) {
+          setIsAvailable(!!profileData.availability.isAvailable);
+        }
       } catch (err: any) {
         toast({ title: 'Error', description: err.message, variant: 'destructive' });
       } finally {
@@ -110,6 +121,20 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
     };
     fetchData();
   }, [user]);
+
+  // Handler to update availability in DB (store in availability JSON)
+  const handleAvailabilityChange = async (checked: boolean) => {
+    setIsAvailable(checked);
+    if (!user) return;
+    // Update in research_aid_profiles (store in availability JSON)
+    const { error } = await supabase
+      .from('research_aid_profiles')
+      .update({ availability: { ...(aidProfile?.availability || {}), isAvailable: checked } })
+      .eq('id', user.id);
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to update availability', variant: 'destructive' });
+    }
+  };
 
   const getWelcomeMessage = () => {
     if (!profile?.name) return "Welcome!";
@@ -156,17 +181,16 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">{getWelcomeMessage()}</h2>
+              <h2 className="text-2xl font-bold text-gray-900">{stats.title && stats.name ? `Welcome, ${stats.title} ${stats.name}!` : getWelcomeMessage()}</h2>
               <p className="text-gray-600 mt-1">
-                You have <span className="font-semibold text-blue-600">3 new job requests</span> and 
-                <span className="font-semibold text-orange-600"> 1 pending delivery</span>.
+                You have <span className="font-semibold text-orange-600">{pendingAppointments} pending appointment{pendingAppointments === 1 ? '' : 's'}</span>.
               </p>
             </div>
             <div className="flex items-center space-x-3">
               <span className="text-sm font-medium">Available</span>
               <Switch
                 checked={isAvailable}
-                onCheckedChange={setIsAvailable}
+                onCheckedChange={handleAvailabilityChange}
                 className="data-[state=checked]:bg-green-600"
               />
               <Badge variant={isAvailable ? "default" : "secondary"} className={isAvailable ? "bg-green-600" : ""}>
@@ -186,7 +210,7 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
               <AvatarFallback>{stats.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="text-xl font-semibold">{stats.name}</h3>
+              <h3 className="text-xl font-semibold">{stats.title ? `${stats.title} ${stats.name}` : stats.name}</h3>
               <p className="text-sm text-gray-600">{stats.title}</p>
             </div>
           </CardTitle>
@@ -251,8 +275,8 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
                 <DollarSign className="h-6 w-6 text-yellow-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Earnings This Week</p>
-                <p className="text-2xl font-bold">{stats.earningsThisWeek} XAF</p>
+                <p className="text-sm text-gray-600">Total Earnings</p>
+                <p className="text-2xl font-bold">{stats.totalEarnings} XAF</p>
               </div>
             </div>
           </CardContent>
