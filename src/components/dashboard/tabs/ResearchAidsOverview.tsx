@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star, TrendingUp, MessageSquare, Clock, DollarSign, Briefcase } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface ResearchAidsOverviewProps {
   setActiveTab: (tab: string) => void;
@@ -13,7 +15,101 @@ interface ResearchAidsOverviewProps {
 
 const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
   const [isAvailable, setIsAvailable] = useState(true);
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
+  const { toast } = useToast();
+
+  // Real data state
+  const [aidProfile, setAidProfile] = useState<any>(null);
+  const [stats, setStats] = useState({
+    jobsInProgress: 0,
+    newMessages: 0,
+    earningsThisWeek: 0,
+    profileViews: 0,
+    rating: 0,
+    totalJobs: 0,
+    successRate: 0,
+    name: '',
+    avatar: '',
+    title: '',
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return;
+      setLoading(true);
+      try {
+        // Fetch user info
+        const { data: userData } = await supabase
+          .from('users')
+          .select('id, name, avatar_url, email')
+          .eq('id', user.id)
+          .single();
+        // Fetch research aid profile
+        const { data: profileData } = await supabase
+          .from('research_aid_profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        // Fetch jobs in progress
+        const { count: jobsInProgress } = await supabase
+          .from('service_bookings')
+          .select('id', { count: 'exact', head: true })
+          .eq('provider_id', user.id)
+          .eq('status', 'in_progress');
+        // Fetch total jobs completed
+        const { count: totalJobs } = await supabase
+          .from('service_bookings')
+          .select('id', { count: 'exact', head: true })
+          .eq('provider_id', user.id)
+          .eq('status', 'completed');
+        // Fetch new messages (unread) - fallback to all messages if 'messages' not in types
+        let newMessages = 0;
+        try {
+          const { count } = await supabase
+            .from('messages' as any)
+            .select('id', { count: 'exact', head: true })
+            .eq('recipient_id', user.id)
+            .is('read', false);
+          newMessages = count || 0;
+        } catch {
+          newMessages = 0;
+        }
+        // Fetch earnings this week
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const { data: earningsRows } = await supabase
+          .from('transactions')
+          .select('amount, created_at')
+          .eq('user_id', user.id)
+          .eq('status', 'completed')
+          .gte('created_at', weekAgo.toISOString());
+        const earningsThisWeek = (earningsRows || []).reduce((sum, row) => sum + (row.amount || 0), 0);
+        // Profile views fallback (not in schema)
+        const profileViews = 0;
+        // Calculate success rate
+        const successRate = totalJobs + jobsInProgress > 0 ? Math.round((totalJobs / (totalJobs + jobsInProgress)) * 100) : 0;
+        setAidProfile(profileData);
+        setStats({
+          jobsInProgress: jobsInProgress || 0,
+          newMessages: newMessages || 0,
+          earningsThisWeek,
+          profileViews,
+          rating: profileData?.rating || 0,
+          totalJobs: totalJobs || 0,
+          successRate,
+          name: userData?.name || '',
+          avatar: userData?.avatar_url || '/placeholder-avatar.jpg',
+          title: profileData?.title || '',
+        });
+      } catch (err: any) {
+        toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [user]);
 
   const getWelcomeMessage = () => {
     if (!profile?.name) return "Welcome!";
@@ -86,13 +182,12 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
         <CardHeader>
           <CardTitle className="flex items-center space-x-3">
             <Avatar className="h-12 w-12">
-              <AvatarImage src="/placeholder-avatar.jpg" alt="Dr. Neba" />
-              <AvatarFallback>DN</AvatarFallback>
+              <AvatarImage src={stats.avatar} alt={stats.name} />
+              <AvatarFallback>{stats.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="text-xl font-semibold">Dr. Neba Emmanuel</h3>
-              <p className="text-sm text-gray-600">Academic Editor & Statistician</p>
-              <Badge className="mt-1 bg-yellow-100 text-yellow-800">Top Rated GIS Expert</Badge>
+              <h3 className="text-xl font-semibold">{stats.name}</h3>
+              <p className="text-sm text-gray-600">{stats.title}</p>
             </div>
           </CardTitle>
         </CardHeader>
@@ -103,16 +198,16 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
                 ))}
-                <span className="ml-2 text-lg font-semibold">4.9</span>
+                <span className="ml-2 text-lg font-semibold">{stats.rating}</span>
               </div>
               <p className="text-sm text-gray-600">Rating</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold text-gray-900">47</p>
+              <p className="text-3xl font-bold text-gray-900">{stats.totalJobs}</p>
               <p className="text-sm text-gray-600">Total Jobs Completed</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold text-green-600">98%</p>
+              <p className="text-3xl font-bold text-green-600">{stats.successRate}%</p>
               <p className="text-sm text-gray-600">Success Rate</p>
             </div>
           </div>
@@ -129,7 +224,7 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Jobs in Progress</p>
-                <p className="text-2xl font-bold">5</p>
+                <p className="text-2xl font-bold">{stats.jobsInProgress}</p>
               </div>
             </div>
           </CardContent>
@@ -143,7 +238,7 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">New Messages</p>
-                <p className="text-2xl font-bold">12</p>
+                <p className="text-2xl font-bold">{stats.newMessages}</p>
               </div>
             </div>
           </CardContent>
@@ -157,7 +252,7 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Earnings This Week</p>
-                <p className="text-2xl font-bold">15,750 XAF</p>
+                <p className="text-2xl font-bold">{stats.earningsThisWeek} XAF</p>
               </div>
             </div>
           </CardContent>
@@ -171,7 +266,7 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Profile Views</p>
-                <p className="text-2xl font-bold">28</p>
+                <p className="text-2xl font-bold">{stats.profileViews}</p>
               </div>
             </div>
           </CardContent>
