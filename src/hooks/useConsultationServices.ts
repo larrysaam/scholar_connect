@@ -204,7 +204,9 @@ export const useConsultationServices = () => {
         })
         .select()
         .single();
+      console.log('createService: insert result', { service, error });
       if (error || !service) {
+        console.error('createService: failed to create service', error);
         toast({ title: 'Error', description: 'Failed to create service', variant: 'destructive' });
         setCreating(false);
         return false;
@@ -217,7 +219,10 @@ export const useConsultationServices = () => {
           price: p.price,
           currency: p.currency || 'XAF',
         }));
-        await supabase.from('service_pricing').insert(pricingRows);
+        const { error: pricingError } = await supabase.from('service_pricing').insert(pricingRows);
+        if (pricingError) {
+          console.error('createService: failed to insert pricing', pricingError);
+        }
       }
       // Insert addons
       if (serviceData.addons && serviceData.addons.length > 0) {
@@ -229,7 +234,10 @@ export const useConsultationServices = () => {
           currency: a.currency || 'XAF',
           is_active: true,
         }));
-        await supabase.from('service_addons').insert(addonRows);
+        const { error: addonError } = await supabase.from('service_addons').insert(addonRows);
+        if (addonError) {
+          console.error('createService: failed to insert addons', addonError);
+        }
       }
       await fetchServices();
       toast({ title: 'Service Created', description: 'Your service has been added.', variant: 'default' });
@@ -237,6 +245,7 @@ export const useConsultationServices = () => {
       return true;
     } catch (err) {
       setCreating(false);
+      console.error('createService: unexpected error', err);
       toast({ title: 'Error', description: 'Unexpected error creating service', variant: 'destructive' });
       return false;
     }

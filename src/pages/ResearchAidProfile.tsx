@@ -50,6 +50,7 @@ interface ResearchAidProfile {
   languages: string[];
   certifications: string[];
   profile_image_url?: string;
+  location?: string; // Added location field
 }
 
 interface ConsultationService {
@@ -82,10 +83,10 @@ const ResearchAidProfile = () => {
   const [services, setServices] = useState<ConsultationService[]>([]);
   const [selectedService, setSelectedService] = useState<ConsultationService | null>(null);
   const [bookingForm, setBookingForm] = useState<BookingFormData>({
-    service_id: '',
+    service_id: 'appointment', // Always use 'appointment' as the service
     requested_date: '',
     requested_time: '',
-    meeting_type: 'video',
+    meeting_type: 'video', // Always use 'video' as the meeting type
     project_description: '',
     specific_requirements: '',
     academic_level: 'undergraduate'
@@ -102,60 +103,71 @@ const ResearchAidProfile = () => {
     }
   }, [id]);
 
+  useEffect(() => {
+    // If no services are available, close the booking dialog and show a toast
+    if (showBookingDialog && services.length === 0) {
+      setShowBookingDialog(false);
+      toast({
+        title: "No Services Available",
+        description: "This research aid has not published any consultation services yet. Please check back later or contact support.",
+        variant: "destructive"
+      });
+    }
+  }, [showBookingDialog, services, toast]);
+
   const fetchResearchAidProfile = async () => {
     if (!id) return;
 
     setLoading(true);
     try {
-      // Fetch research aid profile
-      const { data: aidData, error: aidError } = await supabase
+      // Fetch user and profile data
+      const { data: userData, error: userError } = await supabase
         .from('users')
-        .select(`
-          *,
-          researcher_profiles:researcher_profiles(*),
-          consultation_services:consultation_services(
-            *,
-            pricing:service_pricing(*)
-          )
-        `)
+        .select('id, name, email, avatar_url, expertise, role')
         .eq('id', id)
         .eq('role', 'aid')
         .single();
+      if (userError) throw userError;
 
-      if (aidError) {
-        console.error('Error fetching research aid:', aidError);
-        toast({
-          title: "Error",
-          description: "Research aid not found",
-          variant: "destructive"
-        });
-        navigate('/research-aids');
-        return;
-      }
+      // Fetch research aid profile (by id)
+      const { data: profileData, error: profileError } = await supabase
+        .from('research_aid_profiles')
+        .select('*')
+        .eq('id', id)
+        .single();
+      if (profileError) throw profileError;
 
-      // Process profile data
+      // Fetch consultation services
+      const { data: servicesData, error: servicesError } = await supabase
+        .from('consultation_services')
+        .select('*, pricing:service_pricing(*)')
+        .eq('user_id', id);
+      if (servicesError) throw servicesError;
+
+      // Compose profile
       const processedProfile: ResearchAidProfile = {
-        id: aidData.id,
-        name: aidData.name || 'Unknown',
-        email: aidData.email,
-        bio: aidData.researcher_profiles?.bio || '',
-        expertise: aidData.expertise || [],
-        specialties: aidData.researcher_profiles?.specialties || [],
-        years_experience: aidData.researcher_profiles?.years_experience || 0,
-        hourly_rate: aidData.researcher_profiles?.hourly_rate || 0,
-        rating: aidData.researcher_profiles?.rating || 0,
-        total_reviews: aidData.researcher_profiles?.total_reviews || 0,
-        response_time: aidData.researcher_profiles?.response_time || 'Within 24 hours',
-        is_online: aidData.researcher_profiles?.is_online || false,
-        academic_rank: aidData.researcher_profiles?.academic_rank || '',
-        highest_education: aidData.researcher_profiles?.highest_education || '',
-        languages: aidData.researcher_profiles?.languages || [],
-        certifications: aidData.researcher_profiles?.certifications || [],
-        profile_image_url: aidData.researcher_profiles?.profile_image_url
+        id: userData.id,
+        name: userData.name || 'Unknown',
+        email: userData.email,
+        bio: profileData?.bio || '',
+        expertise: userData.expertise || [],
+        specialties: profileData?.specialties || [],
+        years_experience: profileData?.years_experience || 0,
+        hourly_rate: profileData?.hourly_rate || 0,
+        rating: profileData?.rating || 0,
+        total_reviews: profileData?.total_reviews || 0,
+        response_time: profileData?.response_time || 'Within 24 hours',
+        is_online: profileData?.is_online || false,
+        academic_rank: profileData?.academic_rank || '',
+        highest_education: profileData?.highest_education || '',
+        languages: profileData?.languages || [],
+        certifications: profileData?.certifications || [],
+        profile_image_url: userData.avatar_url || '/placeholder-avatar.jpg',
+        location: profileData?.location || '', // Map location
       };
 
-      // Process services
-      const processedServices: ConsultationService[] = (aidData.consultation_services || []).map((service: any) => ({
+      // Compose services
+      const processedServices: ConsultationService[] = (servicesData || []).map((service: any) => ({
         id: service.id,
         title: service.title,
         description: service.description,
@@ -170,26 +182,37 @@ const ResearchAidProfile = () => {
       // Set default service if available
       if (processedServices.length > 0) {
         setSelectedService(processedServices[0]);
-        setBookingForm(prev => ({ ...prev, service_id: processedServices[0].id }));
       }
-
     } catch (error) {
       console.error('Error fetching profile:', error);
       toast({
-        title: "Error",
-        description: "Failed to load research aid profile",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to load research aid profile',
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    // Always select the 'Appointment' service if present
+    if (services.length > 0) {
+      const appointmentService = services.find(s => s.title.toLowerCase() === 'appointment');
+      if (appointmentService) {
+        setSelectedService(appointmentService);
+        setBookingForm(prev => ({ ...prev, service_id: appointmentService.id }));
+      } else {
+        setSelectedService(services[0]);
+        setBookingForm(prev => ({ ...prev, service_id: services[0].id }));
+      }
+    }
+  }, [services]);
+
   const handleServiceSelect = (serviceId: string) => {
     const service = services.find(s => s.id === serviceId);
     if (service) {
       setSelectedService(service);
-      setBookingForm(prev => ({ ...prev, service_id: serviceId }));
     }
   };
 
@@ -227,45 +250,57 @@ const ResearchAidProfile = () => {
         throw new Error('Payment failed');
       }
 
-      // Create appointment request
+      // Defensive: ensure selectedService is set before booking
+      if (!selectedService) {
+        toast({
+          title: "No Service Available",
+          description: "No consultation service is available for this research aid. Please contact support.",
+          variant: "destructive"
+        });
+        setSubmitting(false);
+        return;
+      }
+
+      // Create appointment request (use valid table/fields)
       const { data: request, error: requestError } = await supabase
-        .from('appointment_requests')
+        .from('service_bookings')
         .insert({
-          student_id: user.id,
-          research_aid_id: id,
-          service_id: bookingForm.service_id,
-          requested_date: bookingForm.requested_date,
-          requested_time: bookingForm.requested_time,
-          duration_minutes: selectedService?.duration_minutes || 60,
-          meeting_type: bookingForm.meeting_type,
+          academic_level: bookingForm.academic_level,
+          base_price: profile.hourly_rate || 0,
+          client_id: user.id,
+          currency: 'XAF',
+          duration_minutes: selectedService.duration_minutes || 60,
+          provider_id: id,
+          scheduled_date: bookingForm.requested_date,
+          scheduled_time: bookingForm.requested_time,
+          service_id: selectedService.id, // Always a valid UUID now
+          status: 'pending',
+          total_price: profile.hourly_rate || 0,
+          payment_status: 'pending',
+          meeting_type: 'video',
           project_description: bookingForm.project_description,
-          specific_requirements: bookingForm.specific_requirements,
-          payment_status: 'paid'
+          client_notes: bookingForm.specific_requirements || null
         })
         .select()
         .single();
 
       if (requestError) throw requestError;
 
-      // Create payment record
-      const servicePrice = selectedService?.pricing.find(p => p.academic_level === bookingForm.academic_level);
-      await supabase.from('appointment_payments').insert({
-        appointment_request_id: request.id,
-        student_id: user.id,
-        research_aid_id: id,
-        amount: servicePrice?.price || 50,
-        currency: servicePrice?.currency || 'USD',
-        payment_method: 'mock',
-        payment_status: 'completed',
-        transaction_id: paymentResult.transaction_id,
-        payment_date: new Date().toISOString()
+      // Create payment record (use valid table/fields)
+      await supabase.from('transactions').insert({
+        user_id: user.id,
+        amount: profile.hourly_rate || 0,
+        currency: 'XAF',
+        status: 'completed',
+        type: 'consultation',
+        description: `Payment for appointment booking with ${profile.name}`
       });
 
-      // Send notification to research aid
+      // Send notification to research aid (use valid fields)
       await supabase.from('notifications').insert({
         user_id: id,
         title: 'New Appointment Request',
-        message: `You have a new appointment request from ${user.name || 'a student'} for ${selectedService?.title}`,
+        message: `You have a new appointment request from ${user.email || 'a student'} for appointment`,
         type: 'appointment',
         category: 'booking',
         action_url: '/research-aids-dashboard'
@@ -294,22 +329,19 @@ const ResearchAidProfile = () => {
   const mockPaymentProcess = async (): Promise<{ success: boolean; transaction_id: string }> => {
     // Simulate payment processing delay
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Mock payment success (90% success rate)
-    const success = Math.random() > 0.1;
-    
+    // Always succeed for testing
     return {
-      success,
+      success: true,
       transaction_id: `mock_${Date.now()}_${Math.random().toString(36).substring(7)}`
     };
   };
 
   const resetBookingForm = () => {
     setBookingForm({
-      service_id: services[0]?.id || '',
+      service_id: 'appointment', // Always use 'appointment' as the service
       requested_date: '',
       requested_time: '',
-      meeting_type: 'video',
+      meeting_type: 'video', // Always use 'video' as the meeting type
       project_description: '',
       specific_requirements: '',
       academic_level: 'undergraduate'
@@ -387,6 +419,12 @@ const ResearchAidProfile = () => {
                             Online
                           </Badge>
                         )}
+                        {profile.location && (
+                          <span className="ml-2 flex items-center text-gray-500 text-sm">
+                            <MapPin className="h-4 w-4 mr-1" />
+                            {profile.location}
+                          </span>
+                        )}
                       </div>
                       
                       <div className="flex items-center space-x-4 mb-3">
@@ -411,7 +449,7 @@ const ResearchAidProfile = () => {
                           <span>{profile.years_experience} years experience</span>
                         </div>
                         <div className="flex items-center">
-                          <span className="font-medium">${profile.hourly_rate}/hour</span>
+                          <span className="font-medium">{profile.hourly_rate} XAF/hour</span>
                         </div>
                       </div>
                     </div>
@@ -563,7 +601,7 @@ const ResearchAidProfile = () => {
                   <div className="space-y-4">
                     <div className="text-center p-4 bg-blue-50 rounded-lg">
                       <div className="text-2xl font-bold text-blue-600">
-                        ${profile.hourly_rate}
+                        {profile.hourly_rate} XAF
                       </div>
                       <div className="text-sm text-gray-600">per hour</div>
                     </div>
@@ -601,16 +639,12 @@ const ResearchAidProfile = () => {
                           {/* Service Selection */}
                           <div>
                             <Label htmlFor="service">Select Service</Label>
-                            <Select value={bookingForm.service_id} onValueChange={handleServiceSelect}>
+                            <Select value={bookingForm.service_id} onValueChange={() => {}} disabled>
                               <SelectTrigger>
-                                <SelectValue placeholder="Choose a service" />
+                                <SelectValue placeholder="Appointment" />
                               </SelectTrigger>
                               <SelectContent>
-                                {services.map(service => (
-                                  <SelectItem key={service.id} value={service.id}>
-                                    {service.title} ({service.duration_minutes} min)
-                                  </SelectItem>
-                                ))}
+                                <SelectItem value="appointment">Appointment</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -673,12 +707,7 @@ const ResearchAidProfile = () => {
                           {/* Meeting Type */}
                           <div>
                             <Label htmlFor="meeting_type">Meeting Type</Label>
-                            <Select 
-                              value={bookingForm.meeting_type} 
-                              onValueChange={(value: 'video' | 'phone' | 'in-person') => 
-                                setBookingForm(prev => ({ ...prev, meeting_type: value }))
-                              }
-                            >
+                            <Select value={bookingForm.meeting_type} onValueChange={() => {}} disabled>
                               <SelectTrigger>
                                 <SelectValue />
                               </SelectTrigger>
@@ -687,18 +716,6 @@ const ResearchAidProfile = () => {
                                   <div className="flex items-center">
                                     <Video className="h-4 w-4 mr-2" />
                                     Video Call
-                                  </div>
-                                </SelectItem>
-                                <SelectItem value="phone">
-                                  <div className="flex items-center">
-                                    <Phone className="h-4 w-4 mr-2" />
-                                    Phone Call
-                                  </div>
-                                </SelectItem>
-                                <SelectItem value="in-person">
-                                  <div className="flex items-center">
-                                    <MapPin className="h-4 w-4 mr-2" />
-                                    In Person
                                   </div>
                                 </SelectItem>
                               </SelectContent>
@@ -750,7 +767,7 @@ const ResearchAidProfile = () => {
                           {/* Submit Button */}
                           <Button 
                             onClick={handleBookingSubmit}
-                            disabled={submitting || !bookingForm.project_description.trim()}
+                            disabled={submitting || !bookingForm.project_description.trim() || !selectedService || selectedService.title.toLowerCase() !== 'appointment'}
                             className="w-full"
                           >
                             {submitting ? (

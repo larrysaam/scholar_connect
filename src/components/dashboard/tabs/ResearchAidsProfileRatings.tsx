@@ -123,6 +123,51 @@ const ResearchAidsProfileRatings = () => {
     ));
   };
 
+  // Helper to upsert Appointment service and pricing
+  const upsertAppointmentServiceAndPricing = async (hourlyRate: number) => {
+    if (!user) return;
+    // 1. Upsert Appointment service
+    const { data: service, error: serviceError } = await supabase
+      .from('consultation_services')
+      .upsert([
+        {
+          user_id: user.id,
+          title: 'Appointment',
+          description: 'Book a 1:1 appointment with this research aid.',
+          duration_minutes: 60,
+          category: 'appointment', // <-- FIXED: must match DB constraint
+        }
+      ], { onConflict: 'user_id,title' })
+      .select()
+      .single();
+    if (serviceError || !service) {
+      console.error('Error upserting Appointment service:', serviceError);
+      return;
+    }
+    // 2. Upsert pricing for all academic levels
+    const academicLevels = [
+      { academic_level: 'Undergraduate', price: hourlyRate },
+      { academic_level: 'Masters', price: hourlyRate },
+      { academic_level: 'PhD', price: hourlyRate },
+      { academic_level: 'Postdoc', price: hourlyRate },
+    ];
+    for (const level of academicLevels) {
+      const { error: pricingError } = await supabase
+        .from('service_pricing')
+        .upsert([
+          {
+            service_id: service.id,
+            academic_level: level.academic_level,
+            price: level.price,
+            currency: 'XAF',
+          }
+        ], { onConflict: 'service_id,academic_level' });
+      if (pricingError) {
+        console.error('Error upserting pricing for', level.academic_level, pricingError);
+      }
+    }
+  };
+
   const handleProfileUpdate = async () => {
     if (!editableProfileData) return;
 
@@ -144,6 +189,10 @@ const ResearchAidsProfileRatings = () => {
 
     const success = await updateProfile(updates);
     if (success) {
+      // If hourly_rate > 0, upsert Appointment service and pricing
+      if (editableProfileData.hourly_rate && editableProfileData.hourly_rate > 0) {
+        await upsertAppointmentServiceAndPricing(editableProfileData.hourly_rate);
+      }
       toast({
         title: "Profile Updated",
         description: "Your profile information has been successfully updated"
