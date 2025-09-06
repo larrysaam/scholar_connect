@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useResearcherProfile, ResearcherProfileData } from "@/hooks/useResearcherProfile";
 import LoadingSpinner from "@/components/LoadingSpinner"; // Corrected import path
+import { supabase } from '@/integrations/supabase/client';
 
 const ResearchAidsProfileRatings = () => {
   const { user, loading: authLoading } = useAuth();
@@ -30,6 +31,66 @@ const ResearchAidsProfileRatings = () => {
   const [editableProfileData, setEditableProfileData] = useState<ResearcherProfileData | null>(null);
 
   const { toast } = useToast();
+
+  // Profile picture upload state
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
+  const [isUploadingProfileImage, setIsUploadingProfileImage] = useState(false);
+
+  // Handle file select for profile image
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setProfileImageFile(file);
+    if (file) {
+      setProfileImagePreview(URL.createObjectURL(file));
+    } else {
+      setProfileImagePreview(null);
+    }
+  };
+
+  // Upload profile image to lovable-uploads bucket and update profile
+  const handleUploadProfileImage = async () => {
+    if (!profileImageFile || !user) return;
+    setIsUploadingProfileImage(true);
+    try {
+      const fileExt = profileImageFile.name.split('.').pop();
+      const filePath = `${user.id}_${Date.now()}.${fileExt}`;
+      const uploadResult = await supabase.storage.from('lovable-uploads').upload(filePath, profileImageFile, { upsert: true });
+      if (uploadResult.error) throw uploadResult.error;
+      const publicUrlData = supabase.storage.from('lovable-uploads').getPublicUrl(filePath).data;
+      const publicUrl = publicUrlData.publicUrl;
+      // Save to users.avatar_url and also update profile imageUrl for UI
+      const { error: userUpdateError } = await supabase.from('users').update({ avatar_url: publicUrl }).eq('id', user.id);
+      if (userUpdateError) throw userUpdateError;
+      await updateProfile({ imageUrl: publicUrl });
+      toast({ title: 'Profile Picture Updated', description: 'Your profile picture has been updated.' });
+      setProfileImageFile(null);
+      setProfileImagePreview(null);
+      refetchProfile();
+    } catch (err: any) {
+      toast({ title: 'Upload Failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setIsUploadingProfileImage(false);
+    }
+  };
+
+  // Delete profile image
+  const handleDeleteProfileImage = async () => {
+    if (!user || !researcher.imageUrl) return;
+    try {
+      // Extract file name from URL
+      const urlParts = researcher.imageUrl.split('/');
+      const fileName = urlParts[urlParts.length - 1];
+      await import('@/integrations/supabase/client').then(({ supabase }) =>
+        supabase.storage.from('lovable-uploads').remove([fileName])
+      );
+      await updateProfile({ imageUrl: '' });
+      toast({ title: 'Profile Picture Removed', description: 'Your profile picture has been removed.' });
+      refetchProfile();
+    } catch (err: any) {
+      toast({ title: 'Delete Failed', description: err.message, variant: 'destructive' });
+    }
+  };
 
   useEffect(() => {
     if (researcher) {
@@ -78,6 +139,7 @@ const ResearchAidsProfileRatings = () => {
       scholarships: editableProfileData.scholarships,
       affiliations: editableProfileData.affiliations,
       skills: editableProfileData.skills,
+      hourly_rate: editableProfileData.hourly_rate, // Ensure hourly_rate is included
     };
 
     const success = await updateProfile(updates);
@@ -284,11 +346,32 @@ const ResearchAidsProfileRatings = () => {
               Edit Profile
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto" aria-describedby="edit-profile-description">
             <DialogHeader>
               <DialogTitle>Edit Profile</DialogTitle>
             </DialogHeader>
+            <div id="edit-profile-description" className="sr-only">Edit your profile information, including your profile picture, bio, and professional details.</div>
             <div className="space-y-6">
+              {/* Profile Picture Upload */}
+              <div className="flex items-center gap-4">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage src={profileImagePreview || editableProfileData.imageUrl || '/placeholder-avatar.jpg'} alt="Profile" />
+                  <AvatarFallback>{editableProfileData.name?.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col gap-2">
+                  <input type="file" accept="image/*" onChange={handleProfileImageChange} />
+                  {profileImageFile && (
+                    <Button size="sm" onClick={handleUploadProfileImage} disabled={isUploadingProfileImage}>
+                      {isUploadingProfileImage ? 'Uploading...' : 'Save Picture'}
+                    </Button>
+                  )}
+                  {editableProfileData.imageUrl && (
+                    <Button size="sm" variant="outline" onClick={handleDeleteProfileImage}>
+                      Remove Picture
+                    </Button>
+                  )}
+                </div>
+              </div>
               {/* Basic Information */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Basic Information</h3>
@@ -344,6 +427,19 @@ const ResearchAidsProfileRatings = () => {
                     id="location"
                     value={editableProfileData.location}
                     onChange={(e) => setEditableProfileData(prev => prev ? ({ ...prev, location: e.target.value }) : null)}
+                  />
+                </div>
+                {/* Hourly Rate */}
+                <div>
+                  <Label htmlFor="hourlyRate">Hourly Rate (XAF/hr)</Label>
+                  <Input
+                    id="hourlyRate"
+                    type="number"
+                    min={0}
+                    step={100}
+                    value={editableProfileData.hourly_rate ?? ''}
+                    onChange={e => setEditableProfileData(prev => prev ? ({ ...prev, hourly_rate: Number(e.target.value) }) : null)}
+                    placeholder="Enter your hourly rate for appointments"
                   />
                 </div>
               </div>

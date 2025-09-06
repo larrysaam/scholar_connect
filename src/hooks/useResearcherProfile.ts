@@ -293,6 +293,10 @@ export const useResearcherProfile = (researcherId: string) => {
     // if (dbUpdates.skills !== undefined) dbUpdates.skills = JSON.stringify(dbUpdates.skills);
     if (dbUpdates.availability !== undefined) dbUpdates.availability = JSON.stringify(dbUpdates.availability);
     if (dbUpdates.verifications !== undefined) dbUpdates.verifications = JSON.stringify(dbUpdates.verifications);
+    // Ensure hourly_rate is a number or null
+    if (dbUpdates.hourly_rate !== undefined && dbUpdates.hourly_rate !== null) {
+      dbUpdates.hourly_rate = Number(dbUpdates.hourly_rate);
+    }
 
     try {
       const { error } = await supabase
