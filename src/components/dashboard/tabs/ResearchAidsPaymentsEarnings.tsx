@@ -1,5 +1,11 @@
+// TODO: Replace all mock data and local state with backend integration (e.g., Supabase or REST API)
+// Example: usePayments hook for fetching and mutating earnings, transactions, payment methods
+// const { earnings, transactions, paymentMethods, addPaymentMethod, updatePaymentMethod, requestWithdrawal, loading } = usePayments(userId);
+// For now, the UI and state logic is ready for backend integration.
 
 import { useState } from "react";
+import { usePayments } from "@/hooks/usePayments";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +25,20 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 const ResearchAidsPaymentsEarnings = () => {
+  const { user } = useAuth();
+  const {
+    earnings,
+    transactions,
+    paymentMethods,
+    availableBalance,
+    loading,
+    requestWithdrawal,
+    addPaymentMethod,
+    updatePaymentMethod,
+    deletePaymentMethod,
+    setDefaultPaymentMethod,
+  } = usePayments();
+
   const [activeTab, setActiveTab] = useState("earnings");
   const [withdrawalAmount, setWithdrawalAmount] = useState("");
   const [paymentMethodType, setPaymentMethodType] = useState("");
@@ -26,79 +46,9 @@ const ResearchAidsPaymentsEarnings = () => {
   const [editingPaymentMethod, setEditingPaymentMethod] = useState<any>(null);
   const { toast } = useToast();
 
-  const earnings = [
-    {
-      id: 1,
-      project: "Statistical Analysis Project",
-      client: "Dr. Sarah Johnson",
-      amount: 75000,
-      date: "2024-01-28",
-      status: "completed",
-      type: "hourly"
-    },
-    {
-      id: 2,
-      project: "Literature Review",
-      client: "Prof. Michael Chen",
-      amount: 50000,
-      date: "2024-01-25",
-      status: "pending",
-      type: "fixed"
-    },
-    {
-      id: 3,
-      project: "Data Collection",
-      client: "Dr. Marie Dubois",
-      amount: 120000,
-      date: "2024-01-20",
-      status: "completed",
-      type: "milestone"
-    }
-  ];
-
-  const transactions = [
-    {
-      id: 1,
-      type: "earning",
-      description: "Payment for Statistical Analysis Project",
-      amount: 75000,
-      date: "2024-01-28",
-      status: "completed"
-    },
-    {
-      id: 2,
-      type: "withdrawal",
-      description: "Bank transfer withdrawal",
-      amount: -45000,
-      date: "2024-01-26",
-      status: "completed"
-    },
-    {
-      id: 3,
-      type: "earning",
-      description: "Payment for Data Collection",
-      amount: 120000,
-      date: "2024-01-20",
-      status: "completed"
-    }
-  ];
-
-  const [paymentMethods, setPaymentMethods] = useState([
-    {
-      id: 1,
-      type: "bank",
-      name: "Commercial Bank",
-      details: "****1234",
-      isDefault: true
-    },
-    {
-      id: 2,
-      type: "mobile",
-      name: "Orange Money",
-      details: "****5678",
-      isDefault: false
-    }
-  ]);
+  if (loading) {
+    return <div className="text-center py-10">Loading payments data...</div>;
+  }
 
   const totalEarnings = earnings.reduce((sum, earning) => 
     earning.status === "completed" ? sum + earning.amount : sum, 0
@@ -107,8 +57,6 @@ const ResearchAidsPaymentsEarnings = () => {
   const pendingEarnings = earnings.reduce((sum, earning) => 
     earning.status === "pending" ? sum + earning.amount : sum, 0
   );
-
-  const availableBalance = 150000; // Mock available balance
 
   const handleExport = (type: string) => {
     toast({
@@ -127,15 +75,12 @@ const ResearchAidsPaymentsEarnings = () => {
       return;
     }
 
-    const newMethod = {
-      id: paymentMethods.length + 1,
-      type: paymentMethodType,
+    addPaymentMethod({
+      type: paymentMethodType as "bank" | "mobile",
       name: paymentMethodType === "bank" ? "New Bank Account" : "New Mobile Money",
-      details: `****${paymentDetails.slice(-4)}`,
-      isDefault: paymentMethods.length === 0
-    };
+      details: `****${paymentDetails.slice(-4)}`
+    });
 
-    setPaymentMethods([...paymentMethods, newMethod]);
     setPaymentMethodType("");
     setPaymentDetails("");
 
@@ -155,11 +100,10 @@ const ResearchAidsPaymentsEarnings = () => {
       return;
     }
 
-    setPaymentMethods(prev => prev.map(pm => 
-      pm.id === method.id 
-        ? { ...pm, details: `****${paymentDetails.slice(-4)}` }
-        : pm
-    ));
+    updatePaymentMethod({
+      ...method,
+      details: `****${paymentDetails.slice(-4)}`
+    });
 
     setEditingPaymentMethod(null);
     setPaymentDetails("");
@@ -190,6 +134,8 @@ const ResearchAidsPaymentsEarnings = () => {
       });
       return;
     }
+
+    requestWithdrawal(amount);
 
     setWithdrawalAmount("");
     
@@ -427,7 +373,7 @@ const ResearchAidsPaymentsEarnings = () => {
                     <div>
                       <h4 className="font-medium">{method.name}</h4>
                       <p className="text-sm text-gray-600">{method.details}</p>
-                      {method.isDefault && (
+                      {method.is_default && (
                         <Badge variant="secondary" className="text-xs">Default</Badge>
                       )}
                     </div>
@@ -455,7 +401,7 @@ const ResearchAidsPaymentsEarnings = () => {
                             onChange={(e) => setPaymentDetails(e.target.value)}
                           />
                         </div>
-                        <Button onClick={() => handleEditPaymentMethod(method)} className="w-full">
+                        <Button onClick={() => updatePaymentMethod({ ...method, details: `****${paymentDetails.slice(-4)}` })} className="w-full">
                           Update Payment Method
                         </Button>
                       </div>
