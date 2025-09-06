@@ -18,7 +18,7 @@ import {
   Download, 
   CreditCard, 
   Plus, 
-  Edit,
+  Editet,
   TrendingUp,
   Calendar
 } from "lucide-react";
@@ -243,6 +243,12 @@ const ResearchAidsPaymentsEarnings = () => {
                     <h4 className="font-medium">{earning.project}</h4>
                     <p className="text-sm text-gray-600">Client: {earning.client}</p>
                     <p className="text-xs text-blue-600 capitalize">{earning.type} payment</p>
+                    {earning.source === 'job' && (
+                      <Badge className="bg-yellow-500 text-white mt-1">Job</Badge>
+                    )}
+                    {earning.source === 'appointment' && (
+                      <Badge className="bg-green-500 text-white mt-1">Appointment</Badge>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-semibold">{earning.amount.toLocaleString()} XAF</p>

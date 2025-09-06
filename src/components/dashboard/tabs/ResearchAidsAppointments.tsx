@@ -25,6 +25,7 @@ interface AppointmentData {
   meeting_link?: string;
   payment_status: string;
   service_title?: string;
+  avatar_url?: string;
 }
 
 interface SharedDocument {
@@ -85,7 +86,8 @@ const ResearchAidsAppointments = () => {
           ),
           users!client_id (
             name,
-            email
+            email,
+            avatar_url
           )
         `)
         .eq('provider_id', user.id)
@@ -104,7 +106,8 @@ const ResearchAidsAppointments = () => {
         description: booking.consultation_services?.description || booking.notes || '',
         meeting_link: booking.meeting_link,
         payment_status: booking.payment_status,
-        service_title: booking.consultation_services?.title
+        service_title: booking.consultation_services?.title,
+        avatar_url: booking['users']?.avatar_url || undefined
       }));
       setAppointments(processedAppointments);
       await fetchDocumentsForAppointments(processedAppointments);
@@ -457,7 +460,16 @@ const ResearchAidsAppointments = () => {
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div className="space-y-2">
-                    <CardTitle className="text-lg">{appointment.title}</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      {appointment.avatar_url ? (
+                        <img src={appointment.avatar_url} alt={appointment.client_name} className="h-7 w-7 rounded-full inline-block mr-2" />
+                      ) : (
+                        <Avatar className="h-6 w-6 inline-block mr-2">
+                          <AvatarFallback>{appointment.client_name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        </Avatar>
+                      )}
+                      {appointment.title}
+                    </CardTitle>
                     <div className="flex items-center space-x-2 text-sm text-gray-600">
                       <Avatar className="h-6 w-6">
                         <AvatarFallback>{appointment.client_name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
@@ -567,6 +579,44 @@ const ResearchAidsAppointments = () => {
                           Join Meeting
                         </Button>
                       )}
+                      <Button
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        disabled={actionLoading[appointment.id]}
+                        onClick={async () => {
+                          setActionLoading(prev => ({ ...prev, [appointment.id]: true }));
+                          try {
+                            const { error: updateError } = await supabase
+                              .from('service_bookings')
+                              .update({ status: 'completed' })
+                              .eq('id', appointment.id);
+                            if (updateError) {
+                              toast({
+                                title: "Error",
+                                description: "Failed to mark appointment as completed.",
+                                variant: "destructive"
+                              });
+                            } else {
+                              toast({
+                                title: "Appointment Completed",
+                                description: "The appointment has been marked as completed."
+                              });
+                              fetchAppointments();
+                            }
+                          } catch (err) {
+                            toast({
+                              title: "Error",
+                              description: err.message,
+                              variant: "destructive"
+                            });
+                          } finally {
+                            setActionLoading(prev => ({ ...prev, [appointment.id]: false }));
+                          }
+                        }}
+                      >
+                        {actionLoading[appointment.id] ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null}
+                        Mark as Completed
+                      </Button>
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button variant="outline" size="sm">

@@ -11,6 +11,7 @@ export interface Earning {
   date: string;
   status: string;
   type: string;
+  source: 'job' | 'appointment';
 }
 
 export interface Transaction {
@@ -70,7 +71,8 @@ export const usePayments = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      // 1. Fetch appointment earnings (service_bookings)
+      const { data: appointmentData, error: appointmentError } = await supabase
         .from('service_bookings')
         .select(`
           id,
@@ -81,25 +83,56 @@ export const usePayments = () => {
           client:users!service_bookings_client_id_fkey(name)
         `)
         .eq('provider_id', user.id)
-        .eq('status', 'completed')
+        .in('status', ['confirmed', 'completed']) // <-- include confirmed and completed
         .eq('payment_status', 'paid');
 
-      if (error) {
-        console.error('Error fetching earnings:', error);
-        return;
+      if (appointmentError) {
+        console.error('Error fetching appointment earnings:', appointmentError);
       }
 
-      const formattedEarnings = data.map(booking => ({
+      const appointmentEarnings = (appointmentData || []).map(booking => ({
         id: booking.id,
         project: booking.service?.title || 'N/A',
         client: booking.client?.name || 'N/A',
         amount: booking.total_price,
         date: new Date(booking.scheduled_date).toLocaleDateString(),
         status: booking.status,
-        type: 'consultation',
+        type: 'consultation' as const,
+        source: 'appointment' as const,
       }));
 
-      setEarnings(formattedEarnings);
+      // 2. Fetch job earnings (job_applications + jobs)
+      const { data: jobApplications, error: jobError } = await supabase
+        .from('job_applications')
+        .select(`
+          id,
+          job_id,
+          status,
+          created_at,
+          jobs:job_id (title, budget, user_id, client:users(name))
+        `)
+        .eq('applicant_id', user.id)
+        .eq('status', 'accepted');
+
+      if (jobError) {
+        console.error('Error fetching job earnings:', jobError);
+      }
+
+      // Only count jobs that are completed and paid (if you have a payment status, filter here)
+      const jobEarnings = (jobApplications || []).map(app => ({
+        id: app.id,
+        project: app.jobs?.title || 'N/A',
+        client: app.jobs?.client?.name || 'N/A',
+        amount: app.jobs?.budget || 0,
+        date: new Date(app.created_at).toLocaleDateString(),
+        status: app.status,
+        type: 'job' as const,
+        source: 'job' as const,
+      }));
+
+      // Merge and sort by date desc
+      const allEarnings = [...appointmentEarnings, ...jobEarnings].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setEarnings(allEarnings);
     } catch (error) {
       console.error('Error fetching earnings:', error);
     }
@@ -122,14 +155,14 @@ export const usePayments = () => {
 
       const formattedTransactions = data.map(tx => ({
         id: tx.id,
-        type: tx.type,
+        type: (tx.type === 'earning' || tx.type === 'withdrawal') ? tx.type : 'earning',
         description: tx.description,
         amount: tx.amount,
         date: new Date(tx.created_at).toLocaleDateString(),
         status: tx.status,
       }));
 
-      setTransactions(formattedTransactions);
+      setTransactions(formattedTransactions as Transaction[]);
     } catch (error) {
       console.error('Error fetching transactions:', error);
     }
@@ -149,7 +182,10 @@ export const usePayments = () => {
         return;
       }
 
-      setPaymentMethods(data || []);
+      setPaymentMethods((data || []).map((pm: any) => ({
+        ...pm,
+        type: pm.type === 'bank' ? 'bank' : 'mobile',
+      })));
     } catch (error) {
       console.error('Error fetching payment methods:', error);
     }
