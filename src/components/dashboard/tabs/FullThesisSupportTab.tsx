@@ -288,6 +288,28 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
     }
   };
 
+  // Filter state for active projects
+  const [projectFilter, setProjectFilter] = useState<'all' | 'ongoing' | 'complete'>('all');
+
+  // Helper to calculate percent complete for a project
+  const getProjectPercentComplete = (projectId: string) => {
+    const milestones = projectMilestonesMap[projectId] || [];
+    if (milestones.length === 0) return 0;
+    return Math.round((milestones.filter(m => m.status === 'completed').length / milestones.length) * 100);
+  };
+
+  // Filtered active projects based on filter state
+  const filteredActiveProjects = useMemo(() => {
+    if (projectFilter === 'all') return activeProjects;
+    if (projectFilter === 'ongoing') {
+      return activeProjects.filter(p => getProjectPercentComplete(p.id) < 100);
+    }
+    if (projectFilter === 'complete') {
+      return activeProjects.filter(p => getProjectPercentComplete(p.id) === 100);
+    }
+    return activeProjects;
+  }, [activeProjects, projectFilter, projectMilestonesMap]);
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Full Thesis Support</h2>
@@ -299,11 +321,17 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
             <CheckCircle className="h-5 w-5 mr-2" />
             Active Projects
           </CardTitle>
+          {/* Filter controls */}
+          <div className="flex gap-2 mt-2">
+            <Button size="sm" variant={projectFilter === 'all' ? 'default' : 'outline'} onClick={() => setProjectFilter('all')}>All</Button>
+            <Button size="sm" variant={projectFilter === 'ongoing' ? 'default' : 'outline'} onClick={() => setProjectFilter('ongoing')}>Ongoing</Button>
+            <Button size="sm" variant={projectFilter === 'complete' ? 'default' : 'outline'} onClick={() => setProjectFilter('complete')}>Complete</Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {activeProjects.length === 0 && <p className="text-gray-500">No active thesis support projects found.</p>}
-            {activeProjects.map((project) => (
+            {filteredActiveProjects.length === 0 && <p className="text-gray-500">No active thesis support projects found.</p>}
+            {filteredActiveProjects.map((project) => (
                 <div key={project.id} className="border rounded-lg p-4 mb-4">
                   <div className="flex justify-between items-start mb-3">
                     <div>
@@ -312,12 +340,13 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
                       <p className="text-sm text-gray-600">Next: {project.nextMilestone}</p>
                       <p className="text-xs text-gray-500">Due: {project.dueDate}</p>
                     </div>
-                    {/* Real percentage complete calculation */}
-                    <Badge variant="secondary">
-                      {projectMilestonesMap[project.id] && projectMilestonesMap[project.id].length > 0
-                        ? `${Math.round((projectMilestonesMap[project.id].filter(m => m.status === 'completed').length / projectMilestonesMap[project.id].length) * 100)}% Complete`
-                        : '0% Complete'}
-                    </Badge>
+                    {/* Show Ongoing/Completed badge and percent complete */}
+                    <div className="flex flex-col items-end">
+                      <Badge variant={getProjectPercentComplete(project.id) === 100 ? "default" : "secondary"}>
+                        {getProjectPercentComplete(project.id) === 100 ? 'Completed' : 'Ongoing'}
+                      </Badge>
+                      <span className="text-xs text-gray-500 mt-1">{getProjectPercentComplete(project.id)}%</span>
+                    </div>
                   </div>
                   {/* Milestones List for this project */}
                   <div className="mb-2">

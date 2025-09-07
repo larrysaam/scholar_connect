@@ -194,22 +194,46 @@ const UpcomingTab = ({ userRole }: UpcomingTabProps) => {
         <>
           <div className="space-y-6">
             {paginatedConsultations.map((consultation) => (
-              <UpcomingConsultationCard
-                key={consultation.id}
-                consultation={consultation}
-                uploadedDocuments={consultation.sharedDocuments}
-                isUploading={isUploading[consultation.id] || false}
-                actionLoading={actionLoading}
-                onUploadDocument={() => handleUploadDocument(consultation.id)}
-                onJoinWithGoogleMeet={() => handleJoinWithGoogleMeet(consultation.id, consultation.meetingLink)}
-                onLiveDocumentReview={() => handleLiveDocumentReview(consultation.id)}
-                onViewRecording={() => handleViewRecording(consultation.id)}
-                onViewAINotes={() => handleViewAINotes(consultation.id)}
-                onAcceptConsultation={(comment) => handleAcceptConsultation(consultation.id, comment)}
-                onDeclineConsultation={(comment) => handleDeclineConsultation(consultation.id, comment)}
-                onRescheduleWithGoogleCalendar={() => handleRescheduleWithGoogleCalendar(consultation.id)}
-                onDeleteDocument={handleDeleteDocument}
+              <div key={consultation.id}>
+                <UpcomingConsultationCard
+                  consultation={consultation}
+                  uploadedDocuments={consultation.sharedDocuments}
+                  isUploading={isUploading[consultation.id] || false}
+                  actionLoading={actionLoading}
+                  onUploadDocument={() => handleUploadDocument(consultation.id)}
+                  onJoinWithGoogleMeet={() => handleJoinWithGoogleMeet(consultation.id, consultation.meetingLink)}
+                  onLiveDocumentReview={() => handleLiveDocumentReview(consultation.id)}
+                  onViewRecording={() => handleViewRecording(consultation.id)}
+                  onViewAINotes={() => handleViewAINotes(consultation.id)}
+                  onAcceptConsultation={(comment) => handleAcceptConsultation(consultation.id, comment)}
+                  onDeclineConsultation={(comment) => handleDeclineConsultation(consultation.id, comment)}
+                  onRescheduleWithGoogleCalendar={() => handleRescheduleWithGoogleCalendar(consultation.id)}
+                  onDeleteDocument={handleDeleteDocument}
                 />
+                {/* Mark as Complete Button */}
+                <div className="flex justify-end mt-2">
+                  <Button
+                    size="sm"
+                    variant={consultation.status === 'completed' ? 'default' : 'secondary'}
+                    disabled={consultation.status === 'completed'}
+                    onClick={async () => {
+                      try {
+                        const { error } = await supabase
+                          .from('service_bookings')
+                          .update({ status: 'completed' })
+                          .eq('id', consultation.id);
+                        if (error) throw error;
+                        setConsultations(prev => prev.map(c => c.id === consultation.id ? { ...c, status: 'completed' } : c));
+                        toast({ title: 'Marked as Complete', description: 'Consultation marked as completed.' });
+                      } catch (err: any) {
+                        toast({ title: 'Error', description: err.message, variant: 'destructive' });
+                      }
+                    }}
+                  >
+                    {consultation.status === 'completed' ? 'Completed' : 'Mark as Complete'}
+                  </Button>
+                </div>
+              </div>
             ))}
           </div>
           {totalPages > 1 && (
