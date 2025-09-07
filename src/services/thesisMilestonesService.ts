@@ -83,6 +83,21 @@ export const ThesisMilestonesService = {
     return data as ThesisMilestone;
   },
 
+  async updateMilestone(milestoneId: string, description: string, dueDate?: string): Promise<ThesisMilestone | null> {
+    const { data, error } = await supabase
+      .from('thesis_milestones')
+      .update({ description, due_date: dueDate || null, updated_at: new Date().toISOString() })
+      .eq('id', milestoneId)
+      .select('*')
+      .single();
+
+    if (error) {
+      console.error('Error updating thesis milestone:', error.message);
+      return null;
+    }
+    return data as ThesisMilestone;
+  },
+
   async deleteMilestone(milestoneId: string): Promise<boolean> {
     const { error } = await supabase
       .from('thesis_milestones')

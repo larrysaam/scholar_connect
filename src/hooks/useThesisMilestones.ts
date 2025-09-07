@@ -66,6 +66,37 @@ export const useThesisMilestones = (bookingId: string | undefined, userId: strin
     }
   }, [bookingId, toast]);
 
+  // Add a milestone to a specific project (bookingId override)
+  const addMilestoneToProject = useCallback(async (targetBookingId: string, description: string, dueDate?: string) => {
+    if (!targetBookingId) {
+      toast({
+        title: 'Error',
+        description: 'Cannot add milestone: No project selected.',
+        variant: 'destructive',
+      });
+      return null;
+    }
+    const newMilestone = await ThesisMilestonesService.addMilestone(targetBookingId, description, dueDate);
+    if (newMilestone) {
+      // If the current bookingId matches, update local state
+      if (targetBookingId === bookingId) {
+        setMilestones((prevMilestones) => [...prevMilestones, newMilestone]);
+      }
+      toast({
+        title: 'Success',
+        description: 'Milestone added successfully.',
+      });
+      return newMilestone;
+    } else {
+      toast({
+        title: 'Error',
+        description: 'Failed to add milestone.',
+        variant: 'destructive',
+      });
+      return null;
+    }
+  }, [bookingId, toast]);
+
   const updateMilestoneStatus = useCallback(async (milestoneId: string, status: 'pending' | 'completed' | 'in_progress') => {
     const updatedMilestone = await ThesisMilestonesService.updateMilestoneStatus(milestoneId, status);
     if (updatedMilestone) {
@@ -111,6 +142,7 @@ export const useThesisMilestones = (bookingId: string | undefined, userId: strin
     loading,
     error,
     addMilestone,
+    addMilestoneToProject, // <-- new function
     updateMilestoneStatus,
     deleteMilestone,
     fetchMilestones,

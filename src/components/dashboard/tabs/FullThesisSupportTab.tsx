@@ -10,7 +10,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useConsultationServices } from "@/hooks/useConsultationServices";
 import { useThesisGoals } from "@/hooks/useThesisGoals";
 import { useThesisMilestones } from "@/hooks/useThesisMilestones";
-import { useAuth } from "@/hooks/useAuth"; // Import useAuth
+import { useAuth } from "@/hooks/useAuth";
+import { ThesisMilestonesService, ThesisMilestone } from '@/services/thesisMilestonesService';
+import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 
 interface FullThesisSupportTabProps {
   userRole: string;
@@ -19,8 +22,10 @@ interface FullThesisSupportTabProps {
 
 const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabProps) => {
   const { toast } = useToast();
-  const { user, profile } = useAuth(); // Get the current user and profile
+  const { user, profile } = useAuth();
   const isStudent = profile?.roles?.includes('student');
+  // Treat both 'researcher' and 'expert' as researcher roles
+  const isResearcher = profile?.roles?.includes('researcher') || profile?.roles?.includes('expert');
 
   const { bookings, studentBookings, loading: bookingsLoading } = useConsultationServices();
   const [newGoal, setNewGoal] = useState("");
@@ -31,6 +36,17 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
   const [isMilestoneDialogOpen, setIsMilestoneDialogOpen] = useState(false);
   const [newMilestoneDescription, setNewMilestoneDescription] = useState("");
   const [newMilestoneDueDate, setNewMilestoneDueDate] = useState("");
+  const [milestoneProjectId, setMilestoneProjectId] = useState<string | undefined>(undefined);
+  const [editingMilestone, setEditingMilestone] = useState<{ projectId: string, milestone: ThesisMilestone } | null>(null);
+  const [editDescription, setEditDescription] = useState("");
+  const [editDueDate, setEditDueDate] = useState("");
+
+  // Upload document dialog state
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [uploadProjectId, setUploadProjectId] = useState<string | null>(null);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+
+  const [uploadedDocumentsMap, setUploadedDocumentsMap] = useState<Record<string, { name: string, url: string }[]>>({});
 
   const projectsToDisplay = isStudent ? studentBookings : bookings;
 
@@ -42,7 +58,7 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
     ).map(booking => {
       let progress = 0;
       if (booking.status === 'confirmed') progress = 50;
-      if (booking.status === 'completed') progress = 100; // Assuming completed means 100% for now
+      if (booking.status === 'completed') progress = 100;
 
       return {
         id: booking.id,
@@ -54,50 +70,125 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
         paymentStatus: booking.payment_status,
         totalPrice: booking.total_price,
         currency: booking.currency,
+        meeting_link: booking.meeting_link,
       };
     });
   }, [projectsToDisplay, bookingsLoading]);
 
-  // For simplicity, manage goals and milestones for the first active project found
   const firstActiveProjectId = useMemo(() => activeProjects.length > 0 ? activeProjects[0].id : undefined, [activeProjects]);
   const { goals, loading: goalsLoading, addGoal, updateGoalStatus, deleteGoal } = useThesisGoals(firstActiveProjectId, user?.id || '', isStudent);
-  const { milestones, loading: milestonesLoading, addMilestone, updateMilestoneStatus, deleteMilestone } = useThesisMilestones(firstActiveProjectId, user?.id || '', isStudent);
+  const { milestones, loading: milestonesLoading, addMilestone, addMilestoneToProject, updateMilestoneStatus, deleteMilestone } = useThesisMilestones(firstActiveProjectId, user?.id || '', isStudent);
 
-  const handleScheduleSession = (projectId: string) => {
-    toast({
-      title: "Session Scheduled",
-      description: "A consultation session has been scheduled with the student"
-    });
+  const [projectMilestonesMap, setProjectMilestonesMap] = useState<Record<string, ThesisMilestone[]>>({});
+  const [milestonesLoadingMap, setMilestonesLoadingMap] = useState<Record<string, boolean>>({});
+
+  const fetchMilestonesForProject = async (projectId: string) => {
+    setMilestonesLoadingMap((prev) => ({ ...prev, [projectId]: true }));
+    const milestones = await ThesisMilestonesService.getMilestonesByBookingId(projectId, user?.id || '', isStudent);
+    setProjectMilestonesMap((prev) => ({ ...prev, [projectId]: milestones || [] }));
+    setMilestonesLoadingMap((prev) => ({ ...prev, [projectId]: false }));
   };
 
+  const fetchUploadedDocuments = async (projectId: string) => {
+    const { data, error } = await supabase.storage.from('lovable-uploads').list(`project-documents/${projectId}`);
+    if (!error && data) {
+      const docs = await Promise.all(
+        data.filter(f => f.name !== ".emptyFolderPlaceholder").map(async (file) => {
+          const { data: urlData } = supabase.storage.from('lovable-uploads').getPublicUrl(`project-documents/${projectId}/${file.name}`);
+          return { name: file.name, url: urlData.publicUrl };
+        })
+      );
+      setUploadedDocumentsMap(prev => ({ ...prev, [projectId]: docs }));
+    }
+  };
+
+  useEffect(() => {
+    async function fetchAllMilestones() {
+      const newMap: Record<string, ThesisMilestone[]> = {};
+      const loadingMap: Record<string, boolean> = {};
+      await Promise.all(
+        activeProjects.map(async (project) => {
+          loadingMap[project.id] = true;
+          const milestones = await ThesisMilestonesService.getMilestonesByBookingId(project.id, user?.id || '', isStudent);
+          newMap[project.id] = milestones || [];
+          loadingMap[project.id] = false;
+        })
+      );
+      setProjectMilestonesMap(newMap);
+      setMilestonesLoadingMap(loadingMap);
+    }
+    if (activeProjects.length > 0 && user?.id) {
+      fetchAllMilestones();
+    }
+  }, [activeProjects, user?.id, isStudent]);
+
+  useEffect(() => {
+    activeProjects.forEach(project => {
+      fetchUploadedDocuments(project.id);
+    });
+  }, [activeProjects]);
+
   const handleSetMilestone = (projectId: string) => {
-    // This will now open the dialog instead of directly setting a milestone
+    setMilestoneProjectId(projectId);
     setIsMilestoneDialogOpen(true);
   };
 
-  const handleAddMilestone = async () => {
-    if (!newMilestoneDescription) {
-      toast({
-        title: "Missing Milestone",
-        description: "Please enter a milestone description",
-        variant: "destructive"
-      });
-      return;
-    }
-    if (!firstActiveProjectId) {
-      toast({
-        title: "No Active Project",
-        description: "Please select an active project to add a milestone.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    const added = await addMilestone(newMilestoneDescription, newMilestoneDueDate);
+  const handleAddMilestone = async (projectId: string, description: string, dueDate?: string) => {
+    const added = await ThesisMilestonesService.addMilestone(projectId, description, dueDate);
     if (added) {
-      setNewMilestoneDescription("");
-      setNewMilestoneDueDate("");
-      setIsMilestoneDialogOpen(false);
+      setProjectMilestonesMap((prev) => ({
+        ...prev,
+        [projectId]: [...(prev[projectId] || []), added],
+      }));
+    }
+    return added;
+  };
+
+  const handleAddMilestoneClick = async () => {
+    if (!milestoneProjectId || !newMilestoneDescription) return;
+    await handleAddMilestone(milestoneProjectId, newMilestoneDescription, newMilestoneDueDate);
+    setNewMilestoneDescription("");
+    setNewMilestoneDueDate("");
+    setIsMilestoneDialogOpen(false);
+    setMilestoneProjectId(undefined);
+  };
+
+  const handleEditMilestone = (projectId: string, milestone: ThesisMilestone) => {
+    setEditingMilestone({ projectId, milestone });
+    setEditDescription(milestone.description);
+    setEditDueDate(milestone.due_date || "");
+  };
+
+  const handleSaveEditMilestone = async () => {
+    if (!editingMilestone) return;
+    const { projectId, milestone } = editingMilestone;
+    const updated = await ThesisMilestonesService.updateMilestone(milestone.id, editDescription, editDueDate);
+    if (updated) {
+      setProjectMilestonesMap((prev) => ({
+        ...prev,
+        [projectId]: prev[projectId].map((m) => m.id === milestone.id ? updated : m),
+      }));
+      setEditingMilestone(null);
+    }
+  };
+
+  const handleChangeMilestoneStatus = async (projectId: string, milestone: ThesisMilestone, status: 'pending' | 'completed' | 'in_progress') => {
+    const updated = await ThesisMilestonesService.updateMilestoneStatus(milestone.id, status);
+    if (updated) {
+      setProjectMilestonesMap((prev) => ({
+        ...prev,
+        [projectId]: prev[projectId].map((m) => m.id === milestone.id ? updated : m),
+      }));
+    }
+  };
+
+  const handleDeleteMilestone = async (projectId: string, milestoneId: string) => {
+    const success = await ThesisMilestonesService.deleteMilestone(milestoneId);
+    if (success) {
+      setProjectMilestonesMap((prev) => ({
+        ...prev,
+        [projectId]: prev[projectId].filter((m) => m.id !== milestoneId),
+      }));
     }
   };
 
@@ -108,15 +199,6 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
 
   const handleDeleteGoal = async (goalId: string) => {
     await deleteGoal(goalId);
-  };
-
-  const handleToggleMilestoneStatus = async (milestoneId: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
-    await updateMilestoneStatus(milestoneId, newStatus as 'pending' | 'completed' | 'in_progress');
-  };
-
-  const handleDeleteMilestone = async (milestoneId: string) => {
-    await deleteMilestone(milestoneId);
   };
 
   const handleSendEmail = () => {
@@ -178,10 +260,38 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
     });
   };
 
+  const handleUploadDocument = (projectId: string) => {
+    setUploadProjectId(projectId);
+    setIsUploadDialogOpen(true);
+    setUploadFile(null);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setUploadFile(e.target.files[0]);
+    }
+  };
+
+  const handleUploadSubmit = async () => {
+    if (!uploadFile || !uploadProjectId) return;
+    const fileExt = uploadFile.name.split('.').pop();
+    const filePath = `project-documents/${uploadProjectId}/${Date.now()}.${fileExt}`;
+    const { error } = await supabase.storage.from('lovable-uploads').upload(filePath, uploadFile);
+    if (error) {
+      toast({ title: 'Upload Failed', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Document Uploaded', description: 'Your document was uploaded successfully.' });
+      setIsUploadDialogOpen(false);
+      setUploadProjectId(null);
+      setUploadFile(null);
+      fetchUploadedDocuments(uploadProjectId); // Refresh document list
+    }
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Full Thesis Support</h2>
-      
+
       {/* Active Projects */}
       <Card>
         <CardHeader>
@@ -194,44 +304,122 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
           <div className="space-y-4">
             {activeProjects.length === 0 && <p className="text-gray-500">No active thesis support projects found.</p>}
             {activeProjects.map((project) => (
-              <div key={project.id} className="border rounded-lg p-4">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h4 className="font-semibold">{project.title}</h4>
-                    <p className="text-sm text-gray-600">{isStudent ? "Researcher:" : "Student:"} {project.student}</p>
-                    <p className="text-sm text-gray-600">Next: {project.nextMilestone}</p>
-                    <p className="text-xs text-gray-500">Due: {project.dueDate}</p>
+                <div key={project.id} className="border rounded-lg p-4 mb-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h4 className="font-semibold">{project.title}</h4>
+                      <p className="text-sm text-gray-600">{isStudent ? "Researcher:" : "Student:"} {project.student}</p>
+                      <p className="text-sm text-gray-600">Next: {project.nextMilestone}</p>
+                      <p className="text-xs text-gray-500">Due: {project.dueDate}</p>
+                    </div>
+                    {/* Real percentage complete calculation */}
+                    <Badge variant="secondary">
+                      {projectMilestonesMap[project.id] && projectMilestonesMap[project.id].length > 0
+                        ? `${Math.round((projectMilestonesMap[project.id].filter(m => m.status === 'completed').length / projectMilestonesMap[project.id].length) * 100)}% Complete`
+                        : '0% Complete'}
+                    </Badge>
                   </div>
-                  <Badge variant="secondary">{project.progress}% Complete</Badge>
-                </div>
-                
-                <div className="flex gap-2 flex-wrap">
-                  {userRole !== 'student' && (
-                    <Button size="sm" onClick={() => handleScheduleSession(project.id)}>
-                      <Calendar className="h-4 w-4 mr-1" />
-                      Schedule Session
-                    </Button>
-                  )}
-                  {userRole !== 'student' && (
-                    <Button size="sm" variant="outline" onClick={() => handleSetMilestone(project.id)}>
-                      <Target className="h-4 w-4 mr-1" />
-                      Set Milestones
-                    </Button>
-                  )}
-                  {userRole !== 'student' && (
-                    <Button size="sm" variant="outline" onClick={() => setIsEmailDialogOpen(true)}>
+                  {/* Milestones List for this project */}
+                  <div className="mb-2">
+                    <h5 className="font-semibold text-sm mb-1">Milestones</h5>
+                    {milestonesLoadingMap[project.id] ? (
+                      <p className="text-gray-500 text-xs">Loading milestones...</p>
+                    ) : (projectMilestonesMap[project.id]?.length === 0 ? (
+                      <p className="text-gray-500 text-xs">No milestones yet.</p>
+                    ) : (
+                      <ul className="space-y-1">
+                        {projectMilestonesMap[project.id]?.map((milestone) => (
+                          <li key={milestone.id} className="flex items-center gap-2 text-xs">
+                            {milestone.status === 'completed' ? (
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                            ) : (
+                              <Clock className="h-4 w-4 text-yellow-600" />
+                            )}
+                            <span>{milestone.description}</span>
+                            {milestone.due_date && (
+                              <span className="text-gray-400 ml-2">(Due: {new Date(milestone.due_date).toLocaleDateString()})</span>
+                            )}
+                            <Badge className={`ml-2 ${milestone.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{milestone.status}</Badge>
+                            {/* Fix: Only show controls for researchers */}
+                            {isResearcher === true && (
+                              <>
+                                <Button size="sm" variant="outline" className="ml-1" onClick={() => handleEditMilestone(project.id, milestone)}>
+                                  Edit
+                                </Button>
+                                <Button size="sm" variant="destructive" className="ml-1" onClick={() => handleDeleteMilestone(project.id, milestone.id)}>
+                                  Delete
+                                </Button>
+                                <select value={milestone.status} onChange={e => handleChangeMilestoneStatus(project.id, milestone, e.target.value as any)} className="ml-2 text-xs border rounded">
+                                  <option value="pending">Pending</option>
+                                  <option value="in_progress">In Progress</option>
+                                  <option value="completed">Completed</option>
+                                </select>
+                              </>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    {/* Only show Set Milestones for researchers */}
+                    {isResearcher && (
+                      <Button size="sm" variant="outline" onClick={() => handleSetMilestone(project.id)}>
+                        <Target className="h-4 w-4 mr-1" />
+                        Set Milestones
+                      </Button>
+                    )}
+                    {/* Show Join Google Meet for all users, blue for students */}
+                    {project.meeting_link && (
+                      <Button size="sm" variant="default" className="bg-blue-600 text-white hover:bg-blue-700" onClick={() => window.open(project.meeting_link, '_blank')}>
+                        <Calendar className="h-4 w-4 mr-1" />
+                        Join Google Meet
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" onClick={() => handleUploadDocument(project.id)}>
                       <Mail className="h-4 w-4 mr-1" />
-                      Send Email
+                      Upload Document
                     </Button>
-                  )}
-                  { (
                     <Button size="sm" variant="outline" onClick={() => handleOpenChat(project.id)}>
                       <MessageSquare className="h-4 w-4 mr-1" />
                       Open Chat
                     </Button>
-                  )}
+                  </div>
+                  {/* Uploaded Documents Preview styled like Upcoming Session Tab */}
+                  <div className="mt-2">
+                    <h6 className="font-semibold text-xs mb-1">Uploaded Documents</h6>
+                    {uploadedDocumentsMap[project.id] && uploadedDocumentsMap[project.id].length > 0 ? (
+                      <div className="flex flex-col gap-2 mt-1">
+                        {uploadedDocumentsMap[project.id].map((doc, idx) => (
+                          <div
+                            key={doc.name + idx}
+                            className="flex items-center border rounded bg-white px-2 py-1 shadow-sm hover:bg-gray-50 transition cursor-pointer"
+                            onClick={() => window.open(doc.url, '_blank')}
+                          >
+                            {/* File type icon/preview */}
+                            {(() => {
+                              const ext = doc.name.split('.').pop()?.toLowerCase();
+                              if (["png", "jpg", "jpeg", "gif", "bmp", "webp"].includes(ext || "")) {
+                                return <img src={doc.url} alt={doc.name} className="w-8 h-8 object-cover rounded mr-2 border" />;
+                              } else if (["pdf"].includes(ext || "")) {
+                                return <span className="w-8 h-8 flex items-center justify-center bg-red-100 text-red-700 rounded mr-2 border text-xs font-bold">PDF</span>;
+                              } else if (["doc", "docx"].includes(ext || "")) {
+                                return <span className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-700 rounded mr-2 border text-xs font-bold">DOC</span>;
+                              } else if (["xls", "xlsx"].includes(ext || "")) {
+                                return <span className="w-8 h-8 flex items-center justify-center bg-green-100 text-green-700 rounded mr-2 border text-xs font-bold">XLS</span>;
+                              } else {
+                                return <span className="w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-700 rounded mr-2 border text-xs font-bold">FILE</span>;
+                              }
+                            })()}
+                            <span className="truncate max-w-[120px] text-xs" title={doc.name}>{doc.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-400 text-xs">No documents uploaded yet.</p>
+                    )}
+                  </div>
                 </div>
-              </div>
             ))}
           </div>
         </CardContent>
@@ -274,63 +462,35 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
               Goals and Milestones
             </CardTitle>
             <div className="flex gap-2">
-              <Dialog open={isGoalDialogOpen} onOpenChange={setIsGoalDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button disabled={!firstActiveProjectId}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Goal
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add New Goal</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <Textarea
-                      value={newGoal}
-                      onChange={(e) => setNewGoal(e.target.value)}
-                      placeholder="Enter goal description..."
-                      rows={3}
-                    />
-                    <div className="flex gap-2">
-                      <Button onClick={handleAddGoal} disabled={!newGoal || !firstActiveProjectId}>Add Goal</Button>
-                      <Button variant="outline" onClick={() => setIsGoalDialogOpen(false)}>
-                        Cancel
-                      </Button>
+              {isResearcher && (
+                <Dialog open={isGoalDialogOpen} onOpenChange={setIsGoalDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button disabled={!firstActiveProjectId}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Goal
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add New Goal</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Textarea
+                        value={newGoal}
+                        onChange={(e) => setNewGoal(e.target.value)}
+                        placeholder="Enter goal description..."
+                        rows={3}
+                      />
+                      <div className="flex gap-2">
+                        <Button onClick={handleAddGoal} disabled={!newGoal || !firstActiveProjectId}>Add Goal</Button>
+                        <Button variant="outline" onClick={() => setIsGoalDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-              <Dialog open={isMilestoneDialogOpen} onOpenChange={setIsMilestoneDialogOpen}>
-                <DialogTrigger asChild>
-                  {/* This trigger is intentionally hidden as the button in the project card will open it */}
-                  <Button className="hidden">Set Milestone Trigger</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add New Milestone</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <Textarea
-                      value={newMilestoneDescription}
-                      onChange={(e) => setNewMilestoneDescription(e.target.value)}
-                      placeholder="Enter milestone description..."
-                      rows={3}
-                    />
-                    <Input
-                      type="date"
-                      value={newMilestoneDueDate}
-                      onChange={(e) => setNewMilestoneDueDate(e.target.value)}
-                    />
-                    <div className="flex gap-2">
-                      <Button onClick={handleAddMilestone} disabled={!newMilestoneDescription || !firstActiveProjectId}>Add Milestone</Button>
-                      <Button variant="outline" onClick={() => setIsMilestoneDialogOpen(false)}>
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -340,25 +500,33 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
             {goalsLoading ? (
               <p className="text-gray-500">Loading goals...</p>
             ) : goals.length === 0 ? (
-              <p className="text-gray-500">No goals tracked yet. Add a new goal above.</p>
+              <p className="text-gray-500">No goals tracked yet. {isResearcher ? 'Add a new goal above.' : 'Goals will appear here when set by your researcher.'}</p>
             ) : (
               goals.map((goal) => (
                 <div key={goal.id} className="flex items-center p-3 border rounded">
-                  {goal.status === 'completed' ? (
-                    <CheckCircle className="h-5 w-5 text-green-600 mr-3 cursor-pointer" onClick={() => handleToggleGoalStatus(goal.id, goal.status)} />
+                  {isResearcher ? (
+                    goal.status === 'completed' ? (
+                      <CheckCircle className="h-5 w-5 text-green-600 mr-3 cursor-pointer" onClick={() => handleToggleGoalStatus(goal.id, goal.status)} />
+                    ) : (
+                      <Clock className="h-5 w-5 text-yellow-600 mr-3 cursor-pointer" onClick={() => handleToggleGoalStatus(goal.id, goal.status)} />
+                    )
                   ) : (
-                    <Clock className="h-5 w-5 text-yellow-600 mr-3 cursor-pointer" onClick={() => handleToggleGoalStatus(goal.id, goal.status)} />
+                    goal.status === 'completed' ? (
+                      <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+                    ) : (
+                      <Clock className="h-5 w-5 text-yellow-600 mr-3" />
+                    )
                   )}
                   <div className="flex-1">
                     <p className="font-medium">{goal.description}</p>
                     <p className="text-sm text-gray-600">Status: {goal.status}</p>
                   </div>
-                  <Badge className={`${goal.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                    {goal.status === 'completed' ? 'Completed' : 'In Progress'}
-                  </Badge>
-                  <Button variant="ghost" size="sm" onClick={() => handleDeleteGoal(goal.id)} className="ml-2">
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
+                  <Badge className={`${goal.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{goal.status === 'completed' ? 'Completed' : 'In Progress'}</Badge>
+                  {isResearcher && (
+                    <Button variant="ghost" size="sm" onClick={() => handleDeleteGoal(goal.id)} className="ml-2">
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  )}
                 </div>
               ))
             )}
@@ -367,14 +535,22 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
             {milestonesLoading ? (
               <p className="text-gray-500">Loading milestones...</p>
             ) : milestones.length === 0 ? (
-              <p className="text-gray-500">No milestones tracked yet. Add a new milestone above.</p>
+              <p className="text-gray-500">No milestones tracked yet. {isResearcher ? 'Add a new milestone above.' : 'Milestones will appear here when set by your researcher.'}</p>
             ) : (
               milestones.map((milestone) => (
                 <div key={milestone.id} className="flex items-center p-3 border rounded">
-                  {milestone.status === 'completed' ? (
-                    <CheckCircle className="h-5 w-5 text-green-600 mr-3 cursor-pointer" onClick={() => handleToggleMilestoneStatus(milestone.id, milestone.status)} />
+                  {isResearcher ? (
+                    milestone.status === 'completed' ? (
+                      <CheckCircle className="h-5 w-5 text-green-600 mr-3 cursor-pointer" onClick={() => handleChangeMilestoneStatus(firstActiveProjectId!, milestone, milestone.status)} />
+                    ) : (
+                      <Clock className="h-5 w-5 text-yellow-600 mr-3 cursor-pointer" onClick={() => handleChangeMilestoneStatus(firstActiveProjectId!, milestone, milestone.status)} />
+                    )
                   ) : (
-                    <Clock className="h-5 w-5 text-yellow-600 mr-3 cursor-pointer" onClick={() => handleToggleMilestoneStatus(milestone.id, milestone.status)} />
+                    milestone.status === 'completed' ? (
+                      <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+                    ) : (
+                      <Clock className="h-5 w-5 text-yellow-600 mr-3" />
+                    )
                   )}
                   <div className="flex-1">
                     <p className="font-medium">{milestone.description}</p>
@@ -386,9 +562,11 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
                   <Badge className={`${milestone.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
                     {milestone.status === 'completed' ? 'Completed' : 'In Progress'}
                   </Badge>
-                  <Button variant="ghost" size="sm" onClick={() => handleDeleteMilestone(milestone.id)} className="ml-2">
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
+                  {isResearcher && (
+                    <Button variant="ghost" size="sm" onClick={() => handleDeleteMilestone(firstActiveProjectId!, milestone.id)} className="ml-2">
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  )}
                 </div>
               ))
             )}
@@ -396,37 +574,11 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
         </CardContent>
       </Card>
 
-      {/* Communication */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <MessageSquare className="h-5 w-5 mr-2" />
-            Communication
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2">
-            {!isStudent && (
-              <Button onClick={() => setIsEmailDialogOpen(true)}>
-                <Mail className="h-4 w-4 mr-2" />
-                Compose Email
-              </Button>
-            )}
-            {userRole === 'researcher' && (
-              <Button variant="outline" onClick={handleOpenMessages}>
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Open Messages
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Email Dialog */}
       <Dialog open={isEmailDialogOpen} onOpenChange={setIsEmailDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Compose Email</DialogTitle>
+            <DialogTitle>Send Email</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Input
@@ -449,6 +601,71 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Milestone Dialog */}
+      <Dialog open={isMilestoneDialogOpen} onOpenChange={(open) => { setIsMilestoneDialogOpen(open); if (!open) setMilestoneProjectId(undefined); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Milestone</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Textarea
+              value={newMilestoneDescription}
+              onChange={(e) => setNewMilestoneDescription(e.target.value)}
+              placeholder="Enter milestone description..."
+              rows={3}
+            />
+            <Input
+              type="date"
+              value={newMilestoneDueDate}
+              onChange={(e) => setNewMilestoneDueDate(e.target.value)}
+            />
+            <div className="flex gap-2">
+              <Button onClick={handleAddMilestoneClick} disabled={!newMilestoneDescription || !milestoneProjectId}>Add Milestone</Button>
+              <Button variant="outline" onClick={() => { setIsMilestoneDialogOpen(false); setMilestoneProjectId(undefined); }}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Milestone Dialog */}
+      {editingMilestone && (
+        <Dialog open={!!editingMilestone} onOpenChange={() => setEditingMilestone(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Milestone</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Input value={editDescription} onChange={e => setEditDescription(e.target.value)} placeholder="Milestone description" />
+              <Input type="date" value={editDueDate} onChange={e => setEditDueDate(e.target.value)} placeholder="Due date" />
+              <div className="flex gap-2">
+                <Button onClick={handleSaveEditMilestone}>Save</Button>
+                <Button variant="outline" onClick={() => setEditingMilestone(null)}>Cancel</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Upload Document Dialog */}
+      {isUploadDialogOpen && (
+        <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Upload Document</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <input type="file" onChange={handleFileChange} />
+              <div className="flex gap-2">
+                <Button onClick={handleUploadSubmit} disabled={!uploadFile}>Upload</Button>
+                <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)}>Cancel</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
