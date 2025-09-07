@@ -54,7 +54,7 @@ const FindResearchAidTab = () => {
         // @ts-expect-error: Supabase type inference bug for .in()
         const { data: profiles, error: profileError } = await supabase
           .from('research_aid_profiles')
-          .select('id, location, hourly_rate, availability')
+          .select('id, title, location, hourly_rate, availability')
           .in('id', userIds);
         if (profileError) throw profileError;
 
@@ -68,8 +68,9 @@ const FindResearchAidTab = () => {
           const profile = profileMap[user.id];
           return {
             id: user.id,
-            name: user.name || 'No Name Provided',
-            title: user.topic_title || 'Research Specialist',
+            // Show title in front of name, fallback to 'Research Specialist' if missing
+            name: profile?.title ? `${profile.title} ${user.name || 'No Name Provided'}` : user.name || 'No Name Provided',
+            title: profile?.title || 'Research Specialist',
             specializations: user.expertise || [],
             rating: 4.5, // Placeholder
             reviewCount: 10, // Placeholder

@@ -34,82 +34,92 @@ const FindResearcherTab = () => {
     [researchers, searchQuery, selectedField, selectedLanguage, priceRange]
   );
 
-  const ResearcherCard = ({ researcher }: { researcher: Researcher }) => (
-    <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-blue-500">
-      <CardContent className="p-6">
-        <div className="flex items-start space-x-4">
-          <div className="relative">
-            <img 
-              src={researcher.imageUrl} 
-              alt={researcher.name}
-              className="w-16 h-16 rounded-full object-cover border-2 border-blue-100"
-            />
-            {researcher.featured && (
-              <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full p-1">
-                <Award className="h-3 w-3 text-yellow-800" />
-              </div>
-            )}
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <h3 className="font-semibold text-lg text-gray-900">{researcher.name}</h3>
-                <p className="text-sm text-blue-600 font-medium">{researcher.title}</p>
-                <p className="text-sm text-gray-500 flex items-center mt-1">
-                  <BookOpen className="h-3 w-3 mr-1" />
-                  {researcher.institution}
-                </p>
-              </div>
+  const ResearcherCard = ({ researcher }: { researcher: Researcher }) => {
+    // Map title to prefix
+    let displayTitle = researcher.title || '';
+    let prefix = '';
+    if (displayTitle === 'PhD Holder') prefix = 'Prof.';
+    else if (displayTitle === 'Senior Research Officer') prefix = 'Dr.';
+    else if (displayTitle) prefix = displayTitle;
+    // Compose display name
+    const displayName = prefix ? `${prefix} ${researcher.name}` : researcher.name;
+    return (
+      <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-blue-500">
+        <CardContent className="p-6">
+          <div className="flex items-start space-x-4">
+            <div className="relative">
+              <img 
+                src={researcher.imageUrl} 
+                alt={researcher.name}
+                className="w-16 h-16 rounded-full object-cover border-2 border-blue-100"
+              />
               {researcher.featured && (
-                <Badge className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white border-0">
-                  Featured
-                </Badge>
+                <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full p-1">
+                  <Award className="h-3 w-3 text-yellow-800" />
+                </div>
               )}
             </div>
-            
-            <div className="flex items-center space-x-2 mb-3">
-              <Badge variant="outline" className="border-blue-200 text-blue-700 bg-blue-50">
-                {researcher.field}
-              </Badge>
-              <div className="flex items-center space-x-1">
-                <MapPin className="h-3 w-3 text-gray-400" />
-                <span className="text-xs text-gray-500">{researcher.location}</span>
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h3 className="font-semibold text-lg text-gray-900">{displayName}</h3>
+                  <p className="text-sm text-blue-600 font-medium">{researcher.title}</p>
+                  <p className="text-sm text-gray-500 flex items-center mt-1">
+                    <BookOpen className="h-3 w-3 mr-1" />
+                    {researcher.institution}
+                  </p>
+                </div>
+                {researcher.featured && (
+                  <Badge className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white border-0">
+                    Featured
+                  </Badge>
+                )}
               </div>
-            </div>
-            
-            <div className="flex flex-wrap gap-1 mb-4">
-              {researcher.specializations.map((spec, index) => (
-                <Badge key={index} variant="secondary" className="text-xs bg-gray-100 text-gray-700">
-                  {spec}
+              
+              <div className="flex items-center space-x-2 mb-3">
+                <Badge variant="outline" className="border-blue-200 text-blue-700 bg-blue-50">
+                  {researcher.field}
                 </Badge>
-              ))}
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-1">
-                  <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                  <span className="text-sm font-medium">{researcher.rating}</span>
-                  <span className="text-sm text-gray-500">({researcher.reviewCount})</span>
-                </div>
-                <div className="text-sm font-bold text-green-600">
-                  {researcher.hourlyRate.toLocaleString()} XAF/hr
+                  <MapPin className="h-3 w-3 text-gray-400" />
+                  <span className="text-xs text-gray-500">{researcher.location}</span>
                 </div>
               </div>
-              <Button 
-                size="sm" 
-                className="bg-blue-600 hover:bg-blue-700"
-                onClick={() => navigate(`/researcher/${researcher.id}`)}
-              >
-                <Eye className="h-4 w-4 mr-1" />
-                View Profile
-              </Button>
+              
+              <div className="flex flex-wrap gap-1 mb-4">
+                {researcher.specializations.map((spec, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs bg-gray-100 text-gray-700">
+                    {spec}
+                  </Badge>
+                ))}
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-1">
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <span className="text-sm font-medium">{researcher.rating}</span>
+                    <span className="text-sm text-gray-500">({researcher.reviewCount})</span>
+                  </div>
+                  <div className="text-sm font-bold text-green-600">
+                    {researcher.hourlyRate.toLocaleString()} XAF/hr
+                  </div>
+                </div>
+                <Button 
+                  size="sm" 
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={() => navigate(`/researcher/${researcher.id}`)}
+                >
+                  <Eye className="h-4 w-4 mr-1" />
+                  View Profile
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="space-y-6">
