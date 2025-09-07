@@ -123,42 +123,7 @@ const ResearchAidsDashboard = () => {
             <DashboardTabRenderer activeTab={activeTab} setActiveTab={setActiveTab} />
           </DashboardLayout>
 
-          {/* Placeholder for Assigned Consultations */}
-          <section className="mt-8">
-            <h2 className="text-2xl font-bold mb-4">My Assigned Consultations</h2>
-            {assignedConsultations.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {assignedConsultations.map((consultation) => (
-                  <div key={consultation.id} className="bg-white p-4 rounded-lg shadow">
-                    <h3 className="font-semibold">{consultation.title}</h3>
-                    <p className="text-sm text-gray-600">Status: {consultation.status}</p>
-                    {/* Add more consultation details here */}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-600">No assigned consultations yet.</p>
-            )}
-          </section>
-
-          {/* Placeholder for Notifications */}
-          <section className="mt-8">
-            <h2 className="text-2xl font-bold mb-4">Notifications</h2>
-            {notifications.length > 0 ? (
-              <div className="space-y-3">
-                {notifications.map((notification) => (
-                  <div key={notification.id} className="bg-white p-3 rounded-lg shadow-sm">
-                    <p className="font-semibold">{notification.title}</p>
-                    <p className="text-sm text-gray-600">{notification.message}</p>
-                    {/* Add more notification details here */}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-600">No new notifications.</p>
-            )}
-          </section>
-
+         
         </div>
       </main>
       

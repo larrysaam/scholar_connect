@@ -15,8 +15,9 @@ export interface PastConsultation {
   date: string;
   time: string;
   topic: string;
-  status: "completed" | "cancelled";
-  rating?: number; // Rating might come from a separate feedback table
+  status: "completed";
+  rating: number;
+  reviewText?: string;
   hasRecording: boolean;
   hasAINotes: boolean;
 }
@@ -38,40 +39,44 @@ const StudentPastTab = () => {
       setLoading(true);
       setError(null);
       try {
+        // Fetch completed consultations/appointments for the student
         const { data, error } = await supabase
           .from('service_bookings')
           .select(`
-            id, status, scheduled_date, scheduled_time, client_notes,
-            has_recording, has_ai_notes,
-            provider:users!service_bookings_provider_id_fkey(id, name, topic_title, payout_details)
+            id, status, scheduled_date, scheduled_time, project_description, meeting_link,
+            provider:users!service_bookings_provider_id_fkey(id, name, topic_title, avatar_url),
+            service:consultation_services(title),
+            researcher_reviews(rating, comment)
           `)
           .eq('client_id', user.id)
-          .in('status', ['completed', 'cancelled'])
+          .eq('status', 'completed')
           .order('scheduled_date', { ascending: false });
 
         if (error) throw error;
 
-        const mappedConsultations: PastConsultation[] = data.map(c => ({
+        // Map to PastConsultation[]
+        const mappedConsultations: PastConsultation[] = (data || []).map((c: any) => ({
           id: c.id,
           researcher: {
             id: c.provider?.id || 'N/A',
             name: c.provider?.name || 'N/A',
             field: c.provider?.topic_title || 'Researcher',
-            imageUrl: c.provider?.payout_details?.avatar_url || '/placeholder.svg'
+            imageUrl: c.provider?.avatar_url || '/placeholder.svg',
           },
           date: c.scheduled_date,
           time: c.scheduled_time,
-          topic: c.client_notes?.topic || 'No topic provided',
-          status: c.status as "completed" | "cancelled",
-          rating: 5, // Placeholder for rating
-          hasRecording: c.has_recording || false,
-          hasAINotes: c.has_ai_notes || false,
+          topic: c.project_description || c.service?.title || 'No topic provided',
+          status: 'completed',
+          rating: c.researcher_reviews?.[0]?.rating || 0,
+          reviewText: c.researcher_reviews?.[0]?.comment || undefined,
+          hasRecording: !!c.meeting_link, // If meeting_link exists, assume recording is possible
+          hasAINotes: false, // Set to false or fetch if available
         }));
 
         setConsultations(mappedConsultations);
       } catch (err: any) {
         setError(err.message);
-        console.error("Error fetching past consultations:", err);
+        console.error('Error fetching past consultations:', err);
       } finally {
         setLoading(false);
       }
@@ -121,7 +126,7 @@ const StudentPastTab = () => {
                 key={consultation.id}
                 consultation={consultation}
                 uploadedResources={uploadedResources[consultation.id] || []}
-                userType="student"
+                userRole="student"
                 onViewRecording={handleViewRecording}
                 onViewAINotes={handleViewAINotes}
                 onUploadResources={handleUploadResources}

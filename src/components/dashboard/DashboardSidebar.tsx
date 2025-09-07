@@ -35,14 +35,14 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole, notificationCount
     { id: "find-researcher", label: "Find Researcher", icon: Search },
     { id: "find-research-aid", label: "Find Research Aid", icon: Users },
     { id: "post-job", label: "Post a Job", icon: Briefcase },
-    { id: "my-applications", label: "My Applications", icon: Briefcase }, // New item
+    // { id: "my-applications", label: "My Applications", icon: Briefcase }, // New item
     { id: "my-bookings", label: "My Bookings", icon: Calendar },
     { id: "upcoming", label: "Upcoming Sessions", icon: Calendar },
     { id: "past", label: "Past Sessions", icon: Clock },
     { id: "full-thesis-support", label: "Full Thesis Support", icon: GraduationCap },
     { id: "payments", label: "Payments", icon: DollarSign },
     { id: "messages", label: "Messages", icon: MessageSquare },
-    { id: "performance", label: "My Progress", icon: TrendingUp },
+    // { id: "performance", label: "My Progress", icon: TrendingUp },
     { id: "notifications", label: "Notifications", icon: Bell, badge: notificationCount },
     { id: "thesis-information", label: "Thesis Information", icon: BookOpen },
     { id: "documents", label: "Documents", icon: FileText },

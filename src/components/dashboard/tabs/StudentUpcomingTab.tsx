@@ -46,7 +46,8 @@ const StudentUpcomingTab = () => {
         `)
         .eq('client_id', user.id)
         .in('status', ['pending', 'confirmed'])
-        .order('scheduled_date', { ascending: true });
+        .order('scheduled_date', { ascending: false })
+        .order('scheduled_time', { ascending: false });
 
 
       console.log("Fetched consultations:", data);
