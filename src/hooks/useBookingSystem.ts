@@ -18,6 +18,7 @@ export interface BookingData {
   client_notes?: string;
   selected_addons?: string[];
   challenges?: string[];
+  payment_id?: string;
 }
 
 export interface BookingSession {
@@ -74,7 +75,7 @@ export const useBookingSystem = () => {
       setCreating(true);
 
       // Create the booking
-      const { data: booking, error: bookingError } = await supabase
+      const { data: bookingArr, error: bookingError } = await supabase
         .from('service_bookings')
         .insert({
           provider_id: bookingData.provider_id,
@@ -89,15 +90,16 @@ export const useBookingSystem = () => {
           total_price: bookingData.total_price,
           currency: bookingData.currency,
           client_notes: bookingData.client_notes,
-          status: 'pending',
-          payment_status: 'pending'
+          status: bookingData.payment_id && bookingData.payment_id !== '' ? 'confirmed' : 'pending',
+          payment_status: bookingData.payment_id && bookingData.payment_id !== '' ? 'paid' : 'pending',
+          payment_id: bookingData.payment_id ?? null
         })
         .select(`
           *,
           provider:users!service_bookings_provider_id_fkey(name, email),
           service:consultation_services(title, category)
-        `)
-        .single();
+        `);
+      const booking = Array.isArray(bookingArr) ? bookingArr[0] : bookingArr;
 
       if (bookingError) {
         console.error('Error creating booking:', bookingError);
@@ -110,7 +112,7 @@ export const useBookingSystem = () => {
       }
 
       // Add selected addons if any
-      if (bookingData.selected_addons && bookingData.selected_addons.length > 0) {
+      if (bookingData.selected_addons && bookingData.selected_addons.length > 0 && booking) {
         // You must provide price (and optionally quantity) for each addon insert
         // We'll fetch addon details to get the price
         const { data: addonDetails } = await supabase

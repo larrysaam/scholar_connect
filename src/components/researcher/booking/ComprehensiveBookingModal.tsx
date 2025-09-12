@@ -117,24 +117,24 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
   const researcherServices = services;
 
   const paymentMethods: PaymentMethod[] = [
-    {
-      id: 'card',
-      name: 'Credit/Debit Card',
-      type: 'card',
-      description: 'Pay securely with your credit or debit card'
-    },
+    // {
+    //   id: 'card',
+    //   name: 'Credit/Debit Card',
+    //   type: 'card',
+    //   description: 'Pay securely with your credit or debit card'
+    // },
     {
       id: 'mobile_money',
       name: 'Mobile Money',
       type: 'mobile_money',
       description: 'Pay with MTN Mobile Money or Orange Money'
     },
-    {
-      id: 'bank_transfer',
-      name: 'Bank Transfer',
-      type: 'bank_transfer',
-      description: 'Direct bank transfer'
-    }
+    // {
+    //   id: 'bank_transfer',
+    //   name: 'Bank Transfer',
+    //   type: 'bank_transfer',
+    //   description: 'Direct bank transfer'
+    // }
   ];
 
   const researchChallenges = [
@@ -244,8 +244,87 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
     const service = getSelectedService();
     if (!service) return;
 
-    // Create booking
-    const bookingResult = await createBooking({
+    // MeSomb mobile money integration via Node.js backend
+    let mesombPaymentId = null;
+    let paymentId = null;
+    let bookingResult = null;
+    if (paymentMethod === 'mobile_money') {
+      try {
+        if (!paymentDetails.phoneNumber || paymentDetails.phoneNumber.length < 9) {
+          toast({
+            title: 'Invalid Phone Number',
+            description: 'Please enter a valid mobile money phone number.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+        const response = await fetch(
+          "http://localhost:4000/api/mesomb-payment",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              amount: getTotalPrice(),
+              service: paymentDetails.operator || 'MTN',
+              payer: paymentDetails.phoneNumber,
+              description: `Consultation booking for ${service.title}`,
+              customer: {
+                email: user.email,
+                firstName: user.user_metadata?.firstName || '',
+                lastName: user.user_metadata?.lastName || '',
+                country: 'CM',
+              },
+              country: 'CM',
+              currency: 'XAF',
+              location: { town: 'Douala', region: 'Littoral', country: 'CM' },
+              products: [
+                { name: service.title, category: 'consultation', quantity: 1, amount: getTotalPrice() }
+              ],
+            }),
+          }
+        );
+
+        const mesombResult = await response.json();
+        console.log('MeSomb payment response:', response.status, mesombResult);
+        if (response.status === 401) {
+          console.log('MeSomb 401 debug info:', mesombResult);
+          return;
+        }
+        console.log('MeSomb payment response:', mesombResult.raw.transaction.data.pk);
+        if (!mesombResult.operationSuccess || !mesombResult.transactionSuccess) {
+          toast({
+            title: 'Mobile Money Payment Error',
+            description: mesombResult.error || mesombResult.message || 'The mobile money payment could not be completed. Please check your number, operator, and try again.',
+            variant: 'destructive',
+          });
+          console.error('MeSomb operation error:', mesombResult);
+          return;
+        }
+        // Save MeSomb payment ID for later DB update
+        mesombPaymentId = mesombResult.raw.transaction.data.pk || mesombResult.raw?.pk || mesombResult.raw?.id || mesombResult.pk || mesombResult.id || null;
+        console.log('MeSomb payment ID:', mesombPaymentId);
+      } catch (err) {
+        toast({
+          title: 'Mobile Money Payment Error',
+          description: typeof err === 'string' ? err : (err?.message || 'A network or server error occurred during mobile money payment.'),
+          variant: 'destructive',
+        });
+        console.error('MeSomb payment exception:', err);
+        return;
+      }
+    }
+
+    // Save payment in transactions and update booking with payment id
+    paymentId = mesombPaymentId;
+    if (!paymentId) {
+      // fallback: generate a local payment id if not available
+      paymentId = `pay_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    }
+
+    // Only create booking after payment is successful
+    bookingResult = await createBooking({
       provider_id: researcher.id,
       service_id: selectedService,
       academic_level: selectedAcademicLevel as any,
@@ -258,6 +337,7 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
       currency: 'XAF',
       client_notes: clientNotes,
       selected_addons: selectedAddons,
+      payment_id: paymentId,
       challenges
     });
 
@@ -265,7 +345,42 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
       return;
     }
 
-    // Process payment
+    // Generate Google Meet link after booking is created
+    try {
+      const { data, error: meetError } = await supabase.functions.invoke('generate-meet-link', {
+        body: { booking_id: bookingResult.booking.id },
+      });
+      if (meetError) {
+        toast({
+          title: 'Meeting Link Failed',
+          description: 'Could not create a Google Meet link. Please contact support.',
+          variant: 'destructive',
+        });
+      } else if (data && data.meetLink) {
+        // Optionally update the booking with the meet link if not handled by the function
+        await supabase.from('service_bookings').update({ meeting_link: data.meetLink }).eq('id', bookingResult.booking.id);
+      }
+    } catch (e) {
+      console.error('Error invoking generate-meet-link function:', e);
+    }
+
+    await supabase.from('transactions').insert({
+      user_id: bookingResult.booking.client_id,
+      amount: getTotalPrice(),
+      type: 'consultation',
+      description: `Consultation booking for ${service.title}`,
+      status: 'paid',
+      payment_id: paymentId,
+    });
+
+    await supabase.from('service_bookings').update({
+      payment_status: 'paid',
+      payment_id: paymentId,
+      status: 'confirmed',
+      updated_at: new Date().toISOString(),
+    }).eq('id', bookingResult.booking.id);
+
+    // Process payment (for other methods or after MeSomb success)
     const paymentResult = await processPayment({
       amount: getTotalPrice(),
       currency: 'XAF',

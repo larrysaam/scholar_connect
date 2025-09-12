@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Star, Users, Calendar, CheckCircle } from "lucide-react"; // Added CheckCircle
@@ -71,7 +70,8 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
             <div>
               <h1 className="text-2xl font-bold">{researcher.name}</h1>
               <p className="text-lg text-gray-600">{researcher.title}</p>
-              <p className="text-gray-600">{researcher.affiliation}</p>
+              {/* Use affiliations if available, fallback to empty string */}
+              <p className="text-gray-600">{Array.isArray(researcher.affiliations) ? researcher.affiliations.join(', ') : ''}</p>
               <div className="flex items-center text-gray-500 mt-1">
                 <MapPin className="h-4 w-4 mr-1" />
                 <span>{researcher.location}</span>
@@ -83,27 +83,24 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
               <div className="flex items-center">
                 <Star className="h-4 w-4 text-yellow-500 mr-1" />
                 <span className="font-medium">{researcher.rating}</span>
-                <span className="text-gray-500 ml-1">({researcher.totalReviews} reviews)</span>
+                {/* Remove totalReviews if not present */}
               </div>
               <div className="flex items-center">
                 <Users className="h-4 w-4 text-blue-500 mr-1" />
                 <span>{researcher.studentsSupervised} students supervised</span>
               </div>
-              <div className="flex items-center">
-                <Calendar className="h-4 w-4 text-green-500 mr-1" />
-                <span>{researcher.yearsExperience} years experience</span>
-              </div>
+              {/* Remove yearsExperience if not present */}
             </div>
 
             {/* Expertise Tags */}
             <div className="flex flex-wrap gap-2">
-              {researcher.expertise.slice(0, 5).map((skill) => (
+              {(researcher.skills || []).slice(0, 5).map((skill: string) => (
                 <Badge key={skill} variant="secondary">
                   {skill}
                 </Badge>
               ))}
-              {researcher.expertise.length > 5 && (
-                <Badge variant="outline">+{researcher.expertise.length - 5} more</Badge>
+              {(researcher.skills && researcher.skills.length > 5) && (
+                <Badge variant="outline">+{researcher.skills.length - 5} more</Badge>
               )}
             </div>
 
@@ -115,20 +112,21 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
               </span>
             </div>
 
-            {/* Response Time */}
-            <div className="text-sm text-gray-600">
-              <span className="font-medium">Response time:</span> {researcher.responseTime}
-            </div>
-
             {/* Hourly Rate */}
             <div className="text-lg font-bold text-green-600">
-              {researcher.hourlyRate.toLocaleString()} XAF/hour
+              {(typeof researcher.hourly_rate === 'number' ? researcher.hourly_rate : 0).toLocaleString()} XAF/hour
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-3 md:w-64">
-            <ComprehensiveBookingModal researcher={researcher} />
+            <ComprehensiveBookingModal researcher={{
+              ...researcher,
+              institution: Array.isArray(researcher.affiliations) && researcher.affiliations.length > 0 ? researcher.affiliations[0] : '',
+              hourlyRate: typeof researcher.hourly_rate === 'number' ? researcher.hourly_rate : 0,
+              title: researcher.title || '',
+              imageUrl: researcher.imageUrl || '',
+            }} />
             
             <MessageModal researcher={researcher} />
 

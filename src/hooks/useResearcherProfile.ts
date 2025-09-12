@@ -71,6 +71,7 @@ export interface ResearcherProfileData {
   updated_at: string;
   verifications?: any; // maps to verifications jsonb
   title?: string;
+  subtitle?: string;
   job_title?: string;
   location?: string;
   education_summary?: string; // This is text in schema, but component uses educational_background
@@ -86,6 +87,9 @@ export interface ResearcherProfileData {
 
   // Computed fields for compatibility (these will be removed or re-evaluated)
   imageUrl: string; // From users table
+  // New fields for UI
+  languages: string[];
+  studentsSupervised: number;
 }
 
 export const useResearcherProfile = (researcherId: string) => {
@@ -99,10 +103,10 @@ export const useResearcherProfile = (researcherId: string) => {
       setLoading(true);
       setError(null);
 
-      // Fetch basic user info
+      // Fetch basic user info (now including languages and country)
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('id, name, email, role, avatar_url')
+        .select('id, name, email, role, avatar_url, languages, country')
         .eq('id', researcherId)
         .single();
 
@@ -119,13 +123,11 @@ export const useResearcherProfile = (researcherId: string) => {
         return;
       }
 
-      // Fetch extended profile info from research_aid_profiles
+      // Fetch extended profile info from researcher_profiles (minimal select for debug)
       const { data: profileData, error: profileError } = await supabase
-        .from('research_aid_profiles')
-        .select(
-          `id, bio, expertise, hourly_rate, availability, rating, total_consultations_completed, is_verified, created_at, updated_at, verifications, title, job_title, location, education_summary, skills, educational_background, work_experience, awards, publications, scholarships, affiliations`
-        )
-        .eq('id', researcherId)
+        .from('researcher_profiles')
+        .select('id, user_id, title, subtitle')
+        .eq('user_id', researcherId)
         .single();
 
       console.log('Profile data fetch result:', { profileData, profileError });
@@ -138,40 +140,21 @@ export const useResearcherProfile = (researcherId: string) => {
         const userId = authUserData?.user?.id;
         if (userId && userId === researcherId) {
           const { data: newProfile, error: createError } = await supabase
-            .from('research_aid_profiles')
+            .from('researcher_profiles')
             .insert({
-              id: researcherId,
+              user_id: researcherId,
               title: 'Research Expert',
-              job_title: 'Dr.',
-              bio: 'Experienced researcher ready to help with your academic projects.',
-              expertise: [],
-              hourly_rate: 0,
-              availability: {},
-              rating: 0,
-              total_consultations_completed: 0,
-              is_verified: false,
-              verifications: {},
+              subtitle: 'Dr.',
               location: '',
-              education_summary: '',
-              skills: [],
-              educational_background: [],
-              work_experience: [],
-              awards: [],
-              publications: [],
-              scholarships: [],
-              affiliations: [],
             })
-            .select()
+            .select('id, user_id, title, subtitle, location')
             .single();
-
           if (createError) {
             console.error('Error creating profile:', createError);
           } else {
-            console.log('New profile created successfully:', newProfile);
             profile = newProfile;
           }
         } else {
-          console.log('Not authenticated or not owner, skipping profile creation.');
           profile = null;
         }
       }
@@ -196,6 +179,15 @@ export const useResearcherProfile = (researcherId: string) => {
         console.error('Error fetching reviews:', reviewsError);
       }
 
+      // Fetch number of students supervised (bookings count)
+      const { count: studentsSupervised, error: bookingsError } = await supabase
+        .from('service_bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('provider_id', researcherId);
+      if (bookingsError) {
+        console.error('Error fetching studentsSupervised:', bookingsError);
+      }
+
       // Parse JSONB fields to correct types
       const parseJsonArray = <T>(val: any): T[] => {
         if (!val) return [];
@@ -208,6 +200,7 @@ export const useResearcherProfile = (researcherId: string) => {
       };
 
       // Transform data to match component interface
+      const safeProfile = (profile && typeof profile === 'object' && !('error' in profile)) ? profile as Record<string, any> : {};
       const transformedResearcher: ResearcherProfileData = {
         // Basic user info
         id: userData.id,
@@ -215,27 +208,28 @@ export const useResearcherProfile = (researcherId: string) => {
         email: userData.email,
         role: userData.role,
         
-        // From research_aid_profiles
-        bio: profile?.bio || '',
-        skills: profile?.skills || [], // Mapped from expertise
-        hourly_rate: profile?.hourly_rate || 0,
-        availability: profile?.availability || {},
-        rating: profile?.rating || 0,
-        total_consultations_completed: profile?.total_consultations_completed || 0,
-        is_verified: profile?.is_verified || false,
-        created_at: profile?.created_at || new Date().toISOString(),
-        updated_at: profile?.updated_at || new Date().toISOString(),
-        verifications: profile?.verifications || {},
-        title: profile?.title || '',
-        job_title: profile?.job_title || '',
-        location: profile?.location || '',
-        education_summary: profile?.education_summary || '',
-        educational_background: parseJsonArray<ResearcherEducation>(profile?.educational_background),
-        work_experience: parseJsonArray<ResearcherExperience>(profile?.work_experience),
-        awards: parseJsonArray<ResearcherAward>(profile?.awards),
-        publications: parseJsonArray<ResearcherPublication>(profile?.publications),
-        scholarships: parseJsonArray<ResearcherFellowship>(profile?.scholarships),
-        affiliations: profile?.affiliations || [],
+        // From researcher_profiles
+        bio: safeProfile?.bio || '',
+        skills: safeProfile?.specialties || [],
+        hourly_rate: safeProfile?.hourly_rate || 0,
+        availability: safeProfile?.available_times || [],
+        rating: safeProfile?.rating || 0,
+        total_consultations_completed: safeProfile?.students_supervised || 0,
+        is_verified: false, // Not in schema, set default
+        created_at: safeProfile?.created_at || new Date().toISOString(),
+        updated_at: safeProfile?.updated_at || new Date().toISOString(),
+        verifications: safeProfile?.verifications || {},
+        title: safeProfile?.title || '',
+        subtitle: safeProfile?.subtitle || '',
+        job_title: '', // Not in schema, set default
+        location: userData.country || '',
+        education_summary: '', // Not in schema, set default
+        educational_background: safeProfile?.education || [],
+        work_experience: safeProfile?.experience || [],
+        awards: safeProfile?.awards || [],
+        publications: safeProfile?.publications || [],
+        scholarships: safeProfile?.fellowships || [],
+        affiliations: safeProfile?.memberships || [],
 
         // Reviews
         reviews: (reviewsData || []).map(review => ({
@@ -250,6 +244,9 @@ export const useResearcherProfile = (researcherId: string) => {
         
         // Computed fields for compatibility
         imageUrl: userData.avatar_url || '/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png',
+        // Add new fields
+        languages: userData.languages || [],
+        studentsSupervised: studentsSupervised || 0,
       };
 
       setResearcher(transformedResearcher);

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { CreditCard, Smartphone, Wallet, User, Clock, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { Input } from "@/components/ui/input";
 
 interface PaymentCheckoutProps {
   serviceType: "consultation" | "service";
@@ -39,6 +39,8 @@ const PaymentCheckout = ({
   const [paymentMethod, setPaymentMethod] = useState<"stripe" | "mobile_money" | "bank_transfer">("mobile_money");
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
+  const [phone, setPhone] = useState("");
+  const [operator, setOperator] = useState("MTN"); // or 'ORANGE'
 
   const processingFee = service.amount * 0.025; // 2.5% processing fee
   const totalAmount = service.amount + processingFee;
@@ -49,30 +51,61 @@ const PaymentCheckout = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Create payment record
-      const { data: payment, error } = await supabase
-        .from("payments")
+      if (paymentMethod === "mobile_money") {
+        // Call Supabase Edge Function for MeSomb payment
+        const response = await fetch(
+          "https://yujuomiqwydnwovgwtrg.functions.supabase.co/mesomb-payment",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              amount: totalAmount,
+              service: operator, // 'MTN' or 'ORANGE'
+              phone,
+              description: `${serviceType} payment for ${service.title}`,
+              customer: {
+                email: user.email,
+                firstName: user.user_metadata?.firstName || '',
+                lastName: user.user_metadata?.lastName || '',
+                country: 'CM',
+              },
+              location: { town: '', region: '', country: 'CM' },
+              products: [
+                { name: service.title, category: serviceType, quantity: 1, amount: totalAmount }
+              ],
+            }),
+          }
+        );
+        const mesombResult = await response.json();
+        if (!mesombResult.success && (!mesombResult.operationSuccess || !mesombResult.transactionSuccess)) {
+          throw new Error(
+            mesombResult.error ||
+            mesombResult.message ||
+            'Mobile money payment failed'
+          );
+        }
+      }
+
+      // Create transaction record (Supabase)
+      const { data: transaction, error: txError } = await supabase
+        .from("transactions")
         .insert({
-          student_id: user.id,
-          provider_id: provider.id,
-          amount: service.amount,
-          processing_fee: processingFee,
-          total_amount: totalAmount,
-          payment_type: serviceType,
-          payment_method: paymentMethod,
-          status: "paid" // Simulated successful payment
+          user_id: user.id,
+          amount: totalAmount,
+          description: `${serviceType} payment for ${service.title}`,
+          status: "completed",
+          type: serviceType,
         })
         .select()
         .single();
-
-      if (error) throw error;
+      if (txError) throw txError;
 
       toast({
         title: "Payment Successful!",
         description: `Your payment of ${totalAmount.toLocaleString()} XAF has been processed.`,
       });
 
-      onPaymentSuccess(payment.payment_id);
+      onPaymentSuccess(transaction.id);
     } catch (error) {
       console.error("Payment error:", error);
       toast({
@@ -158,6 +191,36 @@ const PaymentCheckout = ({
                 </Label>
               </div>
             </RadioGroup>
+          </div>
+
+          {/* Add phone and operator input fields for mobile money */}
+          <div className="space-y-3">
+            {paymentMethod === "mobile_money" && (
+              <>
+                <h4 className="font-medium">Mobile Money Details</h4>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="e.g. 6XXXXXXXX"
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
+                    required={paymentMethod === "mobile_money"}
+                  />
+                  <Label htmlFor="operator">Operator</Label>
+                  <select
+                    id="operator"
+                    value={operator}
+                    onChange={e => setOperator(e.target.value)}
+                    className="border rounded p-2"
+                  >
+                    <option value="MTN">MTN</option>
+                    <option value="ORANGE">ORANGE</option>
+                  </select>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Payment Summary */}
