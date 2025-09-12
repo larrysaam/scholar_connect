@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,11 +24,16 @@ interface UpcomingBooking {
   other_user_name: string;
   service_title: string;
   status: string;
+  student_completed?: boolean;
+  researcher_completed?: boolean;
 }
 
 const SessionBookingTab = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+
+  // Get user role from metadata
+  const userRole = user?.user_metadata?.role;
 
   // Component States
   const [upcomingBookings, setUpcomingBookings] = useState<UpcomingBooking[]>([]);
@@ -60,7 +64,7 @@ const SessionBookingTab = () => {
           supabase
             .from('service_bookings')
             .select(`
-              id, scheduled_date, scheduled_time, status,
+              id, scheduled_date, scheduled_time, status, student_completed, researcher_completed,
               consultation_services(title),
               client:users!service_bookings_client_id_fkey(name),
               provider:users!service_bookings_provider_id_fkey(name)
@@ -83,7 +87,9 @@ const SessionBookingTab = () => {
           scheduled_time: b.scheduled_time,
           service_title: b.consultation_services?.title || 'Service',
           other_user_name: user.id === b.client?.id ? b.provider?.name : b.client?.name || 'User',
-          status: b.status
+          status: b.status,
+          student_completed: b.student_completed,
+          researcher_completed: b.researcher_completed
         }));
         setUpcomingBookings(mappedBookings);
 
@@ -155,6 +161,46 @@ const SessionBookingTab = () => {
     }
   };
 
+  // Add: Mark as Complete logic
+  const handleMarkAsComplete = async (booking: UpcomingBooking) => {
+    try {
+      // Determine which field to update
+      const fieldToUpdate = user?.role === 'student' ? 'student_completed' : 'researcher_completed';
+      const { error } = await supabase
+        .from('service_bookings')
+        .update({ [fieldToUpdate]: true })
+        .eq('id', booking.id);
+      if (error) throw error;
+
+      // Fetch updated booking
+      const { data: updated, error: fetchError } = await supabase
+        .from('service_bookings')
+        .select('student_completed, researcher_completed, status')
+        .eq('id', booking.id)
+        .single();
+      if (fetchError) throw fetchError;
+
+      // If both have marked as complete, set status to completed
+      if (updated.student_completed && updated.researcher_completed && updated.status !== 'completed') {
+        const { error: statusError } = await supabase
+          .from('service_bookings')
+          .update({ status: 'completed' })
+          .eq('id', booking.id);
+        if (statusError) throw statusError;
+      }
+
+      // Update local state
+      setUpcomingBookings(prev => prev.map(b =>
+        b.id === booking.id
+          ? { ...b, [fieldToUpdate]: true, status: (updated.student_completed && updated.researcher_completed) ? 'completed' : b.status }
+          : b
+      ));
+      toast({ title: 'Marked as Complete', description: 'Your completion has been recorded.' });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    }
+  };
+
   const bookingSteps: BookingStep[] = [
     { step: 1, title: "Choose Session", completed: currentStep > 1 },
     { step: 2, title: "Schedule", completed: currentStep > 2 },
@@ -192,6 +238,21 @@ const SessionBookingTab = () => {
                   <div className="text-right">
                      <p className="text-sm font-medium">{format(new Date(booking.scheduled_date), 'PPP')}</p>
                      <Badge variant={booking.status === 'confirmed' ? 'default' : 'secondary'} className="mt-1">{booking.status}</Badge>
+                     {/* Mark as Complete Buttons */}
+                     <div className="mt-2 flex gap-2 justify-end">
+                      
+                      
+                         <Button size="sm" variant="destructive" onClick={() => handleMarkAsComplete(booking)}>
+                           Mark as Complete
+                         </Button>
+                       
+                      
+                       {booking.student_completed && booking.researcher_completed && (
+                         <Button size="sm" variant="default" disabled>
+                           Completed
+                         </Button>
+                       )}
+                     </div>
                   </div>
                 </li>
               ))}

@@ -19,6 +19,8 @@ export interface Consultation {
   service: { title: string; };
   meetLink?: string;
   sharedDocuments?: any[];
+  student_completed?: boolean;
+  researcher_completed?: boolean;
 }
 
 const ITEMS_PER_PAGE = 5;
@@ -42,7 +44,8 @@ const StudentUpcomingTab = () => {
         .select(`
           id, status, scheduled_date, scheduled_time, duration_minutes, meeting_link, shared_documents, client_notes,
           provider:users!service_bookings_provider_id_fkey(name, topic_title, avatar_url),
-          service:consultation_services(title)
+          service:consultation_services(title),
+          student_completed, researcher_completed
         `)
         .eq('client_id', user.id)
         .in('status', ['pending', 'confirmed'])
@@ -71,7 +74,9 @@ const StudentUpcomingTab = () => {
           },
           topic: c.service?.title || 'No topic provided',
           meetLink: c.meeting_link,
-          sharedDocuments: c.shared_documents || []
+          sharedDocuments: c.shared_documents || [],
+          student_completed: c.student_completed,
+          researcher_completed: c.researcher_completed
         }
       });
 
@@ -236,8 +241,47 @@ const StudentUpcomingTab = () => {
       toast({ title: "Deletion Failed", description: err.message, variant: "destructive" });
     }
   };
+
   const handleAccessDocument = (documentLink: string) => {
     window.open(documentLink, '_blank');
+  };
+
+  // Mark as Complete logic for student
+  const handleMarkAsComplete = async (consultation: Consultation) => {
+    try {
+      const { error } = await supabase
+        .from('service_bookings')
+        .update({ student_completed: true })
+        .eq('id', consultation.id);
+      if (error) throw error;
+
+      // Fetch updated booking to check if both have completed
+      const { data: updated, error: fetchError } = await supabase
+        .from('service_bookings')
+        .select('student_completed, researcher_completed, status')
+        .eq('id', consultation.id)
+        .single();
+      if (fetchError) throw fetchError;
+
+      // If both have marked as complete, set status to completed
+      if (updated.student_completed && updated.researcher_completed && updated.status !== 'completed') {
+        const { error: statusError } = await supabase
+          .from('service_bookings')
+          .update({ status: 'completed' })
+          .eq('id', consultation.id);
+        if (statusError) throw statusError;
+      }
+
+      // Update local state
+      setConsultations(prev => prev.map(c =>
+        c.id === consultation.id
+          ? { ...c, student_completed: true, status: (updated.student_completed && updated.researcher_completed) ? 'completed' : c.status }
+          : c
+      ));
+      toast({ title: 'Marked as Complete', description: 'Your completion has been recorded.' });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    }
   };
 
   if (loading) {
@@ -270,17 +314,36 @@ const StudentUpcomingTab = () => {
         <>
           <div className="space-y-4">
           {paginatedConsultations.map((consultation) => (
-            <ConsultationCard
-              key={consultation.id}
-              consultation={consultation}
-              userType="student"
-              onJoinMeet={() => handleJoinMeet(consultation.meetLink)}
-              onUploadDocument={() => handleUploadDocument(consultation.id)}
-              isUploading={isUploading[consultation.id] || false}
-              onSubmitDocumentLink={handleSubmitDocumentLink}
-              onDeleteDocument={handleDeleteDocument}
-              onAccessDocument={handleAccessDocument}
-            />
+            <div key={consultation.id}>
+              <ConsultationCard
+                consultation={consultation}
+                userType="student"
+                onJoinMeet={() => handleJoinMeet(consultation.meetLink)}
+                onUploadDocument={() => handleUploadDocument(consultation.id)}
+                isUploading={isUploading[consultation.id] || false}
+                onSubmitDocumentLink={handleSubmitDocumentLink}
+                onDeleteDocument={handleDeleteDocument}
+                onAccessDocument={handleAccessDocument}
+              />
+              {/* Mark as Complete Button for student */}
+              <div className="flex justify-end mt-2">
+                {!consultation.student_completed && (
+                  <Button size="sm" variant="destructive" onClick={() => handleMarkAsComplete(consultation)}>
+                    Mark as Complete
+                  </Button>
+                )}
+                {consultation.student_completed && !consultation.researcher_completed && (
+                  <Button size="sm" variant="secondary" disabled>
+                    Waiting for Researcher
+                  </Button>
+                )}
+                {consultation.student_completed && consultation.researcher_completed && (
+                  <Button size="sm" variant="default" disabled>
+                    Completed
+                  </Button>
+                )}
+              </div>
+            </div>
           ))}
           </div>
           {totalPages > 1 && (

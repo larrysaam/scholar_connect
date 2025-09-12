@@ -147,6 +147,45 @@ const UpcomingTab = ({ userRole }: UpcomingTabProps) => {
     }
   };
 
+  const handleMarkAsComplete = async (consultation: any) => {
+    try {
+      // Determine which field to update based on userRole
+      const fieldToUpdate = userRole === 'student' ? 'student_completed' : 'researcher_completed';
+      const { error } = await supabase
+        .from('service_bookings')
+        .update({ [fieldToUpdate]: true })
+        .eq('id', consultation.id);
+      if (error) throw error;
+
+      // Fetch the updated booking to check if both have completed
+      const { data: updatedBooking, error: fetchError } = await supabase
+        .from('service_bookings')
+        .select('student_completed, researcher_completed, status')
+        .eq('id', consultation.id)
+        .single();
+      if (fetchError) throw fetchError;
+
+      // If both have marked as complete, set status to completed
+      if (updatedBooking.student_completed && updatedBooking.researcher_completed && updatedBooking.status !== 'completed') {
+        const { error: statusError } = await supabase
+          .from('service_bookings')
+          .update({ status: 'completed' })
+          .eq('id', consultation.id);
+        if (statusError) throw statusError;
+      }
+
+      // Update local state
+      setConsultations(prev => prev.map(c =>
+        c.id === consultation.id
+          ? { ...c, [fieldToUpdate]: true, status: (updatedBooking.student_completed && updatedBooking.researcher_completed) ? 'completed' : c.status }
+          : c
+      ));
+      toast({ title: 'Marked as Complete', description: 'Your completion has been recorded.' });
+    } catch (err) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    }
+  };
+
   const upcomingConsultations = useMemo(() => {
     return consultations
       .filter(booking => booking.status === 'confirmed' && new Date(booking.scheduled_date) > new Date())
@@ -168,6 +207,8 @@ const UpcomingTab = ({ userRole }: UpcomingTabProps) => {
         duration: booking.duration_minutes,
         serviceTitle: booking.service?.title || 'N/A',
         sharedDocuments: booking.shared_documents || [],
+        student_completed: booking.student_completed || false,
+        researcher_completed: booking.researcher_completed || false,
       }));
   }, [consultations]);
 
@@ -210,28 +251,27 @@ const UpcomingTab = ({ userRole }: UpcomingTabProps) => {
                   onRescheduleWithGoogleCalendar={() => handleRescheduleWithGoogleCalendar(consultation.id)}
                   onDeleteDocument={handleDeleteDocument}
                 />
-                {/* Mark as Complete Button */}
-                <div className="flex justify-end mt-2">
-                  <Button
-                    size="sm"
-                    variant={consultation.status === 'completed' ? 'default' : 'secondary'}
-                    disabled={consultation.status === 'completed'}
-                    onClick={async () => {
-                      try {
-                        const { error } = await supabase
-                          .from('service_bookings')
-                          .update({ status: 'completed' })
-                          .eq('id', consultation.id);
-                        if (error) throw error;
-                        setConsultations(prev => prev.map(c => c.id === consultation.id ? { ...c, status: 'completed' } : c));
-                        toast({ title: 'Marked as Complete', description: 'Consultation marked as completed.' });
-                      } catch (err: any) {
-                        toast({ title: 'Error', description: err.message, variant: 'destructive' });
-                      }
-                    }}
-                  >
-                    {consultation.status === 'completed' ? 'Completed' : 'Mark as Complete'}
-                  </Button>
+                {/* Mark as Complete Button for each user */}
+                <div className="flex justify-end mt-2 gap-2">
+                  { !consultation.researcher_completed && (
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleMarkAsComplete(consultation)}
+                    >
+                      Mark as Complete
+                    </Button>
+                  )}
+                  {consultation.researcher_completed && !consultation.student_completed && (
+                    <Button size="sm" variant="secondary" disabled>
+                      Waiting for Student
+                    </Button>
+                  )}
+                  {consultation.student_completed && consultation.researcher_completed && (
+                    <Button size="sm" variant="default" disabled>
+                      Completed
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}

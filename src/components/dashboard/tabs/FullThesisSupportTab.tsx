@@ -310,6 +310,15 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
     return activeProjects;
   }, [activeProjects, projectFilter, projectMilestonesMap]);
 
+  // Pagination state for active projects
+  const [activeProjectsPage, setActiveProjectsPage] = useState(1);
+  const PROJECTS_PER_PAGE = 5;
+  const totalActivePages = Math.ceil(filteredActiveProjects.length / PROJECTS_PER_PAGE);
+  const paginatedActiveProjects = useMemo(() => {
+    const start = (activeProjectsPage - 1) * PROJECTS_PER_PAGE;
+    return filteredActiveProjects.slice(start, start + PROJECTS_PER_PAGE);
+  }, [filteredActiveProjects, activeProjectsPage]);
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Full Thesis Support</h2>
@@ -323,15 +332,15 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
           </CardTitle>
           {/* Filter controls */}
           <div className="flex gap-2 mt-2">
-            <Button size="sm" variant={projectFilter === 'all' ? 'default' : 'outline'} onClick={() => setProjectFilter('all')}>All</Button>
-            <Button size="sm" variant={projectFilter === 'ongoing' ? 'default' : 'outline'} onClick={() => setProjectFilter('ongoing')}>Ongoing</Button>
-            <Button size="sm" variant={projectFilter === 'complete' ? 'default' : 'outline'} onClick={() => setProjectFilter('complete')}>Complete</Button>
+            <Button size="sm" variant={projectFilter === 'all' ? 'default' : 'outline'} onClick={() => { setProjectFilter('all'); setActiveProjectsPage(1); }}>All</Button>
+            <Button size="sm" variant={projectFilter === 'ongoing' ? 'default' : 'outline'} onClick={() => { setProjectFilter('ongoing'); setActiveProjectsPage(1); }}>Ongoing</Button>
+            <Button size="sm" variant={projectFilter === 'complete' ? 'default' : 'outline'} onClick={() => { setProjectFilter('complete'); setActiveProjectsPage(1); }}>Complete</Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {filteredActiveProjects.length === 0 && <p className="text-gray-500">No active thesis support projects found.</p>}
-            {filteredActiveProjects.map((project) => (
+            {paginatedActiveProjects.length === 0 && <p className="text-gray-500">No active thesis support projects found.</p>}
+            {paginatedActiveProjects.map((project) => (
                 <div key={project.id} className="border rounded-lg p-4 mb-4">
                   <div className="flex justify-between items-start mb-3">
                     <div>
@@ -450,12 +459,20 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
                   </div>
                 </div>
             ))}
+            {/* Pagination controls */}
+            {totalActivePages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-4">
+                <Button size="sm" variant="outline" onClick={() => setActiveProjectsPage(p => Math.max(1, p - 1))} disabled={activeProjectsPage === 1}>Previous</Button>
+                <span className="text-sm">Page {activeProjectsPage} of {totalActivePages}</span>
+                <Button size="sm" variant="outline" onClick={() => setActiveProjectsPage(p => Math.min(totalActivePages, p + 1))} disabled={activeProjectsPage === totalActivePages}>Next</Button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
 
       {/* Payment Milestones */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
             <DollarSign className="h-5 w-5 mr-2" />
@@ -480,10 +497,10 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
             ))}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Goals and Milestones */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle className="flex items-center">
@@ -601,7 +618,7 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
             )}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Email Dialog */}
       <Dialog open={isEmailDialogOpen} onOpenChange={setIsEmailDialogOpen}>
