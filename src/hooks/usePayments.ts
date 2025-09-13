@@ -200,6 +200,7 @@ export const usePayments = () => {
         .select(`
           id,
           scheduled_date,
+          created_at,
           total_price,
           payment_status,
           provider:users!service_bookings_provider_id_fkey(name)
@@ -214,7 +215,7 @@ export const usePayments = () => {
 
       const formattedPayments = data.map(payment => ({
         id: payment.id,
-        date: new Date(payment.scheduled_date).toLocaleDateString(),
+        date: new Date(payment.created_at).toLocaleDateString(), // Use created_at for payment date
         researcher: payment.provider?.name || 'N/A',
         amount: payment.total_price,
         status: payment.payment_status,

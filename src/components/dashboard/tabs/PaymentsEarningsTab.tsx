@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,13 +19,22 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePayments } from "@/hooks/usePayments";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { Tables } from "@/integrations/supabase/types";
+import { Select as OperatorSelect, SelectContent as OperatorSelectContent, SelectItem as OperatorSelectItem, SelectTrigger as OperatorSelectTrigger, SelectValue as OperatorSelectValue } from "@/components/ui/select";
 
 const PaymentsEarningsTab = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("earnings");
   const [withdrawalAmount, setWithdrawalAmount] = useState("");
   const [paymentMethodType, setPaymentMethodType] = useState("");
   const [paymentDetails, setPaymentDetails] = useState<any>({});
   const [editingPaymentMethod, setEditingPaymentMethod] = useState<any>(null);
+  const [withdrawals, setWithdrawals] = useState<Tables<'withdrawals'>[]>([]);
+  const [withdrawalsLoading, setWithdrawalsLoading] = useState(false);
+  const [withdrawalPhone, setWithdrawalPhone] = useState("");
+  const [withdrawalOperator, setWithdrawalOperator] = useState("");
   const { toast } = useToast();
 
   const {
@@ -85,7 +93,7 @@ const PaymentsEarningsTab = () => {
       toast({ title: "Error", description: "Please fill all details", variant: "destructive" });
       return;
     }
-    addPaymentMethod({ type: paymentMethodType, name: paymentMethodType === 'bank' ? 'Bank Account' : 'Mobile Money', details: paymentDetails });
+    addPaymentMethod({ type: paymentMethodType as 'bank' | 'mobile', name: paymentMethodType === 'bank' ? 'Bank Account' : 'Mobile Money', details: paymentDetails });
     setPaymentMethodType("");
     setPaymentDetails({});
   };
@@ -100,14 +108,59 @@ const PaymentsEarningsTab = () => {
     setPaymentDetails({});
   };
 
-  const handleRequestWithdrawal = () => {
+  const handleRequestWithdrawal = async () => {
     const amount = parseFloat(withdrawalAmount);
     if (!amount || amount <= 0) {
       toast({ title: "Error", description: "Invalid amount", variant: "destructive" });
       return;
     }
-    requestWithdrawal(amount);
-    setWithdrawalAmount("");
+    if (!withdrawalPhone || !withdrawalOperator) {
+      toast({ title: "Error", description: "Please enter phone number and select operator", variant: "destructive" });
+      return;
+    }
+    if (amount > availableToWithdraw) {
+      toast({ title: "Error", description: "Insufficient balance (pending withdrawals included)", variant: "destructive" });
+      return;
+    }
+    try {
+      const response = await fetch("/api/mesomb-withdraw", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          receiver: withdrawalPhone,
+          amount,
+          service: withdrawalOperator,
+          customer: user.id,
+        }),
+      });
+      const result = await response.json();
+      if (result.operationSuccess && result.transactionSuccess) {
+        const { error } = await supabase.from('withdrawals').insert({
+          researcher_id: user.id,
+          amount,
+          status: 'requested',
+          notes: `Withdrawal via MeSomb (${withdrawalOperator}) to ${withdrawalPhone}`,
+        });
+        if (!error) {
+          toast({ title: "Withdrawal Requested", description: `Withdrawal of ${amount.toLocaleString()} XAF has been requested.` });
+          setWithdrawalAmount("");
+          setWithdrawalPhone("");
+          setWithdrawalOperator("");
+          const { data } = await supabase
+            .from('withdrawals')
+            .select('*')
+            .eq('researcher_id', user.id)
+            .order('requested_at', { ascending: false });
+          setWithdrawals(data || []);
+        } else {
+          toast({ title: "Error", description: "Failed to record withdrawal", variant: "destructive" });
+        }
+      } else {
+        toast({ title: "Error", description: "Withdrawal failed at payment provider", variant: "destructive" });
+      }
+    } catch (err) {
+      toast({ title: "Error", description: "Withdrawal failed", variant: "destructive" });
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -123,6 +176,28 @@ const PaymentsEarningsTab = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchWithdrawals = async () => {
+      if (!user) return;
+      setWithdrawalsLoading(true);
+      const { data, error } = await supabase
+        .from("withdrawals")
+        .select("*")
+        .eq("researcher_id", user.id)
+        .order("requested_at", { ascending: false });
+      if (!error) setWithdrawals(data || []);
+      setWithdrawalsLoading(false);
+    };
+    if (user) fetchWithdrawals();
+  }, [user]);
+
+  const totalWithdrawn = withdrawals.filter(w => w.status === "completed").reduce((sum, w) => sum + Number(w.amount), 0);
+  const pendingWithdrawals = withdrawals.filter(w => w.status === "pending" || w.status === "requested").reduce((sum, w) => sum + Number(w.amount), 0);
+  const availableToWithdraw = availableBalance - pendingWithdrawals;
+
+  // Calculate available balance as: Total Earnings - (Total Withdrawn + Pending Withdrawals)
+  const computedAvailableBalance = totalEarnings - (totalWithdrawn + pendingWithdrawals);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -132,6 +207,7 @@ const PaymentsEarningsTab = () => {
     );
   }
 
+  // Main render
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -157,11 +233,18 @@ const PaymentsEarningsTab = () => {
             <CreditCard className="h-4 w-4 mr-2" />
             Payment Methods
           </Button>
+          <Button 
+            variant={activeTab === "withdrawals" ? "default" : "outline"} 
+            onClick={() => setActiveTab("withdrawals")}
+          >
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Withdrawals
+          </Button>
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2">
@@ -173,7 +256,6 @@ const PaymentsEarningsTab = () => {
             </div>
           </CardContent>
         </Card>
-        
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2">
@@ -185,30 +267,40 @@ const PaymentsEarningsTab = () => {
             </div>
           </CardContent>
         </Card>
-        
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2">
               <CreditCard className="h-8 w-8 text-purple-600" />
               <div>
                 <p className="text-sm text-gray-600">Available Balance</p>
-                <p className="text-2xl font-bold">{availableBalance.toLocaleString()} XAF</p>
+                <p className="text-2xl font-bold">{computedAvailableBalance.toLocaleString()} XAF</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="h-8 w-8 text-green-700" />
+              <div>
+                <p className="text-sm text-gray-600">Total Withdrawn</p>
+                <p className="text-2xl font-bold">{totalWithdrawn.toLocaleString()} XAF</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Tab Content */}
       {activeTab === "earnings" && (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Earnings Overview</h3>
-            <Button onClick={() => handleExport("earnings")}>
+            <Button onClick={() => handleExport("earnings")}> 
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
           </div>
-          
           {earnings.map((earning) => (
             <Card key={earning.id}>
               <CardContent className="p-4">
@@ -234,12 +326,11 @@ const PaymentsEarningsTab = () => {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Transaction History</h3>
-            <Button onClick={() => handleExport("transactions")}>
+            <Button onClick={() => handleExport("transactions")}> 
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
           </div>
-          
           {transactions.map((transaction) => (
             <Card key={transaction.id}>
               <CardContent className="p-4">
@@ -261,33 +352,6 @@ const PaymentsEarningsTab = () => {
               </CardContent>
             </Card>
           ))}
-          
-          {/* Withdrawal Request */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Request Withdrawal</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="withdrawal-amount">Amount (XAF)</Label>
-                  <Input
-                    id="withdrawal-amount"
-                    type="number"
-                    placeholder="Enter amount"
-                    value={withdrawalAmount}
-                    onChange={(e) => setWithdrawalAmount(e.target.value)}
-                  />
-                  <p className="text-sm text-gray-500 mt-1">
-                    Available balance: {availableBalance.toLocaleString()} XAF
-                  </p>
-                </div>
-                <Button onClick={handleRequestWithdrawal} className="w-full">
-                  Request Withdrawal
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       )}
 
@@ -391,6 +455,69 @@ const PaymentsEarningsTab = () => {
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+
+      {activeTab === "withdrawals" && (
+        <div className="space-y-4">
+          <div className="w-full md:w-1/3 space-y-2">
+            <div className="bg-blue-100 rounded p-2 text-blue-800 mb-2">
+              Available Balance: <span className="font-bold">{computedAvailableBalance.toLocaleString()} XAF</span>
+            </div>
+            <Label htmlFor="withdrawal-amount">Amount (XAF)</Label>
+            <Input
+              id="withdrawal-amount"
+              type="number"
+              placeholder="Enter amount"
+              value={withdrawalAmount}
+              onChange={(e) => setWithdrawalAmount(e.target.value)}
+            />
+            <Label htmlFor="withdrawal-phone">Phone Number</Label>
+            <Input
+              id="withdrawal-phone"
+              type="tel"
+              placeholder="Enter phone number"
+              value={withdrawalPhone}
+              onChange={(e) => setWithdrawalPhone(e.target.value)}
+            />
+            <Label htmlFor="withdrawal-operator">Operator</Label>
+            <OperatorSelect value={withdrawalOperator} onValueChange={setWithdrawalOperator}>
+              <OperatorSelectTrigger>
+                <OperatorSelectValue placeholder="Select operator" />
+              </OperatorSelectTrigger>
+              <OperatorSelectContent>
+                <OperatorSelectItem value="MTN">MTN</OperatorSelectItem>
+                <OperatorSelectItem value="ORANGE">ORANGE</OperatorSelectItem>
+                
+              </OperatorSelectContent>
+            </OperatorSelect>
+            <Button onClick={handleRequestWithdrawal} className="w-full mt-2">
+              Request Withdrawal
+            </Button>
+          </div>
+          <div className="mt-4">
+            <h4 className="font-semibold mb-2">Withdrawal History</h4>
+            {withdrawalsLoading ? (
+              <div>Loading...</div>
+            ) : (
+              <div className="space-y-2">
+                {withdrawals.length === 0 && <div className="text-gray-500">No withdrawals yet.</div>}
+                {withdrawals.map((w) => (
+                  <Card key={w.id}>
+                    <CardContent className="p-4 flex justify-between items-center">
+                      <div>
+                        <div className="font-medium">{Number(w.amount).toLocaleString()} XAF</div>
+                        <div className="text-xs text-gray-500">Requested: {new Date(w.requested_at).toLocaleString()}</div>
+                        {w.processed_at && <div className="text-xs text-gray-400">Processed: {new Date(w.processed_at).toLocaleString()}</div>}
+                        {w.notes && <div className="text-xs text-gray-400">{w.notes}</div>}
+                      </div>
+                      <div>{getStatusBadge(w.status)}</div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
