@@ -119,7 +119,26 @@ const ConsultationServicesTab = () => {
           <CardContent>
             <AddServiceForm
               onSubmit={async (data) => {
-                await createService(data);
+                // Convert ServiceFormData to CreateServiceData
+                const createServiceData = {
+                  category: data.category,
+                  title: `${data.category} Service`, // Generate a default title
+                  description: data.description,
+                  duration_minutes: 60, // Default duration
+                  pricing: data.academicLevelPrices.map(price => ({
+                    academic_level: price.level === "Master's" ? "Masters" : price.level as any,
+                    price: price.price,
+                    currency: 'XAF'
+                  })),
+                  addons: data.addOns.map(addon => ({
+                    name: addon.name,
+                    description: '',
+                    price: addon.price,
+                    currency: 'XAF',
+                    is_active: true
+                  }))
+                };
+                await createService(createServiceData);
                 setShowAddService(false);
               }}
               onCancel={() => setShowAddService(false)}

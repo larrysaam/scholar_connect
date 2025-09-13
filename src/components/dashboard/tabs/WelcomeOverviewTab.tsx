@@ -59,7 +59,7 @@ const WelcomeOverviewTab = () => {
   return (
     <div className="space-y-4 sm:space-y-6 p-2 sm:p-0">
       {/* Welcome Message */}
-      <Card>
+      {/* <Card>
         <CardContent className="p-4 sm:p-6">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{getWelcomeMessage()}</h2>
           <p className="text-sm sm:text-base text-gray-600">
@@ -67,7 +67,7 @@ const WelcomeOverviewTab = () => {
             <span className="font-semibold text-green-600">{newMessagesCount} new messages</span> waiting for you.
           </p>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Weekly Overview Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

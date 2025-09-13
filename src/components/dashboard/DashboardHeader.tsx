@@ -47,8 +47,8 @@ const DashboardHeader = ({ userRole }) => {
 
   return (
     <div className="mb-8">
-      <h1 className="text-3xl font-bold mb-2">{getGreeting()}</h1>
-      <p className="text-gray-600">Manage your consultations and account</p>
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">{getGreeting()}</h1>
+      <p className="text-gray-600 text-sm sm:text-base">Manage your consultations and account</p>
     </div>
   );
 };

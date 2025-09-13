@@ -15,7 +15,8 @@ import {
   BookOpen,
   Loader2
 } from "lucide-react";
-import { ConsultationService, CreateServiceData } from "@/hooks/useConsultationServices";
+import { CreateServiceData } from "@/hooks/useConsultationServices";
+import { ConsultationService } from "@/types/consultations";
 import ServiceForm from "./ServiceForm";
 
 interface ServiceManagementProps {
@@ -102,41 +103,46 @@ const ServiceManagement = ({
   const handleFormDataChange = (newFormData: CreateServiceData) => {
     setFormData(newFormData);
   };
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-0">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-semibold">Service Management</h3>
-          <p className="text-sm text-gray-600">Create and manage your consultation services</p>
+      <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:justify-between sm:items-center">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">Service Management</h3>
+          <p className="text-xs sm:text-sm text-gray-600 mt-1">Create and manage your consultation services</p>
         </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm}>
-              <Plus className="h-4 w-4 mr-2" />
+            <Button onClick={resetForm} className="w-full sm:w-auto text-sm py-2 px-3 sm:px-4">
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
               Create Service
             </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create New Service</DialogTitle>
-              <DialogDescription>
+          </DialogTrigger>          <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto mx-2 sm:mx-0">
+            <DialogHeader className="pb-4">
+              <DialogTitle className="text-base sm:text-lg">Create New Service</DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm">
                 Set up a new consultation service with pricing and add-ons
               </DialogDescription>
             </DialogHeader>
             <ServiceForm 
               formData={formData} 
               onFormDataChange={handleFormDataChange}
-            />
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+            />            <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 pt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCreateDialog(false)}
+                className="w-full sm:w-auto text-sm order-2 sm:order-1"
+              >
                 Cancel
               </Button>
-              <Button onClick={handleCreateService} disabled={creating}>
+              <Button 
+                onClick={handleCreateService} 
+                disabled={creating}
+                className="w-full sm:w-auto text-sm order-1 sm:order-2"
+              >
                 {creating ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
                     Creating...
                   </>
                 ) : (
@@ -146,156 +152,177 @@ const ServiceManagement = ({
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
-
-      {/* Services List */}
-      <div className="space-y-4">
+      </div>      {/* Services List */}
+      <div className="space-y-3 sm:space-y-4">
         {services.length === 0 ? (
           <Card>
-            <CardContent className="text-center py-12">
-              <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No services yet</h3>
-              <p className="text-gray-600 mb-4">Create your first consultation service to get started</p>
-              <Button onClick={() => setShowCreateDialog(true)}>
-                <Plus className="h-4 w-4 mr-2" />
+            <CardContent className="text-center py-8 sm:py-12 px-4">
+              <BookOpen className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No services yet</h3>
+              <p className="text-sm sm:text-base text-gray-600 mb-4 max-w-md mx-auto">Create your first consultation service to get started</p>
+              <Button 
+                onClick={() => setShowCreateDialog(true)}
+                className="w-full sm:w-auto text-sm"
+              >
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                 Create Your First Service
               </Button>
             </CardContent>
-          </Card>
-        ) : (
+          </Card>        ) : (
           services.map((service) => (
             <Card key={service.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h4 className="text-lg font-semibold">{service.title}</h4>
-                      <Badge variant="outline">{service.category}</Badge>
-                      <Badge 
-                        variant={service.is_active ? "default" : "secondary"}
-                        className={service.is_active ? "bg-green-600" : ""}
-                      >
-                        {service.is_active ? "Active" : "Inactive"}
-                      </Badge>
+              <CardContent className="p-3 sm:p-4 md:p-6">
+                <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:gap-3 mb-3">
+                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{service.title}</h4>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="outline" className="text-xs">{service.category}</Badge>
+                        <Badge 
+                          variant={service.is_active ? "default" : "secondary"}
+                          className={`text-xs ${service.is_active ? "bg-green-600" : ""}`}
+                        >
+                          {service.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
                     </div>
                     
-                    <p className="text-gray-700 mb-4">{service.description}</p>
-                    
-                    <div className="flex items-center gap-6 text-sm text-gray-600">
+                    <p className="text-sm sm:text-base text-gray-700 mb-4 line-clamp-2 leading-relaxed">{service.description}</p>                    
+                    <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:gap-6 text-xs sm:text-sm text-gray-600">
                       <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {service.duration_minutes} minutes
+                        <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span className="truncate">{service.duration_minutes} minutes</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <DollarSign className="h-4 w-4" />
-                        {service.pricing.length} price levels
+                        <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span className="truncate">{service.pricing.length} price levels</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Plus className="h-4 w-4" />
-                        {service.addons.length} add-ons
+                        <Plus className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span className="truncate">{service.addons.length} add-ons</span>
                       </div>
                     </div>
 
                     {/* Pricing Display */}
-                    <div className="mt-4">
-                      <div className="flex flex-wrap gap-2">
-                        {service.pricing.map((price, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
+                    <div className="mt-3 sm:mt-4">
+                      <div className="flex flex-wrap gap-1 sm:gap-2">
+                        {service.pricing.slice(0, 3).map((price, index) => (
+                          <Badge key={index} variant="outline" className="text-xs truncate max-w-full">
                             {price.academic_level}: {price.price.toLocaleString()} {price.currency}
                           </Badge>
                         ))}
+                        {service.pricing.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{service.pricing.length - 3} more
+                          </Badge>
+                        )}
                       </div>
-                    </div>
-                  </div>
+                    </div>                  </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 ml-4">
+                  <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:gap-2 sm:ml-4 w-full sm:w-auto">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => onToggleStatus(service.id, !service.is_active)}
+                      className="w-full sm:w-auto text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
                     >
                       {service.is_active ? (
                         <>
-                          <EyeOff className="h-4 w-4 mr-1" />
-                          Deactivate
+                          <EyeOff className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                          <span className="hidden sm:inline">Deactivate</span>
+                          <span className="sm:hidden">Hide</span>
                         </>
                       ) : (
                         <>
-                          <Eye className="h-4 w-4 mr-1" />
-                          Activate
+                          <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                          <span className="hidden sm:inline">Activate</span>
+                          <span className="sm:hidden">Show</span>
                         </>
                       )}
                     </Button>
 
-                    <Dialog open={editingService?.id === service.id} onOpenChange={(open) => !open && setEditingService(null)}>
-                      <DialogTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEditService(service)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Edit Service</DialogTitle>
-                          <DialogDescription>
-                            Update your service details, pricing, and add-ons
-                          </DialogDescription>
-                        </DialogHeader>
-                        <ServiceForm 
-                          formData={formData} 
-                          onFormDataChange={handleFormDataChange}
-                        />
-                        <DialogFooter>
-                          <Button variant="outline" onClick={() => setEditingService(null)}>
-                            Cancel
-                          </Button>
-                          <Button onClick={handleUpdateService} disabled={updating}>
-                            {updating ? (
-                              <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Updating...
-                              </>
-                            ) : (
-                              'Update Service'
-                            )}
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Service</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete "{service.title}"? This action cannot be undone.
-                            All associated bookings will also be affected.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => onDeleteService(service.id)}
-                            className="bg-red-600 hover:bg-red-700"
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <Dialog open={editingService?.id === service.id} onOpenChange={(open) => !open && setEditingService(null)}>
+                        <DialogTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditService(service)}
+                            className="flex-1 sm:flex-none text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
                           >
-                            Delete Service
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                            <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-0" />
+                            <span className="sm:hidden">Edit</span>
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto mx-2 sm:mx-0">
+                          <DialogHeader className="pb-4">
+                            <DialogTitle className="text-base sm:text-lg">Edit Service</DialogTitle>
+                            <DialogDescription className="text-xs sm:text-sm">
+                              Update your service details, pricing, and add-ons
+                            </DialogDescription>
+                          </DialogHeader>                          <ServiceForm 
+                            formData={formData} 
+                            onFormDataChange={handleFormDataChange}
+                          />
+                          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 pt-4">
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setEditingService(null)}
+                              className="w-full sm:w-auto text-sm order-2 sm:order-1"
+                            >
+                              Cancel
+                            </Button>
+                            <Button 
+                              onClick={handleUpdateService} 
+                              disabled={updating}
+                              className="w-full sm:w-auto text-sm order-1 sm:order-2"
+                            >
+                              {updating ? (
+                                <>
+                                  <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
+                                  Updating...
+                                </>
+                              ) : (
+                                'Update Service'
+                              )}
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 sm:flex-none text-red-600 hover:text-red-700 text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
+                          >
+                            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-0" />
+                            <span className="sm:hidden">Delete</span>
+                          </Button>
+                        </AlertDialogTrigger>                        <AlertDialogContent className="w-[95vw] max-w-lg mx-2 sm:mx-0">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="text-base sm:text-lg">Delete Service</AlertDialogTitle>
+                            <AlertDialogDescription className="text-sm">
+                              Are you sure you want to delete "<span className="font-medium">{service.title}</span>"? This action cannot be undone.
+                              All associated bookings will also be affected.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+                            <AlertDialogCancel className="w-full sm:w-auto text-sm order-2 sm:order-1">
+                              Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => onDeleteService(service.id)}
+                              className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-sm order-1 sm:order-2"
+                            >
+                              Delete Service
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
                 </div>
               </CardContent>

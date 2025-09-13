@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
-import { CreateServiceData, AcademicLevelPrice, ServiceAddon } from "@/hooks/useConsultationServices";
+import { CreateServiceData } from "@/hooks/useConsultationServices";
+import { AcademicLevelPrice, ServiceAddon } from "@/types/consultations";
 
 interface ServiceFormProps {
   formData: CreateServiceData;
@@ -74,15 +75,15 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
   };
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4">
+    <div className="space-y-4 sm:space-y-6 p-1 sm:p-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <div>
-          <Label htmlFor="category">Service Category</Label>
+          <Label htmlFor="category" className="text-sm font-medium">Service Category</Label>
           <Select
             value={formData.category}
             onValueChange={handleCategoryChange}
           >
-            <SelectTrigger>
+            <SelectTrigger className="text-sm">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
@@ -94,54 +95,57 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
           </Select>
         </div>
         <div>
-          <Label htmlFor="duration">Duration (minutes)</Label>
+          <Label htmlFor="duration" className="text-sm font-medium">Duration (minutes)</Label>
           <Input
             id="duration"
             type="number"
             value={formData.duration_minutes}
             onChange={handleDurationChange}
             placeholder="60"
+            className="text-sm"
           />
         </div>
       </div>
 
       <div>
-        <Label htmlFor="title">Service Title</Label>
+        <Label htmlFor="title" className="text-sm font-medium">Service Title</Label>
         <Input
           id="title"
           value={formData.title}
           onChange={handleTitleChange}
           placeholder="e.g., Research Methodology Consultation"
+          className="text-sm"
         />
       </div>
 
       <div>
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description" className="text-sm font-medium">Description</Label>
         <Textarea
           id="description"
           value={formData.description}
           onChange={handleDescriptionChange}
           placeholder="Describe what this service includes..."
           rows={3}
+          className="text-sm resize-none"
         />
       </div>
 
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <Label>Pricing by Academic Level</Label>
-          <Button type="button" onClick={addPricing} size="sm" variant="outline">
-            <Plus className="h-4 w-4 mr-2" />
+        <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4">
+          <Label className="text-sm font-medium">Pricing by Academic Level</Label>
+          <Button type="button" onClick={addPricing} size="sm" variant="outline" className="w-full sm:w-auto text-xs sm:text-sm">
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
             Add Level
           </Button>
         </div>
         <div className="space-y-3">
           {formData.pricing.map((pricing, index) => (
-            <div key={`pricing-${index}`} className="flex items-center gap-3 p-3 border rounded-lg">
+            <div key={`pricing-${index}`} className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center gap-2 sm:gap-3 p-3 border rounded-lg">
               <Select
                 value={pricing.academic_level}
                 onValueChange={(value: any) => updatePricing(index, 'academic_level', value)}
               >
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-40 text-xs sm:text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -151,70 +155,75 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
                   <SelectItem value="Postdoc">Postdoc</SelectItem>
                 </SelectContent>
               </Select>
-              <Input
-                type="number"
-                value={pricing.price}
-                onChange={(e) => updatePricing(index, 'price', parseFloat(e.target.value) || 0)}
-                placeholder="Price"
-                className="w-32"
-              />
-              <span className="text-sm text-gray-600">XAF</span>
-              {formData.pricing.length > 1 && (
-                <Button
-                  type="button"
-                  onClick={() => removePricing(index)}
-                  size="sm"
-                  variant="ghost"
-                  className="text-red-600"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
+              <div className="flex items-center gap-2 flex-1 sm:flex-none">
+                <Input
+                  type="number"
+                  value={pricing.price}
+                  onChange={(e) => updatePricing(index, 'price', parseFloat(e.target.value) || 0)}
+                  placeholder="Price"
+                  className="flex-1 sm:w-32 text-xs sm:text-sm"
+                />
+                <span className="text-xs sm:text-sm text-gray-600 flex-shrink-0">XAF</span>
+                {formData.pricing.length > 1 && (
+                  <Button
+                    type="button"
+                    onClick={() => removePricing(index)}
+                    size="sm"
+                    variant="ghost"
+                    className="text-red-600 flex-shrink-0 px-2"
+                  >
+                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           ))}
         </div>
       </div>
 
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <Label>Add-ons (Optional)</Label>
-          <Button type="button" onClick={addAddon} size="sm" variant="outline">
-            <Plus className="h-4 w-4 mr-2" />
+        <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4">
+          <Label className="text-sm font-medium">Add-ons (Optional)</Label>
+          <Button type="button" onClick={addAddon} size="sm" variant="outline" className="w-full sm:w-auto text-xs sm:text-sm">
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
             Add Add-on
           </Button>
         </div>
         <div className="space-y-3">
           {formData.addons?.map((addon, index) => (
             <div key={`addon-${index}`} className="p-3 border rounded-lg space-y-3">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center gap-2 sm:gap-3">
                 <Input
                   value={addon.name}
                   onChange={(e) => updateAddon(index, 'name', e.target.value)}
                   placeholder="Add-on name"
-                  className="flex-1"
+                  className="flex-1 text-xs sm:text-sm"
                 />
-                <Input
-                  type="number"
-                  value={addon.price}
-                  onChange={(e) => updateAddon(index, 'price', parseFloat(e.target.value) || 0)}
-                  placeholder="Price"
-                  className="w-32"
-                />
-                <span className="text-sm text-gray-600">XAF</span>
-                <Button
-                  type="button"
-                  onClick={() => removeAddon(index)}
-                  size="sm"
-                  variant="ghost"
-                  className="text-red-600"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    value={addon.price}
+                    onChange={(e) => updateAddon(index, 'price', parseFloat(e.target.value) || 0)}
+                    placeholder="Price"
+                    className="w-24 sm:w-32 text-xs sm:text-sm"
+                  />
+                  <span className="text-xs sm:text-sm text-gray-600 flex-shrink-0">XAF</span>
+                  <Button
+                    type="button"
+                    onClick={() => removeAddon(index)}
+                    size="sm"
+                    variant="ghost"
+                    className="text-red-600 flex-shrink-0 px-2"
+                  >
+                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                  </Button>
+                </div>
               </div>
               <Input
                 value={addon.description || ''}
                 onChange={(e) => updateAddon(index, 'description', e.target.value)}
                 placeholder="Add-on description (optional)"
+                className="text-xs sm:text-sm"
               />
             </div>
           ))}
