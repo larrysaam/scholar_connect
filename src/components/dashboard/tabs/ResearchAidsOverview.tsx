@@ -177,16 +177,15 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
   return (
     <div className="space-y-6">
       {/* Welcome Message */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
+      <Card>        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">{stats.title && stats.name ? `Welcome, ${stats.title} ${stats.name}!` : getWelcomeMessage()}</h2>
-              <p className="text-gray-600 mt-1">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{stats.title && stats.name ? `Welcome, ${stats.title} ${stats.name}!` : getWelcomeMessage()}</h2>
+              <p className="text-gray-600 mt-1 text-sm sm:text-base">
                 You have <span className="font-semibold text-orange-600">{pendingAppointments} pending appointment{pendingAppointments === 1 ? '' : 's'}</span>.
               </p>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <span className="text-sm font-medium">Available</span>
               <Switch
                 checked={isAvailable}
@@ -202,21 +201,20 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
       </Card>
 
       {/* Profile Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-3">
-            <Avatar className="h-12 w-12">
+      <Card>        <CardHeader className="pb-2 sm:pb-6">
+          <CardTitle className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
+            <Avatar className="h-10 w-10 sm:h-12 sm:w-12 mx-auto sm:mx-0">
               <AvatarImage src={stats.avatar} alt={stats.name} />
               <AvatarFallback>{stats.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
-            <div>
-              <h3 className="text-xl font-semibold">{stats.title ? `${stats.title} ${stats.name}` : stats.name}</h3>
+            <div className="text-center sm:text-left">
+              <h3 className="text-lg sm:text-xl font-semibold">{stats.title ? `${stats.title} ${stats.name}` : stats.name}</h3>
               <p className="text-sm text-gray-600">{stats.title}</p>
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <CardContent className="pt-0 sm:pt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="text-center">
               <div className="flex items-center justify-center space-x-1 mb-2">
                 {[...Array(5)].map((_, i) => (
@@ -236,12 +234,10 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
             </div>
           </div>
         </CardContent>
-      </Card>
-
-      {/* Weekly Snapshot */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      </Card>      {/* Weekly Snapshot */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-3">
               <div className="p-3 bg-blue-100 rounded-lg">
                 <Briefcase className="h-6 w-6 text-blue-600" />
@@ -252,58 +248,54 @@ const ResearchAidsOverview = ({ setActiveTab }: ResearchAidsOverviewProps) => {
               </div>
             </div>
           </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
+        </Card>        <Card>
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-3">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <MessageSquare className="h-6 w-6 text-green-600" />
+              <div className="p-2 sm:p-3 bg-green-100 rounded-lg">
+                <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
               </div>
               <div>
                 <p className="text-sm text-gray-600">New Messages</p>
-                <p className="text-2xl font-bold">{stats.newMessages}</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.newMessages}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-3">
-              <div className="p-3 bg-yellow-100 rounded-lg">
-                <DollarSign className="h-6 w-6 text-yellow-600" />
+              <div className="p-2 sm:p-3 bg-yellow-100 rounded-lg">
+                <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" />
               </div>
               <div>
                 <p className="text-sm text-gray-600">Total Earnings</p>
-                <p className="text-2xl font-bold">{stats.totalEarnings} XAF</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.totalEarnings} XAF</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-3">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-purple-600" />
+              <div className="p-2 sm:p-3 bg-purple-100 rounded-lg">
+                <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
               </div>
               <div>
                 <p className="text-sm text-gray-600">Profile Views</p>
-                <p className="text-2xl font-bold">{stats.profileViews}</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.profileViews}</p>
               </div>
             </div>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Quick Actions */}
+      </div>      {/* Quick Actions */}
       <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
+        <CardHeader className="pb-2 sm:pb-6">
+          <CardTitle className="text-lg sm:text-xl">Quick Actions</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <CardContent className="pt-0 sm:pt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Button className="w-full" onClick={handleViewJobRequests}>
               View Job Requests
             </Button>

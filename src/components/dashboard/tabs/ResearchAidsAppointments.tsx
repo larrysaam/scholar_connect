@@ -423,10 +423,9 @@ const ResearchAidsAppointments = () => {
     );
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Appointments</h2>
+  return (    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+        <h2 className="text-xl sm:text-2xl font-bold">Appointments</h2>
         <div className="flex space-x-2 items-center">
           <label htmlFor="statusFilter" className="text-sm font-medium">Status:</label>
           <select
@@ -481,8 +480,7 @@ const ResearchAidsAppointments = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 mb-4">{appointment.description}</p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <p className="text-gray-700 mb-4">{appointment.description}</p>                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                   <div className="flex items-center space-x-2 text-sm">
                     <Calendar className="h-4 w-4 text-gray-500" />
                     <span>{formatDate(appointment.scheduled_date)}</span>

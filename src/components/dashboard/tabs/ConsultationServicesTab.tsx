@@ -57,7 +57,6 @@ const ConsultationServicesTab = () => {
       toast({
         title: 'Booking Completed',
         description: 'The booking has been marked as completed.',
-        variant: 'success',
       });
     } else {
       toast({
@@ -78,27 +77,38 @@ const ConsultationServicesTab = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <ServiceInstructions />
+    <div className="space-y-3 sm:space-y-4 md:space-y-6 p-2 sm:p-4 md:p-0">
+      <div className="block md:hidden">
+        <ServiceInstructions />
+      </div>
 
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Consultation Services</h2>
-          <p className="text-gray-600">Manage your service offerings, pricing, and bookings</p>
+      <div className="flex flex-col space-y-3 sm:space-y-4 md:flex-row md:justify-between md:items-start md:space-y-0">
+        <div className="flex-1">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Consultation Services</h2>
+          <p className="text-xs sm:text-sm md:text-base text-gray-600 mt-1">Manage your service offerings, pricing, and bookings</p>
         </div>
-        <div className="flex items-center gap-4">
-          <Button onClick={() => setShowAddService(true)} variant="default" className="flex items-center gap-2">
-            <Plus className="h-4 w-4" /> Add Service
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+          <Button 
+            onClick={() => setShowAddService(true)} 
+            variant="default" 
+            className="flex items-center justify-center gap-2 w-full sm:w-auto text-sm py-2 px-3 sm:px-4"
+          >
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4" /> 
+            <span className="font-medium">Add Service</span>
           </Button>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Badge variant="outline" className="bg-green-50">
-              {activeServices.length} Active Services
+          <div className="flex flex-wrap items-center justify-start sm:justify-center gap-2 text-xs sm:text-sm">
+            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 px-2 py-1">
+              <span className="hidden sm:inline">Active: </span>{activeServices.length}
             </Badge>
-            <Badge variant="outline" className="bg-blue-50">
-              {pendingBookings.length} Pending Bookings
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 px-2 py-1">
+              <span className="hidden sm:inline">Pending: </span>{pendingBookings.length}
             </Badge>
           </div>
         </div>
+      </div>
+
+      <div className="hidden md:block">
+        <ServiceInstructions />
       </div>
 
       {showAddService && (
@@ -120,22 +130,37 @@ const ConsultationServicesTab = () => {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="services" className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4" />
-            Services ({services.length})
+        <TabsList className="grid w-full grid-cols-3 h-auto p-1">
+          <TabsTrigger 
+            value="services" 
+            className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5 px-1 sm:px-3 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+          >
+            <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+            <div className="flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-1">
+              <span className="font-medium">Services</span>
+              <span className="text-xs text-gray-500">({services.length})</span>
+            </div>
           </TabsTrigger>
-          <TabsTrigger value="bookings" className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            Bookings ({bookings.length})
+          <TabsTrigger 
+            value="bookings" 
+            className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5 px-1 sm:px-3 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+          >
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+            <div className="flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-1">
+              <span className="font-medium">Bookings</span>
+              <span className="text-xs text-gray-500">({bookings.length})</span>
+            </div>
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Analytics
+          <TabsTrigger 
+            value="analytics" 
+            className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5 px-1 sm:px-3 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+          >
+            <Users className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="font-medium">Analytics</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="services" className="space-y-6">
+        <TabsContent value="services" className="space-y-3 sm:space-y-4 md:space-y-6 mt-3 sm:mt-4 md:mt-6">
           <ServiceManagement
             services={services}
             creating={creating}
@@ -147,7 +172,7 @@ const ConsultationServicesTab = () => {
           />
         </TabsContent>
 
-        <TabsContent value="bookings" className="space-y-6">
+        <TabsContent value="bookings" className="space-y-3 sm:space-y-4 md:space-y-6 mt-3 sm:mt-4 md:mt-6">
           <BookingManagement
             bookings={bookings}
             services={services}
@@ -156,90 +181,91 @@ const ConsultationServicesTab = () => {
           />
         </TabsContent>
 
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card>
-              <CardContent className="p-6">
+        <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+            <Card className="hover:shadow-md transition-shadow">
+              <CardContent className="p-3 sm:p-4 md:p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Services</p>
-                    <p className="text-2xl font-bold">{services.length}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total Services</p>
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mt-1">{services.length}</p>
                   </div>
-                  <BookOpen className="h-8 w-8 text-blue-600" />
+                  <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-blue-600 flex-shrink-0 ml-2" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-6">
+            <Card className="hover:shadow-md transition-shadow">
+              <CardContent className="p-3 sm:p-4 md:p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Active Services</p>
-                    <p className="text-2xl font-bold">{activeServices.length}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Active Services</p>
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mt-1">{activeServices.length}</p>
                   </div>
-                  <Eye className="h-8 w-8 text-green-600" />
+                  <Eye className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-green-600 flex-shrink-0 ml-2" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-6">
+            <Card className="hover:shadow-md transition-shadow">
+              <CardContent className="p-3 sm:p-4 md:p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Bookings</p>
-                    <p className="text-2xl font-bold">{bookings.length}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total Bookings</p>
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mt-1">{bookings.length}</p>
                   </div>
-                  <Calendar className="h-8 w-8 text-purple-600" />
+                  <Calendar className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-purple-600 flex-shrink-0 ml-2" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-6">
+            <Card className="hover:shadow-md transition-shadow">
+              <CardContent className="p-3 sm:p-4 md:p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Upcoming Sessions</p>
-                    <p className="text-2xl font-bold">{upcomingBookings.length}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Upcoming Sessions</p>
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mt-1">{upcomingBookings.length}</p>
                   </div>
-                  <Clock className="h-8 w-8 text-orange-600" />
+                  <Clock className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-orange-600 flex-shrink-0 ml-2" />
                 </div>
               </CardContent>
             </Card>
           </div>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Service Performance</CardTitle>
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="text-lg sm:text-xl font-semibold">Service Performance</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="space-y-3 sm:space-y-4">
                 {services.map((service) => {
                   const serviceBookings = bookings.filter(b => b.service_id === service.id);
                   const completedBookings = serviceBookings.filter(b => b.status === 'completed');
                   const totalRevenue = completedBookings.reduce((sum, booking) => sum + booking.total_price, 0);
 
                   return (
-                    <div key={service.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <h4 className="font-medium">{service.title}</h4>
-                        <p className="text-sm text-gray-600">{service.category}</p>
+                    <div key={service.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                      <div className="flex-1 min-w-0 mb-3 sm:mb-0 sm:mr-4">
+                        <h4 className="font-medium text-sm sm:text-base text-gray-900 truncate">{service.title}</h4>
+                        <p className="text-xs sm:text-sm text-gray-600 mt-1">{service.category}</p>
                       </div>
-                      <div className="flex items-center gap-6 text-sm">
-                        <div className="text-center">
-                          <p className="font-medium">{serviceBookings.length}</p>
-                          <p className="text-gray-600">Total Bookings</p>
+                      
+                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm">
+                        <div className="text-center min-w-0">
+                          <p className="font-semibold text-gray-900">{serviceBookings.length}</p>
+                          <p className="text-gray-600 truncate">Total</p>
                         </div>
-                        <div className="text-center">
-                          <p className="font-medium">{completedBookings.length}</p>
-                          <p className="text-gray-600">Completed</p>
+                        <div className="text-center min-w-0">
+                          <p className="font-semibold text-gray-900">{completedBookings.length}</p>
+                          <p className="text-gray-600 truncate">Completed</p>
                         </div>
-                        <div className="text-center">
-                          <p className="font-medium">{totalRevenue.toLocaleString()} XAF</p>
-                          <p className="text-gray-600">Revenue</p>
+                        <div className="text-center min-w-0">
+                          <p className="font-semibold text-gray-900">{totalRevenue.toLocaleString()}</p>
+                          <p className="text-gray-600 truncate">XAF</p>
                         </div>
                         <Badge 
                           variant={service.is_active ? "default" : "secondary"}
-                          className={service.is_active ? "bg-green-600" : ""}
+                          className={`text-xs ${service.is_active ? "bg-green-600 hover:bg-green-700" : ""} flex-shrink-0`}
                         >
                           {service.is_active ? "Active" : "Inactive"}
                         </Badge>
@@ -249,8 +275,20 @@ const ConsultationServicesTab = () => {
                 })}
                 
                 {services.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    No services created yet. Create your first service to see analytics.
+                  <div className="text-center py-6 sm:py-8">
+                    <div className="max-w-md mx-auto">
+                      <BookOpen className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-sm sm:text-base font-medium text-gray-900 mb-2">No services created yet</h3>
+                      <p className="text-xs sm:text-sm text-gray-500 mb-4">Create your first service to start seeing analytics and performance data.</p>
+                      <Button 
+                        onClick={() => setShowAddService(true)} 
+                        size="sm" 
+                        className="text-xs sm:text-sm"
+                      >
+                        <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                        Add Your First Service
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>

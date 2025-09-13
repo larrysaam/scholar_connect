@@ -71,19 +71,16 @@ const ResearchAidsTasksTab = () => {
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
-
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Research Aid Tasks</h2>
+    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 space-y-4 sm:space-y-0">
+        <h2 className="text-lg sm:text-xl font-semibold">Research Aid Tasks</h2>
         <Button className="bg-blue-600 hover:bg-blue-700">
           <Plus className="h-4 w-4 mr-2" />
           Post New Task
         </Button>
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="flex space-x-4 mb-6 border-b">
+      </div>      {/* Tab Navigation */}
+      <div className="flex space-x-2 sm:space-x-4 mb-6 border-b overflow-x-auto">
         <button
           onClick={() => setActiveTab("active")}
           className={`pb-2 px-1 font-medium text-sm ${
@@ -126,8 +123,7 @@ const ResearchAidsTasksTab = () => {
                   </div>
                 </CardHeader>
                 
-                <CardContent>
-                  <div className="flex items-center justify-between">
+                <CardContent>                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                     <div className="flex items-center space-x-3">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={task.researchAid.image} alt={task.researchAid.name} />

@@ -91,9 +91,8 @@ const ProfileTab = () => {
   if (loading) {
     return <div className="p-8 text-center text-gray-500">Loading profile...</div>;
   }
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-0">
       <ProfileTabHeader
         isEditing={isEditing}
         onEditToggle={() => setIsEditing(true)}

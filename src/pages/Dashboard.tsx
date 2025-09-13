@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
@@ -32,7 +33,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNotifications } from "@/hooks/useNotifications";
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(() => searchParams.get("tab") || "overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [userName, setUserName] = useState("");
 
@@ -89,6 +91,8 @@ const Dashboard = () => {
   const handleTabChange = (tab: string) => {
     console.log("Dashboard tab change requested:", tab);
     setActiveTab(tab);
+    // Update URL parameters to reflect the current tab
+    setSearchParams({ tab });
   };
 
   const renderTabContent = () => {
@@ -126,7 +130,7 @@ const Dashboard = () => {
       case "discussion":
         return <DiscussionTab />;
       case "notifications":
-        return <NotificationsTab setActiveTab={setActiveTab} />;
+        return <NotificationsTab setActiveTab={handleTabChange} />;
       case "research-summary":
         return <ResearchSummaryTab />;
       case "thesis-information":
@@ -173,8 +177,8 @@ const Dashboard = () => {
           )}
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Sidebar */}
-            <div className="md:col-span-1">
+            {/* Sidebar - hidden on mobile, visible on tablet/desktop */}
+            <div className="hidden md:block md:col-span-1">
               <DashboardSidebar 
                 activeTab={activeTab} 
                 setActiveTab={handleTabChange} 
@@ -183,8 +187,8 @@ const Dashboard = () => {
               />
             </div>
             
-            {/* Main content */}
-            <div className="md:col-span-3">
+            {/* Main content - full width on mobile, 3/4 width on tablet/desktop */}
+            <div className="col-span-1 md:col-span-3">
               {/* Notifications Banner */}
               <NotificationsBanner />
               

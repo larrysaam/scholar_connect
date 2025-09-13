@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
@@ -22,10 +22,12 @@ import NotificationsTab from "@/components/dashboard/tabs/NotificationsTab";
 import StudentPerformanceTab from "@/components/dashboard/tabs/StudentPerformanceTab";
 import StudentMessagesTab from "@/components/dashboard/tabs/StudentMessagesTab";
 import StudentAIAssistantTab from "@/components/dashboard/tabs/StudentAIAssistantTab";
+import StudentJobApplicationsTab from "@/components/dashboard/tabs/StudentJobApplicationsTab";
 import PostJobTab from "@/components/dashboard/tabs/PostJobTab";
 
 const StudentDashboard = () => {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(() => searchParams.get("tab") || "overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
   const { profile } = useAuth();
@@ -85,7 +87,7 @@ const StudentDashboard = () => {
       case "performance":
         return <StudentPerformanceTab />;
       case "notifications":
-        return <NotificationsTab setActiveTab={setActiveTab} />;
+        return <NotificationsTab setActiveTab={handleTabChange} />;
       case "profile":
         return <ProfileTab />;
       case "documents":
@@ -125,15 +127,18 @@ const StudentDashboard = () => {
           )}
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="md:col-span-1">
+            {/* Sidebar - hidden on mobile, visible on tablet/desktop */}
+            <div className="hidden md:block md:col-span-1">
               <DashboardSidebar 
                 activeTab={activeTab} 
                 setActiveTab={handleTabChange} 
                 userRole="student"
+                notificationCount={0}
               />
             </div>
             
-            <div className="md:col-span-3">
+            {/* Main content - full width on mobile, 3/4 width on tablet/desktop */}
+            <div className="col-span-1 md:col-span-3">
               <NotificationsBanner />
               
               <div className="mt-4">
@@ -146,7 +151,7 @@ const StudentDashboard = () => {
         </div>
       </main>
       
-      <IntelligentChatAssistant userRole="student" currentTab={activeTab} />
+      <IntelligentChatAssistant userType="student" currentTab={activeTab} />
       
       <Footer />
     </div>

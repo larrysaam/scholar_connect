@@ -122,15 +122,15 @@ const FindResearcherTab = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-100">
-        <h2 className="text-2xl font-bold mb-2 text-gray-900">Find Expert Researchers</h2>
-        <p className="text-gray-600">Connect with verified academic experts for personalized research guidance</p>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 sm:p-6 rounded-lg border border-blue-100">
+        <h2 className="text-xl sm:text-2xl font-bold mb-2 text-gray-900">Find Expert Researchers</h2>
+        <p className="text-sm sm:text-base text-gray-600">Connect with verified academic experts for personalized research guidance</p>
       </div>
 
       {/* Enhanced Search and Filters */}
       <Card className="border-blue-100 shadow-sm">
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <Search className="h-5 w-5 text-blue-500" />
@@ -142,7 +142,7 @@ const FindResearcherTab = () => {
               />
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Select value={selectedField} onValueChange={setSelectedField}>
                 <SelectTrigger className="border-blue-200">
                   <SelectValue placeholder="Research Field" />
@@ -193,7 +193,7 @@ const FindResearcherTab = () => {
       </Card>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="text-center border-blue-100">
           <CardContent className="p-4">
             <Users className="h-8 w-8 text-blue-500 mx-auto mb-2" />

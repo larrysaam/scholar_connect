@@ -245,29 +245,29 @@ const VerificationTab = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <Shield className="h-5 w-5 text-blue-600" />
-            <span>Verification Status</span>
+            <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+            <span className="text-lg sm:text-xl">Verification Status</span>
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm">
             Complete your verification to build trust with students and enhance your profile visibility.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div>
-              <div className="flex justify-between text-sm mb-2">
+              <div className="flex justify-between text-xs sm:text-sm mb-2">
                 <span>Overall Progress</span>
                 <span>{verificationProgress.toFixed(0)}% Complete</span>
               </div>
-              <Progress value={verificationProgress} className="h-3" aria-valuenow={verificationProgress} aria-valuemin={0} aria-valuemax={100} aria-label="Verification Progress" />
+              <Progress value={verificationProgress} className="h-2 sm:h-3" aria-valuenow={verificationProgress} aria-valuemin={0} aria-valuemax={100} aria-label="Verification Progress" />
             </div>
-            <div className="flex items-center justify-between mt-4">
-              <span className="font-medium">Verification Status</span>
-              <Badge className={allCategoriesVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-4">
+              <span className="font-medium text-sm sm:text-base">Verification Status</span>
+              <Badge className={`text-xs w-fit ${allCategoriesVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
                 {allCategoriesVerified ? 'VERIFIED' : 'INCOMPLETE'}
               </Badge>
             </div>
@@ -276,7 +276,7 @@ const VerificationTab = () => {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {verificationItems.map((item) => {
           const categoryStatus = getCategoryStatus(item.key);
           const { color, icon } = getStatusInfo(categoryStatus);
@@ -284,73 +284,76 @@ const VerificationTab = () => {
           return (
             <Card key={item.key}>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg flex items-center space-x-2">
-                    <item.icon className="h-5 w-5" />
-                    <span>{item.title}</span>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                  <CardTitle className="text-base sm:text-lg flex items-center space-x-2">
+                    <item.icon className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                    <span className="truncate">{item.title}</span>
                   </CardTitle>
                   <div className="flex items-center space-x-2">
                     {icon}
-                    <Badge className={color}>
+                    <Badge className={`${color} text-xs`}>
                       {categoryStatus.replace('_', ' ').toUpperCase()}
                     </Badge>
                   </div>
                 </div>
-                <CardDescription>{item.description}</CardDescription>
+                <CardDescription className="text-sm">{item.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {item.hasOtherField && (
                     <div className="space-y-2">
-                      <Label htmlFor="other-employment">Other Employment Details</Label>
+                      <Label htmlFor="other-employment" className="text-sm">Other Employment Details</Label>
                       <Input
                         id="other-employment"
                         value={otherEmployment}
                         onChange={(e) => setOtherEmployment(e.target.value)}
                         placeholder="Enter other employment information..."
+                        className="text-sm"
                       />
-                      <Button size="sm" onClick={handleSaveOtherEmployment}>Save Details</Button>
+                      <Button size="sm" onClick={handleSaveOtherEmployment} className="text-xs">Save Details</Button>
                     </div>
                   )}
                   
                   <div>
                     <h4 className="font-medium text-sm mb-2">Required Documents:</h4>
-                    <div className="space-y-2">
+                    <div className="space-y-2 sm:space-y-3">
                       {item.documents.map((doc) => {
                         const docData = parsedVerifications?.[item.key]?.documents.find(d => d.documentType === doc);
                         const isLoading = loadingStates[`${item.key}-${doc}`];
                         const statusInfo = getStatusInfo(docData?.status || 'not_started');
 
                         return (
-                          <div key={doc} className="flex items-center justify-between p-2 border rounded">
-                            <div className="flex-1">
-                              <span className="text-sm flex items-center space-x-2">
-                                {docData ? statusInfo.icon : <FileText className="h-4 w-4" />}
-                                <span>{doc}</span>
+                          <div key={doc} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-2 border rounded gap-2 sm:gap-0">
+                            <div className="flex-1 min-w-0">
+                              <span className="text-xs sm:text-sm flex items-center space-x-2">
+                                {docData ? statusInfo.icon : <FileText className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />}
+                                <span className="truncate">{doc}</span>
                               </span>
                               {docData?.fileName && (
                                 <div className="mt-1 text-xs text-gray-600 space-y-1">
                                   {getFilePreview(docData.fileUrl!, docData.fileName)}
-                                  <a href={docData.fileUrl} target="_blank" rel="noopener noreferrer" className="hover:underline block">
+                                  <a href={docData.fileUrl} target="_blank" rel="noopener noreferrer" className="hover:underline block truncate">
                                     {docData.fileName}
                                   </a>
-                                  <Badge variant="outline" className={`ml-2 ${statusInfo.color}`}>{docData.status}</Badge>
-                                  <Progress value={docData.status === 'verified' ? 100 : docData.status === 'pending' ? 50 : 0} className="h-2 mt-1 w-32" />
+                                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                                    <Badge variant="outline" className={`${statusInfo.color} text-xs w-fit`}>{docData.status}</Badge>
+                                    <Progress value={docData.status === 'verified' ? 100 : docData.status === 'pending' ? 50 : 0} className="h-2 w-full sm:w-32" />
+                                  </div>
                                 </div>
                               )}
                               {docData?.status === 'rejected' && docData.rejectionReason && (
                                 <p className="text-xs text-red-600 mt-1">Reason: {docData.rejectionReason}</p>
                               )}
                             </div>
-                            <div className="flex items-center space-x-1">
+                            <div className="flex items-center space-x-1 sm:ml-2">
                               <Button 
                                 size="sm" 
                                 variant="outline"
                                 onClick={() => handleFileUpload(item.key, doc)}
-                                className="ml-2"
+                                className="text-xs w-full sm:w-auto"
                                 disabled={isLoading || !isProfileOwner}
                               >
-                                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                {isLoading ? <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" /> : <Upload className="h-3 w-3 sm:h-4 sm:w-4" />}
                                 <span className="ml-1">{docData ? 'Replace' : 'Upload'}</span>
                               </Button>
                               {docData && (
@@ -361,7 +364,7 @@ const VerificationTab = () => {
                                   onClick={() => handleRemoveFile(item.key, doc)}
                                   disabled={isLoading || !isProfileOwner}
                                 >
-                                  <XCircle className="h-4 w-4" />
+                                  <XCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                                 </Button>
                               )}
                             </div>

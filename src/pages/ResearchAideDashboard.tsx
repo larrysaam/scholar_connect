@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
@@ -21,10 +22,18 @@ import ResearchAidPaymentsTab from "@/components/dashboard/tabs/ResearchAidPayme
 import { useNotifications } from "@/hooks/useNotifications";
 
 const ResearchAideDashboard = () => {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(() => searchParams.get("tab") || "overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { profile } = useAuth();
   const { unreadCount } = useNotifications();
+
+  const handleTabChange = (tab: string) => {
+    console.log("Research Aide Dashboard tab change requested:", tab);
+    setActiveTab(tab);
+    // Update URL parameters to reflect the current tab
+    setSearchParams({ tab });
+  };
 
   const getWelcomeMessage = () => {
     if (!profile?.name) return "Research Aid Dashboard";
@@ -71,9 +80,8 @@ const ResearchAideDashboard = () => {
       case "job-requests":
         return <ResearchAidJobRequestsTab />;
       case "messages":
-        return <DiscussionTab />;
-      case "appointments":
-        return <UpcomingTab />;
+        return <DiscussionTab />;      case "appointments":
+        return <UpcomingTab userRole="researcher" />;
       case "files-deliverables":
         return <DocumentsTab />;
       case "payments-earnings":
@@ -83,17 +91,16 @@ const ResearchAideDashboard = () => {
       case "tasks":
         return <ResearchAidsTasksTab />;
       case "upcoming":
-        return <UpcomingTab />;
+        return <UpcomingTab userRole="researcher" />;
       case "past":
-        return <PastTab />;
+        return <PastTab userRole="researcher" />;
       case "payments":
         return <PaymentsTab />;
       case "quality":
         return <ResearchAidQualityTab />;
       case "discussion":
-        return <DiscussionTab />;
-      case "notifications":
-        return <NotificationsTab setActiveTab={setActiveTab} />;
+        return <DiscussionTab />;      case "notifications":
+        return <NotificationsTab setActiveTab={handleTabChange} />;
       case "profile":
         return <ProfileTab />;
       case "documents":
@@ -129,20 +136,19 @@ const ResearchAideDashboard = () => {
                 </CardContent>
               </Card>
             </div>
-          )}
-          
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="md:col-span-1">
+          )}          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {/* Sidebar - hidden on mobile, visible on tablet/desktop */}            <div className="hidden md:block md:col-span-1">
               <DashboardSidebar 
                 activeTab={activeTab} 
-                setActiveTab={setActiveTab} 
+                setActiveTab={handleTabChange} 
                 userRole="research-aide"
                 notificationCount={unreadCount}
               />
             </div>
             
-            <div className="md:col-span-3">
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            {/* Main content - full width on mobile, 3/4 width on tablet/desktop */}
+            <div className="col-span-1 md:col-span-3">
+              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 <TabsContent value={activeTab} className="mt-0">
                   {renderTabContent()}
                 </TabsContent>

@@ -10,15 +10,17 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = ({ activeTab, setActiveTab, children }: DashboardLayoutProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-      <div className="md:col-span-1">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
+      {/* Sidebar - hidden on mobile, visible on tablet/desktop */}
+      <div className="hidden lg:block lg:col-span-1 mb-4 lg:mb-0">
         <ResearchAidsSidebar 
           activeTab={activeTab} 
           setActiveTab={setActiveTab}
         />
       </div>
       
-      <div className="md:col-span-3">
+      {/* Main content - full width on mobile, 3/4 width on tablet/desktop */}
+      <div className="col-span-1 lg:col-span-3">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsContent value={activeTab} className="mt-0">
             {children}

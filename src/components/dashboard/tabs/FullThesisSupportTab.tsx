@@ -318,66 +318,67 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
     const start = (activeProjectsPage - 1) * PROJECTS_PER_PAGE;
     return filteredActiveProjects.slice(start, start + PROJECTS_PER_PAGE);
   }, [filteredActiveProjects, activeProjectsPage]);
-
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Full Thesis Support</h2>
+    <div className="space-y-4 sm:space-y-6">
+      <h2 className="text-xl sm:text-2xl font-bold">Full Thesis Support</h2>
 
       {/* Active Projects */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <CheckCircle className="h-5 w-5 mr-2" />
+            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
             Active Projects
           </CardTitle>
           {/* Filter controls */}
-          <div className="flex gap-2 mt-2">
-            <Button size="sm" variant={projectFilter === 'all' ? 'default' : 'outline'} onClick={() => { setProjectFilter('all'); setActiveProjectsPage(1); }}>All</Button>
-            <Button size="sm" variant={projectFilter === 'ongoing' ? 'default' : 'outline'} onClick={() => { setProjectFilter('ongoing'); setActiveProjectsPage(1); }}>Ongoing</Button>
-            <Button size="sm" variant={projectFilter === 'complete' ? 'default' : 'outline'} onClick={() => { setProjectFilter('complete'); setActiveProjectsPage(1); }}>Complete</Button>
+          <div className="flex gap-2 mt-2 flex-wrap">
+            <Button size="sm" variant={projectFilter === 'all' ? 'default' : 'outline'} onClick={() => { setProjectFilter('all'); setActiveProjectsPage(1); }} className="text-xs sm:text-sm">All</Button>
+            <Button size="sm" variant={projectFilter === 'ongoing' ? 'default' : 'outline'} onClick={() => { setProjectFilter('ongoing'); setActiveProjectsPage(1); }} className="text-xs sm:text-sm">Ongoing</Button>
+            <Button size="sm" variant={projectFilter === 'complete' ? 'default' : 'outline'} onClick={() => { setProjectFilter('complete'); setActiveProjectsPage(1); }} className="text-xs sm:text-sm">Complete</Button>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {paginatedActiveProjects.length === 0 && <p className="text-gray-500">No active thesis support projects found.</p>}
+        </CardHeader>        <CardContent>
+          <div className="space-y-3 sm:space-y-4">
+            {paginatedActiveProjects.length === 0 && <p className="text-gray-500 text-sm">No active thesis support projects found.</p>}
             {paginatedActiveProjects.map((project) => (
-                <div key={project.id} className="border rounded-lg p-4 mb-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h4 className="font-semibold">{project.title}</h4>
-                      <p className="text-sm text-gray-600">{isStudent ? "Researcher:" : "Student:"} {project.student}</p>
-                      <p className="text-sm text-gray-600">Next: {project.nextMilestone}</p>
+                <div key={project.id} className="border rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 space-y-2 sm:space-y-0">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-sm sm:text-base">{project.title}</h4>
+                      <p className="text-xs sm:text-sm text-gray-600">{isStudent ? "Researcher:" : "Student:"} {project.student}</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Next: {project.nextMilestone}</p>
                       <p className="text-xs text-gray-500">Due: {project.dueDate}</p>
                     </div>
                     {/* Show Ongoing/Completed badge and percent complete */}
-                    <div className="flex flex-col items-end">
-                      <Badge variant={getProjectPercentComplete(project.id) === 100 ? "default" : "secondary"}>
+                    <div className="flex flex-row sm:flex-col items-start sm:items-end gap-2 sm:gap-0">
+                      <Badge variant={getProjectPercentComplete(project.id) === 100 ? "default" : "secondary"} className="text-xs">
                         {getProjectPercentComplete(project.id) === 100 ? 'Completed' : 'Ongoing'}
                       </Badge>
-                      <span className="text-xs text-gray-500 mt-1">{getProjectPercentComplete(project.id)}%</span>
+                      <span className="text-xs text-gray-500 sm:mt-1">{getProjectPercentComplete(project.id)}%</span>
                     </div>
-                  </div>
-                  {/* Milestones List for this project */}
-                  <div className="mb-2">
-                    <h5 className="font-semibold text-sm mb-1">Milestones</h5>
+                  </div>                  {/* Milestones List for this project */}
+                  <div className="mb-2 sm:mb-3">
+                    <h5 className="font-semibold text-xs sm:text-sm mb-1">Milestones</h5>
                     {milestonesLoadingMap[project.id] ? (
                       <p className="text-gray-500 text-xs">Loading milestones...</p>
                     ) : (projectMilestonesMap[project.id]?.length === 0 ? (
                       <p className="text-gray-500 text-xs">No milestones yet.</p>
                     ) : (
-                      <ul className="space-y-1">
+                      <ul className="space-y-1 sm:space-y-2">
                         {projectMilestonesMap[project.id]?.map((milestone) => (
-                          <li key={milestone.id} className="flex items-center gap-2 text-xs">
-                            {milestone.status === 'completed' ? (
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                            ) : (
-                              <Clock className="h-4 w-4 text-yellow-600" />
-                            )}
-                            <span>{milestone.description}</span>
-                            {milestone.due_date && (
-                              <span className="text-gray-400 ml-2">(Due: {new Date(milestone.due_date).toLocaleDateString()})</span>
-                            )}
-                            <Badge className={`ml-2 ${milestone.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{milestone.status}</Badge>
+                          <li key={milestone.id} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs">
+                            <div className="flex items-center gap-2">
+                              {milestone.status === 'completed' ? (
+                                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 flex-shrink-0" />
+                              ) : (
+                                <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600 flex-shrink-0" />
+                              )}
+                              <span className="flex-1">{milestone.description}</span>
+                            </div>
+                            <div className="flex items-center gap-2 ml-5 sm:ml-0">
+                              {milestone.due_date && (
+                                <span className="text-gray-400 text-xs">(Due: {new Date(milestone.due_date).toLocaleDateString()})</span>
+                              )}
+                              <Badge className={`text-xs ${milestone.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{milestone.status}</Badge>
+                            </div>
                             {/* Fix: Only show controls for researchers */}
                             {isResearcher === true && (
                               <>
@@ -397,59 +398,57 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
                           </li>
                         ))}
                       </ul>
-                    ))}
-                  </div>
-                  <div className="flex gap-2 flex-wrap">
+                    ))}                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2 mt-3">
                     {/* Only show Set Milestones for researchers */}
                     {isResearcher && (
-                      <Button size="sm" variant="outline" onClick={() => handleSetMilestone(project.id)}>
-                        <Target className="h-4 w-4 mr-1" />
+                      <Button size="sm" variant="outline" onClick={() => handleSetMilestone(project.id)} className="w-full sm:w-auto text-xs">
+                        <Target className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                         Set Milestones
                       </Button>
                     )}
                     {/* Show Join Google Meet for all users, blue for students */}
                     {project.meeting_link && (
-                      <Button size="sm" variant="default" className="bg-blue-600 text-white hover:bg-blue-700" onClick={() => window.open(project.meeting_link, '_blank')}>
-                        <Calendar className="h-4 w-4 mr-1" />
+                      <Button size="sm" variant="default" className="bg-blue-600 text-white hover:bg-blue-700 w-full sm:w-auto text-xs" onClick={() => window.open(project.meeting_link, '_blank')}>
+                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                         Join Google Meet
                       </Button>
                     )}
-                    <Button size="sm" variant="outline" onClick={() => handleUploadDocument(project.id)}>
-                      <Mail className="h-4 w-4 mr-1" />
+                    <Button size="sm" variant="outline" onClick={() => handleUploadDocument(project.id)} className="w-full sm:w-auto text-xs">
+                      <Mail className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                       Upload Document
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleOpenChat(project.id)}>
-                      <MessageSquare className="h-4 w-4 mr-1" />
+                    <Button size="sm" variant="outline" onClick={() => handleOpenChat(project.id)} className="w-full sm:w-auto text-xs">
+                      <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                       Open Chat
                     </Button>
-                  </div>
-                  {/* Uploaded Documents Preview styled like Upcoming Session Tab */}
-                  <div className="mt-2">
-                    <h6 className="font-semibold text-xs mb-1">Uploaded Documents</h6>
+                  </div>                  {/* Uploaded Documents Preview styled like Upcoming Session Tab */}
+                  <div className="mt-3 sm:mt-4">
+                    <h6 className="font-semibold text-xs mb-2">Uploaded Documents</h6>
                     {uploadedDocumentsMap[project.id] && uploadedDocumentsMap[project.id].length > 0 ? (
-                      <div className="flex flex-col gap-2 mt-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
                         {uploadedDocumentsMap[project.id].map((doc, idx) => (
                           <div
                             key={doc.name + idx}
-                            className="flex items-center border rounded bg-white px-2 py-1 shadow-sm hover:bg-gray-50 transition cursor-pointer"
+                            className="flex items-center border rounded bg-white px-2 py-2 shadow-sm hover:bg-gray-50 transition cursor-pointer"
                             onClick={() => window.open(doc.url, '_blank')}
                           >
                             {/* File type icon/preview */}
                             {(() => {
                               const ext = doc.name.split('.').pop()?.toLowerCase();
                               if (["png", "jpg", "jpeg", "gif", "bmp", "webp"].includes(ext || "")) {
-                                return <img src={doc.url} alt={doc.name} className="w-8 h-8 object-cover rounded mr-2 border" />;
+                                return <img src={doc.url} alt={doc.name} className="w-6 h-6 sm:w-8 sm:h-8 object-cover rounded mr-2 border flex-shrink-0" />;
                               } else if (["pdf"].includes(ext || "")) {
-                                return <span className="w-8 h-8 flex items-center justify-center bg-red-100 text-red-700 rounded mr-2 border text-xs font-bold">PDF</span>;
+                                return <span className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center bg-red-100 text-red-700 rounded mr-2 border text-xs font-bold flex-shrink-0">PDF</span>;
                               } else if (["doc", "docx"].includes(ext || "")) {
-                                return <span className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-700 rounded mr-2 border text-xs font-bold">DOC</span>;
+                                return <span className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center bg-blue-100 text-blue-700 rounded mr-2 border text-xs font-bold flex-shrink-0">DOC</span>;
                               } else if (["xls", "xlsx"].includes(ext || "")) {
-                                return <span className="w-8 h-8 flex items-center justify-center bg-green-100 text-green-700 rounded mr-2 border text-xs font-bold">XLS</span>;
+                                return <span className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center bg-green-100 text-green-700 rounded mr-2 border text-xs font-bold flex-shrink-0">XLS</span>;
                               } else {
-                                return <span className="w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-700 rounded mr-2 border text-xs font-bold">FILE</span>;
+                                return <span className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center bg-gray-100 text-gray-700 rounded mr-2 border text-xs font-bold flex-shrink-0">FILE</span>;
                               }
                             })()}
-                            <span className="truncate max-w-[120px] text-xs" title={doc.name}>{doc.name}</span>
+                            <span className="truncate flex-1 text-xs" title={doc.name}>{doc.name}</span>
                           </div>
                         ))}
                       </div>
@@ -458,13 +457,12 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
                     )}
                   </div>
                 </div>
-            ))}
-            {/* Pagination controls */}
+            ))}            {/* Pagination controls */}
             {totalActivePages > 1 && (
-              <div className="flex justify-center items-center gap-2 mt-4">
-                <Button size="sm" variant="outline" onClick={() => setActiveProjectsPage(p => Math.max(1, p - 1))} disabled={activeProjectsPage === 1}>Previous</Button>
-                <span className="text-sm">Page {activeProjectsPage} of {totalActivePages}</span>
-                <Button size="sm" variant="outline" onClick={() => setActiveProjectsPage(p => Math.min(totalActivePages, p + 1))} disabled={activeProjectsPage === totalActivePages}>Next</Button>
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-2 mt-4">
+                <Button size="sm" variant="outline" onClick={() => setActiveProjectsPage(p => Math.max(1, p - 1))} disabled={activeProjectsPage === 1} className="w-full sm:w-auto text-xs">Previous</Button>
+                <span className="text-xs sm:text-sm">Page {activeProjectsPage} of {totalActivePages}</span>
+                <Button size="sm" variant="outline" onClick={() => setActiveProjectsPage(p => Math.min(totalActivePages, p + 1))} disabled={activeProjectsPage === totalActivePages} className="w-full sm:w-auto text-xs">Next</Button>
               </div>
             )}
           </div>

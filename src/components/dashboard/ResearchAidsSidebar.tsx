@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Link } from "react-router-dom";
+import GetStartedModal from '../GetStartedModal';
 import { 
   BarChart3,
   Briefcase,
@@ -28,7 +30,12 @@ interface ResearchAidsSidebarProps {
 const ResearchAidsSidebar = ({ activeTab, setActiveTab }: ResearchAidsSidebarProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   // Ensure profile is always sourced from research_aid_profiles, not users
   type ResearchAidProfile = {
@@ -71,24 +78,19 @@ const ResearchAidsSidebar = ({ activeTab, setActiveTab }: ResearchAidsSidebarPro
     
     // Navigate to home page
     navigate('/');
-  };
-
-  return (
-    <div className="bg-white p-5 rounded-lg shadow-sm">
-      
-      
+  };  return (
+    <div className="bg-white p-3 sm:p-5 rounded-lg shadow-sm">
       <nav className="space-y-1">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          return (
-            <Button 
+          return (            <Button 
               key={item.id}
               variant={activeTab === item.id ? "default" : "ghost"} 
-              className="w-full justify-start" 
+              className="w-full justify-start text-sm sm:text-base" 
               onClick={() => setActiveTab(item.id)}
             >
               <Icon className="mr-2 h-4 w-4" />
-              {item.label}
+              <span className="truncate">{item.label}</span>
             </Button>
           );
         })}

@@ -167,38 +167,37 @@ const DocumentsTab = () => {
   if (error) {
     return <Alert variant="destructive"><AlertTriangle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>;
   }
-
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Documents</h2>
-        <Badge variant="secondary">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+        <h2 className="text-xl sm:text-2xl font-bold">Documents</h2>
+        <Badge variant="secondary" className="w-fit text-xs">
           {documents.length} Documents
         </Badge>
       </div>
 
-      <p className="text-gray-600">Access shared documents and resources from your consultations.</p>
+      <p className="text-gray-600 text-sm sm:text-base">Access shared documents and resources from your consultations.</p>
 
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {paginatedDocuments.map((document) => {
           const IconComponent = getFileIcon(document.type);
           return (
             <Card key={document.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+                  <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
                     <div className="flex-shrink-0">
-                      <IconComponent className="h-8 w-8 text-blue-600" />
+                      <IconComponent className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-medium text-gray-900">{document.name}</h3>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <Badge className={getFileTypeColor(document.type)}>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-gray-900 text-sm sm:text-base truncate">{document.name}</h3>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
+                        <Badge className={`${getFileTypeColor(document.type)} text-xs w-fit`}>
                           {document.type}
                         </Badge>
-                        <span className="text-sm text-gray-500">{document.size}</span>
+                        <span className="text-xs sm:text-sm text-gray-500">{document.size}</span>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-xs sm:text-sm text-gray-600 mt-1 truncate">
                         Shared by {document.sharedBy} • {document.date}
                       </p>
                     </div>
@@ -207,9 +206,9 @@ const DocumentsTab = () => {
                     onClick={() => handleDownload(document)}
                     variant="outline"
                     size="sm"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-1 sm:gap-2 text-xs w-full sm:w-auto"
                   >
-                    <Download className="h-4 w-4" />
+                    <Download className="h-3 w-3 sm:h-4 sm:w-4" />
                     Download
                   </Button>
                 </div>
@@ -217,26 +216,24 @@ const DocumentsTab = () => {
             </Card>
           );
         })}
-      </div>
-
-      {totalPages > 1 && (
-        <div className="flex justify-end items-center mt-6">
+      </div>      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row justify-center sm:justify-end items-center mt-4 sm:mt-6 gap-2">
           <Button 
             variant="outline"
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
-            className="mr-2"
+            className="w-full sm:w-auto text-xs"
           >
             Previous
           </Button>
-          <span className="text-sm text-gray-600">
+          <span className="text-xs sm:text-sm text-gray-600">
             Page {currentPage} of {totalPages}
           </span>
           <Button 
             variant="outline"
             onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
-            className="ml-2"
+            className="w-full sm:w-auto text-xs"
           >
             Next
           </Button>
@@ -245,10 +242,10 @@ const DocumentsTab = () => {
 
       {documents.length === 0 && (
         <Card>
-          <CardContent className="text-center py-12">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No documents yet</h3>
-            <p className="text-gray-500">Documents shared in consultations will appear here.</p>
+          <CardContent className="text-center py-8 sm:py-12">
+            <FileText className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No documents yet</h3>
+            <p className="text-gray-500 text-sm sm:text-base">Documents shared in consultations will appear here.</p>
           </CardContent>
         </Card>
       )}

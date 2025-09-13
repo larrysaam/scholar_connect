@@ -95,12 +95,12 @@ const PastTab = ({ userRole }: PastTabProps) => {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm">
-      <h2 className="text-xl font-semibold mb-4">Past Consultations</h2>
+    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
+      <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Past Consultations</h2>
       
       {paginatedConsultations.length > 0 ? (
         <>
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {paginatedConsultations.map((consultation) => (
               <PastConsultationCard
                 key={consultation.id}
@@ -116,23 +116,23 @@ const PastTab = ({ userRole }: PastTabProps) => {
             ))}
           </div>
           {totalPages > 1 && (
-            <div className="flex justify-end items-center mt-6">
+            <div className="flex flex-col sm:flex-row justify-center sm:justify-end items-center mt-4 sm:mt-6 gap-2">
               <Button 
                 variant="outline"
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="mr-2"
+                className="w-full sm:w-auto text-xs"
               >
                 Previous
               </Button>
-              <span className="text-sm text-gray-600">
+              <span className="text-xs sm:text-sm text-gray-600">
                 Page {currentPage} of {totalPages}
               </span>
               <Button 
                 variant="outline"
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="ml-2"
+                className="w-full sm:w-auto text-xs"
               >
                 Next
               </Button>
@@ -140,8 +140,8 @@ const PastTab = ({ userRole }: PastTabProps) => {
           )}
         </>
       ) : (
-        <div className="text-center py-8">
-          <p className="text-gray-500">No past consultations available.</p>
+        <div className="text-center py-6 sm:py-8">
+          <p className="text-gray-500 text-sm">No past consultations available.</p>
         </div>
       )}
     </div>

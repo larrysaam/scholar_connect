@@ -77,42 +77,40 @@ const MessagingTab = () => {
       return <Check className="h-4 w-4 text-gray-300" />;
     }
   };
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-2">Messages & File Exchange</h2>
-        <p className="text-gray-600">Communicate with your booked students</p>
+        <h2 className="text-xl sm:text-2xl font-bold mb-2">Messages & File Exchange</h2>
+        <p className="text-gray-600 text-sm sm:text-base">Communicate with your booked students</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 h-[500px] sm:h-[600px]">
         {/* Conversations List */}
         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <span className="font-semibold">Conversations</span>
+              <span className="font-semibold text-sm sm:text-base">Conversations</span>
             </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
+          </CardHeader>          <CardContent className="p-0">
             <div className="space-y-1">
               {conversations.map((conv: any) => (
                 <div
                   key={conv.id}
                   onClick={() => setSelectedConversation(conv)}
-                  className={`p-4 cursor-pointer border-b hover:bg-gray-50 ${selectedConversation?.id === conv.id ? 'bg-blue-50' : ''}`}
+                  className={`p-3 sm:p-4 cursor-pointer border-b hover:bg-gray-50 ${selectedConversation?.id === conv.id ? 'bg-blue-50' : ''}`}
                 >
-                  <div className="flex items-start space-x-3">
+                  <div className="flex items-start space-x-2 sm:space-x-3">
                     {/* Show avatar if available, fallback to placeholder */}
                     <img
                       src={conv.avatar_url || '/placeholder.svg'}
                       alt={conv.other_user_name}
-                      className="w-10 h-10 rounded-full object-cover"
+                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <h4 className="font-semibold text-sm truncate">{conv.other_user_name}</h4>
+                        <h4 className="font-semibold text-xs sm:text-sm truncate">{conv.other_user_name}</h4>
                       </div>
-                      <p className="text-sm text-gray-600 truncate mt-1">{conv.last_message}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 truncate mt-1">{conv.last_message}</p>
                         <span className="text-xs opacity-75">
                             {conv.last_message_at ? new Date(conv.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                         </span>
@@ -127,23 +125,21 @@ const MessagingTab = () => {
         {/* Chat Area */}
         <Card className="lg:col-span-2">
           {selectedConversation ? (
-            <div className="flex flex-col h-full">
-              <CardHeader className="border-b">
-                <div className="flex items-center space-x-3">
+            <div className="flex flex-col h-full">              <CardHeader className="border-b p-3 sm:p-6">
+                <div className="flex items-center space-x-2 sm:space-x-3">
                   {/* Optionally add avatar here if available: <img src={selectedConversation.avatar_url} ... /> */}
                   <img
                     src={(selectedConversation as any)?.avatar_url || '/placeholder.svg'}
                     alt={selectedConversation.other_user_name}
-                    className="w-10 h-10 rounded-full object-cover"
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover flex-shrink-0"
                   />
-                  <div>
-                    <h3 className="font-semibold">{selectedConversation.other_user_name}</h3>
-                    <p className="text-xs text-gray-500">You are chatting with {selectedConversation.other_user_name}</p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold text-sm sm:text-base truncate">{selectedConversation.other_user_name}</h3>
+                    <p className="text-xs text-gray-500 truncate">You are chatting with {selectedConversation.other_user_name}</p>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="flex-1 p-0">
-                <div className="h-96 overflow-y-auto p-4 space-y-4">
+              </CardHeader>              <CardContent className="flex-1 p-0">
+                <div className="h-64 sm:h-96 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
                   {(() => {
                     const grouped: { [date: string]: any[] } = {};
                     messages.forEach((msg: any) => {
@@ -171,11 +167,10 @@ const MessagingTab = () => {
                           <div
                             key={msg.id}
                             className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}${idx !== 0 ? ' mt-1' : ''}`}
-                          >
-                            <div
-                              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${msg.sender_id === user?.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'}`}
+                          >                            <div
+                              className={`max-w-[250px] sm:max-w-xs lg:max-w-md px-3 sm:px-4 py-2 rounded-lg ${msg.sender_id === user?.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'}`}
                             >
-                              <p className="text-sm">{msg.content}</p>
+                              <p className="text-xs sm:text-sm break-words">{msg.content}</p>
                               <div className="flex items-center justify-between mt-1">
                                 <span className="text-xs opacity-75">
                                   {msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
@@ -193,9 +188,8 @@ const MessagingTab = () => {
                     ));
                   })()}
                   <div ref={messagesEndRef} />
-                </div>
-                {/* Message Input */}
-                <div className="border-t p-4">
+                </div>                {/* Message Input */}
+                <div className="border-t p-3 sm:p-4">
                   <div className="flex items-end space-x-2">
                     {/* File upload button can be added here if needed */}
                     <div className="flex-1">
@@ -203,10 +197,10 @@ const MessagingTab = () => {
                         placeholder="Type your message..."
                         value={message}
                         onChange={e => setMessage(e.target.value)}
-                        className="resize-none"
+                        className="resize-none text-sm"
                       />
                     </div>
-                    <Button onClick={handleSend} disabled={!message.trim()}>
+                    <Button onClick={handleSend} disabled={!message.trim()} className="text-xs sm:text-sm">
                       Send
                     </Button>
                   </div>
@@ -215,12 +209,11 @@ const MessagingTab = () => {
                   </p>
                 </div>
               </CardContent>
-            </div>
-          ) : (
+            </div>          ) : (
             <CardContent className="flex items-center justify-center h-full">
               <div className="text-center text-gray-500">
-                <span className="block text-4xl mb-4">💬</span>
-                <p>Select a conversation to start messaging</p>
+                <span className="block text-3xl sm:text-4xl mb-4">💬</span>
+                <p className="text-sm sm:text-base">Select a conversation to start messaging</p>
               </div>
             </CardContent>
           )}
@@ -228,10 +221,10 @@ const MessagingTab = () => {
       </div>
       {/* Response Time Notice */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center space-x-3 text-blue-600">
-            <span className="font-medium">Response Time Guidelines</span>
-            <p className="text-sm text-gray-600">
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-3 text-blue-600">
+            <span className="font-medium text-sm sm:text-base">Response Time Guidelines</span>
+            <p className="text-xs sm:text-sm text-gray-600">
               Students typically respond within 24 hours. Messages are consultation-related only.
             </p>
           </div>

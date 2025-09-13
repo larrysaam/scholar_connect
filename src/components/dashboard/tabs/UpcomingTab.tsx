@@ -226,14 +226,13 @@ const UpcomingTab = ({ userRole }: UpcomingTabProps) => {
       </div>
     );
   }
-
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm">
-      <h2 className="text-xl font-semibold mb-4">Upcoming Consultations</h2>
+    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
+      <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Upcoming Consultations</h2>
       
       {paginatedConsultations.length > 0 ? (
         <>
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {paginatedConsultations.map((consultation) => (
               <div key={consultation.id}>
                 <UpcomingConsultationCard
@@ -252,23 +251,24 @@ const UpcomingTab = ({ userRole }: UpcomingTabProps) => {
                   onDeleteDocument={handleDeleteDocument}
                 />
                 {/* Mark as Complete Button for each user */}
-                <div className="flex justify-end mt-2 gap-2">
+                <div className="flex flex-col sm:flex-row justify-end mt-2 gap-2">
                   { !consultation.researcher_completed && (
                     <Button
                       size="sm"
                       variant="destructive"
                       onClick={() => handleMarkAsComplete(consultation)}
+                      className="w-full sm:w-auto text-xs"
                     >
                       Mark as Complete
                     </Button>
                   )}
                   {consultation.researcher_completed && !consultation.student_completed && (
-                    <Button size="sm" variant="secondary" disabled>
+                    <Button size="sm" variant="secondary" disabled className="w-full sm:w-auto text-xs">
                       Waiting for Student
                     </Button>
                   )}
                   {consultation.student_completed && consultation.researcher_completed && (
-                    <Button size="sm" variant="default" disabled>
+                    <Button size="sm" variant="default" disabled className="w-full sm:w-auto text-xs">
                       Completed
                     </Button>
                   )}
@@ -277,23 +277,23 @@ const UpcomingTab = ({ userRole }: UpcomingTabProps) => {
             ))}
           </div>
           {totalPages > 1 && (
-            <div className="flex justify-end items-center mt-6">
+            <div className="flex flex-col sm:flex-row justify-center sm:justify-end items-center mt-4 sm:mt-6 gap-2">
               <Button 
                 variant="outline"
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="mr-2"
+                className="w-full sm:w-auto text-xs"
               >
                 Previous
               </Button>
-              <span className="text-sm text-gray-600">
+              <span className="text-xs sm:text-sm text-gray-600">
                 Page {currentPage} of {totalPages}
               </span>
               <Button 
                 variant="outline"
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="ml-2"
+                className="w-full sm:w-auto text-xs"
               >
                 Next
               </Button>
@@ -301,8 +301,8 @@ const UpcomingTab = ({ userRole }: UpcomingTabProps) => {
           )}
         </>
       ) : (
-        <div className="text-center py-8">
-          <p className="text-gray-500">No upcoming consultations scheduled.</p>
+        <div className="text-center py-6 sm:py-8">
+          <p className="text-gray-500 text-sm">No upcoming consultations scheduled.</p>
         </div>
       )}
     </div>

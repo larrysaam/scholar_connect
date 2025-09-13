@@ -57,12 +57,12 @@ const WelcomeOverviewTab = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-0">
       {/* Welcome Message */}
       <Card>
-        <CardContent className="p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">{getWelcomeMessage()}</h2>
-          <p className="text-gray-600">
+        <CardContent className="p-4 sm:p-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{getWelcomeMessage()}</h2>
+          <p className="text-sm sm:text-base text-gray-600">
             You have <span className="font-semibold text-blue-600">{upcomingConsultationsCount} upcoming consultations</span> and 
             <span className="font-semibold text-green-600">{newMessagesCount} new messages</span> waiting for you.
           </p>
@@ -70,16 +70,16 @@ const WelcomeOverviewTab = () => {
       </Card>
 
       {/* Weekly Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <Calendar className="h-5 w-5 text-blue-600" />
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
               </div>
-              <div>
-                <p className="text-sm text-gray-600">This Week</p>
-                <p className="text-xl font-bold">{weeklyStats.consultations}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600">This Week</p>
+                <p className="text-lg sm:text-xl font-bold truncate">{weeklyStats.consultations}</p>
                 <p className="text-xs text-gray-500">Consultations</p>
               </div>
             </div>
@@ -87,14 +87,14 @@ const WelcomeOverviewTab = () => {
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="p-2 bg-green-100 rounded-lg">
-                <DollarSign className="h-5 w-5 text-green-600" />
+                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Earnings</p>
-                <p className="text-xl font-bold">{weeklyStats.earnings.toLocaleString()}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600">Earnings</p>
+                <p className="text-lg sm:text-xl font-bold truncate">{weeklyStats.earnings.toLocaleString()}</p>
                 <p className="text-xs text-gray-500">XAF this week</p>
               </div>
             </div>
@@ -102,14 +102,14 @@ const WelcomeOverviewTab = () => {
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="p-2 bg-yellow-100 rounded-lg">
-                <Clock className="h-5 w-5 text-yellow-600" />
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" />
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Hours</p>
-                <p className="text-xl font-bold">{weeklyStats.hours}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600">Hours</p>
+                <p className="text-lg sm:text-xl font-bold truncate">{weeklyStats.hours}</p>
                 <p className="text-xs text-gray-500">Total this week</p>
               </div>
             </div>
@@ -117,14 +117,14 @@ const WelcomeOverviewTab = () => {
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="p-2 bg-purple-100 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-purple-600" />
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Rating</p>
-                <p className="text-xl font-bold">{weeklyStats.rating}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600">Rating</p>
+                <p className="text-lg sm:text-xl font-bold truncate">{weeklyStats.rating}</p>
                 <p className="text-xs text-gray-500">Average</p>
               </div>
             </div>
@@ -134,21 +134,21 @@ const WelcomeOverviewTab = () => {
 
       {/* Today's Schedule */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Today's Schedule</span>
-            <Badge variant="secondary">{todaysSchedule.length} consultations</Badge>
+        <CardHeader className="pb-2 sm:pb-6">
+          <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+            <span className="text-lg sm:text-xl">Today's Schedule</span>
+            <Badge variant="secondary" className="w-fit">{todaysSchedule.length} consultations</Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="pt-0 sm:pt-6">
+          <div className="space-y-3 sm:space-y-4">
             {todaysSchedule.map((booking: any) => (
-              <div key={booking.id} className="flex items-center justify-between p-3 border rounded-lg">
+              <div key={booking.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border rounded-lg space-y-2 sm:space-y-0">
                 <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <div>
-                    <p className="font-medium">{booking.service?.title || 'N/A'}</p>
-                    <p className="text-sm text-gray-600">with {booking.client?.name || 'N/A'}</p>
+                  <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0"></div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm sm:text-base truncate">{booking.service?.title || 'N/A'}</p>
+                    <p className="text-xs sm:text-sm text-gray-600 truncate">with {booking.client?.name || 'N/A'}</p>
                   </div>
                 </div>
                 <div className="text-right">

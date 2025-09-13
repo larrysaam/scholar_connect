@@ -253,19 +253,19 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Notifications</h2>
-          <p className="text-gray-600">Stay updated with your latest activities</p>
+          <h2 className="text-xl sm:text-2xl font-bold">Notifications</h2>
+          <p className="text-gray-600 text-sm sm:text-base">Stay updated with your latest activities</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="secondary" className="text-xs">
             {unreadCount} unread
           </Badge>
-          <Button onClick={handleRefresh} variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
+          <Button onClick={handleRefresh} variant="outline" size="sm" className="text-xs">
+            <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
             Refresh
           </Button>
           {/* <Button onClick={handleTriggerAllNotifications} variant="outline" size="sm">
@@ -273,15 +273,16 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
             Trigger All Notifications
           </Button> */}
           {unreadCount > 0 && (
-            <Button onClick={handleMarkAllAsRead} variant="outline" size="sm">
-              <CheckCheck className="h-4 w-4 mr-2" />
-              Mark all as read
+            <Button onClick={handleMarkAllAsRead} variant="outline" size="sm" className="text-xs">
+              <CheckCheck className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Mark all as read</span>
+              <span className="sm:hidden">Mark all</span>
             </Button>
           )}
           <Dialog open={showPreferences} onOpenChange={setShowPreferences}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="sm" className="text-xs">
+                <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Settings
               </Button>
             </DialogTrigger>
@@ -390,22 +391,22 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
 
       {/* Search and Filters */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3 sm:h-4 sm:w-4" />
                 <Input
                   placeholder="Search notifications..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-8 sm:pl-10 text-sm"
                 />
               </div>
             </div>
-            <div className="w-full md:w-48">
+            <div className="w-full sm:w-48">
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="text-sm">
                   <SelectValue placeholder="Filter by category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -425,11 +426,12 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
       </Card>
 
       {/* Filter buttons */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button 
           variant={filter === "all" ? "default" : "outline"} 
           size="sm"
           onClick={() => setFilter("all")}
+          className="text-xs"
         >
           All ({notifications.length})
         </Button>
@@ -437,6 +439,7 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
           variant={filter === "unread" ? "default" : "outline"} 
           size="sm"
           onClick={() => setFilter("unread")}
+          className="text-xs"
         >
           Unread ({unreadCount})
         </Button>
@@ -444,18 +447,19 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
           variant={filter === "read" ? "default" : "outline"} 
           size="sm"
           onClick={() => setFilter("read")}
+          className="text-xs"
         >
           Read ({readCount})
         </Button>
       </div>
 
       {/* Notifications list */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {filteredNotifications.length === 0 ? (
           <Card>
-            <CardContent className="text-center py-8">
-              <BellOff className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">
+            <CardContent className="text-center py-6 sm:py-8">
+              <BellOff className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+              <p className="text-gray-500 text-sm sm:text-base">
                 {searchTerm || categoryFilter !== "all" 
                   ? "No notifications match your search criteria"
                   : "No notifications to show"
@@ -469,32 +473,32 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
               key={notification.id} 
               className={`${!notification.is_read ? 'border-l-4 border-l-blue-500 bg-blue-50' : ''} hover:shadow-md transition-shadow`}
             >
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h4 className="font-semibold">{notification.title}</h4>
-                      <Badge className={getTypeColor(notification.type)}>
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-2">
+                      <h4 className="font-semibold text-sm sm:text-base truncate">{notification.title}</h4>
+                      <Badge className={`${getTypeColor(notification.type)} text-xs`}>
                         {notification.type}
                       </Badge>
                       <Badge variant="outline" className="text-xs">
                         {notification.category}
                       </Badge>
                       {!notification.is_read && (
-                        <Badge className="bg-blue-600">New</Badge>
+                        <Badge className="bg-blue-600 text-xs">New</Badge>
                       )}
                     </div>
-                    <p className="text-gray-700 text-sm mb-2">{notification.message}</p>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <p className="text-gray-700 text-xs sm:text-sm mb-2">{notification.message}</p>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs text-gray-500">
                       <span>{formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}</span>
-                      <span>{formatDate(notification.created_at)}</span>
+                      <span className="hidden sm:inline">{formatDate(notification.created_at)}</span>
                     </div>
                     {notification.action_url && notification.action_label && (
                       <div className="mt-2">
                         <Button
                           size="sm"
                           variant="link"
-                          className="p-0 h-auto text-blue-600 font-medium"
+                          className="p-0 h-auto text-blue-600 font-medium text-xs sm:text-sm"
                           onClick={() => handleActionClick(notification.action_url)}
                         >
                           {notification.action_label}
@@ -504,15 +508,17 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-2 ml-4">
+                  <div className="flex items-center gap-1 sm:gap-2 sm:ml-4">
                     {!notification.is_read && (
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => handleMarkAsRead(notification.id)}
+                        className="text-xs w-full sm:w-auto"
                       >
-                        <Check className="h-4 w-4" />
-                        Mark as read
+                        <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                        <span className="hidden sm:inline">Mark as read</span>
+                        <span className="sm:hidden">Read</span>
                       </Button>
                     )}
                     <Button
@@ -521,7 +527,7 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
                       onClick={() => handleDeleteNotification(notification.id)}
                       className="text-red-600 hover:text-red-800"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
                   </div>
                 </div>

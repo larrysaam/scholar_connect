@@ -243,15 +243,13 @@ const SettingsTab = () => {
     console.log("Account deletion requested");
     setDeleteConfirmation("");
   };
-
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Account Settings</h2>
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-0">
+      <h2 className="text-xl sm:text-2xl font-bold">Account Settings</h2>
       
       {/* User Profile Section */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
+      <Card>        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <User className="h-5 w-5" />
             User Profile
           </CardTitle>

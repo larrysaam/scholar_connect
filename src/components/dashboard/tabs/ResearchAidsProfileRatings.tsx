@@ -795,28 +795,28 @@ const ResearchAidsProfileRatings = () => {
 
       {/* Profile Overview */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex items-start space-x-6">
-            <Avatar className="h-24 w-24">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
+            <Avatar className="h-20 w-20 sm:h-24 sm:w-24 mx-auto sm:mx-0">
               <AvatarImage src={researcher.imageUrl || "/placeholder-avatar.jpg"} alt={`${researcher.title} ${researcher.name}`} />
-              <AvatarFallback className="text-lg">
+              <AvatarFallback className="text-base sm:text-lg">
                 {researcher.name.split(' ').map(n => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
             
-            <div className="flex-1">
-              <div className="flex items-center space-x-3 mb-2">
-                <h3 className="text-xl font-bold">{researcher.title} {researcher.name}</h3>
-                <Badge className="bg-green-600">
+            <div className="flex-1 text-center sm:text-left">
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
+                <h3 className="text-lg sm:text-xl font-bold">{researcher.title} {researcher.name}</h3>
+                <Badge className="bg-green-600 mx-auto sm:mx-0 w-fit">
                   <CheckCircle className="h-3 w-3 mr-1" />
                   Verified
                 </Badge>
               </div>
               
               <p className="text-gray-600 font-medium mb-3">{researcher.job_title}</p>
-              <p className="text-gray-700 mb-4">{researcher.bio}</p>
+              <p className="text-gray-700 mb-4 text-sm sm:text-base">{researcher.bio}</p>
               
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                 <div className="flex items-center space-x-2">
                   <MapPin className="h-4 w-4 text-gray-500" />
                   <span>{researcher.location}</span>
@@ -883,7 +883,7 @@ const ResearchAidsProfileRatings = () => {
       </div>
 
       {/* Enhanced Profile Sections */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Educational Background */}
         <Card>
           <CardHeader>
@@ -990,7 +990,7 @@ const ResearchAidsProfileRatings = () => {
       </div>
 
       {/* Skills */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Skills & Expertise</CardTitle>

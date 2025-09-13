@@ -18,7 +18,7 @@ import {
   Download, 
   CreditCard, 
   Plus, 
-  Editet,
+  Edit,
   TrendingUp,
   Calendar
 } from "lucide-react";
@@ -158,11 +158,10 @@ const ResearchAidsPaymentsEarnings = () => {
     }
   };
 
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Payments & Earnings</h2>
-        <div className="flex space-x-2">
+  return (    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+        <h2 className="text-xl sm:text-2xl font-bold">Payments & Earnings</h2>
+        <div className="flex flex-wrap gap-2">
           <Button 
             variant={activeTab === "earnings" ? "default" : "outline"} 
             onClick={() => setActiveTab("earnings")}
@@ -184,41 +183,38 @@ const ResearchAidsPaymentsEarnings = () => {
             Payment Methods
           </Button>
         </div>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      </div>      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <DollarSign className="h-8 w-8 text-green-600" />
+          <CardContent className="p-4 sm:p-6">            <div className="flex items-center space-x-2">
+              <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
               <div>
                 <p className="text-sm text-gray-600">Total Earnings</p>
-                <p className="text-2xl font-bold">{totalEarnings.toLocaleString()} XAF</p>
+                <p className="text-xl sm:text-2xl font-bold">{totalEarnings.toLocaleString()} XAF</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-2">
-              <TrendingUp className="h-8 w-8 text-blue-600" />
+              <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
               <div>
                 <p className="text-sm text-gray-600">Pending Earnings</p>
-                <p className="text-2xl font-bold">{pendingEarnings.toLocaleString()} XAF</p>
+                <p className="text-xl sm:text-2xl font-bold">{pendingEarnings.toLocaleString()} XAF</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-2">
-              <CreditCard className="h-8 w-8 text-purple-600" />
+              <CreditCard className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
               <div>
                 <p className="text-sm text-gray-600">Available Balance</p>
-                <p className="text-2xl font-bold">{availableBalance.toLocaleString()} XAF</p>
+                <p className="text-xl sm:text-2xl font-bold">{availableBalance.toLocaleString()} XAF</p>
               </div>
             </div>
           </CardContent>
@@ -274,13 +270,12 @@ const ResearchAidsPaymentsEarnings = () => {
           
           {transactions.map((transaction) => (
             <Card key={transaction.id}>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
+              <CardContent className="p-4">                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
                   <div>
                     <h4 className="font-medium">{transaction.description}</h4>
                     <p className="text-sm text-gray-600 capitalize">{transaction.type}</p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-left sm:text-right">
                     <p className={`text-lg font-semibold ${
                       transaction.amount > 0 ? "text-green-600" : "text-red-600"
                     }`}>
@@ -324,8 +319,7 @@ const ResearchAidsPaymentsEarnings = () => {
       )}
 
       {activeTab === "methods" && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
+        <div className="space-y-4">          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
             <h3 className="text-lg font-semibold">Payment Methods</h3>
             <Dialog>
               <DialogTrigger asChild>

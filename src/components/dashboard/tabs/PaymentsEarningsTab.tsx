@@ -234,13 +234,12 @@ const PaymentsEarningsTab = () => {
       </div>
     );
   }
-
   // Main render
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Payments & Earnings</h2>
-        <div className="flex space-x-2">
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-0">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+        <h2 className="text-xl sm:text-2xl font-bold">Payments & Earnings</h2>
+        <div className="flex flex-wrap gap-2">
           <Button 
             variant={activeTab === "earnings" ? "default" : "outline"} 
             onClick={() => setActiveTab("earnings")}
@@ -257,39 +256,37 @@ const PaymentsEarningsTab = () => {
             Withdrawals
           </Button>
         </div>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      </div>      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-2">
-              <DollarSign className="h-8 w-8 text-green-600" />
-              <div>
-                <p className="text-sm text-gray-600">Total Earnings</p>
-                <p className="text-2xl font-bold">{totalEarnings.toLocaleString()} XAF</p>
+              <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600">Total Earnings</p>
+                <p className="text-lg sm:text-2xl font-bold truncate">{totalEarnings.toLocaleString()} XAF</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-2">
-              <TrendingUp className="h-8 w-8 text-blue-600" />
-              <div>
-                <p className="text-sm text-gray-600">Pending Earnings</p>
-                <p className="text-2xl font-bold">{pendingEarnings.toLocaleString()} XAF</p>
+              <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600">Pending Earnings</p>
+                <p className="text-lg sm:text-2xl font-bold truncate">{pendingEarnings.toLocaleString()} XAF</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-2">
-              <CreditCard className="h-8 w-8 text-purple-600" />
-              <div>
-                <p className="text-sm text-gray-600">Available Balance</p>
-                <p className="text-2xl font-bold">{computedAvailableBalance.toLocaleString()} XAF</p>
+              <CreditCard className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600">Available Balance</p>
+                <p className="text-lg sm:text-2xl font-bold truncate">{computedAvailableBalance.toLocaleString()} XAF</p>
               </div>
             </div>
           </CardContent>
