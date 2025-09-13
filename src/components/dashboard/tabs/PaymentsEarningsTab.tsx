@@ -58,6 +58,33 @@ const PaymentsEarningsTab = () => {
     earning.status === "pending" ? sum + earning.amount : sum, 0
   );
 
+  // Pagination state for transactions
+  const [transactionPage, setTransactionPage] = useState(1);
+  const transactionsPerPage = 10;
+  const [paginatedTransactions, setPaginatedTransactions] = useState<any[]>([]);
+  const [totalTransactionPages, setTotalTransactionPages] = useState(1);
+  const [transactionsLoading, setTransactionsLoading] = useState(false);
+
+  // Fetch transactions from Supabase (replace 'transactions' with your table name if needed)
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      if (!user) return;
+      setTransactionsLoading(true);
+      const { data, error, count } = await supabase
+        .from('transactions')
+        .select('*', { count: 'exact' })
+        .eq('user_id', user.id)
+        .order('date', { ascending: false })
+        .range((transactionPage - 1) * transactionsPerPage, transactionPage * transactionsPerPage - 1);
+      if (!error) {
+        setPaginatedTransactions(data || []);
+        setTotalTransactionPages(count ? Math.ceil(count / transactionsPerPage) : 1);
+      }
+      setTransactionsLoading(false);
+    };
+    if (user) fetchTransactions();
+  }, [user, transactionPage]);
+
   const handleExport = (type: string) => {
     toast({
       title: "Exporting Data",
@@ -118,18 +145,21 @@ const PaymentsEarningsTab = () => {
       toast({ title: "Error", description: "Please enter phone number and select operator", variant: "destructive" });
       return;
     }
-    if (amount > availableToWithdraw) {
+    // Use computedAvailableBalance for withdrawal check
+    if (amount > computedAvailableBalance) {
       toast({ title: "Error", description: "Insufficient balance (pending withdrawals included)", variant: "destructive" });
       return;
     }
     try {
-      const response = await fetch("/api/mesomb-withdraw", {
+      const response = await fetch("http://localhost:4000/api/mesomb-withdraw", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           receiver: withdrawalPhone,
           amount,
           service: withdrawalOperator,
+          country: "CM", // Cameroon (set as needed)
+          currency: "XAF", // Central African CFA franc (set as needed)
           customer: user.id,
         }),
       });
@@ -138,7 +168,7 @@ const PaymentsEarningsTab = () => {
         const { error } = await supabase.from('withdrawals').insert({
           researcher_id: user.id,
           amount,
-          status: 'requested',
+          status: 'completed',
           notes: `Withdrawal via MeSomb (${withdrawalOperator}) to ${withdrawalPhone}`,
         });
         if (!error) {
@@ -193,8 +223,6 @@ const PaymentsEarningsTab = () => {
 
   const totalWithdrawn = withdrawals.filter(w => w.status === "completed").reduce((sum, w) => sum + Number(w.amount), 0);
   const pendingWithdrawals = withdrawals.filter(w => w.status === "pending" || w.status === "requested").reduce((sum, w) => sum + Number(w.amount), 0);
-  const availableToWithdraw = availableBalance - pendingWithdrawals;
-
   // Calculate available balance as: Total Earnings - (Total Withdrawn + Pending Withdrawals)
   const computedAvailableBalance = totalEarnings - (totalWithdrawn + pendingWithdrawals);
 
@@ -220,19 +248,7 @@ const PaymentsEarningsTab = () => {
             <DollarSign className="h-4 w-4 mr-2" />
             Earnings
           </Button>
-          <Button 
-            variant={activeTab === "transactions" ? "default" : "outline"} 
-            onClick={() => setActiveTab("transactions")}
-          >
-            Transactions
-          </Button>
-          <Button 
-            variant={activeTab === "methods" ? "default" : "outline"} 
-            onClick={() => setActiveTab("methods")}
-          >
-            <CreditCard className="h-4 w-4 mr-2" />
-            Payment Methods
-          </Button>
+          
           <Button 
             variant={activeTab === "withdrawals" ? "default" : "outline"} 
             onClick={() => setActiveTab("withdrawals")}
@@ -331,27 +347,59 @@ const PaymentsEarningsTab = () => {
               Export
             </Button>
           </div>
-          {transactions.map((transaction) => (
-            <Card key={transaction.id}>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="font-medium">{transaction.description}</h4>
-                    <p className="text-sm text-gray-600 capitalize">{transaction.type}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className={`text-lg font-semibold ${
-                      transaction.amount > 0 ? "text-green-600" : "text-red-600"
-                    }`}>
-                      {transaction.amount > 0 ? "+" : ""}{transaction.amount.toLocaleString()} XAF
-                    </p>
-                    <p className="text-sm text-gray-500">{transaction.date}</p>
-                    {getStatusBadge(transaction.status)}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {transactionsLoading ? (
+            <div>Loading...</div>
+          ) : (
+            paginatedTransactions.length === 0 ? (
+              <div className="text-gray-500">No transactions found.</div>
+            ) : (
+              paginatedTransactions.map((transaction) => (
+                <Card key={transaction.id}>
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="font-medium">{transaction.description}</h4>
+                        <p className="text-sm text-gray-600 capitalize">{transaction.type}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-lg font-semibold ${
+                          transaction.amount > 0 ? "text-green-600" : "text-red-600"
+                        }`}>
+                          {transaction.amount > 0 ? "+" : ""}{transaction.amount.toLocaleString()} XAF
+                        </p>
+                        <p className="text-sm text-gray-500">{transaction.date}</p>
+                        {getStatusBadge(transaction.status)}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )
+          )}
+          {/* Pagination Controls */}
+          {totalTransactionPages > 1 && (
+            <div className="flex justify-center items-center space-x-2 mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setTransactionPage((p) => Math.max(1, p - 1))}
+                disabled={transactionPage === 1}
+              >
+                Previous
+              </Button>
+              <span className="text-sm">
+                Page {transactionPage} of {totalTransactionPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setTransactionPage((p) => Math.min(totalTransactionPages, p + 1))}
+                disabled={transactionPage === totalTransactionPages}
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
       )}
 

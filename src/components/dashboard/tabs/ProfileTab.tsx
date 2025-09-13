@@ -1,6 +1,6 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import ProfileTabHeader from "@/components/dashboard/profile/ProfileTabHeader";
 import PersonalInformationSection from "@/components/dashboard/profile/PersonalInformationSection";
 import ProfessionalBioSection from "@/components/dashboard/profile/ProfessionalBioSection";
@@ -21,10 +21,32 @@ const ProfileTab = () => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<ProfileFormData>(defaultProfileFormData);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const handlers = createProfileFormHandlers(formData, setFormData);
 
-  const handleSaveProfile = () => {
+  // Fetch real profile data on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setLoading(true);
+      const user = supabase.auth.user?.();
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      if (data) setFormData({ ...defaultProfileFormData, ...data });
+      setLoading(false);
+    };
+    fetchProfile();
+  }, []);
+
+  const handleSaveProfile = async () => {
     if (!formData.name || !formData.email) {
       toast({
         title: "Error",
@@ -33,7 +55,6 @@ const ProfileTab = () => {
       });
       return;
     }
-
     if (formData.email && !formData.email.includes('@')) {
       toast({
         title: "Error",
@@ -42,15 +63,34 @@ const ProfileTab = () => {
       });
       return;
     }
-
-    toast({
-      title: "Profile Updated",
-      description: "Your profile information has been saved successfully"
-    });
-    
-    setIsEditing(false);
-    console.log("Saving profile data:", formData);
+    setSaving(true);
+    const user = supabase.auth.user?.();
+    if (!user) {
+      setSaving(false);
+      return;
+    }
+    const { error } = await supabase
+      .from('profiles')
+      .upsert({ ...formData, user_id: user.id });
+    setSaving(false);
+    if (!error) {
+      toast({
+        title: "Profile Updated",
+        description: "Your profile information has been saved successfully"
+      });
+      setIsEditing(false);
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to save profile information",
+        variant: "destructive"
+      });
+    }
   };
+
+  if (loading) {
+    return <div className="p-8 text-center text-gray-500">Loading profile...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -58,6 +98,7 @@ const ProfileTab = () => {
         isEditing={isEditing}
         onEditToggle={() => setIsEditing(true)}
         onSave={handleSaveProfile}
+        saving={saving}
       />
 
       <PersonalInformationSection

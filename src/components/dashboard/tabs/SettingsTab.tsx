@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +16,9 @@ import { useAuth } from "@/hooks/useAuth";
 import ProfileImage from "../ProfileImage";
 import type { Database } from "@/integrations/supabase/types";
 
-type UserProfile = Database['public']['Tables']['users']['Row'];
+type UserProfile = Database['public']['Tables']['users']['Row'] & {
+  subtitle?: string | null;
+};
 type UserRole = Database['public']['Enums']['user_role'];
 type PayoutMethod = Database['public']['Enums']['payout_method'];
 
@@ -49,27 +50,33 @@ const SettingsTab = () => {
     }
   }, [user]);
 
+  // Fetch user profile and subtitle from researcher_profiles
   const fetchUserProfile = async () => {
     if (!user) return;
-    
+    setProfileLoading(true);
     try {
-      const { data, error } = await supabase
+      // Fetch user base profile
+      const { data: userData, error: userError } = await supabase
         .from('users')
         .select('*')
         .eq('id', user.id)
         .single();
-
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load user profile",
-          variant: "destructive"
-        });
+      // Fetch researcher profile for subtitle
+      const { data: researcherProfile, error: researcherError } = await supabase
+        .from('researcher_profiles')
+        .select('subtitle')
+        .eq('user_id', user.id)
+        .single();
+      if (userError) {
+        console.error('Error fetching user profile:', userError);
+        toast({ title: 'Error', description: 'Failed to load user profile', variant: 'destructive' });
         return;
       }
-
-      setUserProfile(data);
+      if (researcherError && researcherError.code !== 'PGRST116') {
+        // PGRST116 = no rows found, ignore if not a researcher
+        console.error('Error fetching researcher profile:', researcherError);
+      }
+      setUserProfile({ ...userData, subtitle: researcherProfile?.subtitle ?? '' });
     } catch (error) {
       console.error('Error fetching user profile:', error);
     } finally {
@@ -77,40 +84,36 @@ const SettingsTab = () => {
     }
   };
 
+  // Update both users and researcher_profiles tables
   const handleProfileUpdate = async () => {
     if (!user || !userProfile) return;
-
     try {
-      const { error } = await supabase
+      // Update users table (without subtitle)
+      const { subtitle, ...userFields } = userProfile;
+      const { error: userError } = await supabase
         .from('users')
         .update({
-          ...userProfile,
-          updated_at: new Date().toISOString()
+          ...userFields,
+          updated_at: new Date().toISOString(),
         })
         .eq('id', user.id);
-
-      if (error) {
-        console.error('Error updating profile:', error);
-        toast({
-          title: "Error",
-          description: "Failed to update profile",
-          variant: "destructive"
-        });
+      // Update researcher_profiles subtitle if present
+      if ('subtitle' in userProfile) {
+        await supabase
+          .from('researcher_profiles')
+          .update({ subtitle: userProfile.subtitle })
+          .eq('user_id', user.id);
+      }
+      if (userError) {
+        console.error('Error updating profile:', userError);
+        toast({ title: 'Error', description: 'Failed to update profile', variant: 'destructive' });
         return;
       }
-
       setIsEditingProfile(false);
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been updated successfully"
-      });
+      toast({ title: 'Profile Updated', description: 'Your profile has been updated successfully' });
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive"
-      });
+      toast({ title: 'Error', description: 'An unexpected error occurred', variant: 'destructive' });
     }
   };
 
@@ -299,6 +302,22 @@ const SettingsTab = () => {
                     disabled={!isEditingProfile}
                     placeholder="Enter your full name"
                   />
+                </div>
+                <div>
+                  <Label htmlFor="subtitle">Subtitle (e.g., Dr., Prof.)</Label>
+                  <Select
+                    value={userProfile.subtitle || ""}
+                    onValueChange={(value) => handleProfileFieldChange('subtitle', value)}
+                    disabled={!isEditingProfile}
+                  >
+                    <SelectTrigger id="subtitle">
+                      <SelectValue placeholder="Select your title (Dr. or Prof.)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Dr.">Dr.</SelectItem>
+                      <SelectItem value="Prof.">Prof.</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="email">Email</Label>

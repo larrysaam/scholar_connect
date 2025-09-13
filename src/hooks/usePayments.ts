@@ -132,6 +132,7 @@ export const usePayments = () => {
 
       // Merge and sort by date desc
       const allEarnings = [...appointmentEarnings, ...jobEarnings].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
       setEarnings(allEarnings);
     } catch (error) {
       console.error('Error fetching earnings:', error);

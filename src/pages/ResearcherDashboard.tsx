@@ -60,8 +60,6 @@ const ResearcherDashboard = () => {
         return <QualityAssuranceAndFeedbackTab />;
       case "messaging":
         return <MessagingTab />;
-      case "discussion":
-        return <DiscussionTab />;
       case "verification":
         return <VerificationTab />;
       case "notifications":
@@ -70,8 +68,7 @@ const ResearcherDashboard = () => {
         return <CoAuthorInvitationsTab />;
       case "documents":
         return <DocumentsTab />;
-      case "profile":
-        return <ProfileTab />;
+  
       case "settings":
         return <SettingsTab />;
       default:
