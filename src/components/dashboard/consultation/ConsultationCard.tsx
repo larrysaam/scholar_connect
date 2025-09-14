@@ -1,10 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, Video, MessageSquare, Upload, FileText, Loader2, X } from "lucide-react";
+import { Calendar, Clock, Video, MessageSquare, Upload, FileText, Loader2, X, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import ConsultationActions from "./ConsultationActions";
 import LiveDocumentReviewDialog from "./LiveDocumentReviewDialog";
-import StudentInfoModal from "../StudentInfoModal";
 
 interface Consultation {
   id: string;
@@ -64,98 +63,83 @@ const ConsultationCard = ({
   
   
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div className="flex items-center space-x-4">
-            <div className="h-10 w-10 rounded-full overflow-hidden">
+    <Card className="max-w-full overflow-hidden">
+      <CardHeader className="pb-2 p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-0">
+          <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
+            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full overflow-hidden flex-shrink-0">
               <img
                 src={person.avatar_url}
                 alt={person.name}
                 className="h-full w-full object-cover"
               />
             </div>
-            <div>
-              <CardTitle className="text-lg">{person.name}</CardTitle>
-              <CardDescription>{person.title}</CardDescription>
-              <p className="text-sm font-semibold text-blue-600 mt-1">{consultation.service.title}</p>
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-sm sm:text-base lg:text-lg truncate">{person.name}</CardTitle>
+              <CardDescription className="text-xs sm:text-sm truncate">{person.title}</CardDescription>
+              <p className="text-xs sm:text-sm font-semibold text-blue-600 mt-1 truncate">{consultation.service.title}</p>
             </div>
           </div>
           <Badge
-            className={consultation.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}
+            className={`text-xs px-2 py-1 flex-shrink-0 ${consultation.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}
           >
             {consultation.status}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-4">
+      <CardContent className="p-3 sm:p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
           <div className="flex items-center text-gray-700">
-            <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-            <span>{new Date(consultation.datetime).toLocaleDateString()}</span>
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-500 flex-shrink-0" />
+            <span className="text-xs sm:text-sm truncate">{new Date(consultation.datetime).toLocaleDateString()}</span>
           </div>
           <div className="flex items-center text-gray-700">
-            <Clock className="h-4 w-4 mr-2 text-gray-500" />
-            <span>{new Date(consultation.datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-500 flex-shrink-0" />
+            <span className="text-xs sm:text-sm truncate">{new Date(consultation.datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
           </div>
         </div>
-        <div className="mt-4">
-          <p className="font-medium">Topic:</p>
-          <p className="text-gray-700">{consultation.topic}</p>
+        <div className="mt-3 sm:mt-4">
+          <p className="font-medium text-xs sm:text-sm">Topic:</p>
+          <p className="text-gray-700 text-xs sm:text-sm leading-relaxed">{consultation.topic}</p>
         </div>
 
         {consultation.sharedDocuments && consultation.sharedDocuments.length > 0 && (
-          <div className="mt-4">
-            <p className="font-medium text-sm text-blue-700">Documents Uploaded:</p>
-            <div className="flex flex-wrap gap-2 mt-1">
+          <div className="mt-3 sm:mt-4">
+            <p className="font-medium text-xs sm:text-sm text-blue-700">Documents Uploaded:</p>
+            <div className="flex flex-wrap gap-1 sm:gap-2 mt-1">
               {consultation.sharedDocuments.map((doc: SharedDocument, index) => (
                 <div key={index} className="flex items-center">
                   <Badge
                     variant="outline"
-                    className="bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer"
+                    className="bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer text-xs px-2 py-1"
                     onClick={() => handleAccessDocumentClick(doc.url)}
                   >
-                    <FileText className="h-3 w-3 mr-1" />
-                    {doc.name}
+                    <FileText className="h-3 w-3 mr-1 flex-shrink-0" />
+                    <span className="truncate max-w-20 sm:max-w-none">{doc.name}</span>
                   </Badge>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-5 w-5 ml-1"
+                    className="h-4 w-4 sm:h-5 sm:w-5 ml-1 flex-shrink-0"
                     onClick={() => onDeleteDocument?.(consultation.id, doc.url)}
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-2 w-2 sm:h-3 sm:w-3" />
                   </Button>
                 </div>
               ))}
             </div>
           </div>
         )}
-
-        {consultation.sharedDocumentLink && userType === "researcher" && (
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-            <p className="font-medium text-sm text-blue-700 mb-2">Shared Document:</p>
-            <Button
-              onClick={() => onAccessDocument?.(consultation.sharedDocumentLink!)}
-              variant="outline"
-              size="sm"
-              className="text-blue-700 border-blue-300"
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              Access Google Doc
-            </Button>
-          </div>
-        )}
       </CardContent>
-      <CardFooter className="flex justify-between border-t pt-4">
-        <div className="flex gap-2 flex-wrap">
+      <CardFooter className="flex flex-col sm:flex-row sm:justify-between border-t pt-3 sm:pt-4 p-3 sm:p-4 gap-3 sm:gap-0">
+        <div className="flex gap-1 sm:gap-2 flex-wrap">
           {consultation.status === 'confirmed' && (
             <Button
               onClick={() => onJoinMeet(consultation.id)}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto text-xs sm:text-sm px-3 sm:px-4 py-2"
             >
-              <Video className="h-4 w-4 mr-2" />
-              Join with Google Meet
+              <Video className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 flex-shrink-0" />
+              <span className="truncate">Join Meeting</span>
             </Button>
           )}
 
@@ -163,20 +147,23 @@ const ConsultationCard = ({
             variant="outline"
             onClick={() => onUploadDocument(consultation.id)}
             disabled={isUploading}
+            className="w-full sm:w-auto text-xs sm:text-sm px-3 sm:px-4 py-2"
           >
             {isUploading ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 animate-spin flex-shrink-0" />
             ) : (
-              <Upload className="h-4 w-4 mr-2" />
+              <Upload className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 flex-shrink-0" />
             )}
-            Upload Document
+            <span className="truncate">Upload Document</span>
           </Button>
 
           {userType === "student" && (
-            <LiveDocumentReviewDialog
-              consultationId={consultation.id}
-              onSubmitDocumentLink={onSubmitDocumentLink}
-            />
+            <div className="w-full sm:w-auto">
+              <LiveDocumentReviewDialog
+                consultationId={consultation.id}
+                onSubmitDocumentLink={onSubmitDocumentLink}
+              />
+            </div>
           )}
 
           <Button
@@ -185,18 +172,24 @@ const ConsultationCard = ({
               ? onContactResearcher(person.id, consultation.id)
               : onContactStudent?.(person.id, consultation.id)
             }
+            className="w-full sm:w-auto text-xs sm:text-sm px-3 sm:px-4 py-2"
           >
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Contact {userType === "student" ? "Researcher" : "Student"}
+            <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 flex-shrink-0" />
+            <span className="truncate">Contact {userType === "student" ? "Researcher" : "Student"}</span>
           </Button>
-
-          {userType === "researcher" && consultation.student && (
-            <StudentInfoModal
-              studentName={consultation.student.name}
-              researchSummary={consultation.student.researchSummary}
-            />
-          )}
         </div>
+
+        {userType === "researcher" && consultation.student && (
+          <div className="w-full sm:w-auto">
+            <Button
+              variant="outline"
+              className="w-full sm:w-auto text-xs sm:text-sm px-3 sm:px-4 py-2"
+            >
+              <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 flex-shrink-0" />
+              <span className="truncate">Student Info</span>
+            </Button>
+          </div>
+        )}
       </CardFooter>
     </Card>
   );

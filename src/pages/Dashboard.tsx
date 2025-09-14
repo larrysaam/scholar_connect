@@ -66,11 +66,9 @@ const Dashboard = () => {
           return;
         }
 
-        setUserName(data.name);
+        setUserName(data?.name || 'Student');
       } catch (error) {
         console.error('Error fetching user profile:', error);
-      } finally {
-        setProfileLoading(false);
       }
     };
 
@@ -94,6 +92,7 @@ const Dashboard = () => {
     // Update URL parameters to reflect the current tab
     setSearchParams({ tab });
   };
+
 
   const renderTabContent = () => {
     console.log("Rendering tab content for:", activeTab);
@@ -146,28 +145,35 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Navbar setActiveTab={handleTabChange} activeTab={activeTab}/>
       
-      <main className="flex-grow bg-gray-50 py-12">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">Welcome back, {userName}</h1>
-              <p className="text-gray-600">Ready to advance your research journey?</p>
+      <main className="flex-grow py-2 sm:py-4 lg:py-8">
+        <div className="container mx-auto px-2 sm:px-4 lg:px-6 max-w-7xl">
+          {/* Header - Mobile Responsive */}
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 lg:mb-8 space-y-2 sm:space-y-0">
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 truncate">
+                Welcome back, {userName || 'Student'}
+              </h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-1">
+                Ready to advance your research journey?
+              </p>
             </div>
           </div>
           
           {/* Show onboarding for new users */}
           {showOnboarding && (
-            <div className="mb-8">
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-2">Welcome to ResearchWhao!</h3>
-                  <p className="text-gray-600 mb-4">Complete your profile to start connecting with researchers.</p>
+            <div className="mb-4 sm:mb-6 lg:mb-8">
+              <Card className="border-0 shadow-md">
+                <CardContent className="p-4 sm:p-6">
+                  <h3 className="text-base sm:text-lg font-semibold mb-2">Welcome to ResearchWhao!</h3>
+                  <p className="text-sm sm:text-base text-gray-600 mb-4">
+                    Complete your profile to start connecting with researchers.
+                  </p>
                   <button 
                     onClick={handleOnboardingComplete}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors duration-200 text-sm sm:text-base"
                   >
                     Get Started
                   </button>
@@ -176,25 +182,32 @@ const Dashboard = () => {
             </div>
           )}
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Sidebar - hidden on mobile, visible on tablet/desktop */}
-            <div className="hidden md:block md:col-span-1">
-              <DashboardSidebar 
-                activeTab={activeTab} 
-                setActiveTab={handleTabChange} 
-                userRole={profile?.role}
-                notificationCount={unreadCount}
-              />
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
+            {/* Sidebar - hidden on mobile and tablet, visible on large screens */}
+            <div className="hidden lg:block lg:col-span-1">
+              <div className="sticky top-4">
+                <DashboardSidebar 
+                  activeTab={activeTab} 
+                  setActiveTab={handleTabChange} 
+                  userRole={profile?.role || 'student'}
+                  notificationCount={unreadCount}
+                />
+              </div>
             </div>
             
-            {/* Main content - full width on mobile, 3/4 width on tablet/desktop */}
-            <div className="col-span-1 md:col-span-3">
+            {/* Main content - full width on mobile and tablet, 3/4 width on large screens */}
+            <div className="col-span-1 lg:col-span-3">
               {/* Notifications Banner */}
-              <NotificationsBanner />
+              <div className="mb-4">
+                <NotificationsBanner />
+              </div>
               
-              <div className="mt-4">
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                  {renderTabContent()}
+              {/* Main Content Area */}
+              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div className="p-3 sm:p-4 lg:p-6">
+                  <div className="min-h-[50vh] max-w-full overflow-hidden">
+                    {renderTabContent()}
+                  </div>
                 </div>
               </div>
             </div>
@@ -208,7 +221,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-function setProfileLoading(arg0: boolean) {
-  throw new Error("Function not implemented.");
-}
 

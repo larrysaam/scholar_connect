@@ -61,39 +61,39 @@ const PastConsultationCard = ({
   if (!person) return null;
 
   return (
-    <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50/50 hover:shadow-xl transition-all duration-300 group">
-      <CardHeader className="pb-4 border-b border-gray-100 bg-white/80 backdrop-blur-sm">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Avatar className="h-12 w-12 ring-2 ring-green-200 ring-offset-2">
+    <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50/50 hover:shadow-xl transition-all duration-300 group max-w-full overflow-hidden">
+      <CardHeader className="pb-3 sm:pb-4 border-b border-gray-100 bg-white/80 backdrop-blur-sm p-3 sm:p-4 lg:p-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4">
+          <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
+            <div className="relative flex-shrink-0">
+              <Avatar className="h-10 w-10 sm:h-12 sm:w-12 ring-2 ring-green-200 ring-offset-2">
                 <AvatarImage 
                   src={person.imageUrl} 
                   alt={person.name}
                   className="object-cover" 
                 />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-xs sm:text-sm">
                   {person.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-                <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+              <div className="absolute -bottom-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-white rounded-full"></div>
               </div>
             </div>
-            <div>
-              <CardTitle className="text-lg sm:text-xl font-semibold text-gray-900 group-hover:text-purple-700 transition-colors">
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-sm sm:text-lg lg:text-xl font-semibold text-gray-900 group-hover:text-purple-700 transition-colors truncate">
                 {person.name}
               </CardTitle>
-              <CardDescription className="text-sm text-gray-600 mt-1">
-                <span className="px-2 py-1 bg-gray-100 rounded-full text-xs font-medium">{person.field}</span>
+              <CardDescription className="text-xs sm:text-sm text-gray-600 mt-1">
+                <span className="px-2 py-1 bg-gray-100 rounded-full text-xs font-medium truncate inline-block max-w-full">{person.field}</span>
               </CardDescription>
             </div>
           </div>
-          <div className="flex flex-col sm:items-end gap-2">
+          <div className="flex flex-col sm:items-end gap-2 flex-shrink-0">
             <div className="flex items-center gap-2">
               <StarRating rating={consultation.rating} />
             </div>
-            <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1 text-xs font-medium shadow-sm w-fit">
+            <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-2 sm:px-3 py-1 text-xs font-medium shadow-sm w-fit">
               Completed
             </Badge>
           </div>

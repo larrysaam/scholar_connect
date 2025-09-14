@@ -17,84 +17,76 @@ const StudentJobApplicationsTab = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">My Job Applications</h2>
-          <p className="text-gray-600">View the status of your job applications</p>
+    <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-0">
+        <div className="min-w-0">
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold truncate">My Job Applications</h2>
+          <p className="text-sm sm:text-base text-gray-600">View the status of your job applications</p>
         </div>
-        <Badge variant="secondary" className="text-lg px-3 py-1">
+        <Badge variant="secondary" className="text-sm sm:text-lg px-3 py-1 flex-shrink-0 w-fit">
           {applications.length} Applications
         </Badge>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {applications.length === 0 ? (
-          <p className="text-center text-gray-500">You haven't applied for any jobs yet.</p>
+          <Card>
+            <CardContent className="text-center py-8 sm:py-12">
+              <p className="text-sm sm:text-base text-gray-500">You haven't applied for any jobs yet.</p>
+            </CardContent>
+          </Card>
         ) : (
           applications.map((application) => (
             <Card key={application.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
+              <CardHeader className="p-4 sm:p-6 pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0">
                   <div className="flex items-center space-x-3">
-                    <Avatar className="h-10 w-10">
+                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
                       <AvatarImage src={"/placeholder-avatar.jpg"} alt={application.job.title} />
-                      <AvatarFallback>
+                      <AvatarFallback className="text-xs sm:text-sm">
                         {application.job.title.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <CardTitle className="text-lg">{application.job.title}</CardTitle>
-                      <p className="text-sm text-gray-600">Applied on: {new Date(application.created_at).toLocaleDateString()}</p>
+                    <div className="min-w-0">
+                      <CardTitle className="text-sm sm:text-lg truncate">{application.job.title}</CardTitle>
+                      <p className="text-xs sm:text-sm text-gray-600">
+                        Applied on: {new Date(application.created_at).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
-                  <Badge>
+                  <Badge className="flex-shrink-0 text-xs sm:text-sm w-fit">
                     {application.status.toUpperCase()}
                   </Badge>
                 </div>
               </CardHeader>
               
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-gray-600 mt-2 line-clamp-2">Cover Letter: {application.cover_letter || 'N/A'}</p>
-                    <p className="text-sm text-gray-600">Proposed Budget: ${application.proposed_budget || 'N/A'}</p>
-                    <p className="text-sm text-gray-600">Estimated Duration: {application.estimated_duration || 'N/A'}</p>
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="space-y-2">
+                    <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">
+                      <span className="font-medium">Cover Letter:</span> {application.cover_letter || 'N/A'}
+                    </p>
+                    <p className="text-xs sm:text-sm text-gray-600">
+                      <span className="font-medium">Proposed Budget:</span> ${application.proposed_budget || 'N/A'}
+                    </p>
+                    <p className="text-xs sm:text-sm text-gray-600">
+                      <span className="font-medium">Estimated Duration:</span> {application.estimated_duration || 'N/A'}
+                    </p>
                   </div>
 
-                  {/* Display shared files (deliverables) */}
-                  {application.job.file_path && (
-                    <div className="mt-4">
-                      <h4 className="text-md font-semibold mb-2">Shared Files:</h4>
-                      <a 
-                        href={application.job.file_path} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-blue-600 hover:underline"
+                  {/* Actions for student */}
+                  <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                    {application.status === 'pending' && (
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => updateApplicationStatus(application.id, 'withdrawn')}
+                        className="w-full sm:w-auto text-xs sm:text-sm"
                       >
-                        <Download className="h-4 w-4 mr-1" />
-                        Download Deliverable
-                      </a>
-                    </div>
-                  )}
-
-                  {/* Actions for student (e.g., withdraw application) */}
-                  {application.status === 'pending' && (
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => updateApplicationStatus(application.id, 'withdrawn')}
-                    >
-                      Withdraw Application
-                    </Button>
-                  )}
-                  {application.status === 'accepted' && (
-                    <Chat
-                        bookingId={application.job_id} // Assuming job_id can be used as bookingId
-                        receiverId={application.job.client.id}
-                        receiverName={application.job.client.name}
-                    />
-                  )}
+                        Withdraw Application
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -61,78 +61,110 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
   return (
     <>
       <Card className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-green-500">
-        <CardContent className="p-6">
-          <div className="flex items-start space-x-4">
-            <div className="relative">
+        <CardContent className="p-4 sm:p-6">
+          {/* Mobile-First Layout */}
+          <div className="flex flex-col sm:flex-row sm:items-start space-y-3 sm:space-y-0 sm:space-x-4">
+            {/* Profile Image and Featured Badge */}
+            <div className="relative flex-shrink-0 mx-auto sm:mx-0">
               <img 
                 src={profileImage} 
                 alt={aid.name}
-                className="w-16 h-16 rounded-full object-cover border-2 border-green-100"
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-green-100"
               />
               {aid.featured && (
                 <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full p-1">
-                  <Award className="h-3 w-3 text-yellow-800" />
+                  <Award className="h-2 w-2 sm:h-3 sm:w-3 text-yellow-800" />
                 </div>
               )}
             </div>
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <h3 className="font-semibold text-lg text-gray-900">{aid.name}</h3>
-                  <p className="text-sm text-green-600 font-medium">{aid.title}</p>
-                  <p className="text-sm text-gray-500 flex items-center mt-1">
-                    <MapPin className="h-3 w-3 mr-1" />
-                    {aid.location || 'Location not set'}
+            
+            {/* Main Content */}
+            <div className="flex-1 min-w-0">
+              {/* Header Section */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 space-y-2 sm:space-y-0">
+                <div className="text-center sm:text-left">
+                  <h3 className="font-semibold text-base sm:text-lg text-gray-900 truncate">{aid.name}</h3>
+                  <p className="text-xs sm:text-sm text-green-600 font-medium truncate">{aid.title}</p>
+                  <p className="text-xs sm:text-sm text-gray-500 flex items-center justify-center sm:justify-start mt-1">
+                    <MapPin className="h-2 w-2 sm:h-3 sm:w-3 mr-1" />
+                    <span className="truncate">{aid.location || 'Location not set'}</span>
                   </p>
                 </div>
                 {aid.featured && (
-                  <Badge className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white border-0">
+                  <Badge className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white border-0 text-xs self-center sm:self-start">
                     Featured
                   </Badge>
                 )}
               </div>
               
-              <div className="flex flex-wrap gap-1 mb-3">
-                {(aid.specializations || []).map((spec, index) => (
+              {/* Specializations */}
+              <div className="flex flex-wrap gap-1 mb-3 justify-center sm:justify-start">
+                {(aid.specializations || []).slice(0, 3).map((spec, index) => (
                   <Badge key={index} variant="secondary" className="text-xs bg-green-100 text-green-700">
                     {spec}
                   </Badge>
                 ))}
+                {(aid.specializations || []).length > 3 && (
+                  <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
+                    +{(aid.specializations || []).length - 3} more
+                  </Badge>
+                )}
               </div>
               
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-4">
+              {/* Stats Section - Stack on Mobile */}
+              <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-3">
+                <div className="flex items-center justify-center sm:justify-start space-x-3 sm:space-x-4">
                   <div className="flex items-center space-x-1">
-                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                    <span className="text-sm font-medium">{(aid.rating || 0).toFixed(1)}</span>
-                    <span className="text-sm text-gray-500">({aid.reviewCount || 0})</span>
+                    <Star className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-400 fill-current" />
+                    <span className="text-xs sm:text-sm font-medium">{(aid.rating || 0).toFixed(1)}</span>
+                    <span className="text-xs sm:text-sm text-gray-500">({aid.reviewCount || 0})</span>
                   </div>
-                  <div className="text-sm text-gray-600">
-                    {(aid.completedJobs || 0)} jobs completed
+                  <div className="text-xs sm:text-sm text-gray-600">
+                    {(aid.completedJobs || 0)} jobs
                   </div>
                 </div>
-                <div className="text-sm font-bold text-green-600">
+                <div className="text-xs sm:text-sm font-bold text-green-600 text-center sm:text-right">
                   {(aid.hourly_rate || 0).toLocaleString()} XAF/hr
                 </div>
               </div>
               
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-500">
-                  Response time: {aid.responseTime || 'N/A'}
+              {/* Footer Section - Stack on Mobile */}
+              <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-xs sm:text-sm text-gray-500 text-center sm:text-left">
+                  Response: {aid.responseTime || 'N/A'}
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button size="sm" variant="outline" onClick={() => setShowMessage(true)}>
-                    <MessageCircle className="h-4 w-4 mr-1" />
-                    Message
+                
+                {/* Action Buttons - Stack on Mobile */}
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => setShowMessage(true)}
+                    className="text-xs sm:text-sm h-8 sm:h-9 w-full sm:w-auto"
+                  >
+                    <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                    <span className="hidden sm:inline">Message</span>
+                    <span className="sm:hidden">Send Message</span>
                   </Button>
-                  <Button size="sm" variant="outline" onClick={handleViewProfile}>
-                    <Eye className="h-4 w-4 mr-1" />
-                    Quick View
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={handleViewProfile}
+                    className="text-xs sm:text-sm h-8 sm:h-9 w-full sm:w-auto"
+                  >
+                    <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                    <span className="hidden sm:inline">Quick View</span>
+                    <span className="sm:hidden">View Profile</span>
                   </Button>
-                  <Button asChild size="sm" className="bg-green-600 hover:bg-green-700">
+                  <Button 
+                    asChild 
+                    size="sm" 
+                    className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm h-8 sm:h-9 w-full sm:w-auto"
+                  >
                     <Link to={`/research-aids/${aid.id}`}>
-                      <Calendar className="h-4 w-4 mr-1" />
-                      Book Appointment
+                      <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                      <span className="hidden sm:inline">Book Appointment</span>
+                      <span className="sm:hidden">Book Now</span>
                     </Link>
                   </Button>
                 </div>
@@ -142,56 +174,59 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
         </CardContent>
       </Card>
 
-      {/* Profile Modal */}
+      {/* Profile Modal - Mobile Responsive */}
       <Dialog open={showProfile} onOpenChange={setShowProfile}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{aid.name} - Profile</DialogTitle>
+            <DialogTitle className="text-base sm:text-lg">{aid.name} - Profile</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="flex items-center space-x-4">
+            {/* Header Section */}
+            <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-3 sm:space-y-0 sm:space-x-4">
               <img 
                 src={profileImage}
                 alt={aid.name}
-                className="w-20 h-20 rounded-full object-cover"
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover"
               />
-              <div>
-                <h3 className="text-xl font-semibold">{aid.name}</h3>
-                <p className="text-green-600 font-medium">{aid.title}</p>
-                <p className="text-gray-500 flex items-center">
-                  <MapPin className="h-4 w-4 mr-1" />
+              <div className="text-center sm:text-left">
+                <h3 className="text-lg sm:text-xl font-semibold">{aid.name}</h3>
+                <p className="text-green-600 font-medium text-sm sm:text-base">{aid.title}</p>
+                <p className="text-gray-500 flex items-center justify-center sm:justify-start text-sm">
+                  <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                   {aid.location || 'Location not set'}
                 </p>
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="font-medium mb-2">Rating & Reviews</h4>
-                <div className="flex items-center space-x-2">
-                  <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                  <span>{(aid.rating || 0).toFixed(1)} ({aid.reviewCount || 0} reviews)</span>
+            {/* Stats Grid - Responsive */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <h4 className="font-medium mb-1 text-sm">Rating & Reviews</h4>
+                <div className="flex items-center justify-center sm:justify-start space-x-2">
+                  <Star className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-400 fill-current" />
+                  <span className="text-sm">{(aid.rating || 0).toFixed(1)} ({aid.reviewCount || 0} reviews)</span>
                 </div>
               </div>
-              <div>
-                <h4 className="font-medium mb-2">Experience</h4>
-                <p>{(aid.completedJobs || 0)} jobs completed</p>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <h4 className="font-medium mb-1 text-sm">Experience</h4>
+                <p className="text-sm text-center sm:text-left">{(aid.completedJobs || 0)} jobs completed</p>
               </div>
-              <div>
-                <h4 className="font-medium mb-2">Response Time</h4>
-                <p>{aid.responseTime || 'N/A'}</p>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <h4 className="font-medium mb-1 text-sm">Response Time</h4>
+                <p className="text-sm text-center sm:text-left">{aid.responseTime || 'N/A'}</p>
               </div>
-              <div>
-                <h4 className="font-medium mb-2">Rate</h4>
-                <p className="text-green-600 font-bold">{(aid.hourly_rate || 0).toLocaleString()} XAF/hr</p>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <h4 className="font-medium mb-1 text-sm">Rate</h4>
+                <p className="text-green-600 font-bold text-sm text-center sm:text-left">{(aid.hourly_rate || 0).toLocaleString()} XAF/hr</p>
               </div>
             </div>
 
-            <div>
-              <h4 className="font-medium mb-2">Specializations</h4>
-              <div className="flex flex-wrap gap-2">
+            {/* Specializations */}
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <h4 className="font-medium mb-2 text-sm">Specializations</h4>
+              <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                 {(aid.specializations || []).map((spec, index) => (
-                  <Badge key={index} variant="secondary" className="bg-green-100 text-green-700">
+                  <Badge key={index} variant="secondary" className="bg-green-100 text-green-700 text-xs">
                     {spec}
                   </Badge>
                 ))}
@@ -201,11 +236,11 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
         </DialogContent>
       </Dialog>
 
-      {/* Message Modal */}
+      {/* Message Modal - Mobile Responsive */}
       <Dialog open={showMessage} onOpenChange={setShowMessage}>
-        <DialogContent>
+        <DialogContent className="w-[95vw] max-w-lg">
           <DialogHeader>
-            <DialogTitle>Send Message to {aid.name}</DialogTitle>
+            <DialogTitle className="text-base sm:text-lg">Send Message to {aid.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Textarea
@@ -213,12 +248,20 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={4}
+              className="text-sm sm:text-base"
             />
-            <div className="flex space-x-2">
-              <Button onClick={handleSendMessage} className="flex-1">
+            <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">
+              <Button 
+                onClick={handleSendMessage} 
+                className="w-full sm:flex-1 text-sm sm:text-base h-9 sm:h-10"
+              >
                 Send Message
               </Button>
-              <Button variant="outline" onClick={() => setShowMessage(false)}>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowMessage(false)}
+                className="w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10"
+              >
                 Cancel
               </Button>
             </div>

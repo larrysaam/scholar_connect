@@ -219,63 +219,88 @@ const SessionBookingTab = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8 max-w-full overflow-hidden">
       {/* Upcoming Consultations Section */}
       <Card>
-        <CardHeader><CardTitle>Upcoming Consultations</CardTitle></CardHeader>
-        <CardContent>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">Upcoming Consultations</CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6">
           {upcomingBookings.length > 0 ? (
-            <ul className="space-y-4">
+            <ul className="space-y-3 sm:space-y-4">
               {upcomingBookings.map(booking => (
-                <li key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <CalendarIcon className="h-6 w-6 text-gray-500" />
-                    <div>
-                      <p className="font-semibold">{booking.service_title}</p>
-                      <p className="text-sm text-gray-600 flex items-center"><User className="h-3 w-3 mr-1" />{booking.other_user_name}</p>
+                <li key={booking.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-gray-50 rounded-lg space-y-3 sm:space-y-0">
+                  <div className="flex items-center space-x-3 sm:space-x-4">
+                    <CalendarIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-500 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm sm:text-base truncate">{booking.service_title}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 flex items-center">
+                        <User className="h-3 w-3 mr-1 flex-shrink-0" />
+                        <span className="truncate">{booking.other_user_name}</span>
+                      </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                     <p className="text-sm font-medium">{format(new Date(booking.scheduled_date), 'PPP')}</p>
-                     <Badge variant={booking.status === 'confirmed' ? 'default' : 'secondary'} className="mt-1">{booking.status}</Badge>
-                     {/* Mark as Complete Buttons */}
-                     <div className="mt-2 flex gap-2 justify-end">
-                      
-                      
-                         <Button size="sm" variant="destructive" onClick={() => handleMarkAsComplete(booking)}>
-                           Mark as Complete
-                         </Button>
-                       
-                      
-                       {booking.student_completed && booking.researcher_completed && (
-                         <Button size="sm" variant="default" disabled>
-                           Completed
-                         </Button>
-                       )}
-                     </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                    <div className="text-left sm:text-right">
+                      <p className="text-xs sm:text-sm font-medium">{format(new Date(booking.scheduled_date), 'PPP')}</p>
+                      <Badge variant={booking.status === 'confirmed' ? 'default' : 'secondary'} className="mt-1 text-xs">
+                        {booking.status}
+                      </Badge>
+                    </div>
+                    {/* Mark as Complete Buttons */}
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="destructive" 
+                        onClick={() => handleMarkAsComplete(booking)}
+                        className="text-xs px-3"
+                      >
+                        Mark as Complete
+                      </Button>
+                      {booking.student_completed && booking.researcher_completed && (
+                        <Button 
+                          size="sm" 
+                          variant="default" 
+                          disabled
+                          className="text-xs px-3"
+                        >
+                          Completed
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-gray-500 text-center py-4">You have no upcoming consultations.</p>
+            <p className="text-sm sm:text-base text-gray-500 text-center py-4">You have no upcoming consultations.</p>
           )}
         </CardContent>
       </Card>
 
       {/* Session Booking Form Section */}
-      <div>
-        <h2 className="text-2xl font-bold mb-2">Book a New Session</h2>
-        <p className="text-gray-600">Schedule a consultation with expert researchers</p>
+      <div className="space-y-2">
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Book a New Session</h2>
+        <p className="text-sm sm:text-base text-gray-600">Schedule a consultation with expert researchers</p>
       </div>
+      
+      {/* Progress Indicator */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
             {bookingSteps.map((step, index) => (
-              <div key={step.step} className="flex items-center">
-                <div className={`flex items-center justify-center w-8 h-8 rounded-full ${step.completed ? 'bg-green-500 text-white' : currentStep === step.step ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'}`}>{step.step}</div>
-                <span className={`ml-2 text-sm ${currentStep === step.step ? 'font-semibold' : 'text-gray-600'}`}>{step.title}</span>
-                {index < bookingSteps.length - 1 && <div className="w-12 h-0.5 bg-gray-200 mx-4"></div>}
+              <div key={step.step} className="flex items-center space-x-3 sm:space-x-0">
+                <div className={`flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full text-xs sm:text-sm ${
+                  step.completed ? 'bg-green-500 text-white' : currentStep === step.step ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
+                }`}>
+                  {step.step}
+                </div>
+                <span className={`ml-2 sm:ml-0 text-xs sm:text-sm ${currentStep === step.step ? 'font-semibold' : 'text-gray-600'}`}>
+                  {step.title}
+                </span>
+                {index < bookingSteps.length - 1 && (
+                  <div className="hidden sm:block w-8 lg:w-12 h-0.5 bg-gray-200 mx-2 lg:mx-4"></div>
+                )}
               </div>
             ))}
           </div>
@@ -283,40 +308,85 @@ const SessionBookingTab = () => {
       </Card>
 
       {selectedResearcher && currentStep > 1 && (
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <img src={selectedResearcher.imageUrl} alt={selectedResearcher.name} className="w-16 h-16 rounded-full object-cover" />
-                <div><h3 className="font-semibold">{selectedResearcher.name}</h3><p className="text-gray-600">Your selected researcher</p></div>
+        <Card>
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+              <img 
+                src={selectedResearcher.imageUrl} 
+                alt={selectedResearcher.name} 
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover mx-auto sm:mx-0" 
+              />
+              <div className="text-center sm:text-left">
+                <h3 className="font-semibold text-sm sm:text-base">{selectedResearcher.name}</h3>
+                <p className="text-xs sm:text-sm text-gray-600">Your selected researcher</p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       <Card>
-        <CardHeader><CardTitle>Step {currentStep}: {bookingSteps[currentStep - 1].title}</CardTitle></CardHeader>
-        <CardContent>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">
+            Step {currentStep}: {bookingSteps[currentStep - 1].title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6">
           {/* Step 1: Select Session */}
           {currentStep === 1 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {sessionTypes.map((session) => (
-                <div key={session.id} onClick={() => setSelectedSessionType(session.id)} className={`p-4 border rounded-lg cursor-pointer ${selectedSessionType === session.id ? 'border-blue-500 bg-blue-50' : 'hover:border-gray-300'}`}>
-                  <div className="flex justify-between mb-2"><h5 className="font-medium">{session.title}</h5><Badge variant="outline">{session.price.toLocaleString()} XAF</Badge></div>
-                  <p className="text-sm text-gray-600 mb-2">{session.description}</p>
-                  <div className="flex items-center text-xs text-gray-500"><Clock className="h-3 w-3 mr-1" />{session.duration} mins</div>
+                <div 
+                  key={session.id} 
+                  onClick={() => setSelectedSessionType(session.id)} 
+                  className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                    selectedSessionType === session.id ? 'border-blue-500 bg-blue-50' : 'hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-3">
+                    <h5 className="font-medium text-sm sm:text-base">{session.title}</h5>
+                    <Badge variant="outline" className="text-xs w-fit">
+                      {session.price.toLocaleString()} XAF
+                    </Badge>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-600 mb-2 line-clamp-2">{session.description}</p>
+                  <div className="flex items-center text-xs text-gray-500">
+                    <Clock className="h-3 w-3 mr-1" />
+                    {session.duration} mins
+                  </div>
                 </div>
               ))}
             </div>
           )}
           
-          {/* Other steps... content is the same as before */}
-
-          <div className="flex justify-between mt-6">
-            <Button variant="outline" onClick={() => setCurrentStep(s => s - 1)} disabled={currentStep === 1}>Back</Button>
+          {/* Other steps maintain similar responsive patterns */}
+          
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-0 mt-6">
+            <Button 
+              variant="outline" 
+              onClick={() => setCurrentStep(s => s - 1)} 
+              disabled={currentStep === 1}
+              className="w-full sm:w-auto"
+            >
+              Back
+            </Button>
             {currentStep < 4 ? (
-              <Button onClick={() => setCurrentStep(s => s + 1)} disabled={(currentStep === 1 && !selectedSessionType) || (currentStep === 2 && (!selectedDate || !selectedTime))}>Next</Button>
+              <Button 
+                onClick={() => setCurrentStep(s => s + 1)} 
+                disabled={(currentStep === 1 && !selectedSessionType) || (currentStep === 2 && (!selectedDate || !selectedTime))}
+                className="w-full sm:w-auto"
+              >
+                Next
+              </Button>
             ) : (
-              <Button onClick={handleBooking} className="bg-green-600 hover:bg-green-700" disabled={!paymentMethod}><CreditCard className="h-4 w-4 mr-2" />Complete Booking</Button>
+              <Button 
+                onClick={handleBooking} 
+                className="bg-green-600 hover:bg-green-700 w-full sm:w-auto" 
+                disabled={!paymentMethod}
+              >
+                <CreditCard className="h-4 w-4 mr-2" />
+                Complete Booking
+              </Button>
             )}
           </div>
         </CardContent>

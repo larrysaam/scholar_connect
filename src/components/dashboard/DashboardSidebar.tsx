@@ -125,24 +125,36 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole, notificationCount
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4">
-      <div className="space-y-2">
+    <div className="bg-white rounded-lg shadow-sm p-3 lg:p-4 h-fit">
+      <div className="space-y-1 lg:space-y-2">
         {menuItems.map((item) => (
           <Button
             key={item.id}
             variant={activeTab === item.id ? "default" : "ghost"}
-            className="w-full justify-start"
+            className="w-full justify-start text-xs lg:text-sm py-2 lg:py-2.5 px-2 lg:px-3 h-auto transition-all duration-200 hover:bg-gray-50 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
             onClick={() => handleMenuClick(item.id)}
           >
-            <item.icon className="mr-2 h-4 w-4" />
-            <span className="flex-1 text-left">{item.label}</span>
+            <item.icon className="mr-2 h-3 w-3 lg:h-4 lg:w-4 flex-shrink-0" />
+            <span className="flex-1 text-left truncate min-w-0">{item.label}</span>
             {item.badge && (
-              <Badge variant="secondary" className="ml-auto">
-                {item.badge}
+              <Badge variant="secondary" className="ml-auto text-xs h-5 px-1.5 flex-shrink-0">
+                {item.badge > 99 ? '99+' : item.badge}
               </Badge>
             )}
           </Button>
         ))}
+        
+        {/* Sign Out Button */}
+        <div className="pt-2 lg:pt-4 border-t border-gray-200 mt-4">
+          <Button
+            variant="outline"
+            className="w-full justify-start text-xs lg:text-sm py-2 lg:py-2.5 px-2 lg:px-3 h-auto text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+            onClick={handleSignOut}
+          >
+            <Settings className="mr-2 h-3 w-3 lg:h-4 lg:w-4 flex-shrink-0" />
+            <span className="flex-1 text-left">Sign Out</span>
+          </Button>
+        </div>
       </div>
     </div>
   );

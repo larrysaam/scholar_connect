@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -85,85 +84,82 @@ const StudentPerformanceTab = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">My Research Progress</h2>
-          <p className="text-gray-600">Track your goals and academic achievements</p>
-        </div>
-        <Button onClick={addNewGoal}>
-          <Target className="h-4 w-4 mr-2" />
-          Add New Goal
+    <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-bold truncate">Research Performance & Goals</h2>
+        <Button className="w-full sm:w-auto text-xs sm:text-sm">
+          <Target className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+          Set New Goal
         </Button>
       </div>
 
       {/* Performance Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-3">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <BookOpen className="h-6 w-6 text-blue-600" />
+              <div className="p-2 sm:p-3 bg-blue-100 rounded-lg">
+                <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Total Sessions</p>
-                <p className="text-2xl font-bold">{metrics.totalSessions}</p>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-600 truncate">Total Sessions</p>
+                <p className="text-xl sm:text-2xl font-bold">{metrics.totalSessions}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-3">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <Award className="h-6 w-6 text-purple-600" />
+              <div className="p-2 sm:p-3 bg-purple-100 rounded-lg">
+                <Award className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Researchers</p>
-                <p className="text-2xl font-bold">{metrics.uniqueResearchers}</p>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-600 truncate">Researchers</p>
+                <p className="text-xl sm:text-2xl font-bold">{metrics.uniqueResearchers}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-3">
-              <div className="p-3 bg-yellow-100 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-yellow-600" />
+              <div className="p-2 sm:p-3 bg-yellow-100 rounded-lg">
+                <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" />
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Avg. Rating</p>
-                <p className="text-2xl font-bold">{metrics.averageRating}</p>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-600 truncate">Avg. Rating</p>
+                <p className="text-xl sm:text-2xl font-bold">{metrics.averageRating}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-3">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <Clock className="h-6 w-6 text-green-600" />
+              <div className="p-2 sm:p-3 bg-green-100 rounded-lg">
+                <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Research Hours</p>
-                <p className="text-2xl font-bold">{metrics.researchHours}</p>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-600 truncate">Research Hours</p>
+                <p className="text-xl sm:text-2xl font-bold">{metrics.researchHours}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-3">
-              <div className="p-3 bg-orange-100 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-orange-600" />
+              <div className="p-2 sm:p-3 bg-indigo-100 rounded-lg">
+                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600" />
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Goals Completed</p>
-                <p className="text-2xl font-bold">{metrics.goalsCompleted}</p>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-600 truncate">Goals Completed</p>
+                <p className="text-xl sm:text-2xl font-bold">{metrics.goalsCompleted}</p>
               </div>
             </div>
           </CardContent>
@@ -172,31 +168,32 @@ const StudentPerformanceTab = () => {
 
       {/* Research Goals */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Target className="h-5 w-5" />
-            <span>My Research Goals</span>
-          </CardTitle>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+          <CardTitle className="text-lg sm:text-xl">Research Goals</CardTitle>
+          <Button size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
+            <Target className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            Add Goal
+          </Button>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 gap-4">
             {researchGoals.map((goal) => (
-              <div key={goal.id} className="p-4 border rounded-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex-1">
-                    <h4 className="font-semibold">{goal.title}</h4>
-                    <p className="text-sm text-gray-600">{goal.description}</p>
+              <div key={goal.id} className="border rounded-lg p-4 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-semibold text-sm sm:text-base truncate">{goal.title}</h4>
+                    <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">{goal.description}</p>
                     <p className="text-xs text-gray-500 mt-1">Target: {goal.targetDate}</p>
                   </div>
-                  <Badge className={getStatusColor(goal.status)}>
+                  <Badge className={`${getStatusColor(goal.status)} flex-shrink-0 text-xs`}>
                     {goal.status}
                   </Badge>
                 </div>
                 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Progress</span>
-                    <span className="text-sm text-gray-500">{goal.progress}%</span>
+                    <span className="text-xs sm:text-sm font-medium">Progress</span>
+                    <span className="text-xs sm:text-sm text-gray-500">{goal.progress}%</span>
                   </div>
                   <Progress value={goal.progress} className="h-2" />
                   <p className="text-xs text-gray-500">
@@ -212,17 +209,17 @@ const StudentPerformanceTab = () => {
       {/* Suggested Next Steps */}
       <Card>
         <CardHeader>
-          <CardTitle>Suggested Next Steps</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">Suggested Next Steps</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             {nextSteps.map((step, index) => (
-              <div key={index} className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
-                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600 mt-0.5">
+              <div key={index} className="flex flex-col sm:flex-row items-start space-y-2 sm:space-y-0 sm:space-x-3 p-3 bg-blue-50 rounded-lg">
+                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium text-blue-600 flex-shrink-0">
                   {index + 1}
                 </div>
-                <p className="text-sm flex-1">{step}</p>
-                <Button size="sm" variant="outline">
+                <p className="text-xs sm:text-sm flex-1">{step}</p>
+                <Button size="sm" variant="outline" className="w-full sm:w-auto text-xs">
                   Act
                 </Button>
               </div>

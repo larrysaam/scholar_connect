@@ -41,27 +41,31 @@ const StudentWelcomeOverviewTab = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <QuickStatsCards stats={stats} />
-      
-      {nextSession && (
-        <NextSessionCard 
-          // @ts-ignore
-          session={nextSession} 
-          onJoinSession={handleJoinSession} 
-        />
-      )}
+    <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6">
+        <QuickStatsCards stats={stats} />
+        
+        {nextSession && (
+          <NextSessionCard 
+            // @ts-ignore
+            session={nextSession} 
+            onJoinSession={handleJoinSession} 
+          />
+        )}
 
-      <RecentSummariesCard 
-        summaries={recentSummaries} 
-        onViewNotes={handleViewNotes} 
-      />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <RecentSummariesCard 
+            summaries={recentSummaries} 
+            onViewNotes={handleViewNotes} 
+          />
 
-      <QuickActionsCard 
-        onFindResearcher={handleFindResearcher}
-        onCheckMessages={handleCheckMessages}
-        onMyProgress={handleMyProgress}
-      />
+          <QuickActionsCard 
+            onFindResearcher={handleFindResearcher}
+            onCheckMessages={handleCheckMessages}
+            onMyProgress={handleMyProgress}
+          />
+        </div>
+      </div>
     </div>
   );
 };

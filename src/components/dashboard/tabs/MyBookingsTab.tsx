@@ -182,100 +182,125 @@ const MyBookingsTab = () => {
     );
     setAvailableSlots(slots);
   };
-
   const BookingCard = ({ booking }: { booking: Booking }) => (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h4 className="font-semibold text-lg">{booking.service?.title || 'Consultation'}</h4>
-              <Badge className={getStatusColor(booking.status)}>
-                <div className="flex items-center gap-1">
-                  {getStatusIcon(booking.status)}
-                  {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                </div>
-              </Badge>
-              <Badge className={getPaymentStatusColor(booking.payment_status)}>
-                {booking.payment_status.charAt(0).toUpperCase() + booking.payment_status.slice(1)}
-              </Badge>
-            </div>
-
-            <div className="flex items-center gap-1 mb-2">
-              <User className="h-4 w-4 text-gray-400" />
-              <span className="text-sm font-medium">{booking.provider?.name}</span>
-              <span className="text-sm text-gray-500">
-                at {booking.provider?.institution}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-3">
-              <div className="flex items-center gap-1">
-                <CalendarIcon className="h-4 w-4" />
-                {format(new Date(booking.scheduled_date), 'MMM dd, yyyy')}
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                {booking.scheduled_time} ({booking.duration_minutes}min)
-              </div>
-              <div className="flex items-center gap-1">
-                <User className="h-4 w-4" />
-                {booking.academic_level}
-              </div>
-              <div className="flex items-center gap-1">
-                <DollarSign className="h-4 w-4" />
-                {booking.total_price.toLocaleString()} {booking.currency}
+    <Card className="hover:shadow-md transition-shadow max-w-full">
+      <CardContent className="p-3 sm:p-4 lg:p-6">
+        <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+          <div className="flex-1 min-w-0">
+            {/* Header with badges */}
+            <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3 mb-3">
+              <h4 className="font-semibold text-base sm:text-lg truncate min-w-0 flex-1">
+                {booking.service?.title || 'Consultation'}
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                <Badge className={`${getStatusColor(booking.status)} text-xs`}>
+                  <div className="flex items-center gap-1">
+                    {getStatusIcon(booking.status)}
+                    <span className="truncate">
+                      {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                    </span>
+                  </div>
+                </Badge>
+                <Badge className={`${getPaymentStatusColor(booking.payment_status)} text-xs`}>
+                  <span className="truncate">
+                    {booking.payment_status.charAt(0).toUpperCase() + booking.payment_status.slice(1)}
+                  </span>
+                </Badge>
               </div>
             </div>
 
+            {/* Provider info */}
+            <div className="flex items-center gap-2 mb-3 min-w-0">
+              <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <span className="text-xs sm:text-sm font-medium truncate">
+                  {booking.provider?.name}
+                </span>
+                {booking.provider?.institution && (
+                  <span className="text-xs sm:text-sm text-gray-500 ml-1 truncate">
+                    at {booking.provider.institution}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Booking details grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 text-xs sm:text-sm text-gray-600 mb-3">
+              <div className="flex items-center gap-1 min-w-0">
+                <CalendarIcon className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="truncate">
+                  {format(new Date(booking.scheduled_date), 'MMM dd, yyyy')}
+                </span>
+              </div>
+              <div className="flex items-center gap-1 min-w-0">
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="truncate">
+                  {booking.scheduled_time} ({booking.duration_minutes}min)
+                </span>
+              </div>
+              <div className="flex items-center gap-1 min-w-0">
+                <User className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="truncate capitalize">{booking.academic_level}</span>
+              </div>
+              <div className="flex items-center gap-1 min-w-0">
+                <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="truncate font-medium">
+                  {booking.total_price.toLocaleString()} {booking.currency}
+                </span>
+              </div>
+            </div>
+
+            {/* Client notes */}
             {booking.client_notes && (
-              <div className="text-sm mb-3">
+              <div className="text-xs sm:text-sm mb-3 p-2 bg-gray-50 rounded-lg">
                 <span className="font-medium text-gray-600">Notes: </span>
-                <span className="text-gray-700">{booking.client_notes}</span>
+                <span className="text-gray-700 break-words">{booking.client_notes}</span>
               </div>
             )}
 
+            {/* Booking time */}
             <div className="text-xs text-gray-500">
               Booked {formatDistanceToNow(new Date(booking.created_at), { addSuffix: true })}
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex flex-col gap-2 ml-4">
+          <div className="flex flex-row lg:flex-col gap-2 flex-wrap lg:flex-nowrap">
             {booking.status === 'confirmed' && booking.meeting_link && (
               <Button
                 size="sm"
                 onClick={() => joinMeeting(booking.id)}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 w-full sm:w-auto text-xs sm:text-sm"
               >
-                <Video className="h-4 w-4 mr-1" />
-                Join Meeting
+                <Video className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Join Meeting</span>
+                <span className="sm:hidden">Join</span>
               </Button>
-            )}
-
-            {booking.status === 'pending' && (
-              <div className="flex gap-1">
+            )}            {booking.status === 'pending' && (
+              <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => setSelectedBooking(booking)}
+                      className="w-full sm:w-auto text-xs sm:text-sm"
                     >
-                      <RefreshCw className="h-4 w-4 mr-1" />
-                      Reschedule
+                      <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">Reschedule</span>
+                      <span className="sm:hidden">Reschedule</span>
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Reschedule Booking</DialogTitle>
-                      <DialogDescription>
+                  <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto mx-2 sm:mx-0">
+                    <DialogHeader className="pb-3">
+                      <DialogTitle className="text-base sm:text-lg">Reschedule Booking</DialogTitle>
+                      <DialogDescription className="text-sm">
                         Select a new date and time for your consultation
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4">
+                    <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                       <div>
-                        <Label>New Date</Label>
+                        <Label className="text-sm font-medium">New Date</Label>
                         <Calendar
                           mode="single"
                           selected={rescheduleDate}
@@ -284,19 +309,20 @@ const MyBookingsTab = () => {
                             if (date) loadAvailableSlots(date);
                           }}
                           disabled={(date) => date < new Date()}
-                          className="rounded-md border"
+                          className="rounded-md border mx-auto"
                         />
                       </div>
                       {rescheduleDate && (
                         <div>
-                          <Label>Available Times</Label>
-                          <div className="grid grid-cols-3 gap-2 mt-2">
+                          <Label className="text-sm font-medium">Available Times</Label>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
                             {availableSlots.map((slot) => (
                               <Button
                                 key={slot}
                                 variant={rescheduleTime === slot ? "default" : "outline"}
                                 onClick={() => setRescheduleTime(slot)}
                                 size="sm"
+                                className="text-xs"
                               >
                                 {slot}
                               </Button>
@@ -305,13 +331,18 @@ const MyBookingsTab = () => {
                         </div>
                       )}
                     </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setSelectedBooking(null)}>
+                    <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setSelectedBooking(null)}
+                        className="w-full sm:w-auto text-sm"
+                      >
                         Cancel
                       </Button>
                       <Button
                         onClick={handleReschedule}
                         disabled={!rescheduleDate || !rescheduleTime}
+                        className="w-full sm:w-auto text-sm"
                       >
                         Reschedule
                       </Button>
@@ -324,37 +355,44 @@ const MyBookingsTab = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="text-red-600 hover:text-red-700"
+                      className="text-red-600 hover:text-red-700 w-full sm:w-auto text-xs sm:text-sm"
                       onClick={() => setSelectedBooking(booking)}
                     >
-                      <XCircle className="h-4 w-4 mr-1" />
-                      Cancel
+                      <XCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">Cancel</span>
+                      <span className="sm:hidden">Cancel</span>
                     </Button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent>
+                  <AlertDialogContent className="w-[95vw] max-w-md mx-2 sm:mx-0">
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Cancel Booking</AlertDialogTitle>
-                      <AlertDialogDescription>
+                      <AlertDialogTitle className="text-base sm:text-lg">Cancel Booking</AlertDialogTitle>
+                      <AlertDialogDescription className="text-sm">
                         Are you sure you want to cancel this booking? This action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="my-4">
-                      <Label htmlFor="cancelReason">Reason for cancellation (optional)</Label>
+                      <Label htmlFor="cancelReason" className="text-sm font-medium">
+                        Reason for cancellation (optional)
+                      </Label>
                       <Textarea
                         id="cancelReason"
                         value={cancelReason}
                         onChange={(e) => setCancelReason(e.target.value)}
                         placeholder="Please provide a reason for cancellation..."
-                        className="mt-2"
+                        className="mt-2 text-sm"
+                        rows={3}
                       />
                     </div>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel onClick={() => setSelectedBooking(null)}>
+                    <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+                      <AlertDialogCancel 
+                        onClick={() => setSelectedBooking(null)}
+                        className="w-full sm:w-auto text-sm"
+                      >
                         Keep Booking
                       </AlertDialogCancel>
                       <AlertDialogAction
                         onClick={handleCancel}
-                        className="bg-red-600 hover:bg-red-700"
+                        className="bg-red-600 hover:bg-red-700 w-full sm:w-auto text-sm"
                       >
                         Cancel Booking
                       </AlertDialogAction>
@@ -362,9 +400,7 @@ const MyBookingsTab = () => {
                   </AlertDialogContent>
                 </AlertDialog>
               </div>
-            )}
-
-            {booking.status === 'completed' && !booking.has_review && (
+            )}            {booking.status === 'completed' && !booking.has_review && (
               <AddReviewDialog
                 booking={booking}
                 onAddReview={handleAddReview}
@@ -372,9 +408,11 @@ const MyBookingsTab = () => {
                 <Button
                   size="sm"
                   variant="outline"
+                  className="w-full sm:w-auto text-xs sm:text-sm"
                 >
-                  <Star className="h-4 w-4 mr-1" />
-                  Add Review
+                  <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Add Review</span>
+                  <span className="sm:hidden">Review</span>
                 </Button>
               </AddReviewDialog>
             )}
@@ -384,15 +422,22 @@ const MyBookingsTab = () => {
                 size="sm"
                 variant="outline"
                 disabled
+                className="w-full sm:w-auto text-xs sm:text-sm"
               >
-                <Star className="h-4 w-4 mr-1 text-yellow-400 fill-yellow-400" />
-                Reviewed
+                <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 text-yellow-400 fill-yellow-400" />
+                <span className="hidden sm:inline">Reviewed</span>
+                <span className="sm:hidden">Reviewed</span>
               </Button>
             )}
 
-            <Button size="sm" variant="outline">
-              <MessageSquare className="h-4 w-4 mr-1" />
-              Message
+            <Button 
+              size="sm" 
+              variant="outline"
+              className="w-full sm:w-auto text-xs sm:text-sm"
+            >
+              <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Message</span>
+              <span className="sm:hidden">Chat</span>
             </Button>
           </div>
         </div>
@@ -410,65 +455,69 @@ const MyBookingsTab = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">My Bookings</h2>
-          <p className="text-gray-600">Manage your consultation bookings</p>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-0">
+        <div className="min-w-0">
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold truncate">My Bookings</h2>
+          <p className="text-sm sm:text-base text-gray-600">Manage your consultation bookings</p>
         </div>
-        <Button onClick={fetchUserBookings} variant="outline">
-          <RefreshCw className="h-4 w-4 mr-2" />
+        <Button 
+          onClick={fetchUserBookings} 
+          variant="outline"
+          className="w-full sm:w-auto text-xs sm:text-sm"
+        >
+          <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
           Refresh
         </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Pending</p>
-                <p className="text-2xl font-bold text-yellow-600">{bookingStats.pending}</p>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Pending</p>
+                <p className="text-lg sm:text-2xl font-bold text-yellow-600">{bookingStats.pending}</p>
               </div>
-              <AlertCircle className="h-8 w-8 text-yellow-600" />
+              <AlertCircle className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-600 flex-shrink-0" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Confirmed</p>
-                <p className="text-2xl font-bold text-blue-600">{bookingStats.confirmed}</p>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Confirmed</p>
+                <p className="text-lg sm:text-2xl font-bold text-blue-600">{bookingStats.confirmed}</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-blue-600" />
+              <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Completed</p>
-                <p className="text-2xl font-bold text-green-600">{bookingStats.completed}</p>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Completed</p>
+                <p className="text-lg sm:text-2xl font-bold text-green-600">{bookingStats.completed}</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-600" />
+              <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 flex-shrink-0" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Cancelled</p>
-                <p className="text-2xl font-bold text-red-600">{bookingStats.cancelled}</p>
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Cancelled</p>
+                <p className="text-lg sm:text-2xl font-bold text-red-600">{bookingStats.cancelled}</p>
               </div>
-              <XCircle className="h-8 w-8 text-red-600" />
+              <XCircle className="h-6 w-6 sm:h-8 sm:w-8 text-red-600 flex-shrink-0" />
             </div>
           </CardContent>
         </Card>
@@ -476,8 +525,8 @@ const MyBookingsTab = () => {
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -485,41 +534,32 @@ const MyBookingsTab = () => {
                   placeholder="Search bookings..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 text-sm"
                 />
               </div>
             </div>
-            <div className="w-full md:w-48">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="confirmed">Confirmed</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="confirmed">Confirmed</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
 
       {/* Bookings List */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {filteredBookings.length === 0 ? (
           <Card>
-            <CardContent className="text-center py-12">
-              <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
-              <p className="text-gray-600">
-                {bookings.length === 0 
-                  ? "You haven't made any consultation bookings yet."
-                  : "No bookings match your current filters."
-                }
-              </p>
+            <CardContent className="text-center py-8 sm:py-12">
+              <p className="text-sm sm:text-base text-gray-500">No bookings found matching your criteria.</p>
             </CardContent>
           </Card>
         ) : (
@@ -528,6 +568,9 @@ const MyBookingsTab = () => {
           ))
         )}
       </div>
+
+      {/* Reschedule Dialog and other modals remain the same but with responsive sizing */}
+      {/* All existing Dialog components can remain as they auto-adapt to mobile */}
     </div>
   );
 };

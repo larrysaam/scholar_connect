@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,35 +15,35 @@ const PostJobTab = () => {
   const { jobs, loading } = useJobManagement();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
       <PostJobHeader />
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="post" className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Post New Job
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto sm:h-10 gap-1 sm:gap-0">
+          <TabsTrigger value="post" className="flex items-center gap-1 sm:gap-2 p-2 sm:p-3 text-xs sm:text-sm">
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="truncate">Post New Job</span>
           </TabsTrigger>
-          <TabsTrigger value="manage" className="flex items-center gap-2">
-            <Briefcase className="h-4 w-4" />
-            Manage Jobs ({jobs.length})
+          <TabsTrigger value="manage" className="flex items-center gap-1 sm:gap-2 p-2 sm:p-3 text-xs sm:text-sm">
+            <Briefcase className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="truncate">Manage Jobs ({jobs.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="applications" className="flex items-center gap-2">
-            <Eye className="h-4 w-4" />
-            Job Applications
+          <TabsTrigger value="applications" className="flex items-center gap-1 sm:gap-2 p-2 sm:p-3 text-xs sm:text-sm">
+            <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="truncate">Job Applications</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="post" className="space-y-6">
+        <TabsContent value="post" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
           <JobPostingForm />
           <PostJobTips />
         </TabsContent>
 
-        <TabsContent value="manage" className="space-y-6">
+        <TabsContent value="manage" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
           <JobManagement />
         </TabsContent>
 
-        <TabsContent value="applications" className="space-y-6">
+        <TabsContent value="applications" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
           <JobApplicationsManagement />
         </TabsContent>
       </Tabs>

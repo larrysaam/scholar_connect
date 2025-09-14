@@ -115,55 +115,62 @@ const StudentPastTab = () => {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm">
-      <h2 className="text-xl font-semibold mb-4">Past Consultations</h2>
+    <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-bold truncate">Past Consultations</h2>
+      </div>
       
       {paginatedConsultations.length > 0 ? (
         <>
-          <div className="space-y-6">
+          <div className="space-y-3 sm:space-y-6 max-w-full">
             {paginatedConsultations.map((consultation) => (
-              <PastConsultationCard
-                key={consultation.id}
-                consultation={consultation}
-                uploadedResources={uploadedResources[consultation.id] || []}
-                userRole="student"
-                onViewRecording={handleViewRecording}
-                onViewAINotes={handleViewAINotes}
-                onUploadResources={handleUploadResources}
-                onSendMessage={handleSendMessage}
-                onOpenChat={handleOpenChat}
-                onFollowUpSession={handleFollowUpSession}
-              />
+              <div key={consultation.id} className="overflow-hidden">
+                <PastConsultationCard
+                  consultation={consultation}
+                  uploadedResources={uploadedResources[consultation.id] || []}
+                  userRole="student"
+                  onViewRecording={handleViewRecording}
+                  onViewAINotes={handleViewAINotes}
+                  onUploadResources={handleUploadResources}
+                  onSendMessage={handleSendMessage}
+                  onOpenChat={handleOpenChat}
+                  onFollowUpSession={handleFollowUpSession}
+                />
+              </div>
             ))}
           </div>
           {totalPages > 1 && (
-            <div className="flex justify-end items-center mt-6">
-              <Button 
-                variant="outline"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="mr-2"
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-gray-600">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button 
-                variant="outline"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="ml-2"
-              >
-                Next
-              </Button>
+            <div className="flex flex-col sm:flex-row justify-center sm:justify-end items-center gap-2 sm:gap-0 mt-4 sm:mt-6">
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="text-xs sm:text-sm px-3 sm:px-4"
+                >
+                  Previous
+                </Button>
+                <span className="text-xs sm:text-sm text-gray-600 px-2">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="text-xs sm:text-sm px-3 sm:px-4"
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           )}
         </>
       ) : (
         <Card>
-            <CardContent className="text-center py-12">
-                <p className="text-gray-500">No past consultations available.</p>
+            <CardContent className="text-center py-8 sm:py-12">
+                <p className="text-sm sm:text-base text-gray-500">No past consultations available.</p>
             </CardContent>
         </Card>
       )}

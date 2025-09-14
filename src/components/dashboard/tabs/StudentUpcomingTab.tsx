@@ -299,22 +299,22 @@ const StudentUpcomingTab = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Upcoming Consultations</h2>
+    <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-bold truncate">Upcoming Consultations</h2>
       </div>
       
       {consultations.length === 0 ? (
         <Card>
-          <CardContent className="text-center py-12">
-            <p className="text-gray-500">You have no upcoming consultations scheduled.</p>
+          <CardContent className="text-center py-8 sm:py-12">
+            <p className="text-sm sm:text-base text-gray-500">You have no upcoming consultations scheduled.</p>
           </CardContent>
         </Card>
       ) : (
         <>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4 max-w-full">
           {paginatedConsultations.map((consultation) => (
-            <div key={consultation.id}>
+            <div key={consultation.id} className="overflow-hidden">
               <ConsultationCard
                 consultation={consultation}
                 userType="student"
@@ -326,19 +326,34 @@ const StudentUpcomingTab = () => {
                 onAccessDocument={handleAccessDocument}
               />
               {/* Mark as Complete Button for student */}
-              <div className="flex justify-end mt-2">
+              <div className="flex flex-col sm:flex-row justify-end gap-2 mt-2 px-2 sm:px-0">
                 {!consultation.student_completed && (
-                  <Button size="sm" variant="destructive" onClick={() => handleMarkAsComplete(consultation)}>
+                  <Button 
+                    size="sm" 
+                    variant="destructive" 
+                    onClick={() => handleMarkAsComplete(consultation)}
+                    className="w-full sm:w-auto text-xs sm:text-sm"
+                  >
                     Mark as Complete
                   </Button>
                 )}
                 {consultation.student_completed && !consultation.researcher_completed && (
-                  <Button size="sm" variant="secondary" disabled>
+                  <Button 
+                    size="sm" 
+                    variant="secondary" 
+                    disabled
+                    className="w-full sm:w-auto text-xs sm:text-sm"
+                  >
                     Waiting for Researcher
                   </Button>
                 )}
                 {consultation.student_completed && consultation.researcher_completed && (
-                  <Button size="sm" variant="default" disabled>
+                  <Button 
+                    size="sm" 
+                    variant="default" 
+                    disabled
+                    className="w-full sm:w-auto text-xs sm:text-sm"
+                  >
                     Completed
                   </Button>
                 )}
@@ -347,26 +362,30 @@ const StudentUpcomingTab = () => {
           ))}
           </div>
           {totalPages > 1 && (
-            <div className="flex justify-end items-center mt-6">
-              <Button 
-                variant="outline"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="mr-2"
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-gray-600">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button 
-                variant="outline"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="ml-2"
-              >
-                Next
-              </Button>
+            <div className="flex flex-col sm:flex-row justify-center sm:justify-end items-center gap-2 sm:gap-0 mt-4 sm:mt-6">
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="text-xs sm:text-sm px-3 sm:px-4"
+                >
+                  Previous
+                </Button>
+                <span className="text-xs sm:text-sm text-gray-600 px-2">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="text-xs sm:text-sm px-3 sm:px-4"
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           )}
         </>

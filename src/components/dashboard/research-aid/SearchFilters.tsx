@@ -27,21 +27,24 @@ const SearchFilters = ({
 }: SearchFiltersProps) => {
   return (
     <Card className="border-green-100 shadow-sm">
-      <CardContent className="p-6">
+      <CardContent className="p-4 sm:p-6">
         <div className="space-y-4">
+          {/* Search Input */}
           <div className="flex items-center space-x-2">
-            <Search className="h-5 w-5 text-green-500" />
+            <Search className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
             <Input
               placeholder="Search by name, skills, or expertise..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 border-green-200 focus:border-green-400"
+              className="flex-1 border-green-200 focus:border-green-400 text-sm sm:text-base"
             />
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Filter Controls - Responsive Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {/* Category Filter */}
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="border-green-200">
+              <SelectTrigger className="border-green-200 text-sm sm:text-base h-9 sm:h-10">
                 <SelectValue placeholder="Service Category" />
               </SelectTrigger>
               <SelectContent>
@@ -52,8 +55,9 @@ const SearchFilters = ({
               </SelectContent>
             </Select>
             
+            {/* Price Range Filter */}
             <Select value={priceRange} onValueChange={setPriceRange}>
-              <SelectTrigger className="border-green-200">
+              <SelectTrigger className="border-green-200 text-sm sm:text-base h-9 sm:h-10">
                 <SelectValue placeholder="Price Range" />
               </SelectTrigger>
               <SelectContent>
@@ -64,9 +68,14 @@ const SearchFilters = ({
               </SelectContent>
             </Select>
             
-            <Button variant="outline" className="border-green-200 text-green-600 hover:bg-green-50">
-              <Filter className="h-4 w-4 mr-2" />
-              More Filters
+            {/* More Filters Button */}
+            <Button 
+              variant="outline" 
+              className="border-green-200 text-green-600 hover:bg-green-50 w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10"
+            >
+              <Filter className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">More Filters</span>
+              <span className="sm:hidden">Filters</span>
             </Button>
           </div>
         </div>
