@@ -236,9 +236,9 @@ const PaymentsEarningsTab = () => {
   }
   // Main render
   return (
-    <div className="space-y-4 sm:space-y-6 p-2 sm:p-0">
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-0 overflow-x-auto">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
-        <h2 className="text-xl sm:text-2xl font-bold">Payments & Earnings</h2>
+        <h2 className="text-xl sm:text-2xl font-bold whitespace-nowrap truncate">Payments & Earnings</h2>
         <div className="flex flex-wrap gap-2">
           <Button 
             variant={activeTab === "earnings" ? "default" : "outline"} 
@@ -256,7 +256,8 @@ const PaymentsEarningsTab = () => {
             Withdrawals
           </Button>
         </div>
-      </div>      {/* Summary Cards */}
+      </div>
+      {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-4 sm:p-6">
@@ -264,7 +265,7 @@ const PaymentsEarningsTab = () => {
               <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 flex-shrink-0" />
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm text-gray-600">Total Earnings</p>
-                <p className="text-lg sm:text-2xl font-bold truncate">{totalEarnings.toLocaleString()} XAF</p>
+                <p className="text-base sm:text-lg font-bold truncate max-w-[120px] sm:max-w-[160px]">{totalEarnings.toLocaleString()} XAF</p>
               </div>
             </div>
           </CardContent>
@@ -275,7 +276,7 @@ const PaymentsEarningsTab = () => {
               <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm text-gray-600">Pending Earnings</p>
-                <p className="text-lg sm:text-2xl font-bold truncate">{pendingEarnings.toLocaleString()} XAF</p>
+                <p className="text-base sm:text-lg font-bold truncate max-w-[120px] sm:max-w-[160px]">{pendingEarnings.toLocaleString()} XAF</p>
               </div>
             </div>
           </CardContent>
@@ -286,7 +287,7 @@ const PaymentsEarningsTab = () => {
               <CreditCard className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600 flex-shrink-0" />
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm text-gray-600">Available Balance</p>
-                <p className="text-lg sm:text-2xl font-bold truncate">{computedAvailableBalance.toLocaleString()} XAF</p>
+                <p className="text-base sm:text-lg font-bold truncate max-w-[120px] sm:max-w-[160px]">{computedAvailableBalance.toLocaleString()} XAF</p>
               </div>
             </div>
           </CardContent>
@@ -297,7 +298,7 @@ const PaymentsEarningsTab = () => {
               <TrendingUp className="h-8 w-8 text-green-700" />
               <div>
                 <p className="text-sm text-gray-600">Total Withdrawn</p>
-                <p className="text-2xl font-bold">{totalWithdrawn.toLocaleString()} XAF</p>
+                <p className="text-base sm:text-lg font-bold truncate max-w-[120px] sm:max-w-[160px]">{totalWithdrawn.toLocaleString()} XAF</p>
               </div>
             </div>
           </CardContent>
@@ -305,27 +306,28 @@ const PaymentsEarningsTab = () => {
       </div>
 
       {/* Tab Content */}
+      <div className="overflow-x-auto w-full">
       {activeTab === "earnings" && (
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Earnings Overview</h3>
+            <h3 className="text-lg font-semibold whitespace-nowrap truncate">Earnings Overview</h3>
             <Button onClick={() => handleExport("earnings")}> 
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
           </div>
           {earnings.map((earning) => (
-            <Card key={earning.id}>
+            <Card key={earning.id} className="overflow-hidden">
               <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="font-medium">{earning.project}</h4>
-                    <p className="text-sm text-gray-600">Client: {earning.client}</p>
-                    <p className="text-xs text-blue-600 capitalize">{earning.type} payment</p>
+                <div className="flex justify-between items-center flex-wrap gap-2">
+                  <div className="min-w-0">
+                    <h4 className="font-medium truncate max-w-[180px]">{earning.project}</h4>
+                    <p className="text-sm text-gray-600 truncate max-w-[140px]">Client: {earning.client}</p>
+                    <p className="text-xs text-blue-600 capitalize truncate">{earning.type} payment</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-semibold">{earning.amount.toLocaleString()} XAF</p>
-                    <p className="text-sm text-gray-500">{earning.date}</p>
+                  <div className="text-right min-w-0">
+                    <p className="text-lg font-semibold truncate">{earning.amount.toLocaleString()} XAF</p>
+                    <p className="text-sm text-gray-500 truncate">{earning.date}</p>
                     {getStatusBadge(earning.status)}
                   </div>
                 </div>
@@ -336,9 +338,9 @@ const PaymentsEarningsTab = () => {
       )}
 
       {activeTab === "transactions" && (
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Transaction History</h3>
+            <h3 className="text-lg font-semibold whitespace-nowrap truncate">Transaction History</h3>
             <Button onClick={() => handleExport("transactions")}> 
               <Download className="h-4 w-4 mr-2" />
               Export
@@ -351,20 +353,18 @@ const PaymentsEarningsTab = () => {
               <div className="text-gray-500">No transactions found.</div>
             ) : (
               paginatedTransactions.map((transaction) => (
-                <Card key={transaction.id}>
+                <Card key={transaction.id} className="overflow-hidden">
                   <CardContent className="p-4">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h4 className="font-medium">{transaction.description}</h4>
-                        <p className="text-sm text-gray-600 capitalize">{transaction.type}</p>
+                    <div className="flex justify-between items-center flex-wrap gap-2">
+                      <div className="min-w-0">
+                        <h4 className="font-medium truncate max-w-[180px]">{transaction.description}</h4>
+                        <p className="text-sm text-gray-600 capitalize truncate max-w-[120px]">{transaction.type}</p>
                       </div>
-                      <div className="text-right">
-                        <p className={`text-lg font-semibold ${
-                          transaction.amount > 0 ? "text-green-600" : "text-red-600"
-                        }`}>
+                      <div className="text-right min-w-0">
+                        <p className={`text-lg font-semibold ${transaction.amount > 0 ? "text-green-600" : "text-red-600"} truncate`}>
                           {transaction.amount > 0 ? "+" : ""}{transaction.amount.toLocaleString()} XAF
                         </p>
-                        <p className="text-sm text-gray-500">{transaction.date}</p>
+                        <p className="text-sm text-gray-500 truncate">{transaction.date}</p>
                         {getStatusBadge(transaction.status)}
                       </div>
                     </div>
@@ -401,9 +401,9 @@ const PaymentsEarningsTab = () => {
       )}
 
       {activeTab === "methods" && (
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Payment Methods</h3>
+            <h3 className="text-lg font-semibold whitespace-nowrap truncate">Payment Methods</h3>
             <Dialog>
               <DialogTrigger asChild>
                 <Button>
@@ -447,14 +447,14 @@ const PaymentsEarningsTab = () => {
           </div>
           
           {paymentMethods.map((method) => (
-            <Card key={method.id}>
+            <Card key={method.id} className="overflow-hidden">
               <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-3">
+                <div className="flex justify-between items-center flex-wrap gap-2">
+                  <div className="flex items-center space-x-3 min-w-0">
                     <CreditCard className="h-8 w-8 text-blue-600" />
-                    <div>
-                      <h4 className="font-medium">{method.name}</h4>
-                      <p className="text-sm text-gray-600">{method.details.value}</p>
+                    <div className="min-w-0">
+                      <h4 className="font-medium truncate max-w-[120px]">{method.name}</h4>
+                      <p className="text-sm text-gray-600 truncate max-w-[120px]">{method.details.value}</p>
                       {method.is_default && (
                         <Badge variant="secondary" className="text-xs">Default</Badge>
                       )}
@@ -504,8 +504,8 @@ const PaymentsEarningsTab = () => {
       )}
 
       {activeTab === "withdrawals" && (
-        <div className="space-y-4">
-          <div className="w-full md:w-1/3 space-y-2">
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+          <div className="w-full md:w-1/3 space-y-2 min-w-[220px]">
             <div className="bg-blue-100 rounded p-2 text-blue-800 mb-2">
               Available Balance: <span className="font-bold">{computedAvailableBalance.toLocaleString()} XAF</span>
             </div>
@@ -545,16 +545,16 @@ const PaymentsEarningsTab = () => {
             {withdrawalsLoading ? (
               <div>Loading...</div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-[30vh] overflow-y-auto">
                 {withdrawals.length === 0 && <div className="text-gray-500">No withdrawals yet.</div>}
                 {withdrawals.map((w) => (
-                  <Card key={w.id}>
-                    <CardContent className="p-4 flex justify-between items-center">
-                      <div>
-                        <div className="font-medium">{Number(w.amount).toLocaleString()} XAF</div>
-                        <div className="text-xs text-gray-500">Requested: {new Date(w.requested_at).toLocaleString()}</div>
-                        {w.processed_at && <div className="text-xs text-gray-400">Processed: {new Date(w.processed_at).toLocaleString()}</div>}
-                        {w.notes && <div className="text-xs text-gray-400">{w.notes}</div>}
+                  <Card key={w.id} className="overflow-hidden">
+                    <CardContent className="p-4 flex justify-between items-center flex-wrap gap-2">
+                      <div className="min-w-0">
+                        <div className="font-medium truncate max-w-[120px]">{Number(w.amount).toLocaleString()} XAF</div>
+                        <div className="text-xs text-gray-500 truncate max-w-[120px]">Requested: {new Date(w.requested_at).toLocaleString()}</div>
+                        {w.processed_at && <div className="text-xs text-gray-400 truncate max-w-[120px]">Processed: {new Date(w.processed_at).toLocaleString()}</div>}
+                        {w.notes && <div className="text-xs text-gray-400 truncate max-w-[120px]">{w.notes}</div>}
                       </div>
                       <div>{getStatusBadge(w.status)}</div>
                     </CardContent>
@@ -565,6 +565,7 @@ const PaymentsEarningsTab = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

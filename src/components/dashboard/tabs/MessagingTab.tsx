@@ -9,8 +9,7 @@ import { Check, CheckCheck } from "lucide-react";
 
 // MessagingTab: Chat with students who booked your services
 const MessagingTab = () => {
-  const { user } = useAuth();
-  // Use the real messages hook
+  const { user } = useAuth();  // Use the real messages hook
   const {
     conversations,
     messages,
@@ -20,7 +19,7 @@ const MessagingTab = () => {
     selectedConversation,
     setSelectedConversation,
     socketConnected,
-    socket, // <-- add socket from useMessages
+    socket,
   } = useMessages();
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -70,28 +69,51 @@ const MessagingTab = () => {
     if (msg.status === 'read' && isLastRead) {
       return <CheckCheck className="h-4 w-4 text-blue-400" />;
     } else if (msg.status === 'read' || msg.status === 'delivered') {
-      return <CheckCheck className="h-4 w-4 text-gray-400" />;
-    } else if (msg.status === 'sent') {
+      return <CheckCheck className="h-4 w-4 text-gray-400" />;    } else if (msg.status === 'sent') {
       return <Check className="h-4 w-4 text-gray-400" />;
     } else {
       return <Check className="h-4 w-4 text-gray-300" />;
     }
   };
+
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold mb-2">Messages & File Exchange</h2>
-        <p className="text-gray-600 text-sm sm:text-base">Communicate with your booked students</p>
+    <div className="space-y-6 sm:space-y-8 p-1 sm:p-0">
+      {/* Modern Header */}
+      <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Messages & File Exchange
+          </h2>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
+            Communicate securely with your booked students
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span>{socketConnected ? 'Connected' : 'Connecting...'}</span>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 h-[500px] sm:h-[600px]">
-        {/* Conversations List */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <span className="font-semibold text-sm sm:text-base">Conversations</span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[550px] sm:h-[650px]">        {/* Conversations List */}
+        <Card className="lg:col-span-1 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50/50 hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-3 border-b border-gray-100 bg-white/80 backdrop-blur-sm">
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="p-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg">
+                  <span className="text-lg">💬</span>
+                </div>
+                <span className="font-semibold text-sm sm:text-base bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Conversations
+                </span>
+              </div>
+              <div className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
+                {conversations.length}
+              </div>
             </CardTitle>
-          </CardHeader>          <CardContent className="p-0">
+          </CardHeader>
+          <CardContent className="p-0">
             <div className="space-y-1">
               {conversations.map((conv: any) => (
                 <div

@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react';
 import PastConsultationCard from "../consultation/PastConsultationCard";
 import { useConsultationServices } from "@/hooks/useConsultationServices";
-import { Loader2 } from "lucide-react";
+import { Loader2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const ITEMS_PER_PAGE = 5;
@@ -25,7 +25,13 @@ const PastTab = ({ userRole }: PastTabProps) => {
           id: booking.client_id,
           name: booking.client?.name || 'N/A',
           field: booking.service?.category || 'N/A',
-          imageUrl: booking.client?.avatar_url || '/placeholder.svg',
+          imageUrl: booking.client?.avatar_url || '/placeholder-avatar.jpg',
+        },
+        researcher: {
+          id: booking.provider_id,
+          name: booking.provider?.name || 'N/A',
+          field: booking.service?.category || 'N/A',
+          imageUrl: booking.provider?.avatar_url || '/placeholder-avatar.jpg',
         },
         date: new Date(booking.scheduled_date).toLocaleDateString(),
         time: booking.scheduled_time,
@@ -95,18 +101,34 @@ const PastTab = ({ userRole }: PastTabProps) => {
   }
 
   return (
-    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-      <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Past Consultations</h2>
-      
+    <div className="space-y-6 sm:space-y-8 p-1 sm:p-0">
+      {/* Modern Header */}
+      <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            Past Consultations
+          </h2>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
+            Review your completed sessions and track your progress
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span>{pastConsultations.length} Completed</span>
+          </div>
+        </div>
+      </div>
+
       {paginatedConsultations.length > 0 ? (
         <>
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-6">
             {paginatedConsultations.map((consultation) => (
               <PastConsultationCard
                 key={consultation.id}
                 consultation={consultation}
                 uploadedResources={uploadedResources[consultation.id] || []}
-                userType="researcher"
+                userRole={userRole}
                 onViewRecording={handleViewRecording}
                 onViewAINotes={handleViewAINotes}
                 onUploadResources={handleUploadResources}
@@ -115,33 +137,46 @@ const PastTab = ({ userRole }: PastTabProps) => {
               />
             ))}
           </div>
+          
           {totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row justify-center sm:justify-end items-center mt-4 sm:mt-6 gap-2">
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mt-8">
               <Button 
                 variant="outline"
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="w-full sm:w-auto text-xs"
+                className="group w-full sm:w-auto px-6 py-2 border-2 border-gray-200 hover:border-purple-400 hover:bg-purple-50 transition-all duration-200"
               >
-                Previous
+                <span className="text-sm font-medium">Previous</span>
               </Button>
-              <span className="text-xs sm:text-sm text-gray-600">
-                Page {currentPage} of {totalPages}
-              </span>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-600">
+                  Page {currentPage} of {totalPages}
+                </span>
+              </div>
+              
               <Button 
                 variant="outline"
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="w-full sm:w-auto text-xs"
+                className="group w-full sm:w-auto px-6 py-2 border-2 border-gray-200 hover:border-purple-400 hover:bg-purple-50 transition-all duration-200"
               >
-                Next
+                <span className="text-sm font-medium">Next</span>
               </Button>
             </div>
           )}
         </>
       ) : (
-        <div className="text-center py-6 sm:py-8">
-          <p className="text-gray-500 text-sm">No past consultations available.</p>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full flex items-center justify-center mb-6">
+            <Clock className="h-10 w-10 text-purple-600" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            No Past Consultations Yet
+          </h3>
+          <p className="text-gray-500 max-w-md">
+            Your completed consultations will appear here. Start by scheduling your first session!
+          </p>
         </div>
       )}
     </div>

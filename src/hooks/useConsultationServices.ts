@@ -40,14 +40,15 @@ export interface ServiceBooking {
   service?: {
     title: string;
     category: string;
-  };
-  client?: {
+  };  client?: {
     name: string;
     email: string;
+    avatar_url?: string;
   };
   provider?: {
     name: string;
     email: string;
+    avatar_url?: string;
   };
   shared_documents?: { name: string; url: string }[]; // Added shared_documents
   review?: {
@@ -119,10 +120,9 @@ export const useConsultationServices = () => {
 
   const fetchBookings = useCallback(async () => {
     if (!user) return;
-    try {
-      const { data, error } = await supabase
+    try {      const { data, error } = await supabase
         .from('service_bookings')
-        .select(`*, client:users!service_bookings_client_id_fkey(name, email, avatar_url), shared_documents, researcher_reviews!left(rating, comment), service:consultation_services(title, category)`) // Added service category for filtering
+        .select(`*, client:users!service_bookings_client_id_fkey(name, email, avatar_url), provider:users!service_bookings_provider_id_fkey(name, email, avatar_url), researcher_reviews!left(rating, comment), service:consultation_services(title, category)`)
         .eq('provider_id', user.id)
         .order('scheduled_date', { ascending: true });
 
@@ -137,15 +137,14 @@ export const useConsultationServices = () => {
       const bookingsWithClientNames = await Promise.all(
         (data || []).map(async (booking) => {
           let client = booking.client;
-          if (!client) {
-            const { data: userData, error: userError } = await supabase
+          if (!client) {            const { data: userData, error: userError } = await supabase
               .from('users')
-              .select('name, email')
+              .select('name, email, avatar_url')
               .eq('id', booking.client_id)
               .single();
             if (userError) {
               console.error(`Error fetching user ${booking.client_id}:`, userError);
-              client = { name: 'N/A', email: '' };
+              client = { name: 'N/A', email: '', avatar_url: null };
             } else {
               client = userData;
             }
@@ -168,11 +167,10 @@ export const useConsultationServices = () => {
     if (!user) return;
     try {
       const { data, error } = await supabase
-        .from('service_bookings')
-        .select(`
+        .from('service_bookings')        .select(`
           *,
           service:consultation_services(title, category),
-          provider:users!service_bookings_provider_id_fkey(name, email)
+          provider:users!service_bookings_provider_id_fkey(name, email, avatar_url)
         `)
         .eq('client_id', user.id)
         .order('scheduled_date', { ascending: true });
