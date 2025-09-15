@@ -98,37 +98,49 @@ const ResearchAidsPreviousWorks = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Previous Works</h2>
-        <div className="flex space-x-2">
-          <AddWorkModal
-            isOpen={isAddWorkOpen}
-            onOpenChange={setIsAddWorkOpen}
-            newWork={newWork}
-            onNewWorkChange={setNewWork}
-            onAddWork={handleAddWork}
-          />
-          <Button 
-            variant={activeTab === "platform" ? "default" : "outline"} 
-            onClick={() => setActiveTab("platform")}
-          >
-            Platform Projects
-          </Button>
-          <Button 
-            variant={activeTab === "pre-platform" ? "default" : "outline"} 
-            onClick={() => setActiveTab("pre-platform")}
-          >
-            Previous Experience
-          </Button>
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-0">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+        <h2 className="text-xl sm:text-2xl font-bold truncate">Previous Works</h2>
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+          <div className="order-2 sm:order-1">
+            <AddWorkModal
+              isOpen={isAddWorkOpen}
+              onOpenChange={setIsAddWorkOpen}
+              newWork={newWork}
+              onNewWorkChange={setNewWork}
+              onAddWork={handleAddWork}
+            />
+          </div>
+          <div className="flex space-x-1 sm:space-x-2 order-1 sm:order-2">
+            <Button 
+              variant={activeTab === "platform" ? "default" : "outline"} 
+              onClick={() => setActiveTab("platform")}
+              size="sm"
+              className="flex-1 sm:flex-none text-xs sm:text-sm px-2 sm:px-4"
+            >
+              <span className="hidden sm:inline">Platform Projects</span>
+              <span className="sm:hidden">Platform</span>
+            </Button>
+            <Button 
+              variant={activeTab === "pre-platform" ? "default" : "outline"} 
+              onClick={() => setActiveTab("pre-platform")}
+              size="sm"
+              className="flex-1 sm:flex-none text-xs sm:text-sm px-2 sm:px-4"
+            >
+              <span className="hidden sm:inline">Previous Experience</span>
+              <span className="sm:hidden">Experience</span>
+            </Button>
+          </div>
         </div>
       </div>
 
       {activeTab === "platform" && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-6">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6">
             {platformWorks.length === 0 ? (
-              <p>No platform projects found.</p>
+              <div className="text-center py-8 text-gray-500">
+                <p className="text-sm sm:text-base">No platform projects found.</p>
+              </div>
             ) : (
               platformWorks.map((work) => (
                 <PlatformWorkCard
@@ -147,10 +159,12 @@ const ResearchAidsPreviousWorks = () => {
       )}
 
       {activeTab === "pre-platform" && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-6">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6">
             {prePlatformWorks.length === 0 ? (
-              <p>No previous experience found.</p>
+              <div className="text-center py-8 text-gray-500">
+                <p className="text-sm sm:text-base">No previous experience found.</p>
+              </div>
             ) : (
               prePlatformWorks.map((work) => (
                 <PrePlatformWorkCard
@@ -171,9 +185,11 @@ const ResearchAidsPreviousWorks = () => {
       />
 
       <Dialog open={isPreviewModalOpen} onOpenChange={setIsPreviewModalOpen}>
-        <DialogContent className="sm:max-w-[800px] h-[80vh] flex flex-col">
+        <DialogContent className="w-[95vw] sm:max-w-[800px] h-[85vh] sm:h-[80vh] flex flex-col max-w-none">
           <DialogHeader>
-            <DialogTitle>Preview: {previewFileName}</DialogTitle>
+            <DialogTitle className="text-sm sm:text-base truncate pr-8">
+              Preview: {previewFileName}
+            </DialogTitle>
           </DialogHeader>
           <div className="flex-grow overflow-hidden">
             {previewUrl && (
@@ -190,20 +206,30 @@ const ResearchAidsPreviousWorks = () => {
 
       {/* New Upload Deliverable Modal */}
       <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="w-[95vw] sm:max-w-[425px] max-w-none">
           <DialogHeader>
-            <DialogTitle>Upload Deliverable</DialogTitle>
+            <DialogTitle className="text-sm sm:text-base">Upload Deliverable</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="file" className="text-right">
+            <div className="flex flex-col sm:grid sm:grid-cols-4 sm:items-center gap-2 sm:gap-4">
+              <Label htmlFor="file" className="sm:text-right text-sm">
                 File
               </Label>
-              <Input id="file" type="file" className="col-span-3" onChange={handleFileChange} />
+              <Input 
+                id="file" 
+                type="file" 
+                className="sm:col-span-3" 
+                onChange={handleFileChange}
+              />
             </div>
           </div>
-          <DialogFooter>
-            <Button type="submit" onClick={handleSubmitUpload} disabled={!fileToUpload || loading}>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
+            <Button 
+              type="submit" 
+              onClick={handleSubmitUpload} 
+              disabled={!fileToUpload || loading}
+              className="w-full sm:w-auto"
+            >
               <Upload className="h-4 w-4 mr-2" /> Upload
             </Button>
           </DialogFooter>

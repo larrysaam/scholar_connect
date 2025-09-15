@@ -32,4 +32,5 @@ export interface NewWork {
   duration: string;
   outcomes: string;
   file: File | null;
+  projectType: string;
 }

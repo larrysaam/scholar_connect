@@ -12,13 +12,13 @@ const StarRating = ({ rating, showScore = true }: StarRatingProps) => {
       {Array.from({ length: 5 }, (_, index) => (
         <Star
           key={index}
-          className={`h-4 w-4 ${
+          className={`h-3 w-3 sm:h-4 sm:w-4 ${
             index < rating ? "text-yellow-400 fill-current" : "text-gray-300"
           }`}
         />
       ))}
       {showScore && (
-        <span className="text-sm text-gray-600 ml-2">({rating}/5)</span>
+        <span className="text-xs sm:text-sm text-gray-600 ml-1 sm:ml-2">({rating}/5)</span>
       )}
     </div>
   );

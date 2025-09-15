@@ -1,9 +1,4 @@
-// TODO: Replace all mock data and local state with backend integration (e.g., Supabase or REST API)
-// Example: usePayments hook for fetching and mutating earnings, transactions, payment methods
-// const { earnings, transactions, paymentMethods, addPaymentMethod, updatePaymentMethod, requestWithdrawal, loading } = usePayments(userId);
-// For now, the UI and state logic is ready for backend integration.
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePayments } from "@/hooks/usePayments";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,12 +15,37 @@ import {
   Plus, 
   Edit,
   TrendingUp,
-  Calendar
+  Calendar,
+  Loader2,
+  Trash2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Tables } from "@/integrations/supabase/types";
+import { Select as OperatorSelect, SelectContent as OperatorSelectContent, SelectItem as OperatorSelectItem, SelectTrigger as OperatorSelectTrigger, SelectValue as OperatorSelectValue } from "@/components/ui/select";
 
 const ResearchAidsPaymentsEarnings = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
+  
+  // State management
+  const [activeTab, setActiveTab] = useState("earnings");
+  const [withdrawalAmount, setWithdrawalAmount] = useState("");
+  const [paymentMethodType, setPaymentMethodType] = useState("");
+  const [paymentDetails, setPaymentDetails] = useState<any>({});
+  const [editingPaymentMethod, setEditingPaymentMethod] = useState<any>(null);
+  const [withdrawals, setWithdrawals] = useState<Tables<'withdrawals'>[]>([]);
+  const [withdrawalsLoading, setWithdrawalsLoading] = useState(false);
+  const [withdrawalPhone, setWithdrawalPhone] = useState("");
+  const [withdrawalOperator, setWithdrawalOperator] = useState("");
+  
+  // Pagination state for transactions
+  const [transactionPage, setTransactionPage] = useState(1);
+  const transactionsPerPage = 10;
+  const [paginatedTransactions, setPaginatedTransactions] = useState<any[]>([]);
+  const [totalTransactionPages, setTotalTransactionPages] = useState(1);
+  const [transactionsLoading, setTransactionsLoading] = useState(false);
+
   const {
     earnings,
     transactions,
@@ -38,25 +58,63 @@ const ResearchAidsPaymentsEarnings = () => {
     deletePaymentMethod,
     setDefaultPaymentMethod,
   } = usePayments();
+  // Fetch transactions with pagination
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      if (!user) return;
+      setTransactionsLoading(true);
+      const { data, error, count } = await supabase
+        .from('transactions')
+        .select('*', { count: 'exact' })
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .range((transactionPage - 1) * transactionsPerPage, transactionPage * transactionsPerPage - 1);
+      if (!error) {
+        setPaginatedTransactions(data || []);
+        setTotalTransactionPages(count ? Math.ceil(count / transactionsPerPage) : 1);
+      }
+      setTransactionsLoading(false);
+    };
+    if (user) fetchTransactions();
+  }, [user, transactionPage]);
 
-  const [activeTab, setActiveTab] = useState("earnings");
-  const [withdrawalAmount, setWithdrawalAmount] = useState("");
-  const [paymentMethodType, setPaymentMethodType] = useState("");
-  const [paymentDetails, setPaymentDetails] = useState("");
-  const [editingPaymentMethod, setEditingPaymentMethod] = useState<any>(null);
-  const { toast } = useToast();
-
-  if (loading) {
-    return <div className="text-center py-10">Loading payments data...</div>;
-  }
+  // Fetch withdrawal history
+  useEffect(() => {
+    const fetchWithdrawals = async () => {
+      if (!user) return;
+      setWithdrawalsLoading(true);
+      const { data, error } = await supabase
+        .from("withdrawals")
+        .select("*")
+        .eq("researcher_id", user.id)
+        .order("requested_at", { ascending: false });
+      if (!error) setWithdrawals(data || []);
+      setWithdrawalsLoading(false);
+    };
+    if (user) fetchWithdrawals();
+  }, [user]);
 
   const totalEarnings = earnings.reduce((sum, earning) => 
-    earning.status === "completed" ? sum + earning.amount : sum, 0
+    earning.status === "completed" || earning.status === "confirmed" ? sum + earning.amount : sum, 0
   );
 
   const pendingEarnings = earnings.reduce((sum, earning) => 
     earning.status === "pending" ? sum + earning.amount : sum, 0
   );
+
+  const totalWithdrawn = withdrawals.filter(w => w.status === "completed").reduce((sum, w) => sum + Number(w.amount), 0);
+  const pendingWithdrawals = withdrawals.filter(w => w.status === "pending" || w.status === "requested").reduce((sum, w) => sum + Number(w.amount), 0);
+  // Calculate available balance as: Total Earnings - (Total Withdrawn + Pending Withdrawals)
+  const computedAvailableBalance = totalEarnings - (totalWithdrawn + pendingWithdrawals);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        <span className="ml-2 text-gray-500">Loading payment data...</span>
+      </div>
+    );
+  }
 
   const handleExport = (type: string) => {
     toast({
@@ -113,8 +171,7 @@ const ResearchAidsPaymentsEarnings = () => {
       description: "Payment method has been updated successfully"
     });
   };
-
-  const handleRequestWithdrawal = () => {
+  const handleRequestWithdrawal = async () => {
     const amount = parseFloat(withdrawalAmount);
     
     if (!amount || amount <= 0) {
@@ -126,23 +183,72 @@ const ResearchAidsPaymentsEarnings = () => {
       return;
     }
 
-    if (amount > availableBalance) {
+    if (!withdrawalPhone || !withdrawalOperator) {
       toast({
         title: "Error",
-        description: "Insufficient balance for withdrawal",
+        description: "Please enter phone number and select operator",
         variant: "destructive"
       });
       return;
     }
 
-    requestWithdrawal(amount);
+    // Use computedAvailableBalance for withdrawal check
+    if (amount > computedAvailableBalance) {
+      toast({
+        title: "Error",
+        description: "Insufficient balance (pending withdrawals included)",
+        variant: "destructive"
+      });
+      return;
+    }
 
-    setWithdrawalAmount("");
-    
-    toast({
-      title: "Withdrawal Requested",
-      description: `Withdrawal of ${amount.toLocaleString()} XAF has been requested`
-    });
+    try {
+      const response = await fetch("http://localhost:4000/api/mesomb-withdraw", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          receiver: withdrawalPhone,
+          amount,
+          service: withdrawalOperator,
+          country: "CM", // Cameroon
+          currency: "XAF", // Central African CFA franc
+          customer: user.id,
+        }),
+      });
+      
+      const result = await response.json();
+      if (result.operationSuccess && result.transactionSuccess) {
+        const { error } = await supabase.from('withdrawals').insert({
+          researcher_id: user.id,
+          amount,
+          status: 'completed',
+          notes: `Withdrawal via MeSomb (${withdrawalOperator}) to ${withdrawalPhone}`,
+        });
+        if (!error) {
+          toast({ 
+            title: "Withdrawal Successful", 
+            description: `Withdrawal of ${amount.toLocaleString()} XAF has been processed.` 
+          });
+          setWithdrawalAmount("");
+          setWithdrawalPhone("");
+          setWithdrawalOperator("");
+          
+          // Refresh withdrawal history
+          const { data } = await supabase
+            .from('withdrawals')
+            .select('*')
+            .eq('researcher_id', user.id)
+            .order('requested_at', { ascending: false });
+          setWithdrawals(data || []);
+        } else {
+          toast({ title: "Error", description: "Failed to record withdrawal", variant: "destructive" });
+        }
+      } else {
+        toast({ title: "Error", description: "Withdrawal failed at payment provider", variant: "destructive" });
+      }
+    } catch (err) {
+      toast({ title: "Error", description: "Withdrawal failed", variant: "destructive" });
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -158,7 +264,8 @@ const ResearchAidsPaymentsEarnings = () => {
     }
   };
 
-  return (    <div className="space-y-4 sm:space-y-6">
+  return (
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
         <h2 className="text-xl sm:text-2xl font-bold">Payments & Earnings</h2>
         <div className="flex flex-wrap gap-2">
@@ -168,12 +275,19 @@ const ResearchAidsPaymentsEarnings = () => {
           >
             <DollarSign className="h-4 w-4 mr-2" />
             Earnings
-          </Button>
-          <Button 
+          </Button>          
+          {/* <Button 
             variant={activeTab === "transactions" ? "default" : "outline"} 
             onClick={() => setActiveTab("transactions")}
           >
             Transactions
+          </Button> */}
+          <Button 
+            variant={activeTab === "withdrawals" ? "default" : "outline"} 
+            onClick={() => setActiveTab("withdrawals")}
+          >
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Withdrawals
           </Button>
           <Button 
             variant={activeTab === "methods" ? "default" : "outline"} 
@@ -184,13 +298,14 @@ const ResearchAidsPaymentsEarnings = () => {
           </Button>
         </div>
       </div>      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
-          <CardContent className="p-4 sm:p-6">            <div className="flex items-center space-x-2">
-              <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
-              <div>
-                <p className="text-sm text-gray-600">Total Earnings</p>
-                <p className="text-xl sm:text-2xl font-bold">{totalEarnings.toLocaleString()} XAF</p>
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center space-x-2">
+              <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600">Total Earnings</p>
+                <p className="text-base sm:text-lg font-bold truncate max-w-[120px] sm:max-w-[160px]">{totalEarnings.toLocaleString()} XAF</p>
               </div>
             </div>
           </CardContent>
@@ -199,10 +314,10 @@ const ResearchAidsPaymentsEarnings = () => {
         <Card>
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-2">
-              <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
-              <div>
-                <p className="text-sm text-gray-600">Pending Earnings</p>
-                <p className="text-xl sm:text-2xl font-bold">{pendingEarnings.toLocaleString()} XAF</p>
+              <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600">Pending Earnings</p>
+                <p className="text-base sm:text-lg font-bold truncate max-w-[120px] sm:max-w-[160px]">{pendingEarnings.toLocaleString()} XAF</p>
               </div>
             </div>
           </CardContent>
@@ -211,34 +326,45 @@ const ResearchAidsPaymentsEarnings = () => {
         <Card>
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-2">
-              <CreditCard className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
-              <div>
-                <p className="text-sm text-gray-600">Available Balance</p>
-                <p className="text-xl sm:text-2xl font-bold">{availableBalance.toLocaleString()} XAF</p>
+              <CreditCard className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600">Available Balance</p>
+                <p className="text-base sm:text-lg font-bold truncate max-w-[120px] sm:max-w-[160px]">{computedAvailableBalance.toLocaleString()} XAF</p>
               </div>
             </div>
           </CardContent>
         </Card>
-      </div>
 
+        <Card>
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-green-700 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600">Total Withdrawn</p>
+                <p className="text-base sm:text-lg font-bold truncate max-w-[120px] sm:max-w-[160px]">{totalWithdrawn.toLocaleString()} XAF</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>      {/* Tab Content */}
+      <div className="overflow-x-auto w-full">
       {activeTab === "earnings" && (
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Earnings Overview</h3>
-            <Button onClick={() => handleExport("earnings")}>
+            <h3 className="text-lg font-semibold whitespace-nowrap truncate">Earnings Overview</h3>
+            <Button onClick={() => handleExport("earnings")}> 
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
           </div>
-          
           {earnings.map((earning) => (
-            <Card key={earning.id}>
+            <Card key={earning.id} className="overflow-hidden">
               <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="font-medium">{earning.project}</h4>
-                    <p className="text-sm text-gray-600">Client: {earning.client}</p>
-                    <p className="text-xs text-blue-600 capitalize">{earning.type} payment</p>
+                <div className="flex justify-between items-center flex-wrap gap-2">
+                  <div className="min-w-0">
+                    <h4 className="font-medium truncate max-w-[180px]">{earning.project}</h4>
+                    <p className="text-sm text-gray-600 truncate max-w-[140px]">Client: {earning.client}</p>
+                    <p className="text-xs text-blue-600 capitalize truncate">{earning.type} payment</p>
                     {earning.source === 'job' && (
                       <Badge className="bg-yellow-500 text-white mt-1">Job</Badge>
                     )}
@@ -246,9 +372,9 @@ const ResearchAidsPaymentsEarnings = () => {
                       <Badge className="bg-green-500 text-white mt-1">Appointment</Badge>
                     )}
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-semibold">{earning.amount.toLocaleString()} XAF</p>
-                    <p className="text-sm text-gray-500">{earning.date}</p>
+                  <div className="text-right min-w-0">
+                    <p className="text-lg font-semibold truncate">{earning.amount.toLocaleString()} XAF</p>
+                    <p className="text-sm text-gray-500 truncate">{earning.date}</p>
                     {getStatusBadge(earning.status)}
                   </div>
                 </div>
@@ -256,65 +382,133 @@ const ResearchAidsPaymentsEarnings = () => {
             </Card>
           ))}
         </div>
-      )}
-
-      {activeTab === "transactions" && (
-        <div className="space-y-4">
+      )}      {activeTab === "transactions" && (
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Transaction History</h3>
-            <Button onClick={() => handleExport("transactions")}>
+            <h3 className="text-lg font-semibold whitespace-nowrap truncate">Transaction History</h3>
+            <Button onClick={() => handleExport("transactions")}> 
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
           </div>
-          
-          {transactions.map((transaction) => (
-            <Card key={transaction.id}>
-              <CardContent className="p-4">                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
-                  <div>
-                    <h4 className="font-medium">{transaction.description}</h4>
-                    <p className="text-sm text-gray-600 capitalize">{transaction.type}</p>
-                  </div>
-                  <div className="text-left sm:text-right">
-                    <p className={`text-lg font-semibold ${
-                      transaction.amount > 0 ? "text-green-600" : "text-red-600"
-                    }`}>
-                      {transaction.amount > 0 ? "+" : ""}{transaction.amount.toLocaleString()} XAF
-                    </p>
-                    <p className="text-sm text-gray-500">{transaction.date}</p>
-                    {getStatusBadge(transaction.status)}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-          
-          {/* Withdrawal Request */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Request Withdrawal</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="withdrawal-amount">Amount (XAF)</Label>
-                  <Input
-                    id="withdrawal-amount"
-                    type="number"
-                    placeholder="Enter amount"
-                    value={withdrawalAmount}
-                    onChange={(e) => setWithdrawalAmount(e.target.value)}
-                  />
-                  <p className="text-sm text-gray-500 mt-1">
-                    Available balance: {availableBalance.toLocaleString()} XAF
-                  </p>
-                </div>
-                <Button onClick={handleRequestWithdrawal} className="w-full">
-                  Request Withdrawal
-                </Button>
+          {transactionsLoading ? (
+            <div className="flex justify-center items-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
+              <span className="ml-2 text-gray-500">Loading transactions...</span>
+            </div>
+          ) : (
+            paginatedTransactions.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">No transactions found.</div>
+            ) : (
+              paginatedTransactions.map((transaction) => (
+                <Card key={transaction.id} className="overflow-hidden">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-center flex-wrap gap-2">
+                      <div className="min-w-0">
+                        <h4 className="font-medium truncate max-w-[180px]">{transaction.description || 'Transaction'}</h4>
+                        <p className="text-sm text-gray-600 capitalize truncate max-w-[120px]">{transaction.type || 'payment'}</p>
+                      </div>
+                      <div className="text-right min-w-0">
+                        <p className={`text-lg font-semibold ${transaction.amount > 0 ? "text-green-600" : "text-red-600"} truncate`}>
+                          {transaction.amount > 0 ? "+" : ""}{transaction.amount.toLocaleString()} XAF
+                        </p>
+                        <p className="text-sm text-gray-500 truncate">{new Date(transaction.created_at).toLocaleDateString()}</p>
+                        {getStatusBadge(transaction.status)}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )
+          )}
+          {/* Pagination Controls */}
+          {totalTransactionPages > 1 && (
+            <div className="flex justify-center items-center space-x-2 mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setTransactionPage((p) => Math.max(1, p - 1))}
+                disabled={transactionPage === 1}
+              >
+                Previous
+              </Button>
+              <span className="text-sm">
+                Page {transactionPage} of {totalTransactionPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setTransactionPage((p) => Math.min(totalTransactionPages, p + 1))}
+                disabled={transactionPage === totalTransactionPages}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === "withdrawals" && (
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+          <div className="w-full md:w-1/3 space-y-2 min-w-[220px]">
+            <div className="bg-blue-100 rounded p-2 text-blue-800 mb-2">
+              Available Balance: <span className="font-bold">{computedAvailableBalance.toLocaleString()} XAF</span>
+            </div>
+            <Label htmlFor="withdrawal-amount">Amount (XAF)</Label>
+            <Input
+              id="withdrawal-amount"
+              type="number"
+              placeholder="Enter amount"
+              value={withdrawalAmount}
+              onChange={(e) => setWithdrawalAmount(e.target.value)}
+            />
+            <Label htmlFor="withdrawal-phone">Phone Number</Label>
+            <Input
+              id="withdrawal-phone"
+              type="tel"
+              placeholder="Enter phone number"
+              value={withdrawalPhone}
+              onChange={(e) => setWithdrawalPhone(e.target.value)}
+            />
+            <Label htmlFor="withdrawal-operator">Operator</Label>
+            <OperatorSelect value={withdrawalOperator} onValueChange={setWithdrawalOperator}>
+              <OperatorSelectTrigger>
+                <OperatorSelectValue placeholder="Select operator" />
+              </OperatorSelectTrigger>
+              <OperatorSelectContent>
+                <OperatorSelectItem value="MTN">MTN</OperatorSelectItem>
+                <OperatorSelectItem value="ORANGE">ORANGE</OperatorSelectItem>
+              </OperatorSelectContent>
+            </OperatorSelect>
+            <Button onClick={handleRequestWithdrawal} className="w-full mt-2">
+              Request Withdrawal
+            </Button>
+          </div>
+          <div className="mt-4">
+            <h4 className="font-semibold mb-2">Withdrawal History</h4>
+            {withdrawalsLoading ? (
+              <div className="flex justify-center items-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
               </div>
-            </CardContent>
-          </Card>
+            ) : (
+              <div className="space-y-2 max-h-[30vh] overflow-y-auto">
+                {withdrawals.length === 0 && <div className="text-gray-500">No withdrawals yet.</div>}
+                {withdrawals.map((w) => (
+                  <Card key={w.id} className="overflow-hidden">
+                    <CardContent className="p-4 flex justify-between items-center flex-wrap gap-2">
+                      <div className="min-w-0">
+                        <div className="font-medium truncate max-w-[120px]">{Number(w.amount).toLocaleString()} XAF</div>
+                        <div className="text-xs text-gray-500 truncate max-w-[120px]">Requested: {new Date(w.requested_at).toLocaleString()}</div>
+                        {w.processed_at && <div className="text-xs text-gray-400 truncate max-w-[120px]">Processed: {new Date(w.processed_at).toLocaleString()}</div>}
+                        {w.notes && <div className="text-xs text-gray-400 truncate max-w-[120px]">{w.notes}</div>}
+                      </div>
+                      <div>{getStatusBadge(w.status)}</div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -410,9 +604,9 @@ const ResearchAidsPaymentsEarnings = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+          ))}        </div>
       )}
+      </div>
     </div>
   );
 };

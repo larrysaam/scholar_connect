@@ -101,27 +101,24 @@ const App = () => (
                     <WorkspaceDetails />
                   </ProtectedRoute>
                 } />
-                
-                {/* Dashboard routes - require authentication */}
+                  {/* Dashboard routes - require authentication and specific roles */}
                 <Route path="/dashboard" element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredRole="student">
                     <Dashboard />
                   </ProtectedRoute>
                 } />
                 <Route path="/researcher-dashboard" element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredRole="researcher">
                     <ResearcherDashboard />
                   </ProtectedRoute>
                 } />
                 <Route path="/research-aids-dashboard" element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredRole="aid">
                     <ResearchAidsDashboard />
                   </ProtectedRoute>
-                } />
-
-                {/* Student appointment routes */}
+                } />                {/* Student appointment routes */}
                 <Route path="/appointments" element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredRole="student">
                     <StudentAppointmentsPage />
                   </ProtectedRoute>
                 } />

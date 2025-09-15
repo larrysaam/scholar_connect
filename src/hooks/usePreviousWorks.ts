@@ -15,6 +15,7 @@ export const usePreviousWorks = () => {
     institution: "",
     duration: "",
     outcomes: "",
+    file: null,
     projectType: ""
   });
   const [platformWorks, setPlatformWorks] = useState<PlatformWork[]>([]);
@@ -130,7 +131,7 @@ export const usePreviousWorks = () => {
       title: "Work Added",
       description: `Your ${newWork.projectType === "platform" ? "platform project" : "previous experience"} has been added to your portfolio`
     });
-    setNewWork({ title: "", description: "", category: "", institution: "", duration: "", outcomes: "", projectType: "" });
+    setNewWork({ title: "", description: "", category: "", institution: "", duration: "", outcomes: "", file: null, projectType: "" });
     setIsAddWorkOpen(false);
   };
 

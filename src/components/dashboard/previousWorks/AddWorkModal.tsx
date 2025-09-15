@@ -20,16 +20,17 @@ const AddWorkModal = ({ isOpen, onOpenChange, newWork, onNewWorkChange, onAddWor
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Include Previous Work
+        <Button className="w-full sm:w-auto text-xs sm:text-sm px-3 sm:px-4">
+          <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Include Previous Work</span>
+          <span className="sm:hidden">Add Work</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="w-[95vw] sm:max-w-2xl max-w-none max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add Previous Work</DialogTitle>
+          <DialogTitle className="text-sm sm:text-base">Add Previous Work</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           <div>
             <Label htmlFor="projectType">Project Type *</Label>
             <Select value={newWork.projectType} onValueChange={(value) => onNewWorkChange({ ...newWork, projectType: value })}>
@@ -42,79 +43,86 @@ const AddWorkModal = ({ isOpen, onOpenChange, newWork, onNewWorkChange, onAddWor
               </SelectContent>
             </Select>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <Label htmlFor="title">Project Title *</Label>
+              <Label htmlFor="title" className="text-sm">Project Title *</Label>
               <Input
                 id="title"
                 value={newWork.title}
                 onChange={(e) => onNewWorkChange({ ...newWork, title: e.target.value })}
                 placeholder="Enter project title"
+                className="text-sm"
               />
             </div>
             <div>
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category" className="text-sm">Category</Label>
               <Input
                 id="category"
                 value={newWork.category}
                 onChange={(e) => onNewWorkChange({ ...newWork, category: e.target.value })}
                 placeholder="e.g., Research, Analysis"
+                className="text-sm"
               />
             </div>
           </div>
           <div>
-            <Label htmlFor="description">Description *</Label>
+            <Label htmlFor="description" className="text-sm">Description *</Label>
             <Textarea
               id="description"
               value={newWork.description}
               onChange={(e) => onNewWorkChange({ ...newWork, description: e.target.value })}
               placeholder="Describe the project and your role"
               rows={3}
+              className="text-sm resize-none"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <Label htmlFor="institution">Institution/Client</Label>
+              <Label htmlFor="institution" className="text-sm">Institution/Client</Label>
               <Input
                 id="institution"
                 value={newWork.institution}
                 onChange={(e) => onNewWorkChange({ ...newWork, institution: e.target.value })}
                 placeholder="Organization name"
+                className="text-sm"
               />
             </div>
             <div>
-              <Label htmlFor="duration">Duration</Label>
+              <Label htmlFor="duration" className="text-sm">Duration</Label>
               <Input
                 id="duration"
                 value={newWork.duration}
                 onChange={(e) => onNewWorkChange({ ...newWork, duration: e.target.value })}
                 placeholder="e.g., 3 months"
+                className="text-sm"
               />
             </div>
           </div>
           <div>
-            <Label htmlFor="outcomes">Key Outcomes</Label>
+            <Label htmlFor="outcomes" className="text-sm">Key Outcomes</Label>
             <Textarea
               id="outcomes"
               value={newWork.outcomes}
               onChange={(e) => onNewWorkChange({ ...newWork, outcomes: e.target.value })}
               placeholder="List key achievements or deliverables"
               rows={2}
+              className="text-sm resize-none"
             />
           </div>
           <div>
-            <Label htmlFor="file">Upload File (Optional)</Label>
+            <Label htmlFor="file" className="text-sm">Upload File (Optional)</Label>
             <Input
               id="file"
               type="file"
               onChange={(e) => onNewWorkChange({ ...newWork, file: e.target.files ? e.target.files[0] : null })}
+              className="text-sm"
             />
           </div>
-          <div className="flex space-x-2">
-            <Button onClick={onAddWork} className="flex-1">
+          <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2 pt-2">
+            <Button onClick={onAddWork} className="w-full sm:flex-1 text-sm">
               Add Work
             </Button>
-            <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:flex-1 text-sm">
               Cancel
             </Button>
           </div>
