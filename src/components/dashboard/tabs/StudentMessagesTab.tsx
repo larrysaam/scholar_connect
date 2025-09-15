@@ -1,275 +1,307 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Upload, Send, Paperclip, Clock, Check, CheckCheck } from "lucide-react";
-import { useMessages } from "@/hooks/useMessages";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Search, Send, Paperclip, MoreVertical, ArrowLeft, MessageCircle, Clock, Check, CheckCheck } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useMessages, Conversation, Message } from "@/hooks/useMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from 'date-fns';
 
 const StudentMessagesTab = () => {
   const { user } = useAuth();
-  const [activeConversation, setActiveConversation] = useState<string | null>(null); // id
-  const [newMessage, setNewMessage] = useState("");
-
-  // Use the real messages hook
-  const {
-    conversations,
-    messages,
-    sendMessage,
-    fetchMessages,
-    selectedConversation,
-    setSelectedConversation,
-    socketConnected,
-    setMessages, // <-- add this line
+  const { 
+    conversations, 
+    messages, 
+    selectedConversation, 
+    setSelectedConversation, 
+    sendMessage, 
+    loadingConversations, 
+    loadingMessages, 
+    fetchConversations 
   } = useMessages();
 
-  // Get socket from useMessages' socketRef
-  const socket = (window as any).socketRef?.current;
+  const [newMessage, setNewMessage] = useState("");
+  const { toast } = useToast();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Find the active conversation object
-  const activeConv = conversations.find(conv => conv.id === activeConversation);
-
-  // When a conversation is selected, set it in the hook as well
   useEffect(() => {
-    if (activeConversation) {
-      setSelectedConversation(conversations.find(c => c.id === activeConversation) || null);
-      fetchMessages(activeConversation);
+    // Only auto-select first conversation on desktop (md and up)
+    const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+    if (!selectedConversation && conversations.length > 0 && isDesktop) {
+      setSelectedConversation(conversations[0]);
     }
-  }, [activeConversation, conversations, setSelectedConversation, fetchMessages]);
-
-  // --- WhatsApp-style read receipt logic with socket and DB update ---
-  useEffect(() => {
-    if (activeConv && user) {
-      // Find all messages sent to the current user that are not yet read
-      const unreadMessages = messages.filter(
-        (msg: any) => msg.recipient_id === user.id && msg.status !== 'read'
-      );
-      if (unreadMessages.length > 0 && socket) {
-        // Emit socket event to mark as read (real-time, DB handled by socket server)
-        socket.emit('markAsRead', {
-          bookingId: activeConv.id,
-          userId: user.id,
-          messageIds: unreadMessages.map((m: any) => m.id),
-        });
-      }
-    }
-  }, [activeConv, user, messages, socket]);
+  }, [conversations, selectedConversation, setSelectedConversation]);
 
   useEffect(() => {
-    if (!socket) return;
-    // Listen for real-time read receipts
-    const handleMessageRead = (msg: any) => {
-      setMessages((prev: any[]) =>
-        prev.map((m) => (m.id === msg.id ? { ...m, status: msg.status } : m))
-      );
-    };
-    socket.on('message_read', handleMessageRead);
-    return () => {
-      socket.off('message_read', handleMessageRead);
-    };
-  }, [socket, setMessages]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = () => {
     if (newMessage.trim() && selectedConversation) {
-      await sendMessage(selectedConversation.id, newMessage);
+      sendMessage(selectedConversation.id, newMessage);
       setNewMessage("");
+    } else if (!selectedConversation) {
+      toast({
+        title: "Error",
+        description: "Please select a conversation to send a message.",
+        variant: "destructive"
+      });
     }
   };
 
-  const handleFileUpload = () => {
-    // Implementation for file upload (optional)
+  const handleFileAttach = () => {
+    toast({
+      title: "File attachment",
+      description: "File attachment feature will be implemented"
+    });
   };
 
-  return (
-    <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
-      <div className="flex flex-col space-y-2 sm:space-y-0">
-        <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Messages & File Exchange</h2>
-        <p className="text-sm sm:text-base text-gray-600">Communicate with your booked researchers</p>
-      </div>
+  const handleConversationSelect = (conversation: Conversation) => {
+    setSelectedConversation(conversation);
+  };
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        {/* Conversations List */}
-        <Card className="lg:col-span-1 max-h-[500px] lg:max-h-[600px]">
-          <CardHeader className="p-3 sm:p-4">
-            <CardTitle className="flex items-center space-x-2 text-sm sm:text-base">
-              <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span>Conversations</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 overflow-y-auto">
-            <div className="space-y-1">
-              {conversations.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  onClick={() => setActiveConversation(conversation.id)}
-                  className={`p-3 sm:p-4 cursor-pointer border-b hover:bg-gray-50 transition-colors ${
-                    activeConversation === conversation.id ? 'bg-blue-50' : ''
-                  }`}
-                >
-                  <div className="flex items-start space-x-2 sm:space-x-3">
-                    <img
-                      src={(conversation as any).avatar_url || '/placeholder.svg'}
-                      alt={conversation.other_user_name}
-                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <h4 className="font-semibold text-xs sm:text-sm truncate">
-                          {conversation.other_user_name}
-                        </h4>
-                        {(conversation as any).unread_count > 0 && (
-                          <Badge className="bg-blue-500 text-white text-xs px-1.5 py-0.5">
-                            {(conversation as any).unread_count}
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-xs sm:text-sm text-gray-600 truncate mt-1">
-                        {conversation.last_message}
-                      </p>
-                      <span className="text-xs opacity-75">
-                        {conversation.last_message_at ? new Date(conversation.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {conversations.length === 0 && (
-                <div className="p-4 text-center text-gray-500">
-                  <MessageCircle className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                  <p className="text-xs sm:text-sm">No conversations yet</p>
-                </div>
-              )}
+  const formatTime = (dateString: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return format(date, 'HH:mm');
+  };
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    
+    if (date.toDateString() === today.toDateString()) return 'Today';
+    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    return format(date, 'MMM d, yyyy');
+  };  return (
+    <div className="h-[75vh] md:h-[600px] flex border-0 md:border rounded-none md:rounded-lg overflow-hidden bg-gray-50">
+      {/* Conversations List */}
+      <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r bg-white flex-col transition-all duration-300 ease-in-out`}>
+        <div className="p-3 md:p-4 border-b bg-blue-600 md:bg-white">
+          <h3 className="font-semibold mb-3 text-white md:text-gray-900 text-lg md:text-base">
+            <span className="md:hidden">Select a Chat</span>
+            <div className="hidden md:flex items-center space-x-2">
+              <MessageCircle className="h-5 w-5 text-blue-600" />
+              <span>Messages</span>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Chat Area */}
-        <Card className="lg:col-span-2 max-h-[500px] lg:max-h-[600px]">
-          {activeConv ? (
-            <div className="flex flex-col h-full">
-              <CardHeader className="border-b p-3 sm:p-4">
-                <div className="flex items-center space-x-2 sm:space-x-3">
-                  <img
-                    src={(activeConv as any)?.avatar_url || '/placeholder.svg'}
-                    alt={activeConv?.other_user_name}
-                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
-                  />
-                  <div className="min-w-0">
-                    <h3 className="font-semibold text-sm sm:text-base truncate">{activeConv?.other_user_name}</h3>
-                    <p className="text-xs text-gray-500 truncate">You are chatting with {activeConv?.other_user_name}</p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="flex-1 p-0 overflow-hidden">
-                {/* Messages */}
-                <div className="h-64 sm:h-80 lg:h-96 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
-                  {(() => {
-                    const grouped: { [date: string]: any[] } = {};
-                    messages.forEach((msg: any) => {
-                      const date = msg.created_at ? new Date(msg.created_at) : null;
-                      if (!date) return;
-                      const dateKey = date.toDateString();
-                      if (!grouped[dateKey]) grouped[dateKey] = [];
-                      grouped[dateKey].push(msg);
-                    });
-                    const today = new Date();
-                    const yesterday = new Date();
-                    yesterday.setDate(today.getDate() - 1);
-                    const getLabel = (dateKey: string) => {
-                      const date = new Date(dateKey);
-                      if (date.toDateString() === today.toDateString()) return 'Today';
-                      if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
-                      return format(date, 'MMM d, yyyy');
-                    };
-                    return Object.keys(grouped).sort((a, b) => new Date(a).getTime() - new Date(b).getTime()).map(dateKey => (
-                      <div key={dateKey}>
-                        <div className="flex items-center justify-center my-2">
-                          <span className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">{getLabel(dateKey)}</span>
-                        </div>
-                        {grouped[dateKey].map((msg: any, idx: number) => (
-                          <div
-                            key={msg.id}
-                            className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}${idx !== 0 ? ' mt-1' : ''}`}
-                          >
-                            <div
-                              className={`max-w-xs sm:max-w-sm lg:max-w-md px-3 py-2 rounded-lg ${msg.sender_id === user?.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'}`}
-                            >
-                              <p className="text-xs sm:text-sm">{msg.content}</p>
-                              <div className="flex items-center justify-between mt-1">
-                                <span className="text-xs opacity-75">
-                                  {msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                                </span>
-                                {msg.sender_id === user?.id && (
-                                  <span className="ml-2 text-xs flex items-center">
-                                    {getMessageStatusIcon(msg, idx, messages, user.id)}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ));
-                  })()}
-                </div>
-                {/* Message Input */}
-                <div className="border-t p-3 sm:p-4">
-                  <div className="flex items-end space-x-2">
-                    <Button variant="outline" size="sm" onClick={handleFileUpload} className="flex-shrink-0">
-                      <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
-                    </Button>
-                    <div className="flex-1">
-                      <Textarea
-                        placeholder="Type your message..."
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        rows={2}
-                        className="resize-none text-xs sm:text-sm"
-                      />
-                    </div>
-                    <Button 
-                      onClick={handleSendMessage} 
-                      disabled={!newMessage.trim()}
-                      size="sm"
-                      className="flex-shrink-0"
-                    >
-                      <Send className="h-3 w-3 sm:h-4 sm:w-4" />
-                    </Button>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Share drafts, research outlines, and documents securely
-                  </p>
-                </div>
-              </CardContent>
+          </h3>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search conversations..."
+              className="pl-10 bg-white md:bg-gray-50"
+            />
+          </div>
+        </div>
+        
+        <div className="overflow-y-auto flex-1 bg-white">
+          {loadingConversations ? (
+            <p className="p-4 text-center text-gray-500">Loading conversations...</p>
+          ) : conversations.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-500 px-4">
+              <div className="text-4xl mb-4">💬</div>
+              <p className="text-center font-medium">No conversations yet</p>
+              <p className="text-sm text-center mt-1">Start chatting with researchers!</p>
             </div>
           ) : (
-            <CardContent className="flex items-center justify-center h-full p-4">
-              <div className="text-center text-gray-500">
-                <MessageCircle className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-4 text-gray-300" />
-                <p className="text-xs sm:text-sm">Select a conversation to start messaging</p>
+            conversations.map((conversation) => (
+              <div
+                key={conversation.id}
+                className={`p-3 md:p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors touch-manipulation ${
+                  selectedConversation?.id === conversation.id ? "bg-gray-100 md:bg-blue-50 md:border-l-4 md:border-l-blue-600" : ""
+                }`}
+                onClick={() => handleConversationSelect(conversation)}
+              >
+                <div className="flex items-center space-x-3">
+                  <Avatar className="h-12 w-12 md:h-10 md:w-10 flex-shrink-0">
+                    <AvatarImage src={conversation.avatar_url || "/placeholder-avatar.jpg"} alt={conversation.other_user_name} />
+                    <AvatarFallback className="bg-blue-500 text-white font-medium">
+                      {conversation.other_user_name.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center mb-1">
+                      <p className="text-base md:text-sm font-medium text-gray-900 truncate">
+                        {conversation.other_user_name}
+                      </p>
+                      <p className="text-xs text-gray-500 flex-shrink-0">
+                        {formatTime(conversation.last_message_at)}
+                      </p>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm text-gray-600 truncate flex-1 pr-2">
+                        {conversation.last_message || "No messages yet"}
+                      </p>
+                      {/* Mobile tap indicator */}
+                      <div className="md:hidden flex-shrink-0">
+                        <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </CardContent>
+            ))
           )}
-        </Card>
-      </div>
-      
-      {/* Response Time Notice */}
-      <Card>
-        <CardContent className="p-3 sm:p-4">
-          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 text-blue-600">
-            <Clock className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-            <div className="min-w-0">
-              <span className="font-medium text-xs sm:text-sm">Response Time Guidelines</span>
-              <p className="text-xs sm:text-sm text-gray-600">
-                Researchers typically respond within 24 hours. Messages are consultation-related only.
+        </div>
+      </div>      {/* Chat Area */}
+      <div className={`${selectedConversation ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white md:bg-gray-50 transition-all duration-300 ease-in-out`}>
+        {/* Chat Header */}
+        <div className="p-3 md:p-4 border-b bg-blue-600 md:bg-white flex justify-between items-center shadow-sm">
+          <div className="flex items-center space-x-3">
+            {/* Back button for mobile */}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="md:hidden p-1 text-white hover:bg-blue-700 transition-colors"
+              onClick={() => setSelectedConversation(null)}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <Avatar className="h-8 w-8 md:h-10 md:w-10 flex-shrink-0">
+              <AvatarImage src={selectedConversation?.avatar_url || "/placeholder-avatar.jpg"} alt={selectedConversation?.other_user_name} />
+              <AvatarFallback className="bg-gray-400 text-white text-sm md:text-base">
+                {selectedConversation?.other_user_name?.split(' ').map(n => n[0]).join('') || '?'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <h4 className="font-medium text-white md:text-gray-900 text-base md:text-sm truncate">
+                {selectedConversation?.other_user_name || "Select a conversation"}
+              </h4>
+              <p className="text-xs text-blue-100 md:text-gray-500">
+                {selectedConversation ? "Online" : ""}
               </p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <Button variant="ghost" size="sm" className="text-white md:text-gray-600 hover:bg-blue-700 md:hover:bg-gray-100">
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Messages */}
+        <div 
+          className="flex-1 overflow-y-auto p-3 md:p-4 space-y-2 md:space-y-3 bg-gray-50"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23f0f0f0' fill-opacity='0.3'%3E%3Cpath d='m0 40l40-40h-40v40zm40 0v-40h-40l40 40z'/%3E%3C/g%3E%3C/svg%3E")`,
+          }}
+        >
+          {!selectedConversation ? (
+            <div className="hidden md:flex flex-col items-center justify-center h-full text-gray-500 px-8">
+              <div className="text-6xl mb-4">💬</div>
+              <p className="text-lg font-medium text-gray-800">Scholar Consult Connect</p>
+              <p className="text-sm text-center max-w-md mt-2">
+                Send and receive messages with your researchers. Select a conversation to get started.
+              </p>
+            </div>
+          ) : loadingMessages ? (
+            <p className="p-4 text-center text-gray-500">Loading messages...</p>
+          ) : messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-gray-500">
+              <div className="text-4xl mb-4">🎉</div>
+              <p className="text-center">No messages in this conversation.</p>
+              <p className="text-sm text-center mt-1">Start the conversation!</p>
+            </div>
+          ) : (
+            messages.map((message: Message, index: number) => {
+              const showDateDivider = index === 0 || formatDate(message.created_at) !== formatDate(messages[index - 1].created_at);
+              return (
+                <div key={message.id}>
+                  {/* Date Divider */}
+                  {showDateDivider && (
+                    <div className="flex justify-center my-4">
+                      <span className="bg-white/80 backdrop-blur-sm text-gray-600 text-xs px-3 py-1 rounded-full border shadow-sm">
+                        {formatDate(message.created_at)}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {/* Message Bubble */}
+                  <div className={`flex ${message.sender_id === user?.id ? 'justify-end' : 'justify-start'} mb-1`}>
+                    <div className={`max-w-xs md:max-w-sm lg:max-w-md px-4 py-2 rounded-2xl shadow-sm ${
+                      message.sender_id === user?.id 
+                        ? 'bg-blue-500 text-white rounded-br-md' 
+                        : 'bg-white text-gray-800 rounded-bl-md border'
+                    }`}>
+                      <p className="text-sm leading-relaxed break-words">{message.content}</p>
+                      <div className={`flex justify-end items-center mt-1 space-x-1`}>
+                        <p className={`text-xs ${
+                          message.sender_id === user?.id ? "text-blue-100" : "text-gray-500"
+                        }`}>
+                          {formatTime(message.created_at)}
+                        </p>
+                        {message.sender_id === user?.id && (
+                          <div className="flex space-x-0.5">
+                            <svg className="h-3 w-3 text-blue-100" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                            <svg className="h-3 w-3 text-blue-100" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Message Input */}
+        <div className="p-3 md:p-4 border-t bg-white">
+          <div className="flex items-end space-x-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleFileAttach}
+              className="flex-shrink-0 p-2 text-gray-600 hover:bg-gray-100 rounded-full"
+            >
+              <Paperclip className="h-5 w-5" />
+            </Button>
+            <div className="flex-1 relative">
+              <Input
+                placeholder="Type a message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                className="flex-1 rounded-full border-gray-300 pr-12 py-2 md:py-1 resize-none"
+                disabled={!selectedConversation}
+              />
+              {/* Emoji button */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-600 hover:bg-gray-100 rounded-full"
+              >
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-.464 5.535a1 1 0 10-1.415-1.414 3 3 0 01-4.242 0 1 1 0 00-1.415 1.414 5 5 0 007.072 0z" clipRule="evenodd" />
+                </svg>
+              </Button>
+            </div>
+            <Button 
+              onClick={handleSendMessage} 
+              disabled={!selectedConversation || !newMessage.trim()}
+              className={`flex-shrink-0 rounded-full p-2 ${
+                newMessage.trim() 
+                  ? 'bg-blue-500 hover:bg-blue-600 text-white' 
+                  : 'bg-gray-200 text-gray-400'
+              }`}
+              size="sm"
+            >
+              <Send className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

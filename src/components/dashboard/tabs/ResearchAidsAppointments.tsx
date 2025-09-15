@@ -621,26 +621,33 @@ const ResearchAidsAppointments = () => {
                             <MessageSquare className="h-4 w-4 mr-1" />
                             Message Client
                           </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Message {appointment.client_name}</DialogTitle>
+                        </DialogTrigger>                        <DialogContent className="sm:max-w-[500px]">
+                          <DialogHeader className="pb-4 border-b bg-blue-600 text-white p-4 -m-6 mb-6">
+                            <DialogTitle className="text-white flex items-center space-x-3">
+                              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-sm font-medium">
+                                {appointment.client_name.split(' ').map(n => n[0]).join('')}
+                              </div>
+                              <span>Message {appointment.client_name}</span>
+                            </DialogTitle>
                           </DialogHeader>
                           <div className="space-y-4">
                             <div>
-                              <Label htmlFor="clientMessage">Message</Label>
+                              <Label htmlFor="clientMessage" className="text-sm font-medium text-gray-700">Message</Label>
                               <Textarea
                                 id="clientMessage"
                                 placeholder="Write your message..."
                                 value={clientMessage}
                                 onChange={(e) => setClientMessage(e.target.value)}
                                 rows={4}
+                                className="mt-2 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 resize-none"
                               />
                             </div>
                             <Button 
                               onClick={() => handleMessageClient(appointment.client_id, appointment.client_name)} 
-                              className="w-full"
+                              className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full px-6 py-3"
+                              disabled={!clientMessage.trim()}
                             >
+                              <MessageSquare className="h-4 w-4 mr-2" />
                               Send Message
                             </Button>
                           </div>

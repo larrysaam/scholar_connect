@@ -52,29 +52,38 @@ const ContactDialog = ({
           <DialogDescription>
             Send a follow-up message to the {personType} through the platform messaging system.
           </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
+        </DialogHeader>        <div className="space-y-4">
           <div>
-            <Label htmlFor="message">Message</Label>
+            <Label htmlFor="message" className="text-sm font-medium text-gray-700">Message</Label>
             <Textarea
               id="message"
               value={messageContent}
               onChange={(e) => setMessageContent(e.target.value)}
               placeholder="Type your message here..."
               rows={4}
+              className="mt-1 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 resize-none"
             />
           </div>
-          <div className="flex gap-2">
-            <Button onClick={handleSendMessage}>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button 
+              onClick={handleSendMessage}
+              className="bg-blue-500 hover:bg-blue-600 text-white rounded-full px-6 py-2 flex-1 sm:flex-none"
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
               Send Message
             </Button>
             <Button 
               variant="outline" 
               onClick={() => onOpenChat(personId, consultationId)}
+              className="rounded-full px-6 py-2 border-blue-200 text-blue-600 hover:bg-blue-50 flex-1 sm:flex-none"
             >
               Open Chat
             </Button>
-            <Button variant="outline" onClick={handleCancel}>
+            <Button 
+              variant="outline" 
+              onClick={handleCancel}
+              className="rounded-full px-6 py-2 text-gray-600 hover:bg-gray-50 flex-1 sm:flex-none"
+            >
               Cancel
             </Button>
           </div>
