@@ -11,24 +11,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Star, Edit2, MapPin, Calendar, Award, BookOpen, Users, CheckCircle, Plus, X, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { useResearcherProfile, ResearcherProfileData } from "@/hooks/useResearcherProfile";
+import { useResearchAidProfile, ResearchAidProfileData } from "@/hooks/useResearchAidProfile";
 import LoadingSpinner from "@/components/LoadingSpinner"; // Corrected import path
 import { supabase } from '@/integrations/supabase/client';
 
 const ResearchAidsProfileRatings = () => {
   const { user, loading: authLoading } = useAuth();
   const researcherId = user?.id;
-
   const {
-    researcher,
+    profile: researcher,
     loading: profileLoading,
     error: profileError,
     updateProfile,
     refetch: refetchProfile
-  } = useResearcherProfile(researcherId || "");
+  } = useResearchAidProfile(researcherId || "");
 
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
-  const [editableProfileData, setEditableProfileData] = useState<ResearcherProfileData | null>(null);
+  const [editableProfileData, setEditableProfileData] = useState<ResearchAidProfileData | null>(null);
 
   const { toast } = useToast();
 
