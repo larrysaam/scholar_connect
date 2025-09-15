@@ -335,19 +335,21 @@ const ResearchAidsFilesDeliverables = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Files & Deliverables</h2>
-        <div className="flex space-x-2">
+    <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0">
+        <h2 className="text-xl sm:text-2xl font-bold">Files & Deliverables</h2>
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
           <Button 
             variant={activeTab === "files" ? "default" : "outline"} 
             onClick={() => setActiveTab("files")}
+            className="w-full sm:w-auto text-sm sm:text-base"
           >
             Project Files
           </Button>
           <Button 
             variant={activeTab === "deliverables" ? "default" : "outline"} 
             onClick={() => setActiveTab("deliverables")}
+            className="w-full sm:w-auto text-sm sm:text-base"
           >
             Deliverables
           </Button>
@@ -355,28 +357,33 @@ const ResearchAidsFilesDeliverables = () => {
       </div>
 
       {activeTab === "files" && (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* File Upload Section */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Upload Files</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg">Upload Files</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6 pt-0">
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="file-upload">Select File</Label>
+                  <Label htmlFor="file-upload" className="text-sm sm:text-base">Select File</Label>
                   <Input
                     id="file-upload"
                     type="file"
                     onChange={handleFileUpload}
-                    className="mt-1"
+                    className="mt-1 text-sm"
                     disabled={uploading}
                   />
                 </div>
                 {selectedFile && (
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                    <span className="text-sm">{selectedFile.name}</span>
-                    <Button onClick={handleUploadFile} disabled={uploading}>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-gray-50 rounded">
+                    <span className="text-sm break-all">{selectedFile.name}</span>
+                    <Button 
+                      onClick={handleUploadFile} 
+                      disabled={uploading}
+                      className="w-full sm:w-auto text-sm"
+                      size="sm"
+                    >
                       {uploading ? (
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       ) : (
@@ -405,24 +412,34 @@ const ResearchAidsFilesDeliverables = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-3 sm:gap-4">
               {files.map((file) => (
-                <Card key={file.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <FileText className="h-8 w-8 text-blue-600" />
-                        <div>
-                          <h4 className="font-medium">{file.name}</h4>
-                          <p className="text-sm text-gray-600">
-                            {formatFileSize(file.size)} • Uploaded by {file.uploaded_by} on {formatDate(file.created_at)}
+                <Card key={file.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+                      <div className="flex items-start sm:items-center space-x-3 min-w-0 flex-1">
+                        <div className="flex-shrink-0">
+                          <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-medium text-sm sm:text-base truncate">{file.name}</h4>
+                          <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                            {formatFileSize(file.size)} • Uploaded by {file.uploaded_by}
                           </p>
-                          <p className="text-xs text-blue-600">{file.project_name}</p>
+                          <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                            {formatDate(file.created_at)}
+                          </p>
+                          <p className="text-xs text-blue-600 mt-1 truncate">{file.project_name}</p>
                         </div>
                       </div>
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => handleViewFile(file)}>
-                          <Eye className="h-4 w-4 mr-1" />
+                      <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleViewFile(file)}
+                          className="w-full sm:w-auto text-xs"
+                        >
+                          <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                           View
                         </Button>
                         {file.file_url && (
@@ -430,8 +447,9 @@ const ResearchAidsFilesDeliverables = () => {
                             variant="outline" 
                             size="sm" 
                             onClick={() => window.open(file.file_url, '_blank')}
+                            className="w-full sm:w-auto text-xs"
                           >
-                            <Download className="h-4 w-4 mr-1" />
+                            <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                             Download
                           </Button>
                         )}
@@ -446,52 +464,54 @@ const ResearchAidsFilesDeliverables = () => {
       )}
 
       {activeTab === "deliverables" && (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Submit Deliverable Section */}
           <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-lg">Submit New Deliverable</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
+                <CardTitle className="text-base sm:text-lg">Submit New Deliverable</CardTitle>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button>
+                    <Button className="w-full sm:w-auto">
                       <Plus className="h-4 w-4 mr-2" />
                       New Deliverable
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="mx-4 sm:mx-0 max-w-md sm:max-w-lg">
                     <DialogHeader>
-                      <DialogTitle>Submit Deliverable</DialogTitle>
+                      <DialogTitle className="text-lg sm:text-xl">Submit Deliverable</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div>
-                        <Label htmlFor="deliverable-title">Title</Label>
+                        <Label htmlFor="deliverable-title" className="text-sm sm:text-base">Title</Label>
                         <Input
                           id="deliverable-title"
                           placeholder="Enter deliverable title"
                           value={deliverableTitle}
                           onChange={(e) => setDeliverableTitle(e.target.value)}
+                          className="text-sm"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="deliverable-description">Description</Label>
+                        <Label htmlFor="deliverable-description" className="text-sm sm:text-base">Description</Label>
                         <Textarea
                           id="deliverable-description"
                           placeholder="Describe the deliverable..."
                           value={deliverableDescription}
                           onChange={(e) => setDeliverableDescription(e.target.value)}
                           rows={4}
+                          className="text-sm"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="deliverable-file">Attach File</Label>
+                        <Label htmlFor="deliverable-file" className="text-sm sm:text-base">Attach File</Label>
                         <Input
                           id="deliverable-file"
                           type="file"
-                          className="mt-1"
+                          className="mt-1 text-sm"
                         />
                       </div>
-                      <Button onClick={handleSubmitDeliverable} className="w-full">
+                      <Button onClick={handleSubmitDeliverable} className="w-full text-sm sm:text-base">
                         <Send className="h-4 w-4 mr-2" />
                         Submit Deliverable
                       </Button>
@@ -517,56 +537,65 @@ const ResearchAidsFilesDeliverables = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-3 sm:gap-4">
               {deliverables.map((deliverable) => (
-                <Card key={deliverable.id}>
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-2">
-                        <CardTitle className="text-lg">{deliverable.title}</CardTitle>
-                        <p className="text-sm text-gray-600">{deliverable.description}</p>
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <span>Client: {deliverable.client_name}</span>
-                          <span>•</span>
+                <Card key={deliverable.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-0">
+                      <div className="space-y-2 flex-1 min-w-0">
+                        <CardTitle className="text-base sm:text-lg truncate">{deliverable.title}</CardTitle>
+                        <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">{deliverable.description}</p>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs sm:text-sm text-gray-500">
+                          <span className="truncate">Client: {deliverable.client_name}</span>
+                          <span className="hidden sm:inline">•</span>
                           <span>Due: {formatDate(deliverable.due_date)}</span>
                           {deliverable.submitted_at && (
                             <>
-                              <span>•</span>
+                              <span className="hidden sm:inline">•</span>
                               <span>Submitted: {formatDate(deliverable.submitted_at)}</span>
                             </>
                           )}
                         </div>
-                        <p className="text-xs text-blue-600">{deliverable.project_name}</p>
+                        <p className="text-xs text-blue-600 truncate">{deliverable.project_name}</p>
                       </div>
-                      {getStatusBadge(deliverable.status)}
+                      <div className="flex-shrink-0">
+                        {getStatusBadge(deliverable.status)}
+                      </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm" onClick={() => handleViewDeliverable(deliverable)}>
-                        <Eye className="h-4 w-4 mr-1" />
+                  <CardContent className="p-4 sm:p-6 pt-0">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleViewDeliverable(deliverable)}
+                        className="w-full sm:w-auto text-xs"
+                      >
+                        <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                         View Details
                       </Button>
                       {deliverable.status === "pending" && (
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button size="sm">
-                              <Send className="h-4 w-4 mr-1" />
+                            <Button size="sm" className="w-full sm:w-auto text-xs">
+                              <Send className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                               Submit Work
                             </Button>
                           </DialogTrigger>
-                          <DialogContent>
+                          <DialogContent className="mx-4 sm:mx-0 max-w-md sm:max-w-lg">
                             <DialogHeader>
-                              <DialogTitle>Submit Work for {deliverable.title}</DialogTitle>
+                              <DialogTitle className="text-base sm:text-lg truncate">
+                                Submit Work for {deliverable.title}
+                              </DialogTitle>
                             </DialogHeader>
                             <div className="space-y-4">
                               <div>
-                                <Label htmlFor="work-file">Upload Work File</Label>
+                                <Label htmlFor="work-file" className="text-sm sm:text-base">Upload Work File</Label>
                                 <Input
                                   id="work-file"
                                   type="file"
                                   onChange={handleWorkFileUpload}
-                                  className="mt-1"
+                                  className="mt-1 text-sm"
                                   disabled={submitting}
                                 />
                               </div>
@@ -577,7 +606,7 @@ const ResearchAidsFilesDeliverables = () => {
                               )}
                               <Button 
                                 onClick={() => handleSubmitWork(deliverable.id)} 
-                                className="w-full"
+                                className="w-full text-sm sm:text-base"
                                 disabled={!workFile || submitting}
                               >
                                 {submitting ? (
@@ -601,8 +630,9 @@ const ResearchAidsFilesDeliverables = () => {
                               window.open(deliverable.file_path[0].url, '_blank');
                             }
                           }}
+                          className="w-full sm:w-auto text-xs"
                         >
-                          <Download className="h-4 w-4 mr-1" />
+                          <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                           Download
                         </Button>
                       )}
@@ -617,40 +647,49 @@ const ResearchAidsFilesDeliverables = () => {
 
       {/* File Viewer Dialog */}
       <Dialog open={!!viewingFile} onOpenChange={() => setViewingFile(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="mx-4 sm:mx-0 max-w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{viewingFile?.name}</DialogTitle>
+            <DialogTitle className="text-base sm:text-lg truncate pr-6">{viewingFile?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="p-4 bg-gray-50 rounded">
-              <h4 className="font-medium mb-2">File Details</h4>
-              <p><strong>Size:</strong> {viewingFile ? formatFileSize(viewingFile.size) : 'Unknown'}</p>
-              <p><strong>Uploaded by:</strong> {viewingFile?.uploaded_by}</p>
-              <p><strong>Upload date:</strong> {viewingFile ? formatDate(viewingFile.created_at) : 'Unknown'}</p>
-              <p><strong>Project:</strong> {viewingFile?.project_name}</p>
-              <p><strong>Type:</strong> {viewingFile?.type}</p>
+            <div className="p-3 sm:p-4 bg-gray-50 rounded">
+              <h4 className="font-medium mb-2 text-sm sm:text-base">File Details</h4>
+              <div className="space-y-1 text-xs sm:text-sm">
+                <p><strong>Size:</strong> {viewingFile ? formatFileSize(viewingFile.size) : 'Unknown'}</p>
+                <p><strong>Uploaded by:</strong> {viewingFile?.uploaded_by}</p>
+                <p><strong>Upload date:</strong> {viewingFile ? formatDate(viewingFile.created_at) : 'Unknown'}</p>
+                <p><strong>Project:</strong> <span className="break-words">{viewingFile?.project_name}</span></p>
+                <p><strong>Type:</strong> {viewingFile?.type}</p>
+              </div>
             </div>
             {viewingFile?.file_url && (
-              <div className="p-4 bg-blue-50 rounded">
-                <h4 className="font-medium mb-2">File Actions</h4>
-                <p className="text-sm mb-3">This file is available for download or viewing.</p>
+              <div className="p-3 sm:p-4 bg-blue-50 rounded">
+                <h4 className="font-medium mb-2 text-sm sm:text-base">File Actions</h4>
+                <p className="text-xs sm:text-sm mb-3">This file is available for download or viewing.</p>
                 <Button 
                   onClick={() => window.open(viewingFile.file_url, '_blank')}
-                  className="w-full"
+                  className="w-full text-sm"
                 >
                   <Eye className="h-4 w-4 mr-2" />
                   Open File
                 </Button>
               </div>
             )}
-            <div className="flex space-x-2">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
               {viewingFile?.file_url && (
-                <Button onClick={() => window.open(viewingFile.file_url, '_blank')}>
+                <Button 
+                  onClick={() => window.open(viewingFile.file_url, '_blank')}
+                  className="w-full sm:w-auto text-sm"
+                >
                   <Download className="h-4 w-4 mr-2" />
                   Download
                 </Button>
               )}
-              <Button variant="outline" onClick={() => setViewingFile(null)}>
+              <Button 
+                variant="outline" 
+                onClick={() => setViewingFile(null)}
+                className="w-full sm:w-auto text-sm"
+              >
                 Close
               </Button>
             </div>
@@ -660,34 +699,37 @@ const ResearchAidsFilesDeliverables = () => {
 
       {/* Deliverable Viewer Dialog */}
       <Dialog open={!!viewingDeliverable} onOpenChange={() => setViewingDeliverable(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="mx-4 sm:mx-0 max-w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{viewingDeliverable?.title}</DialogTitle>
+            <DialogTitle className="text-base sm:text-lg truncate pr-6">{viewingDeliverable?.title}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="p-4 bg-gray-50 rounded">
-              <h4 className="font-medium mb-2">Deliverable Details</h4>
-              <p><strong>Description:</strong> {viewingDeliverable?.description}</p>
-              <p><strong>Client:</strong> {viewingDeliverable?.client_name}</p>
-              <p><strong>Project:</strong> {viewingDeliverable?.project_name}</p>
-              <p><strong>Due Date:</strong> {viewingDeliverable ? formatDate(viewingDeliverable.due_date) : 'Unknown'}</p>
-              <p><strong>Status:</strong> {viewingDeliverable?.status}</p>
-              {viewingDeliverable?.submitted_at && (
-                <p><strong>Submitted:</strong> {formatDate(viewingDeliverable.submitted_at)}</p>
-              )}
+            <div className="p-3 sm:p-4 bg-gray-50 rounded">
+              <h4 className="font-medium mb-2 text-sm sm:text-base">Deliverable Details</h4>
+              <div className="space-y-1 text-xs sm:text-sm">
+                <p><strong>Description:</strong> <span className="break-words">{viewingDeliverable?.description}</span></p>
+                <p><strong>Client:</strong> {viewingDeliverable?.client_name}</p>
+                <p><strong>Project:</strong> <span className="break-words">{viewingDeliverable?.project_name}</span></p>
+                <p><strong>Due Date:</strong> {viewingDeliverable ? formatDate(viewingDeliverable.due_date) : 'Unknown'}</p>
+                <p><strong>Status:</strong> {viewingDeliverable?.status}</p>
+                {viewingDeliverable?.submitted_at && (
+                  <p><strong>Submitted:</strong> {formatDate(viewingDeliverable.submitted_at)}</p>
+                )}
+              </div>
             </div>
             {viewingDeliverable?.file_path && (
-              <div className="p-4 bg-green-50 rounded">
-                <h4 className="font-medium mb-2">Attached Files</h4>
+              <div className="p-3 sm:p-4 bg-green-50 rounded">
+                <h4 className="font-medium mb-2 text-sm sm:text-base">Attached Files</h4>
                 {Array.isArray(viewingDeliverable.file_path) ? (
                   <div className="space-y-2">
                     {viewingDeliverable.file_path.map((file: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-white rounded">
-                        <span className="text-sm">{file.name || `File ${index + 1}`}</span>
+                      <div key={index} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2 bg-white rounded">
+                        <span className="text-xs sm:text-sm truncate">{file.name || `File ${index + 1}`}</span>
                         <Button 
                           size="sm" 
                           variant="outline"
                           onClick={() => window.open(file.url, '_blank')}
+                          className="w-full sm:w-auto text-xs"
                         >
                           <Download className="h-3 w-3 mr-1" />
                           Download
@@ -696,11 +738,15 @@ const ResearchAidsFilesDeliverables = () => {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm">File information available</p>
+                  <p className="text-xs sm:text-sm">File information available</p>
                 )}
               </div>
             )}
-            <Button variant="outline" onClick={() => setViewingDeliverable(null)}>
+            <Button 
+              variant="outline" 
+              onClick={() => setViewingDeliverable(null)}
+              className="w-full text-sm"
+            >
               Close
             </Button>
           </div>
