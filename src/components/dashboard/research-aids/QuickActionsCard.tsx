@@ -8,7 +8,7 @@ interface QuickActionsCardProps {
 
 const QuickActionsCard = ({ onViewJobBoard }: QuickActionsCardProps) => {
   return (
-    <div className="mb-8">
+    <div className="hidden sm:block mb-8">
       <Card className="border-primary/20">
         <CardContent className="p-6">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">

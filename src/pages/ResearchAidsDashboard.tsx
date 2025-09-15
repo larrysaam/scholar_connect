@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import NDAModal from "@/components/dashboard/NDAModal";
@@ -14,7 +14,8 @@ import { useResearchAidDashboardData } from "@/hooks/useResearchAidDashboardData
 import { useAuth } from "@/hooks/useAuth"; // Keep useAuth for initial profile check
 
 const ResearchAidsDashboard = () => {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(() => searchParams.get("tab") || "overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showNDA, setShowNDA] = useState(false);
   const navigate = useNavigate();
@@ -31,23 +32,8 @@ const ResearchAidsDashboard = () => {
     
     const nameParts = userProfile.name.split(' ');
     const lastName = nameParts[nameParts.length - 1];
-    
-    // Check for academic rank from researchAidProfile or userProfile if available
-    const academicRank = researchAidProfile?.academic_rank || authProfile?.academic_rank; // Assuming academic_rank might be in researchAidProfile or authProfile
-    const highestEducation = researchAidProfile?.highest_education || authProfile?.highest_education; // Assuming highest_education might be in researchAidProfile or authProfile
-
-    if (academicRank && 
-        (academicRank.includes('Professor') || 
-         academicRank.includes('Prof'))) {
-      return `Welcome, Prof. ${lastName}!`;
-    }
-    
-    const hasPhD = highestEducation?.toLowerCase().includes('phd') ||
-                   highestEducation?.toLowerCase().includes('postdoc');
-    
-    if (hasPhD) {
-      return `Welcome, Dr. ${lastName}!`;
-    }
+      // Simple welcome message for Research Aids
+    // Additional title logic can be added here based on actual profile fields
     
     return `Welcome, ${lastName}!`;
   };
@@ -83,9 +69,15 @@ const ResearchAidsDashboard = () => {
     localStorage.setItem('research_aids_nda_date', new Date().toISOString());
     setShowNDA(false);
   };
-
   const handleViewJobBoard = () => {
     setActiveTab("job-requests");
+  };
+
+  const handleTabChange = (tab: string) => {
+    console.log("Research Aids Dashboard tab change requested:", tab);
+    setActiveTab(tab);
+    // Update URL parameters to reflect the current tab
+    setSearchParams({ tab });
   };
 
   if (loading) {
@@ -106,7 +98,7 @@ const ResearchAidsDashboard = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      <Navbar activeTab={activeTab} setActiveTab={handleTabChange} />
       
       <main className="flex-grow bg-gray-50 py-12">
         <div className="container mx-auto px-4 md:px-6">
@@ -118,9 +110,8 @@ const ResearchAidsDashboard = () => {
           )}
 
           <QuickActionsCard onViewJobBoard={handleViewJobBoard} />
-          
-          <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
-            <DashboardTabRenderer activeTab={activeTab} setActiveTab={setActiveTab} />
+            <DashboardLayout activeTab={activeTab} setActiveTab={handleTabChange}>
+            <DashboardTabRenderer activeTab={activeTab} setActiveTab={handleTabChange} />
           </DashboardLayout>
 
          

@@ -101,24 +101,32 @@ const ResearchAidsJobRequests = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Job Requests</h2>
-        <div className="flex space-x-2">
+    <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
+      {/* Header - Responsive Layout */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+        <h2 className="text-xl sm:text-2xl font-bold">Job Requests</h2>
+        {/* Filter Buttons - Stack on mobile, inline on larger screens */}
+        <div className="flex flex-wrap gap-2 sm:space-x-2">
           <Button 
-            variant={filter === "all" ? "default" : "outline"} 
+            variant={filter === "all" ? "default" : "outline"}
+            size="sm"
+            className="flex-1 sm:flex-initial text-xs sm:text-sm"
             onClick={() => setFilter("all")}
           >
             All Jobs
           </Button>
           <Button 
-            variant={filter === "active" ? "default" : "outline"} // Filter by "active" status
+            variant={filter === "active" ? "default" : "outline"}
+            size="sm" 
+            className="flex-1 sm:flex-initial text-xs sm:text-sm"
             onClick={() => setFilter("active")}
           >
             Active
           </Button>
           <Button 
-            variant={filter === "paused" ? "default" : "outline"} // Filter by "paused" status
+            variant={filter === "paused" ? "default" : "outline"}
+            size="sm"
+            className="flex-1 sm:flex-initial text-xs sm:text-sm"
             onClick={() => setFilter("paused")}
           >
             Paused
@@ -132,74 +140,89 @@ const ResearchAidsJobRequests = () => {
         ) : (
           filteredJobs.map((job) => {
             return (
-              <Card key={job.id}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2">
-                      <CardTitle className="text-lg">{job.title}</CardTitle>
-                      <div className="flex items-center space-x-2 text-sm text-gray-600">
-                        <Avatar className="h-6 w-6">
-                          <AvatarImage src="/placeholder-avatar.jpg" alt={job.client?.name || 'Unknown Client'} /> {/* Use client name */}
-                          <AvatarFallback>{job.client?.name ? job.client.name.split(' ').map(n => n[0]).join('') : '?'}</AvatarFallback> {/* Use client name initials */}
+              <Card key={job.id} className="w-full">
+                <CardHeader className="pb-3 sm:pb-6">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-3 sm:space-y-0">
+                    <div className="space-y-2 flex-1 min-w-0">
+                      <CardTitle className="text-base sm:text-lg leading-tight pr-2">{job.title}</CardTitle>
+                      <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600">
+                        <Avatar className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0">
+                          <AvatarImage src="/placeholder-avatar.jpg" alt={job.client?.name || 'Unknown Client'} />
+                          <AvatarFallback className="text-xs">{job.client?.name ? job.client.name.split(' ').map(n => n[0]).join('') : '?'}</AvatarFallback>
                         </Avatar>
-                        <span>{job.client?.name || 'Unknown Client'}</span> {/* Display client name */}
-                        <span>•</span>
-                        <span>{new Date(job.created_at).toLocaleDateString()}</span> {/* Format date */}
+                        <span className="truncate">{job.client?.name || 'Unknown Client'}</span>
+                        <span className="hidden sm:inline">•</span>
+                        <span className="text-xs text-gray-500 sm:text-sm sm:text-gray-600">{new Date(job.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
-                    {getStatusBadge(job.status)}
+                    <div className="self-start sm:self-center flex-shrink-0">
+                      {getStatusBadge(job.status)}
+                    </div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700 mb-4">{job.description}</p>
+                <CardContent className="pt-0 sm:pt-6">
+                  <p className="text-sm sm:text-base text-gray-700 mb-3 sm:mb-4 line-clamp-3 sm:line-clamp-none">{job.description}</p>
                   
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {job.skills_required.map((tag, index) => (
-                      <Badge key={index} variant="outline">{tag}</Badge>
+                  <div className="flex flex-wrap gap-1 sm:gap-2 mb-4">
+                    {job.skills_required.slice(0, 3).map((tag, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">{tag}</Badge>
                     ))}
+                    {job.skills_required.length > 3 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{job.skills_required.length - 3} more
+                      </Badge>
+                    )}
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4 text-sm text-gray-600">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+                    {/* Budget and Deadline Info - Stack on mobile */}
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-600">
                       <div className="flex items-center space-x-1">
-                        <DollarSign className="h-4 w-4" />
-                        <span>{job.budget} {job.currency}</span> {/* Display currency */}
+                        <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span className="font-medium">{job.budget} {job.currency}</span>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <Clock className="h-4 w-4" />
-                        <span>Due {job.deadline ? new Date(job.deadline).toLocaleDateString() : 'N/A'}</span> {/* Format deadline */}
+                        <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span>Due {job.deadline ? new Date(job.deadline).toLocaleDateString() : 'N/A'}</span>
                       </div>
                     </div>
                     
-                    <div className="flex space-x-2">
+                    {/* Action Buttons - Responsive Layout */}
+                    <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button variant="outline" size="sm" onClick={() => handleViewDetails(job)}>
-                            <Eye className="h-4 w-4 mr-1" />
-                            View Details
+                          <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => handleViewDetails(job)}>
+                            <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                            <span className="text-xs sm:text-sm">View Details</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
+                        <DialogContent className="max-w-2xl mx-2 sm:mx-auto max-h-[90vh] overflow-y-auto">
                           <DialogHeader>
-                            <DialogTitle>{job.title}</DialogTitle>
+                            <DialogTitle className="text-lg sm:text-xl pr-6">{job.title}</DialogTitle>
                           </DialogHeader>
-                          <div className="space-y-4">
+                          <div className="space-y-4 sm:space-y-6">
                             <div>
-                              <h4 className="font-semibold mb-2">Full Description</h4>
-                              <p className="text-gray-700">{job.description}</p> {/* Use description */}
+                              <h4 className="font-semibold mb-2 text-sm sm:text-base">Full Description</h4>
+                              <p className="text-gray-700 text-sm sm:text-base leading-relaxed">{job.description}</p>
                             </div>
                             <div>
-                              <h4 className="font-semibold mb-2">Requirements</h4>
-                              <p className="text-gray-700">{job.skills_required.join(', ')}</p> {/* Use skills_required */}
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <h4 className="font-semibold">Budget</h4>
-                                <p>{job.budget} {job.currency}</p>
+                              <h4 className="font-semibold mb-2 text-sm sm:text-base">Requirements</h4>
+                              <div className="flex flex-wrap gap-1 sm:gap-2">
+                                {job.skills_required.map((skill, index) => (
+                                  <Badge key={index} variant="outline" className="text-xs">
+                                    {skill}
+                                  </Badge>
+                                ))}
                               </div>
-                              <div>
-                                <h4 className="font-semibold">Deadline</h4>
-                                <p>{job.deadline ? new Date(job.deadline).toLocaleDateString() : 'N/A'}</p>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div className="bg-gray-50 p-3 rounded-lg">
+                                <h4 className="font-semibold text-sm sm:text-base">Budget</h4>
+                                <p className="text-lg font-medium text-green-600">{job.budget} {job.currency}</p>
+                              </div>
+                              <div className="bg-gray-50 p-3 rounded-lg">
+                                <h4 className="font-semibold text-sm sm:text-base">Deadline</h4>
+                                <p className="text-sm sm:text-base">{job.deadline ? new Date(job.deadline).toLocaleDateString() : 'N/A'}</p>
                               </div>
                             </div>
                           </div>
@@ -213,13 +236,13 @@ const ResearchAidsJobRequests = () => {
                           if (userApplication) {
                             return (
                               <Badge
-                                className={
+                                className={`text-xs w-full sm:w-auto text-center justify-center ${
                                   userApplication.status === "accepted"
                                     ? "bg-green-500 hover:bg-green-500"
                                     : userApplication.status === "rejected"
                                     ? "bg-red-500 hover:bg-red-500"
                                     : "bg-yellow-500 hover:bg-yellow-500"
-                                }
+                                }`}
                               >
                                 Application {userApplication.status}
                               </Badge>
@@ -228,26 +251,29 @@ const ResearchAidsJobRequests = () => {
                             return (
                               <Dialog>
                                 <DialogTrigger asChild>
-                                  <Button size="sm">Apply Now</Button>
+                                  <Button size="sm" className="w-full sm:w-auto">
+                                    <span className="text-xs sm:text-sm">Apply Now</span>
+                                  </Button>
                                 </DialogTrigger>
-                                <DialogContent>
+                                <DialogContent className="mx-2 sm:mx-auto max-h-[90vh] overflow-y-auto">
                                   <DialogHeader>
-                                    <DialogTitle>Apply for Job</DialogTitle>
+                                    <DialogTitle className="text-lg sm:text-xl">Apply for Job</DialogTitle>
                                   </DialogHeader>
-                                  <div className="space-y-4">
+                                  <div className="space-y-4 sm:space-y-6">
                                     <div>
-                                      <Label htmlFor="application">Application Message</Label>
+                                      <Label htmlFor="application" className="text-sm sm:text-base">Application Message</Label>
                                       <Textarea
                                         id="application"
                                         placeholder="Tell the client why you're the right person for this job..."
                                         value={applicationMessage}
                                         onChange={(e) => setApplicationMessage(e.target.value)}
                                         rows={4}
+                                        className="mt-2 text-sm sm:text-base"
                                       />
                                     </div>
                                     <Button onClick={() => handleApply(job.id)} className="w-full">
                                       <Send className="h-4 w-4 mr-2" />
-                                      Submit Application
+                                      <span className="text-sm sm:text-base">Submit Application</span>
                                     </Button>
                                   </div>
                                 </DialogContent>
@@ -260,32 +286,33 @@ const ResearchAidsJobRequests = () => {
                       {job.status === "paused" && ( // Check for "paused" status
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button size="sm">
-                              <MessageSquare className="h-4 w-4 mr-1" />
-                              Respond
+                            <Button size="sm" className="w-full sm:w-auto">
+                              <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                              <span className="text-xs sm:text-sm">Respond</span>
                             </Button>
                           </DialogTrigger>
-                          <DialogContent>
+                          <DialogContent className="mx-2 sm:mx-auto max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
-                              <DialogTitle>Respond to Invitation</DialogTitle>
+                              <DialogTitle className="text-lg sm:text-xl">Respond to Invitation</DialogTitle>
                             </DialogHeader>
-                            <div className="space-y-4">
+                            <div className="space-y-4 sm:space-y-6">
                               <div>
-                                <Label htmlFor="response">Response Message</Label>
+                                <Label htmlFor="response" className="text-sm sm:text-base">Response Message</Label>
                                 <Textarea
                                   id="response"
                                   placeholder="Respond to the client's invitation..."
                                   value={responseMessage}
                                   onChange={(e) => setResponseMessage(e.target.value)}
                                   rows={4}
+                                  className="mt-2 text-sm sm:text-base"
                                 />
                               </div>
-                              <div className="flex space-x-2">
-                                <Button onClick={() => handleRespond(job.id)} className="flex-1">
-                                  Accept & Respond
+                              <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">
+                                <Button onClick={() => handleRespond(job.id)} className="flex-1 order-1">
+                                  <span className="text-sm sm:text-base">Accept & Respond</span>
                                 </Button>
-                                <Button variant="outline" className="flex-1">
-                                  Decline
+                                <Button variant="outline" className="flex-1 order-2">
+                                  <span className="text-sm sm:text-base">Decline</span>
                                 </Button>
                               </div>
                             </div>

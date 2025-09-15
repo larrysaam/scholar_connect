@@ -294,7 +294,7 @@ export const useJobManagement = () => {
             expertise,
             experience
           ),
-          job:jobs!inner(*) // Select all fields from the jobs table
+          job:jobs!inner(*)
         `)
         .eq('job_id', jobId)
         .order('created_at', { ascending: false });
@@ -311,6 +311,39 @@ export const useJobManagement = () => {
       return [];
     }
   }, [user]);
+
+  // Fetch job applications by user ID
+  const fetchJobApplicationsByUserId = useCallback(async (userId: string): Promise<JobApplication[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('job_applications')
+        .select(`
+          *,
+          applicant:users!job_applications_applicant_id_fkey(
+            id,
+            name,
+            email,
+            expertise,
+            experience
+          ),
+          job:jobs!inner(*)
+        `)
+        .eq('applicant_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching job applications by user ID:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching job applications by user ID:', error);
+      return [];
+    }
+  }, []);
+
+
 
   // Handle file upload for a job application
   const handleUploadDeliverableForJobApplication = async (jobId: string, file: File) => {
@@ -839,6 +872,7 @@ export const useJobManagement = () => {
     deleteJob,
     fetchJobs,
     fetchJobApplications,
+    fetchJobApplicationsByUserId,
     fetchAllJobsForResearchAids,
     confirmJobApplication,
     confirmJobRequest,

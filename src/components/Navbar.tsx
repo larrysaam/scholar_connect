@@ -95,15 +95,18 @@ const Navbar = ({setActiveTab, activeTab}) => {
     ];
 
     const researchAideMenuItems = [
-      { id: "overview", label: "Overview", icon: LayoutDashboard },
-      { id: "job-applications", label: "Job Applications", icon: Briefcase },
-      { id: "current-jobs", label: "Current Jobs", icon: Clock },
-      { id: "completed-jobs", label: "Completed Jobs", icon: Calendar },
+      { id: "overview", label: "Dashboard Overview", icon: LayoutDashboard },
+      { id: "job-requests", label: "Job Requests", icon: Briefcase },
       { id: "messages", label: "Messages", icon: MessageSquare },
+      { id: "appointments", label: "Appointments", icon: Calendar },
+      { id: "files-deliverables", label: "Files & Deliverables", icon: FileText },
+      { id: "payments-earnings", label: "Payments & Earnings", icon: DollarSign },
+      { id: "previous-works", label: "Previous Works", icon: FileText },
       { id: "notifications", label: "Notifications", icon: Bell, badge: unreadCount },
-      { id: "documents", label: "Documents", icon: FileText },
-      { id: "profile", label: "Profile Information", icon: User },
-      { id: "settings", label: "Account Settings", icon: Settings },
+      { id: "quality-feedback", label: "Quality Feedback", icon: Star },
+      { id: "verification", label: "Verification", icon: Shield },
+      { id: "profile-ratings", label: "My Profile & Ratings", icon: User },
+      { id: "settings", label: "Settings", icon: Settings },
     ];
 
     switch (profile.role) {
