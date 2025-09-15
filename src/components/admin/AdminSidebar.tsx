@@ -27,6 +27,7 @@ const AdminSidebar = ({ activeTab, setActiveTab }: AdminSidebarProps) => {
     { id: "users", label: "User Management", icon: Users },
     { id: "consultations", label: "Consultation Management", icon: Calendar },
     { id: "tasks", label: "Task Orders", icon: ClipboardList },
+    { id: "database-test", label: "Database Test", icon: Settings },
     { id: "payments", label: "Payments & Transactions", icon: CreditCard },
     { id: "content", label: "Content Management", icon: FileText },
     { id: "reports", label: "Reports & Analytics", icon: TrendingUp },

@@ -8,6 +8,7 @@ import DashboardOverview from "@/components/admin/tabs/DashboardOverview";
 import UserManagement from "@/components/admin/tabs/UserManagement";
 import ConsultationManagement from "@/components/admin/tabs/ConsultationManagement";
 import TaskOrdersManagement from "@/components/admin/tabs/TaskOrdersManagement";
+import DatabaseTest from "@/components/admin/tabs/DatabaseTest";
 import PaymentTransactions from "@/components/admin/tabs/PaymentTransactions";
 import ContentManagement from "@/components/admin/tabs/ContentManagement";
 import ReportsAnalytics from "@/components/admin/tabs/ReportsAnalytics";
@@ -37,6 +38,8 @@ const AdminDashboard = () => {
         return <ConsultationManagement />;
       case "tasks":
         return <TaskOrdersManagement />;
+      case "database-test":
+        return <DatabaseTest />;
       case "payments":
         return <PaymentTransactions />;
       case "content":
