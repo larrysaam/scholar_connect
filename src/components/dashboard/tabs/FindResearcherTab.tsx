@@ -114,6 +114,11 @@ const FindResearcherTab = () => {
                 <Badge variant="outline" className="border-blue-300 text-blue-700 bg-blue-50/80 font-medium">
                   {researcher.field}
                 </Badge>
+                {researcher.admin_verified && (
+                  <Badge className="bg-green-500 hover:bg-green-600 text-white border-0 shadow-sm">
+                    ✓ Verified
+                  </Badge>
+                )}
                 <div className="flex items-center space-x-1 text-gray-500">
                   <MapPin className="h-3 w-3" />
                   <span className="text-xs font-medium">{researcher.location}</span>

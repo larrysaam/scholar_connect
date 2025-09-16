@@ -29,6 +29,8 @@ export interface Researcher {
   location: string;
   imageUrl: string;
   featured: boolean;
+  // Verification status
+  admin_verified?: boolean;
 }
 
 export const useResearchers = () => {
@@ -44,7 +46,11 @@ export const useResearchers = () => {
 
       const { data, error } = await supabase
         .from('users')
-        .select('*, researcher_profiles:researcher_profiles(*), consultation_services:consultation_services(*, pricing:service_pricing(*))')
+        .select(`
+          *,
+          researcher_profiles!researcher_profiles_user_id_fkey(*),
+          consultation_services!consultation_services_user_id_fkey(*, pricing:service_pricing(*))
+        `)
         .eq('role', 'expert')
         .order('created_at', { ascending: false });
 
@@ -91,7 +97,6 @@ export const useResearchers = () => {
           updated_at: user.updated_at,
           // Computed fields for compatibility with existing component
           title: (profile && profile.title) || user.experience || 'Research Expert',
-          subtitle: (profile && profile.subtitle) || 'Dr.', // Added subtitle here
           field: user.expertise?.[0] || 'General Research',
           specializations: user.expertise || ['Research Guidance'],
           rating: (profile && typeof profile.rating === 'number') ? profile.rating : 0,
@@ -99,7 +104,9 @@ export const useResearchers = () => {
           hourlyRate: minPrice,
           location: user.country || 'Location not specified',
           imageUrl: (user.avatar_url)? user.avatar_url : '/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png',
-          featured: Math.random() > 0.7 // 30% chance of being featured
+          featured: Math.random() > 0.7, // 30% chance of being featured
+          // Verification status from profile
+          admin_verified: (profile && typeof profile.admin_verified === 'boolean') ? profile.admin_verified : false
         };
       });
 
@@ -154,7 +161,6 @@ export const useResearchers = () => {
         
         // Computed fields
         title: data.experience || 'Research Expert',
-        subtitle: (profileData && profileData.subtitle) || 'Dr.', // Added subtitle here
         field: data.expertise?.[0] || 'General Research',
         specializations: data.expertise || ['Research Guidance'],
         rating: 4.5 + Math.random() * 0.5,

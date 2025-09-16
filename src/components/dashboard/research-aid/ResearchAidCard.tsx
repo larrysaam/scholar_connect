@@ -22,6 +22,7 @@ interface ResearchAid {
   completedJobs?: number;
   responseTime?: string;
   featured?: boolean;
+  admin_verified?: boolean; // Add admin verification status
 }
 
 interface ResearchAidCardProps {
@@ -114,6 +115,11 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
                 {(aid.specializations || []).length > 3 && (
                   <Badge variant="secondary" className="text-xs bg-gradient-to-r from-teal-100 to-emerald-100 text-teal-700">
                     +{(aid.specializations || []).length - 3} more
+                  </Badge>
+                )}
+                {aid.admin_verified && (
+                  <Badge className="bg-green-500 hover:bg-green-600 text-white border-0 shadow-sm">
+                    ✓ Verified
                   </Badge>
                 )}
               </div>

@@ -26,6 +26,7 @@ export interface ResearchAid {
   location?: string; // Add location
   hourly_rate?: number; // Add hourly_rate
   isAvailable?: boolean; // Add isAvailable
+  admin_verified?: boolean; // Add admin verification status
 }
 
 const FindResearchAidTab = () => {
@@ -60,7 +61,7 @@ const FindResearchAidTab = () => {
         // @ts-expect-error: Supabase type inference bug for .in()
         const { data: profiles, error: profileError } = await supabase
           .from('research_aid_profiles')
-          .select('id, title, location, hourly_rate, availability')
+          .select('id, title, location, hourly_rate, availability, admin_verified')
           .in('id', userIds);
         if (profileError) throw profileError;
 
@@ -85,6 +86,7 @@ const FindResearchAidTab = () => {
             hourly_rate: profile?.hourly_rate ?? 0,
             experience: user.experience || 'N/A',
             isAvailable: profile?.availability?.isAvailable ?? false,
+            admin_verified: profile?.admin_verified ?? false,
           };
         }).filter(aid => aid.isAvailable);
 
