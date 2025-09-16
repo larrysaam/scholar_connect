@@ -4,85 +4,56 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageSquare, AlertCircle, TrendingUp, Clock } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { MessageSquare, AlertCircle, TrendingUp, Clock, RefreshCw } from "lucide-react";
+import { useSupportFeedback } from "@/hooks/useSupportFeedback";
 
 const SupportFeedback = () => {
-  const supportTickets = [
-    {
-      id: "TICK-001",
-      user: "John Doe",
-      subject: "Payment issue with consultation booking",
-      priority: "high",
-      status: "open",
-      assignedTo: "Support Team",
-      createdDate: "2024-01-20 09:30",
-      lastUpdate: "2024-01-20 14:15"
-    },
-    {
-      id: "TICK-002",
-      user: "Sarah Wilson",
-      subject: "Unable to upload research documents",
-      priority: "medium",
-      status: "in_progress",
-      assignedTo: "Tech Support",
-      createdDate: "2024-01-19 16:45",
-      lastUpdate: "2024-01-20 10:20"
-    },
-    {
-      id: "TICK-003",
-      user: "Dr. Marie Ngono",
-      subject: "Profile verification documents rejected",
-      priority: "medium",
-      status: "resolved",
-      assignedTo: "Verification Team",
-      createdDate: "2024-01-18 11:20",
-      lastUpdate: "2024-01-19 15:30"
-    }
-  ];
-
-  const feedbackSubmissions = [
-    {
-      id: 1,
-      user: "Alice Johnson",
-      type: "Feature Request",
-      subject: "Mobile app for easier access",
-      rating: null,
-      sentiment: "positive",
-      status: "under_review",
-      submittedDate: "2024-01-19"
-    },
-    {
-      id: 2,
-      user: "Bob Smith",
-      type: "Complaint",
-      subject: "Researcher was unprofessional during session",
-      rating: 2,
-      sentiment: "negative",
-      status: "investigating",
-      submittedDate: "2024-01-18"
-    },
-    {
-      id: 3,
-      user: "Emma Wilson",
-      type: "General Feedback",
-      subject: "Great platform, very helpful for my research",
-      rating: 5,
-      sentiment: "positive",
-      status: "acknowledged",
-      submittedDate: "2024-01-17"
-    }
-  ];
-
-  const satisfactionTrends = [
-    { period: "This Week", rating: 4.7, responses: 67, change: "+0.2" },
-    { period: "Last Week", rating: 4.5, responses: 54, change: "-0.1" },
-    { period: "This Month", rating: 4.6, responses: 234, change: "+0.3" },
-    { period: "Last Month", rating: 4.3, responses: 198, change: "+0.1" }
-  ];
+  const {
+    supportTickets,
+    feedbackSubmissions,
+    satisfactionTrends,
+    complaintCategories,
+    positiveFeedbackHighlights,
+    supportMetrics,
+    loading,
+    error,
+    refreshData,
+    resolveTicket,
+    respondToFeedback
+  } = useSupportFeedback();
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">Support & Feedback Management</h2>
+          <Button onClick={refreshData} variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry
+          </Button>
+        </div>
+        <Card>
+          <CardContent className="flex items-center justify-center h-32">
+            <div className="text-center">
+              <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Failed to load support data</p>
+              <p className="text-xs text-red-500">{error}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Support & Feedback Management</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Support & Feedback Management</h2>
+        <Button onClick={refreshData} variant="outline" size="sm" disabled={loading}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          Refresh Data
+        </Button>
+      </div>
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -92,8 +63,19 @@ const SupportFeedback = () => {
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">23</div>
-            <p className="text-xs text-muted-foreground">3 high priority</p>
+            {loading ? (
+              <>
+                <Skeleton className="h-8 w-16 mb-1" />
+                <Skeleton className="h-4 w-24" />
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{supportMetrics.openTickets}</div>
+                <p className="text-xs text-muted-foreground">
+                  {supportMetrics.highPriorityTickets} high priority
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -103,8 +85,17 @@ const SupportFeedback = () => {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2.3h</div>
-            <p className="text-xs text-muted-foreground">-15min from last week</p>
+            {loading ? (
+              <>
+                <Skeleton className="h-8 w-16 mb-1" />
+                <Skeleton className="h-4 w-32" />
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{supportMetrics.avgResponseTime}</div>
+                <p className="text-xs text-muted-foreground">-15min from last week</p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -114,8 +105,17 @@ const SupportFeedback = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">4.7/5</div>
-            <p className="text-xs text-muted-foreground">+0.2 this week</p>
+            {loading ? (
+              <>
+                <Skeleton className="h-8 w-20 mb-1" />
+                <Skeleton className="h-4 w-24" />
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{supportMetrics.customerSatisfaction}/5</div>
+                <p className="text-xs text-muted-foreground">{supportMetrics.satisfactionChange} this week</p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -125,8 +125,17 @@ const SupportFeedback = () => {
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">94%</div>
-            <p className="text-xs text-muted-foreground">Within 24 hours</p>
+            {loading ? (
+              <>
+                <Skeleton className="h-8 w-16 mb-1" />
+                <Skeleton className="h-4 w-28" />
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{supportMetrics.resolutionRate}%</div>
+                <p className="text-xs text-muted-foreground">Within 24 hours</p>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -159,48 +168,83 @@ const SupportFeedback = () => {
                     <TableHead>Created</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {supportTickets.map((ticket) => (
-                    <TableRow key={ticket.id}>
-                      <TableCell className="font-mono">{ticket.id}</TableCell>
-                      <TableCell>{ticket.user}</TableCell>
-                      <TableCell className="max-w-xs truncate">{ticket.subject}</TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={
-                            ticket.priority === "high" ? "destructive" : 
-                            ticket.priority === "medium" ? "default" : 
-                            "secondary"
-                          }
-                        >
-                          {ticket.priority}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={
-                            ticket.status === "open" ? "destructive" : 
-                            ticket.status === "in_progress" ? "default" : 
-                            "secondary"
-                          }
-                        >
-                          {ticket.status.replace('_', ' ')}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{ticket.assignedTo}</TableCell>
-                      <TableCell>{ticket.createdDate}</TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">View</Button>
-                          <Button size="sm" variant="outline">Assign</Button>
-                          {ticket.status !== "resolved" && (
-                            <Button size="sm">Resolve</Button>
-                          )}
+                </TableHeader>                <TableBody>
+                  {loading ? (
+                    // Loading skeleton rows
+                    Array.from({ length: 3 }).map((_, index) => (
+                      <TableRow key={index}>
+                        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Skeleton className="h-8 w-12" />
+                            <Skeleton className="h-8 w-16" />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : supportTickets.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-8">
+                        <div className="text-muted-foreground">
+                          <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p>No support tickets found</p>
+                          <p className="text-sm">All issues have been resolved!</p>
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    supportTickets.map((ticket) => (
+                      <TableRow key={ticket.id}>
+                        <TableCell className="font-mono">{ticket.id}</TableCell>
+                        <TableCell>{ticket.user}</TableCell>
+                        <TableCell className="max-w-xs truncate">{ticket.subject}</TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={
+                              ticket.priority === "high" ? "destructive" : 
+                              ticket.priority === "medium" ? "default" : 
+                              "secondary"
+                            }
+                          >
+                            {ticket.priority}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={
+                              ticket.status === "open" ? "destructive" : 
+                              ticket.status === "in_progress" ? "default" : 
+                              "secondary"
+                            }
+                          >
+                            {ticket.status.replace('_', ' ')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{ticket.assignedTo}</TableCell>
+                        <TableCell>{ticket.createdDate}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button size="sm" variant="outline">View</Button>
+                            <Button size="sm" variant="outline">Assign</Button>
+                            {ticket.status !== "resolved" && (
+                              <Button 
+                                size="sm" 
+                                onClick={() => resolveTicket(ticket.id)}
+                              >
+                                Resolve
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -228,41 +272,77 @@ const SupportFeedback = () => {
                     <TableHead>Date</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {feedbackSubmissions.map((feedback) => (
-                    <TableRow key={feedback.id}>
-                      <TableCell>{feedback.user}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{feedback.type}</Badge>
-                      </TableCell>
-                      <TableCell className="max-w-xs truncate">{feedback.subject}</TableCell>
-                      <TableCell>
-                        {feedback.rating ? `${feedback.rating}/5 ⭐` : "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={
-                            feedback.sentiment === "positive" ? "default" : 
-                            feedback.sentiment === "negative" ? "destructive" : 
-                            "secondary"
-                          }
-                        >
-                          {feedback.sentiment}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{feedback.status.replace('_', ' ')}</Badge>
-                      </TableCell>
-                      <TableCell>{feedback.submittedDate}</TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">View</Button>
-                          <Button size="sm" variant="outline">Respond</Button>
+                </TableHeader>                <TableBody>
+                  {loading ? (
+                    // Loading skeleton rows
+                    Array.from({ length: 5 }).map((_, index) => (
+                      <TableRow key={index}>
+                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Skeleton className="h-8 w-12" />
+                            <Skeleton className="h-8 w-16" />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : feedbackSubmissions.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-8">
+                        <div className="text-muted-foreground">
+                          <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p>No feedback submissions found</p>
+                          <p className="text-sm">Check back later for user feedback</p>
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    feedbackSubmissions.map((feedback) => (
+                      <TableRow key={feedback.id}>
+                        <TableCell>{feedback.user}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{feedback.type}</Badge>
+                        </TableCell>
+                        <TableCell className="max-w-xs truncate">{feedback.subject}</TableCell>
+                        <TableCell>
+                          {feedback.rating ? `${feedback.rating}/5 ⭐` : "N/A"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={
+                              feedback.sentiment === "positive" ? "default" : 
+                              feedback.sentiment === "negative" ? "destructive" : 
+                              "secondary"
+                            }
+                          >
+                            {feedback.sentiment}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{feedback.status.replace('_', ' ')}</Badge>
+                        </TableCell>
+                        <TableCell>{feedback.submittedDate}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button size="sm" variant="outline">View</Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => respondToFeedback(feedback.id, "Thank you for your feedback!")}
+                            >
+                              Respond
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -277,74 +357,96 @@ const SupportFeedback = () => {
                 Customer Satisfaction Trends
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {satisfactionTrends.map((trend, index) => (
-                    <div key={index} className="p-4 border rounded-lg">
-                      <h4 className="font-semibold">{trend.period}</h4>
-                      <div className="flex items-center justify-between mt-2">
-                        <span className="text-2xl font-bold">{trend.rating}/5</span>
-                        <Badge 
-                          variant={trend.change.startsWith('+') ? "default" : "destructive"}
-                        >
-                          {trend.change}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-gray-600 mt-1">{trend.responses} responses</p>
+            <CardContent>              <div className="space-y-6">
+                {loading ? (
+                  <>
+                    {/* Loading skeleton for satisfaction trends */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {Array.from({ length: 4 }).map((_, index) => (
+                        <div key={index} className="p-4 border rounded-lg">
+                          <Skeleton className="h-5 w-20 mb-2" />
+                          <div className="flex items-center justify-between mt-2">
+                            <Skeleton className="h-8 w-16" />
+                            <Skeleton className="h-5 w-10" />
+                          </div>
+                          <Skeleton className="h-4 w-24 mt-2" />
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                    
+                    {/* Loading skeleton for categories */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <Skeleton className="h-5 w-48" />
+                        <div className="space-y-2">
+                          {Array.from({ length: 5 }).map((_, index) => (
+                            <div key={index} className="flex justify-between">
+                              <Skeleton className="h-4 w-32" />
+                              <Skeleton className="h-4 w-8" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <Skeleton className="h-5 w-48" />
+                        <div className="space-y-2">
+                          {Array.from({ length: 4 }).map((_, index) => (
+                            <div key={index} className="flex justify-between">
+                              <Skeleton className="h-4 w-36" />
+                              <Skeleton className="h-4 w-8" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {satisfactionTrends.map((trend, index) => (
+                        <div key={index} className="p-4 border rounded-lg">
+                          <h4 className="font-semibold">{trend.period}</h4>
+                          <div className="flex items-center justify-between mt-2">
+                            <span className="text-2xl font-bold">{trend.rating}/5</span>
+                            <Badge 
+                              variant={trend.change.startsWith('+') ? "default" : "destructive"}
+                            >
+                              {trend.change}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 mt-1">{trend.responses} responses</p>
+                        </div>
+                      ))}
+                    </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">Common Complaint Categories</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>Payment Issues</span>
-                        <span className="font-semibold">28%</span>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <h4 className="font-semibold">Common Complaint Categories</h4>
+                        <div className="space-y-2">
+                          {complaintCategories.map((category, index) => (
+                            <div key={index} className="flex justify-between">
+                              <span>{category.category}</span>
+                              <span className="font-semibold">{category.percentage}%</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Session Quality</span>
-                        <span className="font-semibold">22%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Technical Problems</span>
-                        <span className="font-semibold">18%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Booking Issues</span>
-                        <span className="font-semibold">15%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Other</span>
-                        <span className="font-semibold">17%</span>
-                      </div>
-                    </div>
-                  </div>
 
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">Positive Feedback Highlights</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>Researcher Quality</span>
-                        <span className="font-semibold">89%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Platform Ease of Use</span>
-                        <span className="font-semibold">84%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Support Response</span>
-                        <span className="font-semibold">92%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Value for Money</span>
-                        <span className="font-semibold">78%</span>
+                      <div className="space-y-4">
+                        <h4 className="font-semibold">Positive Feedback Highlights</h4>
+                        <div className="space-y-2">
+                          {positiveFeedbackHighlights.map((highlight, index) => (
+                            <div key={index} className="flex justify-between">
+                              <span>{highlight.category}</span>
+                              <span className="font-semibold">{highlight.percentage}%</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
