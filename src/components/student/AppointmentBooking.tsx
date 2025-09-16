@@ -222,19 +222,16 @@ const AppointmentBooking = () => {
         .select()
         .single();
 
-      if (requestError) throw requestError;
-
-      // Create payment record
-      const servicePrice = selectedService?.pricing.find(p => p.academic_level === bookingForm.academic_level);
+      if (requestError) throw requestError;      // Create payment record - FREE APPOINTMENT
       await supabase.from('appointment_payments').insert({
         appointment_request_id: request.id,
         student_id: user.id,
         research_aid_id: bookingForm.research_aid_id,
-        amount: servicePrice?.price || 50,
-        currency: servicePrice?.currency || 'USD',
-        payment_method: 'mock',
+        amount: 0, // FREE appointment
+        currency: 'XAF',
+        payment_method: 'Free',
         payment_status: 'completed',
-        transaction_id: paymentResult.transaction_id,
+        transaction_id: 'Free', // Set transaction ID as 'Free' as requested
         payment_date: new Date().toISOString()
       });
 
@@ -242,7 +239,7 @@ const AppointmentBooking = () => {
       await supabase.from('notifications').insert({
         user_id: bookingForm.research_aid_id,
         title: 'New Appointment Request',
-        message: `You have a new appointment request from ${user.name || 'a student'} for ${selectedService?.title}`,
+        message: `You have a new appointment request from ${user.user_metadata?.full_name || user.email || 'a student'} for ${selectedService?.title}`,
         type: 'appointment',
         category: 'booking',
         action_url: '/research-aids-dashboard'
@@ -552,21 +549,19 @@ const AppointmentBooking = () => {
                 onChange={(e) => setBookingForm(prev => ({ ...prev, specific_requirements: e.target.value }))}
                 rows={3}
               />
-            </div>
-
-            {/* Payment Summary */}
+            </div>            {/* Payment Summary */}
             {selectedService && (
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium mb-2">Payment Summary</h4>
+              <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                <h4 className="font-medium mb-2 text-green-800">Payment Summary</h4>
                 <div className="flex justify-between items-center">
                   <span>Service Fee:</span>
-                  <span className="font-medium">
-                    {getServicePrice(selectedService, bookingForm.academic_level)}
+                  <span className="font-bold text-green-600 text-lg">
+                    FREE
                   </span>
                 </div>
-                <div className="text-sm text-gray-600 mt-2">
+                <div className="text-sm text-green-700 mt-2">
                   <CreditCard className="h-4 w-4 inline mr-1" />
-                  Payment will be processed using mock payment system
+                  No payment required - this appointment is completely free!
                 </div>
               </div>
             )}
@@ -576,14 +571,13 @@ const AppointmentBooking = () => {
               onClick={handleBookingSubmit}
               disabled={submitting || !bookingForm.project_description.trim()}
               className="w-full"
-            >
-              {submitting ? (
+            >              {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Processing Payment...
+                  Booking Appointment...
                 </>
               ) : (
-                'Book & Pay Now'
+                'Book for Free'
               )}
             </Button>
           </div>

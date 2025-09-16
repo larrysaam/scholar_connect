@@ -6,26 +6,16 @@ interface BookingSummaryProps {
 }
 
 const BookingSummary = ({ servicePrice, addOnsPrice, totalPrice }: BookingSummaryProps) => {
+  // Show as FREE for all research aid appointments
   return (
-    <div className="pt-4 border-t">
+    <div className="pt-4 border-t bg-green-50 border-green-200 rounded-lg p-4">
       <div className="space-y-2 mb-4">
-        {servicePrice > 0 && (
-          <div className="flex justify-between items-center">
-            <span>Service Fee:</span>
-            <span className="font-medium">{servicePrice.toLocaleString()} XAF</span>
-          </div>
-        )}
-        
-        {addOnsPrice > 0 && (
-          <div className="flex justify-between items-center">
-            <span>Add-ons:</span>
-            <span className="font-medium">{addOnsPrice.toLocaleString()} XAF</span>
-          </div>
-        )}
-        
-        <div className="flex justify-between items-center text-lg font-bold border-t pt-2">
+        <div className="flex justify-between items-center text-lg font-bold">
           <span>Total Fee:</span>
-          <span>{totalPrice.toLocaleString()} XAF</span>
+          <span className="text-green-600 font-bold text-xl">FREE</span>
+        </div>
+        <div className="text-sm text-green-700 mt-2">
+          <span className="font-medium">✓ No payment required - this consultation is completely free!</span>
         </div>
       </div>
     </div>

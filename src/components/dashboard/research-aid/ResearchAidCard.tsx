@@ -132,9 +132,7 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
                     <span className="text-sm font-bold text-yellow-700">{(aid.rating || 0).toFixed(1)}</span>
                     <span className="text-sm text-yellow-600">({aid.reviewCount || 0})</span>
                   </div>
-                  <div className="text-sm font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
-                    {(aid.hourly_rate || 0).toLocaleString()} XAF/hr
-                  </div>
+                  
                 </div>
                 
                 {/* Action Buttons - Always Visible and Prominent */}

@@ -327,35 +327,40 @@ const StudentUpcomingTab = () => {
               />
               {/* Mark as Complete Button for student */}
               <div className="flex flex-col sm:flex-row justify-end gap-2 mt-2 px-2 sm:px-0">
-                {!consultation.student_completed && (
-                  <Button 
-                    size="sm" 
-                    variant="destructive" 
-                    onClick={() => handleMarkAsComplete(consultation)}
-                    className="w-full sm:w-auto text-xs sm:text-sm"
-                  >
-                    Mark as Complete
-                  </Button>
-                )}
-                {consultation.student_completed && !consultation.researcher_completed && (
-                  <Button 
-                    size="sm" 
-                    variant="secondary" 
-                    disabled
-                    className="w-full sm:w-auto text-xs sm:text-sm"
-                  >
-                    Waiting for Researcher
-                  </Button>
-                )}
-                {consultation.student_completed && consultation.researcher_completed && (
-                  <Button 
-                    size="sm" 
-                    variant="default" 
-                    disabled
-                    className="w-full sm:w-auto text-xs sm:text-sm"
-                  >
-                    Completed
-                  </Button>
+                {/* Only show completion buttons if consultation is confirmed (not pending) */}
+                {consultation.status !== 'pending' && (
+                  <>
+                    {!consultation.student_completed && (
+                      <Button 
+                        size="sm" 
+                        variant="destructive" 
+                        onClick={() => handleMarkAsComplete(consultation)}
+                        className="w-full sm:w-auto text-xs sm:text-sm"
+                      >
+                        Mark as Complete
+                      </Button>
+                    )}
+                    {consultation.student_completed && !consultation.researcher_completed && (
+                      <Button 
+                        size="sm" 
+                        variant="secondary" 
+                        disabled
+                        className="w-full sm:w-auto text-xs sm:text-sm"
+                      >
+                        Waiting for Researcher
+                      </Button>
+                    )}
+                    {consultation.student_completed && consultation.researcher_completed && (
+                      <Button 
+                        size="sm" 
+                        variant="default" 
+                        disabled
+                        className="w-full sm:w-auto text-xs sm:text-sm"
+                      >
+                        Completed
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
             </div>

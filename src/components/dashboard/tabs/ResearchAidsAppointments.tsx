@@ -73,8 +73,7 @@ const ResearchAidsAppointments = () => {
     setLoading(true);
     try {
       // Debug: log user id
-      console.log('Current user id:', user.id);
-      // Fetch all appointments for this aid from service_bookings, joined with consultation_services and users (client)
+      console.log('Current user id:', user.id);      // Fetch all appointments for this aid from service_bookings, joined with consultation_services and users (client)
       const { data: bookings, error: bookingsError } = await supabase
         .from('service_bookings')
         .select(`
@@ -91,7 +90,8 @@ const ResearchAidsAppointments = () => {
           )
         `)
         .eq('provider_id', user.id)
-        .order('scheduled_date', { ascending: true });
+        .order('scheduled_date', { ascending: false })
+        .order('scheduled_time', { ascending: false });
       console.log('Raw bookings from Supabase:', bookings, bookingsError);
       const processedAppointments: AppointmentData[] = (bookings || []).map(booking => ({
         id: booking.id,

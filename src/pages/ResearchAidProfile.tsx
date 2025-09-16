@@ -259,14 +259,12 @@ const ResearchAidProfile = () => {
         });
         setSubmitting(false);
         return;
-      }
-
-      // Create appointment request (use valid table/fields)
+      }      // Create appointment request (use valid table/fields) - FREE APPOINTMENT
       const { data: request, error: requestError } = await supabase
         .from('service_bookings')
         .insert({
           academic_level: bookingForm.academic_level,
-          base_price: profile.hourly_rate || 0,
+          base_price: 0, // FREE appointment
           client_id: user.id,
           currency: 'XAF',
           duration_minutes: selectedService.duration_minutes || 60,
@@ -275,8 +273,9 @@ const ResearchAidProfile = () => {
           scheduled_time: bookingForm.requested_time,
           service_id: selectedService.id, // Always a valid UUID now
           status: 'pending',
-          total_price: profile.hourly_rate || 0,
-          payment_status: 'pending',
+          total_price: 0, // FREE appointment
+          payment_status: 'paid', // Set as paid since it's free
+          payment_id: 'Free', // Set payment ID as 'Free' as requested
           meeting_type: 'video',
           project_description: bookingForm.project_description,
           client_notes: bookingForm.specific_requirements || null
@@ -286,14 +285,15 @@ const ResearchAidProfile = () => {
 
       if (requestError) throw requestError;
 
-      // Create payment record (use valid table/fields)
+      // Create payment record (use valid table/fields) - FREE APPOINTMENT
       await supabase.from('transactions').insert({
         user_id: user.id,
-        amount: profile.hourly_rate || 0,
+        amount: 0, // FREE appointment
         currency: 'XAF',
         status: 'completed',
         type: 'consultation',
-        description: `Payment for appointment booking with ${profile.name}`
+        description: `Free appointment booking with ${profile.name}`,
+        payment_id: 'Free' // Set payment ID as 'Free' as requested
       });
 
       // Send notification to research aid (use valid fields)
@@ -448,9 +448,9 @@ const ResearchAidProfile = () => {
                           <BookOpen className="h-4 w-4 mr-1" />
                           <span>{profile.years_experience} years experience</span>
                         </div>
-                        <div className="flex items-center">
+                        {/* <div className="flex items-center">
                           <span className="font-medium">{profile.hourly_rate} XAF/hour</span>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
                   </div>
@@ -599,11 +599,18 @@ const ResearchAidProfile = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    {/* <div className="text-center p-4 bg-blue-50 rounded-lg">
                       <div className="text-2xl font-bold text-blue-600">
                         {profile.hourly_rate} XAF
                       </div>
                       <div className="text-sm text-gray-600">per hour</div>
+                    </div> */}
+
+                     <div className="text-center p-4 bg-blue-50 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">
+                        FREE
+                      </div>
+                  
                     </div>
 
                     <div className="space-y-2">
@@ -745,21 +752,19 @@ const ResearchAidProfile = () => {
                               onChange={(e) => setBookingForm(prev => ({ ...prev, specific_requirements: e.target.value }))}
                               rows={3}
                             />
-                          </div>
-
-                          {/* Payment Summary */}
+                          </div>                          {/* Payment Summary */}
                           {selectedService && (
-                            <div className="p-4 bg-gray-50 rounded-lg">
-                              <h4 className="font-medium mb-2">Payment Summary</h4>
+                            <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                              <h4 className="font-medium mb-2 text-green-800">Payment Summary</h4>
                               <div className="flex justify-between items-center">
                                 <span>Service Fee:</span>
-                                <span className="font-medium">
-                                  {getServicePrice(selectedService, bookingForm.academic_level)}
+                                <span className="font-bold text-green-600 text-lg">
+                                  FREE
                                 </span>
                               </div>
-                              <div className="text-sm text-gray-600 mt-2">
+                              <div className="text-sm text-green-700 mt-2">
                                 <CreditCard className="h-4 w-4 inline mr-1" />
-                                Payment will be processed using mock payment system
+                                No payment required - this appointment is completely free!
                               </div>
                             </div>
                           )}
@@ -769,14 +774,13 @@ const ResearchAidProfile = () => {
                             onClick={handleBookingSubmit}
                             disabled={submitting || !bookingForm.project_description.trim() || !selectedService || selectedService.title.toLowerCase() !== 'appointment'}
                             className="w-full"
-                          >
-                            {submitting ? (
+                          >                            {submitting ? (
                               <>
                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Processing Payment...
+                                Booking Appointment...
                               </>
                             ) : (
-                              'Book & Pay Now'
+                              'Book for Free'
                             )}
                           </Button>
                         </div>

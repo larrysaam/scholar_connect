@@ -242,88 +242,8 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
     }
 
     const service = getSelectedService();
-    if (!service) return;
-
-    // MeSomb mobile money integration via Node.js backend
-    let mesombPaymentId = null;
-    let paymentId = null;
-    let bookingResult = null;
-    if (paymentMethod === 'mobile_money') {
-      try {
-        if (!paymentDetails.phoneNumber || paymentDetails.phoneNumber.length < 9) {
-          toast({
-            title: 'Invalid Phone Number',
-            description: 'Please enter a valid mobile money phone number.',
-            variant: 'destructive',
-          });
-          return;
-        }
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Not authenticated');
-        const response = await fetch(
-          "http://localhost:4000/api/mesomb-payment",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              amount: getTotalPrice(),
-              service: paymentDetails.operator || 'MTN',
-              payer: paymentDetails.phoneNumber,
-              description: `Consultation booking for ${service.title}`,
-              customer: {
-                email: user.email,
-                firstName: user.user_metadata?.firstName || '',
-                lastName: user.user_metadata?.lastName || '',
-                country: 'CM',
-              },
-              country: 'CM',
-              currency: 'XAF',
-              location: { town: 'Douala', region: 'Littoral', country: 'CM' },
-              products: [
-                { name: service.title, category: 'consultation', quantity: 1, amount: getTotalPrice() }
-              ],
-            }),
-          }
-        );
-
-        const mesombResult = await response.json();
-        console.log('MeSomb payment response:', response.status, mesombResult);
-        if (response.status === 401) {
-          console.log('MeSomb 401 debug info:', mesombResult);
-          return;
-        }
-        console.log('MeSomb payment response:', mesombResult.raw.transaction.data.pk);
-        if (!mesombResult.operationSuccess || !mesombResult.transactionSuccess) {
-          toast({
-            title: 'Mobile Money Payment Error',
-            description: mesombResult.error || mesombResult.message || 'The mobile money payment could not be completed. Please check your number, operator, and try again.',
-            variant: 'destructive',
-          });
-          console.error('MeSomb operation error:', mesombResult);
-          return;
-        }
-        // Save MeSomb payment ID for later DB update
-        mesombPaymentId = mesombResult.raw.transaction.data.pk || mesombResult.raw?.pk || mesombResult.raw?.id || mesombResult.pk || mesombResult.id || null;
-        console.log('MeSomb payment ID:', mesombPaymentId);
-      } catch (err) {
-        toast({
-          title: 'Mobile Money Payment Error',
-          description: typeof err === 'string' ? err : (err?.message || 'A network or server error occurred during mobile money payment.'),
-          variant: 'destructive',
-        });
-        console.error('MeSomb payment exception:', err);
-        return;
-      }
-    }
-
-    // Save payment in transactions and update booking with payment id
-    paymentId = mesombPaymentId;
-    if (!paymentId) {
-      // fallback: generate a local payment id if not available
-      paymentId = `pay_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    }
-
-    // Only create booking after payment is successful
+    if (!service) return;    // Free appointment - no payment processing needed
+    let bookingResult = null;// Create free booking - no payment required
     bookingResult = await createBooking({
       provider_id: researcher.id,
       service_id: selectedService,
@@ -331,13 +251,13 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
       scheduled_date: format(selectedDate, 'yyyy-MM-dd'),
       scheduled_time: selectedTime,
       duration_minutes: service.duration_minutes,
-      base_price: getServicePrice(),
-      addon_price: getAddonPrice(),
-      total_price: getTotalPrice(),
+      base_price: 0, // FREE appointment
+      addon_price: 0, // FREE appointment
+      total_price: 0, // FREE appointment
       currency: 'XAF',
       client_notes: clientNotes,
       selected_addons: selectedAddons,
-      payment_id: paymentId,
+      payment_id: 'Free', // Set payment ID as 'Free' as requested
       challenges
     });
 
@@ -362,41 +282,25 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
       }
     } catch (e) {
       console.error('Error invoking generate-meet-link function:', e);
-    }
-
-    await supabase.from('transactions').insert({
+    }    await supabase.from('transactions').insert({
       user_id: bookingResult.booking.client_id,
-      amount: getTotalPrice(),
+      amount: 0, // FREE appointment
       type: 'consultation',
-      description: `Consultation booking for ${service.title}`,
+      description: `Free consultation booking for ${service.title}`,
       status: 'paid',
-      payment_id: paymentId,
-    });
-
-    await supabase.from('service_bookings').update({
+      payment_id: 'Free', // Set payment ID as 'Free' as requested
+    });    await supabase.from('service_bookings').update({
       payment_status: 'paid',
-      payment_id: paymentId,
+      payment_id: 'Free', // Set payment ID as 'Free' as requested
       status: 'confirmed',
       updated_at: new Date().toISOString(),
-    }).eq('id', bookingResult.booking.id);
-
-    // Process payment (for other methods or after MeSomb success)
-    const paymentResult = await processPayment({
-      amount: getTotalPrice(),
-      currency: 'XAF',
-      booking_id: bookingResult.booking.id,
-      payment_method: paymentMethod as any,
-      payment_details: paymentDetails
-    });
-
-    if (paymentResult.success) {
-      setCurrentStep(5); // Success step
-      // Reset form after a delay
-      setTimeout(() => {
-        resetForm();
-        setIsOpen(false);
-      }, 3000);
-    }
+    }).eq('id', bookingResult.booking.id);    // Free appointment - no payment processing needed
+    setCurrentStep(5); // Success step
+    // Reset form after a delay
+    setTimeout(() => {
+      resetForm();
+      setIsOpen(false);
+    }, 3000);
   };
 
   // Reset form
@@ -683,11 +587,9 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
                   onChange={(e) => setPaymentDetails(prev => ({ ...prev, phoneNumber: e.target.value }))}
                 />
               </div>
-            )}
-
-            <Card className="bg-gray-50">
+            )}            <Card className="bg-green-50 border-green-200">
               <CardContent className="p-4">
-                <h4 className="font-medium mb-3">Booking Summary</h4>
+                <h4 className="font-medium mb-3 text-green-800">Booking Summary</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>Service:</span>
@@ -703,20 +605,14 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
                       {selectedDate && format(selectedDate, 'PPP')} at {selectedTime}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Base Price:</span>
-                    <span>{getServicePrice().toLocaleString()} XAF</span>
-                  </div>
-                  {getAddonPrice() > 0 && (
-                    <div className="flex justify-between">
-                      <span>Add-ons:</span>
-                      <span>{getAddonPrice().toLocaleString()} XAF</span>
-                    </div>
-                  )}
                   <Separator />
                   <div className="flex justify-between font-medium text-base">
-                    <span>Total:</span>
-                    <span className="text-green-600">{getTotalPrice().toLocaleString()} XAF</span>
+                    <span>Total Fee:</span>
+                    <span className="text-green-600 font-bold text-lg">FREE</span>
+                  </div>
+                  <div className="text-sm text-green-700 mt-2">
+                    <CreditCard className="h-4 w-4 inline mr-1" />
+                    No payment required - this consultation is completely free!
                   </div>
                 </div>
               </CardContent>
@@ -826,20 +722,19 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
               >
                 Next
               </Button>
-            ) : (
-              <Button
+            ) : (              <Button
                 onClick={handleBooking}
                 disabled={!isStepValid(currentStep) || creating || processing}
               >
                 {creating || processing ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    {creating ? 'Creating Booking...' : 'Processing Payment...'}
+                    {creating ? 'Booking Consultation...' : 'Processing...'}
                   </>
                 ) : (
                   <>
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Complete Booking & Pay
+                    <CalendarIcon className="h-4 w-4 mr-2" />
+                    Book for Free
                   </>
                 )}
               </Button>
