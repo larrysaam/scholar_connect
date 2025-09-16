@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Bell, 
   BellOff, 
@@ -19,10 +20,12 @@ import {
   ExternalLink,
   Loader2, 
   RefreshCw,
-  ArrowRight
+  ArrowRight,
+  Megaphone
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { formatDistanceToNow } from "date-fns";
+import AnnouncementsTab from "@/components/notifications/AnnouncementsTab";
 
 interface NotificationsTabProps {
   setActiveTab: (tab: string) => void;
@@ -251,14 +254,13 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
       </div>
     );
   }
-
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold">Notifications</h2>
-          <p className="text-gray-600 text-sm sm:text-base">Stay updated with your latest activities</p>
+          <h2 className="text-xl sm:text-2xl font-bold">Notifications & Announcements</h2>
+          <p className="text-gray-600 text-sm sm:text-base">Stay updated with your latest activities and important announcements</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary" className="text-xs">
@@ -385,11 +387,29 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
                 </div>
               )}
             </DialogContent>
-          </Dialog>
-        </div>
+          </Dialog>        </div>
       </div>
 
-      {/* Search and Filters */}
+      {/* Tabs for Notifications and Announcements */}
+      <Tabs defaultValue="notifications" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <Bell className="h-4 w-4" />
+            Notifications
+            {unreadCount > 0 && (
+              <Badge variant="destructive" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
+                {unreadCount}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="announcements" className="flex items-center gap-2">
+            <Megaphone className="h-4 w-4" />
+            Announcements
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="notifications" className="mt-6">
+          {/* Search and Filters */}
       <Card>
         <CardContent className="p-3 sm:p-4">
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
@@ -533,9 +553,14 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
                 </div>
               </CardContent>
             </Card>
-          ))
-        )}
+          ))        )}
       </div>
+        </TabsContent>
+
+        <TabsContent value="announcements" className="mt-6">
+          <AnnouncementsTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

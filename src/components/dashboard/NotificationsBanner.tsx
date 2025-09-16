@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Bell, X, MessageSquare, Calendar, UserCheck } from "lucide-react";
+import AnnouncementsBanner from "@/components/notifications/AnnouncementsBanner";
 
 const NotificationsBanner = () => {
   const [notifications, setNotifications] = useState([
@@ -36,11 +37,13 @@ const NotificationsBanner = () => {
   const handleDismissBanner = () => {
     setShowBanner(false);
   };
-
-  if (!showBanner || newNotificationsCount === 0) {
-    return null;
-  }
   return (
+    <div>
+      {/* Announcements Banner */}
+      <AnnouncementsBanner />
+      
+      {/* Regular Notifications Banner */}
+      {showBanner && newNotificationsCount > 0 && (
     <Card className="mb-4 sm:mb-6 border-blue-200 bg-blue-50 max-w-full overflow-hidden">
       <CardContent className="p-3 sm:p-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
@@ -84,10 +87,11 @@ const NotificationsBanner = () => {
             >
               <X className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
-          </div>
-        </div>
+          </div>        </div>
       </CardContent>
     </Card>
+      )}
+    </div>
   );
 };
 
