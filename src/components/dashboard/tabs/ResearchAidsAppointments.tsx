@@ -130,6 +130,9 @@ const ResearchAidsAppointments = () => {
       const { data, error: functionError } = await supabase.functions.invoke('generate-meet-link', {
         body: { booking_id: appointmentId },
       });
+
+      console.log('Generate Meet Link function response:', data, functionError);
+
       if (functionError || !data?.meetLink) {
         toast({
           title: "Error",
