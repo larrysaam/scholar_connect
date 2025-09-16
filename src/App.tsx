@@ -106,9 +106,8 @@ const App = () => (
                   <ProtectedRoute requiredRole="student">
                     <Dashboard />
                   </ProtectedRoute>
-                } />
-                <Route path="/researcher-dashboard" element={
-                  <ProtectedRoute requiredRole="researcher">
+                } />                <Route path="/researcher-dashboard" element={
+                  <ProtectedRoute requiredRole="expert">
                     <ResearcherDashboard />
                   </ProtectedRoute>
                 } />

@@ -5,13 +5,13 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'student' | 'researcher' | 'aid' | 'admin';
+  requiredRole?: 'student' | 'expert' | 'aid' | 'admin';
 }
 
 const dashboardRoleMap: Record<string, string> = {
   '/admin': 'admin',
   '/research-aids-dashboard': 'aid',
-  '/researcher-dashboard': 'researcher',
+  '/researcher-dashboard': 'expert',
   '/dashboard': 'student',
 };
 
@@ -19,7 +19,7 @@ function getDashboardPath(role: string) {
   switch (role) {
     case 'admin': return '/admin';
     case 'aid': return '/research-aids-dashboard';
-    case 'researcher': return '/researcher-dashboard';
+    case 'expert': return '/researcher-dashboard';
     case 'student': return '/dashboard';
     default: return '/login';
   }
