@@ -19,7 +19,27 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
   };
 
   const handleCategoryChange = (value: any) => {
-    updateFormData({ category: value });
+    const updatedData: Partial<CreateServiceData> = { category: value };
+    
+    // If Free Consultation is selected, set all prices to 0
+    if (value === 'Free Consultation') {
+      updatedData.pricing = [
+        { academic_level: 'Undergraduate', price: 0, currency: 'XAF' },
+        { academic_level: 'Masters', price: 0, currency: 'XAF' },
+        { academic_level: 'PhD', price: 0, currency: 'XAF' },
+        { academic_level: 'Postdoc', price: 0, currency: 'XAF' }
+      ];
+      // Also set title if it's empty or default
+      if (!formData.title || formData.title === '') {
+        updatedData.title = 'Free Consultation Session';
+      }
+      // Set default duration to 60 minutes
+      if (!formData.duration_minutes || formData.duration_minutes === 0) {
+        updatedData.duration_minutes = 60;
+      }
+    }
+    
+    updateFormData(updatedData);
   };
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,6 +67,11 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
   };
 
   const updatePricing = (index: number, field: keyof AcademicLevelPrice, value: any) => {
+    // Prevent price changes for free consultation, but allow academic level changes
+    if (formData.category === 'Free Consultation' && field === 'price') {
+      return; // Don't update price for free consultations
+    }
+    
     updateFormData({
       pricing: formData.pricing.map((item, i) => 
         i === index ? { ...item, [field]: value } : item
@@ -91,6 +116,7 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
               <SelectItem value="Chapter Review">Chapter Review</SelectItem>
               <SelectItem value="Full Thesis Cycle Support">Full Thesis Cycle Support</SelectItem>
               <SelectItem value="Full Thesis Review">Full Thesis Review</SelectItem>
+              <SelectItem value="Free Consultation">Free Consultation</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -132,11 +158,18 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
 
       <div>
         <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4">
-          <Label className="text-sm font-medium">Pricing by Academic Level</Label>
-          <Button type="button" onClick={addPricing} size="sm" variant="outline" className="w-full sm:w-auto text-xs sm:text-sm">
-            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-            Add Level
-          </Button>
+          <Label className="text-sm font-medium">
+            Pricing by Academic Level
+            {formData.category === 'Free Consultation' && (
+              <span className="ml-2 text-green-600 font-semibold">(FREE SERVICE)</span>
+            )}
+          </Label>
+          {formData.category !== 'Free Consultation' && (
+            <Button type="button" onClick={addPricing} size="sm" variant="outline" className="w-full sm:w-auto text-xs sm:text-sm">
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+              Add Level
+            </Button>
+          )}
         </div>
         <div className="space-y-3">
           {formData.pricing.map((pricing, index) => (
@@ -156,15 +189,26 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
                 </SelectContent>
               </Select>
               <div className="flex items-center gap-2 flex-1 sm:flex-none">
-                <Input
-                  type="number"
-                  value={pricing.price}
-                  onChange={(e) => updatePricing(index, 'price', parseFloat(e.target.value) || 0)}
-                  placeholder="Price"
-                  className="flex-1 sm:w-32 text-xs sm:text-sm"
-                />
-                <span className="text-xs sm:text-sm text-gray-600 flex-shrink-0">XAF</span>
-                {formData.pricing.length > 1 && (
+                {formData.category === 'Free Consultation' ? (
+                  <div className="flex items-center gap-2 flex-1 sm:w-32">
+                    <div className="flex-1 sm:w-32 px-3 py-2 bg-green-50 border border-green-200 rounded-md text-green-700 font-semibold text-center text-xs sm:text-sm">
+                      FREE
+                    </div>
+                    <span className="text-xs sm:text-sm text-green-600 flex-shrink-0">0.00 XAF</span>
+                  </div>
+                ) : (
+                  <>
+                    <Input
+                      type="number"
+                      value={pricing.price}
+                      onChange={(e) => updatePricing(index, 'price', parseFloat(e.target.value) || 0)}
+                      placeholder="Price"
+                      className="flex-1 sm:w-32 text-xs sm:text-sm"
+                    />
+                    <span className="text-xs sm:text-sm text-gray-600 flex-shrink-0">XAF</span>
+                  </>
+                )}
+                {formData.pricing.length > 1 && formData.category !== 'Free Consultation' && (
                   <Button
                     type="button"
                     onClick={() => removePricing(index)}

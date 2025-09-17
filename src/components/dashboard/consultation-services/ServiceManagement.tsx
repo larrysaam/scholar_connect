@@ -48,7 +48,6 @@ const ServiceManagement = ({
     pricing: [{ academic_level: 'Undergraduate', price: 0, currency: 'XAF' }],
     addons: []
   });
-
   const resetForm = () => {
     setFormData({
       category: 'General Consultation',
@@ -58,6 +57,23 @@ const ServiceManagement = ({
       pricing: [{ academic_level: 'Undergraduate', price: 0, currency: 'XAF' }],
       addons: []
     });
+  };
+
+  const createFreeConsultationService = () => {
+    setFormData({
+      category: 'Free Consultation',
+      title: 'Free Consultation Session',
+      description: 'Complimentary consultation session to discuss your research needs and provide initial guidance.',
+      duration_minutes: 60,
+      pricing: [
+        { academic_level: 'Undergraduate', price: 0, currency: 'XAF' },
+        { academic_level: 'Masters', price: 0, currency: 'XAF' },
+        { academic_level: 'PhD', price: 0, currency: 'XAF' },
+        { academic_level: 'Postdoc', price: 0, currency: 'XAF' }
+      ],
+      addons: []
+    });
+    setShowCreateDialog(true);
   };
 
   const handleCreateService = async () => {
@@ -106,18 +122,26 @@ const ServiceManagement = ({
   return (
     <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-0">
       {/* Header */}
-      <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:justify-between sm:items-center">
-        <div className="min-w-0 flex-1">
+      <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:justify-between sm:items-center">        <div className="min-w-0 flex-1">
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">Service Management</h3>
           <p className="text-xs sm:text-sm text-gray-600 mt-1">Create and manage your consultation services</p>
         </div>
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogTrigger asChild>
-            <Button onClick={resetForm} className="w-full sm:w-auto text-sm py-2 px-3 sm:px-4">
-              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-              Create Service
-            </Button>
-          </DialogTrigger>          <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto mx-2 sm:mx-0">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button 
+            onClick={createFreeConsultationService} 
+            variant="outline" 
+            className="w-full sm:w-auto text-sm py-2 px-3 sm:px-4 border-green-200 text-green-700 hover:bg-green-50"
+          >
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+            Free Service
+          </Button>
+          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+            <DialogTrigger asChild>
+              <Button onClick={resetForm} className="w-full sm:w-auto text-sm py-2 px-3 sm:px-4">
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                Create Service
+              </Button>
+            </DialogTrigger><DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto mx-2 sm:mx-0">
             <DialogHeader className="pb-4">
               <DialogTitle className="text-base sm:text-lg">Create New Service</DialogTitle>
               <DialogDescription className="text-xs sm:text-sm">
@@ -149,24 +173,33 @@ const ServiceManagement = ({
                   'Create Service'
                 )}
               </Button>
-            </DialogFooter>
-          </DialogContent>
+            </DialogFooter>          </DialogContent>
         </Dialog>
-      </div>      {/* Services List */}
+        </div>
+      </div>{/* Services List */}
       <div className="space-y-3 sm:space-y-4">
         {services.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8 sm:py-12 px-4">
               <BookOpen className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
-              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No services yet</h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-4 max-w-md mx-auto">Create your first consultation service to get started</p>
-              <Button 
-                onClick={() => setShowCreateDialog(true)}
-                className="w-full sm:w-auto text-sm"
-              >
-                <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                Create Your First Service
-              </Button>
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No services yet</h3>              <p className="text-sm sm:text-base text-gray-600 mb-4 max-w-md mx-auto">Create your first consultation service to get started</p>
+              <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                <Button 
+                  onClick={createFreeConsultationService}
+                  variant="outline"
+                  className="w-full sm:w-auto text-sm border-green-200 text-green-700 hover:bg-green-50"
+                >
+                  <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                  Create Free Service
+                </Button>
+                <Button 
+                  onClick={() => setShowCreateDialog(true)}
+                  className="w-full sm:w-auto text-sm"
+                >
+                  <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                  Create Paid Service
+                </Button>
+              </div>
             </CardContent>
           </Card>        ) : (
           services.map((service) => (
@@ -175,9 +208,17 @@ const ServiceManagement = ({
                 <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:gap-3 mb-3">
-                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{service.title}</h4>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="outline" className="text-xs">{service.category}</Badge>
+                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{service.title}</h4>                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${
+                            service.category === 'Free Consultation' 
+                              ? 'bg-green-50 text-green-700 border-green-200' 
+                              : ''
+                          }`}
+                        >
+                          {service.category}
+                        </Badge>
                         <Badge 
                           variant={service.is_active ? "default" : "secondary"}
                           className={`text-xs ${service.is_active ? "bg-green-600" : ""}`}
@@ -201,23 +242,29 @@ const ServiceManagement = ({
                         <Plus className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                         <span className="truncate">{service.addons.length} add-ons</span>
                       </div>
-                    </div>
-
-                    {/* Pricing Display */}
+                    </div>                    {/* Pricing Display */}
                     <div className="mt-3 sm:mt-4">
                       <div className="flex flex-wrap gap-1 sm:gap-2">
-                        {service.pricing.slice(0, 3).map((price, index) => (
-                          <Badge key={index} variant="outline" className="text-xs truncate max-w-full">
-                            {price.academic_level}: {price.price.toLocaleString()} {price.currency}
+                        {service.category === 'Free Consultation' ? (
+                          <Badge className="text-xs bg-green-100 text-green-700 border-green-200">
+                            All Levels: FREE (0.00 XAF)
                           </Badge>
-                        ))}
-                        {service.pricing.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{service.pricing.length - 3} more
-                          </Badge>
+                        ) : (
+                          <>
+                            {service.pricing.slice(0, 3).map((price, index) => (
+                              <Badge key={index} variant="outline" className="text-xs truncate max-w-full">
+                                {price.academic_level}: {price.price.toLocaleString()} {price.currency}
+                              </Badge>
+                            ))}
+                            {service.pricing.length > 3 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{service.pricing.length - 3} more
+                              </Badge>
+                            )}
+                          </>
                         )}
                       </div>
-                    </div>                  </div>
+                    </div></div>
 
                   {/* Actions */}
                   <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:gap-2 sm:ml-4 w-full sm:w-auto">

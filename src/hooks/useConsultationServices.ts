@@ -5,7 +5,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { AcademicLevelPrice, ConsultationService, ServiceAddon, ServiceAvailability } from '@/types/consultations';
 
 export interface CreateServiceData {
-  category: 'General Consultation' | 'Chapter Review' | 'Full Thesis Cycle Support' | 'Full Thesis Review';
+  category: 'General Consultation' | 'Chapter Review' | 'Full Thesis Cycle Support' | 'Full Thesis Review' | 'Free Consultation';
   title: string;
   description: string;
   duration_minutes?: number;
