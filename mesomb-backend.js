@@ -140,6 +140,107 @@ app.post('/api/mesomb-payment', async (req, res) => {
   }
 });
 
+// Secure booking creation endpoint with service price validation
+app.post('/api/create-booking', async (req, res) => {
+  if (!applicationKey || !accessKey || !secretKey) {
+    return res.status(500).json({ error: 'MeSomb credentials are not set in environment variables' });
+  }
+  
+  const { service_id, academic_level, amount, customer, location, products, payer, service = 'MTN', country = 'CM', currency = 'XAF' } = req.body;
+
+  console.log("[Booking Creation] Incoming booking request:", req.body);
+  try {
+    // Security check: Validate service pricing from database
+    if (!service_id) {
+      return res.status(400).json({ error: 'Service ID is required' });
+    }
+
+    // Fetch service pricing from Supabase
+    const { data: serviceData, error: serviceError } = await supabase
+      .from('consultation_services')
+      .select(`
+        id,
+        title,
+        category,
+        pricing:service_pricing(academic_level, price, currency)
+      `)
+      .eq('id', service_id)
+      .eq('is_active', true)
+      .single();
+
+    if (serviceError || !serviceData) {
+      console.error('[Booking Creation] Service not found:', serviceError);
+      return res.status(404).json({ error: 'Service not found or inactive' });
+    }
+
+    // Find pricing for the specified academic level
+    const pricing = serviceData.pricing.find(p => p.academic_level === academic_level);
+    if (!pricing) {
+      console.error('[Booking Creation] Pricing not found for academic level:', academic_level);
+      return res.status(400).json({ error: `Pricing not available for academic level: ${academic_level}` });
+    }
+
+    // Validate the amount matches the database price
+    const expectedAmount = pricing.price;
+    if (Math.abs(amount - expectedAmount) > 0.01) { // Allow for small floating point differences
+      console.error('[Booking Creation] Amount mismatch:', { provided: amount, expected: expectedAmount });
+      return res.status(400).json({ 
+        error: 'Payment amount does not match service price',
+        expected: expectedAmount,
+        provided: amount
+      });
+    }
+
+    // If amount is 0, this is a free consultation - no payment processing needed
+    if (expectedAmount === 0) {
+      return res.status(200).json({
+        operationSuccess: true,
+        transactionSuccess: true,
+        payment_id: 'Free',
+        message: 'Free consultation booking - no payment required'
+      });
+    }
+
+    // Process payment through MeSomb for paid consultations
+    const client = new PaymentOperation({ applicationKey, accessKey, secretKey });
+    
+    // Ensure location is always an object and location.town is always set
+    const safeLocation = {
+      ...(location || {}),
+      town: location?.town && location.town.trim() ? location.town : 'Douala',
+    };
+
+    const response = await client.makeCollect({
+      payer,
+      amount: expectedAmount, // Use the validated amount from database
+      service,
+      country,
+      currency: pricing.currency,
+      description: `Payment for ${serviceData.title} - ${academic_level}`,
+      customer,
+      location: safeLocation,
+      products: products || [
+        {
+          name: serviceData.title,
+          category: serviceData.category,
+          quantity: 1,
+          amount: expectedAmount
+        }
+      ],
+    });
+
+    console.log('[Booking Creation] Payment processed successfully');
+    res.status(200).json({
+      operationSuccess: response.isOperationSuccess(),
+      transactionSuccess: response.isTransactionSuccess(),
+      raw: response,
+    });
+  } catch (err) {
+    console.error('[Booking Creation] Error processing payment:', err);
+    res.status(500).json({ error: err?.message || 'Payment processing failed', details: err });
+  }
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`MeSomb payment backend running on port ${PORT}`);

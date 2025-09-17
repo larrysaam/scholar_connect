@@ -177,35 +177,89 @@ export const useBookingSystem = () => {
       setCreating(false);
     }
   };
-
   // Process payment for booking
-  const processPayment = async (paymentData: PaymentData): Promise<{ success: boolean; payment_id?: string; error?: string }> => {
+  const processPayment = async (paymentData: PaymentData & { service_id?: string; academic_level?: string }): Promise<{ success: boolean; payment_id?: string; error?: string }> => {
     try {
       setProcessing(true);
 
-      // In a real application, this would integrate with a payment processor
-      // For now, we'll simulate payment processing
-      
-      // Simulate payment processing delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Use the secure MeSomb backend endpoint for payment processing
+      const response = await fetch('http://localhost:4000/api/create-booking', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          service_id: paymentData.service_id,
+          academic_level: paymentData.academic_level,
+          amount: paymentData.amount,
+          payer: paymentData.payment_details?.phoneNumber || '',
+          service: 'MTN', // Default to MTN Mobile Money
+          customer: { 
+            id: user?.id, 
+            phone: paymentData.payment_details?.phoneNumber || '',
+            email: user?.email || ''
+          },
+          location: { town: 'Douala', region: 'Littoral', country: 'CM' },
+          products: [
+            {
+              name: 'Consultation Service',
+              category: 'consultation',
+              quantity: 1,
+              amount: paymentData.amount
+            }
+          ],
+        }),
+      });
 
-      // Generate a mock payment ID
-      const payment_id = `pay_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const result = await response.json();
 
-      // Update booking with payment information
-      const { error: updateError } = await supabase
-        .from('service_bookings')
-        .update({
-          payment_status: 'paid',
-          payment_id: payment_id,
-          status: 'confirmed',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', paymentData.booking_id);
+      if (!response.ok) {
+        console.error('Payment processing failed:', result);
+        return { success: false, error: result.error || 'Payment processing failed' };
+      }
 
-      if (updateError) {
-        console.error('Error updating booking payment status:', updateError);
-        return { success: false, error: updateError.message };
+      // Handle free consultations
+      if (result.payment_id === 'Free') {
+        // Update booking for free consultation
+        const { error: updateError } = await supabase
+          .from('service_bookings')
+          .update({
+            payment_status: 'paid',
+            payment_id: 'Free',
+            status: 'confirmed',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', paymentData.booking_id);
+
+        if (updateError) {
+          console.error('Error updating free booking status:', updateError);
+          return { success: false, error: updateError.message };
+        }
+
+        return { success: true, payment_id: 'Free' };
+      }
+
+      // Handle paid consultations
+      if (result.operationSuccess && result.transactionSuccess) {
+        // Update booking with payment information
+        const { error: updateError } = await supabase
+          .from('service_bookings')
+          .update({
+            payment_status: 'paid',
+            payment_id: result.raw?.reference || `mesomb_${Date.now()}`,
+            status: 'confirmed',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', paymentData.booking_id);
+
+        if (updateError) {
+          console.error('Error updating booking payment status:', updateError);
+          return { success: false, error: updateError.message };
+        }
+
+        return { success: true, payment_id: result.raw?.reference || `mesomb_${Date.now()}` };
+      } else {
+        return { success: false, error: 'Payment transaction failed' };
       }
 
       // --- Generate Google Meet Link by calling the Edge Function ---

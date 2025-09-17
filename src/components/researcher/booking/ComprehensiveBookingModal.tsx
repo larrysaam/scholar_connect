@@ -174,10 +174,14 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
       return total + (addon ? addon.price : 0);
     }, 0);
   };
-
   // Calculate total price
   const getTotalPrice = () => {
     return getServicePrice() + getAddonPrice();
+  };
+
+  // Check if booking is free
+  const isBookingFree = () => {
+    return getTotalPrice() === 0;
   };
 
   // Load available slots when date changes
@@ -213,7 +217,6 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
         : [...prev, addonId]
     );
   };
-
   // Validate current step
   const isStepValid = (step: number) => {
     switch (step) {
@@ -224,12 +227,11 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
       case 3:
         return challenges.length > 0;
       case 4:
-        return paymentMethod;
+        return isBookingFree() || paymentMethod; // Skip payment validation for free bookings
       default:
         return false;
     }
   };
-
   // Handle booking submission
   const handleBooking = async () => {
     if (!selectedDate || !selectedTime || !selectedService || !selectedAcademicLevel) {
@@ -242,26 +244,28 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
     }
 
     const service = getSelectedService();
-    if (!service) return;    // Free appointment - no payment processing needed
-    let bookingResult = null;// Create free booking - no payment required
-    bookingResult = await createBooking({
+    if (!service) return;
+
+    const totalPrice = getTotalPrice();
+    const isFree = isBookingFree();
+
+    // Create booking with appropriate pricing
+    const bookingResult = await createBooking({
       provider_id: researcher.id,
       service_id: selectedService,
       academic_level: selectedAcademicLevel as any,
       scheduled_date: format(selectedDate, 'yyyy-MM-dd'),
       scheduled_time: selectedTime,
       duration_minutes: service.duration_minutes,
-      base_price: 0, // FREE appointment
-      addon_price: 0, // FREE appointment
-      total_price: 0, // FREE appointment
+      base_price: isFree ? 0 : getServicePrice(),
+      addon_price: isFree ? 0 : getAddonPrice(),
+      total_price: isFree ? 0 : totalPrice,
       currency: 'XAF',
       client_notes: clientNotes,
       selected_addons: selectedAddons,
-      payment_id: 'Free', // Set payment ID as 'Free' as requested
+      payment_id: isFree ? 'Free' : undefined,
       challenges
-    });
-
-    if (!bookingResult.success || !bookingResult.booking) {
+    });    if (!bookingResult.success || !bookingResult.booking) {
       return;
     }
 
@@ -282,25 +286,52 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
       }
     } catch (e) {
       console.error('Error invoking generate-meet-link function:', e);
-    }    await supabase.from('transactions').insert({
-      user_id: bookingResult.booking.client_id,
-      amount: 0, // FREE appointment
-      type: 'consultation',
-      description: `Free consultation booking for ${service.title}`,
-      status: 'paid',
-      payment_id: 'Free', // Set payment ID as 'Free' as requested
-    });    await supabase.from('service_bookings').update({
-      payment_status: 'paid',
-      payment_id: 'Free', // Set payment ID as 'Free' as requested
-      status: 'confirmed',
-      updated_at: new Date().toISOString(),
-    }).eq('id', bookingResult.booking.id);    // Free appointment - no payment processing needed
-    setCurrentStep(5); // Success step
-    // Reset form after a delay
-    setTimeout(() => {
-      resetForm();
-      setIsOpen(false);
-    }, 3000);
+    }
+
+    if (isFree) {
+      // Handle free booking
+      await supabase.from('transactions').insert({
+        user_id: bookingResult.booking.client_id,
+        amount: 0,
+        type: 'consultation',
+        description: `Free consultation booking for ${service.title}`,
+        status: 'paid',
+        payment_id: 'Free',
+      });
+
+      await supabase.from('service_bookings').update({
+        payment_status: 'paid',
+        payment_id: 'Free',
+        status: 'confirmed',
+        updated_at: new Date().toISOString(),
+      }).eq('id', bookingResult.booking.id);
+
+      setCurrentStep(5); // Success step
+      // Reset form after a delay
+      setTimeout(() => {
+        resetForm();
+        setIsOpen(false);
+      }, 3000);    } else {
+      // Handle paid booking - process payment
+      const paymentResult = await processPayment({
+        amount: totalPrice,
+        currency: 'XAF',
+        booking_id: bookingResult.booking.id,
+        payment_method: paymentMethod as any,
+        payment_details: paymentDetails,
+        service_id: selectedService,
+        academic_level: selectedAcademicLevel
+      });
+
+      if (paymentResult.success) {
+        setCurrentStep(5); // Success step
+        // Reset form after a delay
+        setTimeout(() => {
+          resetForm();
+          setIsOpen(false);
+        }, 3000);
+      }
+    }
   };
 
   // Reset form
@@ -518,76 +549,80 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
               />
             </div>
           </div>
-        );
-
-      case 4:
+        );      case 4:
         return (
           <div className="space-y-6">
-            <div>
-              <Label className="text-base font-medium">Payment Method</Label>
-              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="mt-3">
-                {paymentMethods.map((method) => (
-                  <div key={method.id} className="flex items-center space-x-2">
-                    <RadioGroupItem value={method.id} id={method.id} />
-                    <Label htmlFor={method.id} className="flex-1 cursor-pointer">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="font-medium">{method.name}</span>
-                          <p className="text-sm text-gray-600">{method.description}</p>
-                        </div>
-                        <CreditCard className="h-5 w-5 text-gray-400" />
-                      </div>
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
-
-            {paymentMethod === 'card' && (
-              <div className="space-y-4">
+            {!isBookingFree() && (
+              <>
                 <div>
-                  <Label htmlFor="cardNumber">Card Number</Label>
-                  <Input
-                    id="cardNumber"
-                    placeholder="1234 5678 9012 3456"
-                    value={paymentDetails.cardNumber || ''}
-                    onChange={(e) => setPaymentDetails(prev => ({ ...prev, cardNumber: e.target.value }))}
-                  />
+                  <Label className="text-base font-medium">Payment Method</Label>
+                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="mt-3">
+                    {paymentMethods.map((method) => (
+                      <div key={method.id} className="flex items-center space-x-2">
+                        <RadioGroupItem value={method.id} id={method.id} />
+                        <Label htmlFor={method.id} className="flex-1 cursor-pointer">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="font-medium">{method.name}</span>
+                              <p className="text-sm text-gray-600">{method.description}</p>
+                            </div>
+                            <CreditCard className="h-5 w-5 text-gray-400" />
+                          </div>
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+
+                {paymentMethod === 'card' && (
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="cardNumber">Card Number</Label>
+                      <Input
+                        id="cardNumber"
+                        placeholder="1234 5678 9012 3456"
+                        value={paymentDetails.cardNumber || ''}
+                        onChange={(e) => setPaymentDetails(prev => ({ ...prev, cardNumber: e.target.value }))}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="expiry">Expiry Date</Label>
+                        <Input
+                          id="expiry"
+                          placeholder="MM/YY"
+                          value={paymentDetails.expiry || ''}
+                          onChange={(e) => setPaymentDetails(prev => ({ ...prev, expiry: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="cvv">CVV</Label>
+                        <Input
+                          id="cvv"
+                          placeholder="123"
+                          value={paymentDetails.cvv || ''}
+                          onChange={(e) => setPaymentDetails(prev => ({ ...prev, cvv: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {paymentMethod === 'mobile_money' && (
                   <div>
-                    <Label htmlFor="expiry">Expiry Date</Label>
+                    <Label htmlFor="phoneNumber">Phone Number</Label>
                     <Input
-                      id="expiry"
-                      placeholder="MM/YY"
-                      value={paymentDetails.expiry || ''}
-                      onChange={(e) => setPaymentDetails(prev => ({ ...prev, expiry: e.target.value }))}
+                      id="phoneNumber"
+                      placeholder="+237 6XX XXX XXX"
+                      value={paymentDetails.phoneNumber || ''}
+                      onChange={(e) => setPaymentDetails(prev => ({ ...prev, phoneNumber: e.target.value }))}
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="cvv">CVV</Label>
-                    <Input
-                      id="cvv"
-                      placeholder="123"
-                      value={paymentDetails.cvv || ''}
-                      onChange={(e) => setPaymentDetails(prev => ({ ...prev, cvv: e.target.value }))}
-                    />
-                  </div>
-                </div>
-              </div>
+                )}
+              </>
             )}
 
-            {paymentMethod === 'mobile_money' && (
-              <div>
-                <Label htmlFor="phoneNumber">Phone Number</Label>
-                <Input
-                  id="phoneNumber"
-                  placeholder="+237 6XX XXX XXX"
-                  value={paymentDetails.phoneNumber || ''}
-                  onChange={(e) => setPaymentDetails(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                />
-              </div>
-            )}            <Card className="bg-green-50 border-green-200">
+            <Card className="bg-green-50 border-green-200">
               <CardContent className="p-4">
                 <h4 className="font-medium mb-3 text-green-800">Booking Summary</h4>
                 <div className="space-y-2 text-sm">
@@ -608,26 +643,38 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
                   <Separator />
                   <div className="flex justify-between font-medium text-base">
                     <span>Total Fee:</span>
-                    <span className="text-green-600 font-bold text-lg">FREE</span>
+                    <span className={`font-bold text-lg ${isBookingFree() ? 'text-green-600' : 'text-blue-600'}`}>
+                      {isBookingFree() ? 'FREE' : `${getTotalPrice().toLocaleString()} XAF`}
+                    </span>
                   </div>
-                  <div className="text-sm text-green-700 mt-2">
-                    <CreditCard className="h-4 w-4 inline mr-1" />
-                    No payment required - this consultation is completely free!
-                  </div>
+                  {isBookingFree() && (
+                    <div className="text-sm text-green-700 mt-2">
+                      <CreditCard className="h-4 w-4 inline mr-1" />
+                      No payment required - this consultation is completely free!
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
           </div>
-        );
-
-      case 5:
+        );      case 5:
         return (
           <div className="text-center py-8">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">Booking Confirmed!</h3>
             <p className="text-gray-600 mb-4">
-              Your consultation with {researcher.name} has been successfully booked and paid for.
+              Your consultation with {researcher.name} has been successfully {isBookingFree() ? 'booked' : 'booked and paid for'}.
             </p>
+            {isBookingFree() && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                <p className="text-sm text-green-800">
+                  <strong>🎉 Free Consultation:</strong>
+                </p>
+                <p className="text-sm text-green-700 mt-1">
+                  This consultation is completely free - no payment required!
+                </p>
+              </div>
+            )}
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
               <p className="text-sm text-green-800">
                 <strong>Next Steps:</strong>
@@ -646,12 +693,11 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
         return null;
     }
   };
-
   const stepTitles = [
     'Select Service',
     'Choose Date & Time',
     'Enter Details',
-    'Review & Pay'
+    isBookingFree() ? 'Review & Book' : 'Review & Pay'
   ];
 
   return (
