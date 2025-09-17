@@ -24,7 +24,6 @@ const ResearchAidsDashboard = () => {
 
   // Use the new hook to fetch dashboard data
   const { userProfile, researchAidProfile, assignedConsultations, notifications, loading, error } = useResearchAidDashboardData();
-
   const getWelcomeMessage = () => {
     if (loading) return "Loading...";
     if (error) return "Welcome!"; // Fallback if data fetching fails
@@ -32,10 +31,12 @@ const ResearchAidsDashboard = () => {
     
     const nameParts = userProfile.name.split(' ');
     const lastName = nameParts[nameParts.length - 1];
-      // Simple welcome message for Research Aids
-    // Additional title logic can be added here based on actual profile fields
     
-    return `Welcome, ${lastName}!`;
+    // Include research aid title if available
+    const title = researchAidProfile?.title;
+    const welcomeName = title ? `${title} ${lastName}` : lastName;
+    
+    return `Welcome, ${welcomeName}!`;
   };
 
   useEffect(() => {

@@ -7,6 +7,7 @@ import { Notification } from '@/types/notifications';
 
 interface ResearchAidProfile {
   id: string;
+  title: string | null;
   bio: string | null;
   expertise: string[] | null;
   hourly_rate: number | null;
