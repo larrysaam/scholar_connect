@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications'; // Import useNotifications
+import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageToggle from './LanguageToggle';
 import GetStartedModal from './GetStartedModal';
 import ResearchWhoaLogo from './ResearchWhoaLogo';
@@ -34,6 +34,7 @@ import {
 const Navbar = ({setActiveTab, activeTab}) => {
   const { user, profile, signOut } = useAuth();
   const { unreadCount } = useNotifications(); // Use the hook to get unreadCount
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -62,51 +63,51 @@ const Navbar = ({setActiveTab, activeTab}) => {
     if (!profile?.role) return [];
 
     const studentMenuItems = [
-      { id: "overview", label: "Overview", icon: LayoutDashboard },
-      { id: "ai-assistant", label: "AI Assistant", icon: MessageSquare },
-      { id: "find-researcher", label: "Find Researcher", icon: Search },
-      { id: "find-research-aid", label: "Find Research Aid", icon: Users },
-      { id: "post-job", label: "Post a Job", icon: Briefcase },
-      { id: "my-bookings", label: "My Bookings", icon: Calendar },
-      { id: "upcoming", label: "Upcoming Sessions", icon: Calendar },
-      { id: "past", label: "Past Sessions", icon: Clock },
-      { id: "full-thesis-support", label: "Full Thesis Support", icon: GraduationCap },
-      { id: "payments", label: "Payments", icon: DollarSign },
-      { id: "messages", label: "Messages", icon: MessageSquare },
-      { id: "notifications", label: "Notifications", icon: Bell, badge: unreadCount },
-      { id: "thesis-information", label: "Thesis Information", icon: BookOpen },
-      { id: "documents", label: "Documents", icon: FileText },
-      { id: "settings", label: "Account Settings", icon: Settings },
+      { id: "overview", label: t("dashboard.overview"), icon: LayoutDashboard },
+      { id: "ai-assistant", label: t("dashboard.aiAssistant"), icon: MessageSquare },
+      { id: "find-researcher", label: t("dashboard.findResearcher"), icon: Search },
+      { id: "find-research-aid", label: t("dashboard.findResearchAid"), icon: Users },
+      { id: "post-job", label: t("dashboard.postJob"), icon: Briefcase },
+      { id: "my-bookings", label: t("dashboard.myBookings"), icon: Calendar },
+      { id: "upcoming", label: t("dashboard.upcomingSessions"), icon: Calendar },
+      { id: "past", label: t("dashboard.pastSessions"), icon: Clock },
+      { id: "full-thesis-support", label: t("dashboard.fullThesisSupport"), icon: GraduationCap },
+      { id: "payments", label: t("dashboard.payments"), icon: DollarSign },
+      { id: "messages", label: t("dashboard.messages"), icon: MessageSquare },
+      { id: "notifications", label: t("dashboard.notifications"), icon: Bell, badge: unreadCount },
+      { id: "thesis-information", label: t("dashboard.thesisInformation"), icon: BookOpen },
+      { id: "documents", label: t("dashboard.documents"), icon: FileText },
+      { id: "settings", label: t("dashboard.accountSettings"), icon: Settings },
     ];
 
     const researcherMenuItems = [
-      { id: "overview", label: "Overview", icon: LayoutDashboard },
-      { id: "consultation-services", label: "Consultation Services", icon: MessageSquare },
-      { id: "upcoming", label: "Upcoming Sessions", icon: Calendar },
-      { id: "past", label: "Past Sessions", icon: Clock },
-      { id: "full-thesis-support", label: "Thesis Support", icon: GraduationCap },
-      { id: "payments", label: "Payments & Earnings", icon: DollarSign },
-      { id: "quality", label: "Quality & Feedback", icon: Star },
-      { id: "messaging", label: "Messaging", icon: MessageSquare },
-      { id: "verification", label: "Verification", icon: Shield },
-      { id: "notifications", label: "Notifications", icon: Bell, badge: unreadCount },
-      { id: "documents", label: "Documents", icon: FileText },
-      { id: "settings", label: "Account Settings", icon: Settings },
+      { id: "overview", label: t("dashboard.overview"), icon: LayoutDashboard },
+      { id: "consultation-services", label: t("dashboard.consultationServices"), icon: MessageSquare },
+      { id: "upcoming", label: t("dashboard.upcomingSessions"), icon: Calendar },
+      { id: "past", label: t("dashboard.pastSessions"), icon: Clock },
+      { id: "full-thesis-support", label: t("dashboard.thesisSupport"), icon: GraduationCap },
+      { id: "payments", label: t("dashboard.paymentsEarnings"), icon: DollarSign },
+      { id: "quality", label: t("dashboard.qualityFeedback"), icon: Star },
+      { id: "messaging", label: t("dashboard.messaging"), icon: MessageSquare },
+      { id: "verification", label: t("dashboard.verification"), icon: Shield },
+      { id: "notifications", label: t("dashboard.notifications"), icon: Bell, badge: unreadCount },
+      { id: "documents", label: t("dashboard.documents"), icon: FileText },
+      { id: "settings", label: t("dashboard.accountSettings"), icon: Settings },
     ];
 
     const researchAideMenuItems = [
-      { id: "overview", label: "Dashboard Overview", icon: LayoutDashboard },
-      { id: "job-requests", label: "Job Requests", icon: Briefcase },
-      { id: "messages", label: "Messages", icon: MessageSquare },
-      { id: "appointments", label: "Appointments", icon: Calendar },
-      { id: "files-deliverables", label: "Files & Deliverables", icon: FileText },
-      { id: "payments-earnings", label: "Payments & Earnings", icon: DollarSign },
-      { id: "previous-works", label: "Previous Works", icon: FileText },
-      { id: "notifications", label: "Notifications", icon: Bell, badge: unreadCount },
-      { id: "quality-feedback", label: "Quality Feedback", icon: Star },
-      { id: "verification", label: "Verification", icon: Shield },
-      { id: "profile-ratings", label: "My Profile & Ratings", icon: User },
-      { id: "settings", label: "Settings", icon: Settings },
+      { id: "overview", label: t("dashboard.dashboardOverview"), icon: LayoutDashboard },
+      { id: "job-requests", label: t("dashboard.jobRequests"), icon: Briefcase },
+      { id: "messages", label: t("dashboard.messages"), icon: MessageSquare },
+      { id: "appointments", label: t("dashboard.appointments"), icon: Calendar },
+      { id: "files-deliverables", label: t("dashboard.filesDeliverables"), icon: FileText },
+      { id: "payments-earnings", label: t("dashboard.paymentsEarnings"), icon: DollarSign },
+      { id: "previous-works", label: t("dashboard.previousWorks"), icon: FileText },
+      { id: "notifications", label: t("dashboard.notifications"), icon: Bell, badge: unreadCount },
+      { id: "quality-feedback", label: t("dashboard.qualityFeedback"), icon: Star },
+      { id: "verification", label: t("dashboard.verification"), icon: Shield },
+      { id: "profile-ratings", label: t("dashboard.profileRatings"), icon: User },
+      { id: "settings", label: t("dashboard.settings"), icon: Settings },
     ];
 
     switch (profile.role) {
@@ -145,16 +146,16 @@ const Navbar = ({setActiveTab, activeTab}) => {
         return (
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/researchers" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Researchers
+              {t("navigation.researchers")}
             </Link>
             <Link to="/research-aids" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Research Aids
+              {t("navigation.researchAids")}
             </Link>
             <Link to="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Dashboard
+              {t("navigation.dashboard")}
             </Link>
             <Link to="/dashboard?tab=notifications" className="text-gray-600 hover:text-gray-900 transition-colors relative">
-              Notifications {unreadCount > 0 && <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs px-2 py-1 rounded-full">{unreadCount}</span>}
+              {t("navigation.notifications")} {unreadCount > 0 && <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs px-2 py-1 rounded-full">{unreadCount}</span>}
             </Link>
           </div>
         );
@@ -163,16 +164,16 @@ const Navbar = ({setActiveTab, activeTab}) => {
         return (
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/researchers" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Researchers
+              {t("navigation.researchers")}
             </Link>
             <Link to="/research-aids" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Research Aids
+              {t("navigation.researchAids")}
             </Link>
             <Link to="/researcher-dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Dashboard
+              {t("navigation.dashboard")}
             </Link>
             <Link to="/researcher-dashboard?tab=notifications" className="text-gray-600 hover:text-gray-900 transition-colors relative">
-              Notifications {unreadCount > 0 && <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs px-2 py-1 rounded-full">{unreadCount}</span>}
+              {t("navigation.notifications")} {unreadCount > 0 && <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs px-2 py-1 rounded-full">{unreadCount}</span>}
             </Link>
           </div>
         );
@@ -181,16 +182,16 @@ const Navbar = ({setActiveTab, activeTab}) => {
         return (
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/job-board" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Browse Job Board
+              {t("navigation.browseJobBoard")}
             </Link>
             <Link to="/job-board" className="text-gray-600 hover:text-gray-900 transition-colors">
-              View All Jobs
+              {t("navigation.viewAllJobs")}
             </Link>
             <Link to="/research-aids-dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Dashboard
+              {t("navigation.dashboard")}
             </Link>
             <Link to="/research-aids-dashboard?tab=notifications" className="text-gray-600 hover:text-gray-900 transition-colors relative">
-              Notifications {unreadCount > 0 && <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs px-2 py-1 rounded-full">{unreadCount}</span>}
+              {t("navigation.notifications")} {unreadCount > 0 && <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs px-2 py-1 rounded-full">{unreadCount}</span>}
             </Link>
           </div>
         );
@@ -209,7 +210,7 @@ const Navbar = ({setActiveTab, activeTab}) => {
             className="flex items-center"
             state={{ fromNavigation: true }}
           >
-            <ResearchWhoaLogo size="md" showText={true} />
+            <ResearchWhoaLogo size="lg" showText={true} />
           </Link>
 
           
@@ -243,7 +244,7 @@ const Navbar = ({setActiveTab, activeTab}) => {
                       {/* Dashboard Sidebar Menu Items */}
                       <div className="space-y-1">
                         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                          Dashboard
+                          {t("dashboard.title")}
                         </h3>
                         
                         {getSidebarMenuItems().map((item) => (
@@ -271,12 +272,12 @@ const Navbar = ({setActiveTab, activeTab}) => {
                     <div className="space-y-3 mb-6 pb-4 border-b">
                       <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
                         <Button variant="outline" className="w-full">
-                          Sign In
+                          {t("common.signIn")}
                         </Button>
                       </Link>
                       <GetStartedModal>
                         <Button className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-                          Get Started
+                          {t("common.getStarted")}
                         </Button>
                       </GetStartedModal>
                     </div>
@@ -284,7 +285,7 @@ const Navbar = ({setActiveTab, activeTab}) => {
                     <div className="space-y-3 mb-6 pb-4 border-b">
                       <Link to={getDashboardLink()} onClick={() => setIsMobileMenuOpen(false)}>
                         <Button variant="outline" className="w-full">
-                          Go to Dashboard
+                          {t("navigation.goToDashboard")}
                         </Button>
                       </Link>
                       <Button 
@@ -295,7 +296,7 @@ const Navbar = ({setActiveTab, activeTab}) => {
                         variant="ghost" 
                         className="w-full"
                       >
-                        Sign Out
+                        {t("common.signOut")}
                       </Button>
                     </div>
                   )}
@@ -307,10 +308,10 @@ const Navbar = ({setActiveTab, activeTab}) => {
             {!user && (
               <div className="hidden md:flex items-center space-x-4">
                 <Link to="/login">
-                  <Button variant="outline">Sign In</Button>
+                  <Button variant="outline">{t("common.signIn")}</Button>
                 </Link>
                 <GetStartedModal>
-                  <Button>Get Started</Button>
+                  <Button>{t("common.getStarted")}</Button>
                 </GetStartedModal>
               </div>
             )}
