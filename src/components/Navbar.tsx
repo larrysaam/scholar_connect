@@ -272,12 +272,12 @@ const Navbar = ({setActiveTab, activeTab}) => {
                     <div className="space-y-3 mb-6 pb-4 border-b">
                       <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
                         <Button variant="outline" className="w-full">
-                          {t("common.signIn")}
+                          {t("signIn")}
                         </Button>
                       </Link>
                       <GetStartedModal>
                         <Button className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-                          {t("common.getStarted")}
+                          {t("getStarted")}
                         </Button>
                       </GetStartedModal>
                     </div>
@@ -296,7 +296,7 @@ const Navbar = ({setActiveTab, activeTab}) => {
                         variant="ghost" 
                         className="w-full"
                       >
-                        {t("common.signOut")}
+                        {t("signOut")}
                       </Button>
                     </div>
                   )}
@@ -308,10 +308,10 @@ const Navbar = ({setActiveTab, activeTab}) => {
             {!user && (
               <div className="hidden md:flex items-center space-x-4">
                 <Link to="/login">
-                  <Button variant="outline">{t("common.signIn")}</Button>
+                  <Button variant="outline">{t("signIn")}</Button>
                 </Link>
                 <GetStartedModal>
-                  <Button>{t("common.getStarted")}</Button>
+                  <Button>{t("getStarted")}</Button>
                 </GetStartedModal>
               </div>
             )}
