@@ -8,7 +8,7 @@ const HomeFooter = () => {
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <div>
-              <h3 className="font-semibold mb-4">About ResearchWahoo</h3>
+              <h3 className="font-semibold mb-4">About ResearchWhao</h3>
               <p className="text-gray-400 text-sm">
                 Connecting researchers with students and research aids worldwide.
               </p>

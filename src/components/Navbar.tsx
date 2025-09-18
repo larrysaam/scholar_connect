@@ -63,51 +63,51 @@ const Navbar = ({setActiveTab, activeTab}) => {
     if (!profile?.role) return [];
 
     const studentMenuItems = [
-      { id: "overview", label: t("dashboard.overview"), icon: LayoutDashboard },
-      { id: "ai-assistant", label: t("dashboard.aiAssistant"), icon: MessageSquare },
-      { id: "find-researcher", label: t("dashboard.findResearcher"), icon: Search },
-      { id: "find-research-aid", label: t("dashboard.findResearchAid"), icon: Users },
-      { id: "post-job", label: t("dashboard.postJob"), icon: Briefcase },
-      { id: "my-bookings", label: t("dashboard.myBookings"), icon: Calendar },
-      { id: "upcoming", label: t("dashboard.upcomingSessions"), icon: Calendar },
-      { id: "past", label: t("dashboard.pastSessions"), icon: Clock },
-      { id: "full-thesis-support", label: t("dashboard.fullThesisSupport"), icon: GraduationCap },
-      { id: "payments", label: t("dashboard.payments"), icon: DollarSign },
-      { id: "messages", label: t("dashboard.messages"), icon: MessageSquare },
-      { id: "notifications", label: t("dashboard.notifications"), icon: Bell, badge: unreadCount },
-      { id: "thesis-information", label: t("dashboard.thesisInformation"), icon: BookOpen },
-      { id: "documents", label: t("dashboard.documents"), icon: FileText },
-      { id: "settings", label: t("dashboard.accountSettings"), icon: Settings },
+      { id: "overview", label: t("overview"), icon: LayoutDashboard },
+      { id: "ai-assistant", label: t("aiAssistant"), icon: MessageSquare },
+      { id: "find-researcher", label: t("findResearcher"), icon: Search },
+      { id: "find-research-aid", label: t("findResearchAid"), icon: Users },
+      { id: "post-job", label: t("postJob"), icon: Briefcase },
+      { id: "my-bookings", label: t("myBookings"), icon: Calendar },
+      { id: "upcoming", label: t("upcomingSessions"), icon: Calendar },
+      { id: "past", label: t("pastSessions"), icon: Clock },
+      { id: "full-thesis-support", label: t("fullThesisSupport"), icon: GraduationCap },
+      { id: "payments", label: t("payments"), icon: DollarSign },
+      { id: "messages", label: t("messages"), icon: MessageSquare },
+      { id: "notifications", label: t("notifications"), icon: Bell, badge: unreadCount },
+      { id: "thesis-information", label: t("thesisInformation"), icon: BookOpen },
+      { id: "documents", label: t("documents"), icon: FileText },
+      { id: "settings", label: t("accountSettings"), icon: Settings },
     ];
 
     const researcherMenuItems = [
-      { id: "overview", label: t("dashboard.overview"), icon: LayoutDashboard },
-      { id: "consultation-services", label: t("dashboard.consultationServices"), icon: MessageSquare },
-      { id: "upcoming", label: t("dashboard.upcomingSessions"), icon: Calendar },
-      { id: "past", label: t("dashboard.pastSessions"), icon: Clock },
-      { id: "full-thesis-support", label: t("dashboard.thesisSupport"), icon: GraduationCap },
-      { id: "payments", label: t("dashboard.paymentsEarnings"), icon: DollarSign },
-      { id: "quality", label: t("dashboard.qualityFeedback"), icon: Star },
-      { id: "messaging", label: t("dashboard.messaging"), icon: MessageSquare },
-      { id: "verification", label: t("dashboard.verification"), icon: Shield },
-      { id: "notifications", label: t("dashboard.notifications"), icon: Bell, badge: unreadCount },
-      { id: "documents", label: t("dashboard.documents"), icon: FileText },
-      { id: "settings", label: t("dashboard.accountSettings"), icon: Settings },
+      { id: "overview", label: t("overview"), icon: LayoutDashboard },
+      { id: "consultation-services", label: t("consultationServices"), icon: MessageSquare },
+      { id: "upcoming", label: t("upcomingSessions"), icon: Calendar },
+      { id: "past", label: t("pastSessions"), icon: Clock },
+      { id: "full-thesis-support", label: t("thesisSupport"), icon: GraduationCap },
+      { id: "payments", label: t("paymentsEarnings"), icon: DollarSign },
+      { id: "quality", label: t("qualityFeedback"), icon: Star },
+      { id: "messaging", label: t("messaging"), icon: MessageSquare },
+      { id: "verification", label: t("verification"), icon: Shield },
+      { id: "notifications", label: t("notifications"), icon: Bell, badge: unreadCount },
+      { id: "documents", label: t("documents"), icon: FileText },
+      { id: "settings", label: t("accountSettings"), icon: Settings },
     ];
 
     const researchAideMenuItems = [
-      { id: "overview", label: t("dashboard.dashboardOverview"), icon: LayoutDashboard },
-      { id: "job-requests", label: t("dashboard.jobRequests"), icon: Briefcase },
-      { id: "messages", label: t("dashboard.messages"), icon: MessageSquare },
-      { id: "appointments", label: t("dashboard.appointments"), icon: Calendar },
-      { id: "files-deliverables", label: t("dashboard.filesDeliverables"), icon: FileText },
-      { id: "payments-earnings", label: t("dashboard.paymentsEarnings"), icon: DollarSign },
-      { id: "previous-works", label: t("dashboard.previousWorks"), icon: FileText },
-      { id: "notifications", label: t("dashboard.notifications"), icon: Bell, badge: unreadCount },
-      { id: "quality-feedback", label: t("dashboard.qualityFeedback"), icon: Star },
-      { id: "verification", label: t("dashboard.verification"), icon: Shield },
-      { id: "profile-ratings", label: t("dashboard.profileRatings"), icon: User },
-      { id: "settings", label: t("dashboard.settings"), icon: Settings },
+      { id: "overview", label: t("dashboardOverview"), icon: LayoutDashboard },
+      { id: "job-requests", label: t("jobRequests"), icon: Briefcase },
+      { id: "messages", label: t("messages"), icon: MessageSquare },
+      { id: "appointments", label: t("appointments"), icon: Calendar },
+      { id: "files-deliverables", label: t("filesDeliverables"), icon: FileText },
+      { id: "payments-earnings", label: t("paymentsEarnings"), icon: DollarSign },
+      { id: "previous-works", label: t("previousWorks"), icon: FileText },
+      { id: "notifications", label: t("notifications"), icon: Bell, badge: unreadCount },
+      { id: "quality-feedback", label: t("qualityFeedback"), icon: Star },
+      { id: "verification", label: t("verification"), icon: Shield },
+      { id: "profile-ratings", label: t("profileRatings"), icon: User },
+      { id: "settings", label: t("settings"), icon: Settings },
     ];
 
     switch (profile.role) {
@@ -244,7 +244,7 @@ const Navbar = ({setActiveTab, activeTab}) => {
                       {/* Dashboard Sidebar Menu Items */}
                       <div className="space-y-1">
                         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                          {t("dashboard.title")}
+                          {t("title")}
                         </h3>
                         
                         {getSidebarMenuItems().map((item) => (
