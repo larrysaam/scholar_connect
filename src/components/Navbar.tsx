@@ -51,6 +51,8 @@ const Navbar = ({setActiveTab, activeTab}) => {
         return '/researcher-dashboard';
       case 'aid':
         return '/research-aids-dashboard';
+      case 'admin':
+        return '/admin';
       case 'student':
         return '/dashboard';
       default:
@@ -110,6 +112,20 @@ const Navbar = ({setActiveTab, activeTab}) => {
       { id: "settings", label: t("settings"), icon: Settings },
     ];
 
+    const adminMenuItems = [
+      { id: "dashboard", label: "Dashboard Overview", icon: LayoutDashboard },
+      { id: "users", label: "User Management", icon: Users },
+      { id: "consultations", label: "Consultation Management", icon: Calendar },
+      { id: "tasks", label: "Task Orders", icon: Briefcase },
+      { id: "payments", label: "Payments & Transactions", icon: DollarSign },
+      { id: "content", label: "Content Management", icon: FileText },
+      { id: "reports", label: "Reports & Analytics", icon: TrendingUp },
+      { id: "membership", label: "Membership & VIP", icon: Star },
+      { id: "support", label: "Support & Feedback", icon: MessageSquare },
+      { id: "security", label: "Security & Compliance", icon: Shield },
+      { id: "verification", label: "Verification Management", icon: Shield }
+    ];
+
     switch (profile.role) {
       case "student":
         return studentMenuItems;
@@ -117,6 +133,8 @@ const Navbar = ({setActiveTab, activeTab}) => {
         return researcherMenuItems;
       case "aid":
         return researchAideMenuItems;
+      case "admin":
+        return adminMenuItems;
       default:
         return studentMenuItems;
     }
@@ -192,6 +210,24 @@ const Navbar = ({setActiveTab, activeTab}) => {
             </Link>
             <Link to="/research-aids-dashboard?tab=notifications" className="text-gray-600 hover:text-gray-900 transition-colors relative">
               {t("navigation.notifications")} {unreadCount > 0 && <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs px-2 py-1 rounded-full">{unreadCount}</span>}
+            </Link>
+          </div>
+        );
+      
+      case 'admin':
+        return (
+          <div className="hidden md:flex items-center space-x-8">
+            <Link to="/admin" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Admin Dashboard
+            </Link>
+            <Link to="/admin?tab=users" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Users
+            </Link>
+            <Link to="/admin?tab=consultations" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Consultations
+            </Link>
+            <Link to="/admin?tab=reports" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Reports
             </Link>
           </div>
         );
