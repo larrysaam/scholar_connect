@@ -236,7 +236,7 @@ const FindResearcherTab = () => {
               </div>
               
               {/* Filter Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Select value={selectedField} onValueChange={setSelectedField}>
                   <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-blue-300 transition-colors rounded-xl">
                     <SelectValue placeholder="Research Field" />
@@ -265,7 +265,8 @@ const FindResearcherTab = () => {
                   </SelectContent>
                 </Select>
                 
-                <Select value={priceRange} onValueChange={setPriceRange}>
+                {/* price filter */}
+                {/* <Select value={priceRange} onValueChange={setPriceRange}>
                   <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-blue-300 transition-colors rounded-xl">
                     <SelectValue placeholder="Price Range" />
                   </SelectTrigger>
@@ -275,15 +276,7 @@ const FindResearcherTab = () => {
                     <SelectItem value="10000-15000">10,000 - 15,000 XAF</SelectItem>
                     <SelectItem value="15000+">15,000+ XAF</SelectItem>
                   </SelectContent>
-                </Select>
-                
-                <Button 
-                  variant="outline" 
-                  className="h-12 border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-xl font-medium transition-all duration-200"
-                >
-                  <Filter className="h-4 w-4 mr-2" />
-                  Advanced Filters
-                </Button>
+                </Select> */}
               </div>
             </div>
           </div>
@@ -391,7 +384,7 @@ const FindResearcherTab = () => {
       )}
 
       {/* Featured Experts */}
-      {!loading && !error && searchQuery === "" && selectedField === "all" && featuredResearchers.length > 0 && (
+      {/* {!loading && !error && searchQuery === "" && selectedField === "all" && featuredResearchers.length > 0 && (
         <div>
           <h3 className="text-xl font-semibold mb-4 flex items-center">
             <Award className="h-5 w-5 text-yellow-500 mr-2" />
@@ -402,7 +395,7 @@ const FindResearcherTab = () => {
               ))}
             </div>
         </div>
-      )}
+      )} */}
 
       {/* Search Results */}
       {!loading && !error && (

@@ -100,7 +100,7 @@ const SearchFilters = ({
           </SelectContent>
         </Select>
         
-        <Select value={priceRange} onValueChange={setPriceRange}>
+        {/* <Select value={priceRange} onValueChange={setPriceRange}>
           <SelectTrigger className={`h-12 border-2 transition-all duration-200 rounded-xl bg-white/90 backdrop-blur-sm ${
             priceRange !== "all"
               ? 'border-emerald-400 bg-emerald-50 text-emerald-700'
@@ -119,27 +119,17 @@ const SearchFilters = ({
             <SelectItem value="5000-10000">5,000 - 10,000 XAF</SelectItem>
             <SelectItem value="10000+">10,000+ XAF</SelectItem>
           </SelectContent>
-        </Select>
+        </Select> */}
         
-        <Button 
+        {/* <Button 
           variant="outline" 
           className="h-12 border-2 border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300 rounded-xl font-medium transition-all duration-200 bg-white/90 backdrop-blur-sm hover:shadow-lg hover:scale-105 active:scale-95"
         >
           <Filter className="h-4 w-4 mr-2" />
           Advanced Filters
-        </Button>
+        </Button> */}
         
-        <Button 
-          className="h-12 bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 hover:from-emerald-700 hover:via-green-700 hover:to-teal-700 text-white shadow-lg hover:shadow-2xl rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95"
-          disabled={isSearching}
-        >
-          {isSearching ? (
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2"></div>
-          ) : (
-            <Search className="h-4 w-4 mr-2" />
-          )}
-          {isSearching ? 'Searching...' : 'Search Now'}
-        </Button>
+        
       </div>
       
       {/* Active Filters Display */}
