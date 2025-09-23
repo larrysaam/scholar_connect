@@ -101,6 +101,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole, notificationCount
     { id: "messages", label: "Messages", icon: MessageSquare },
     { id: "notifications", label: "Notifications", icon: Bell, badge: notificationCount },
     { id: "documents", label: "Documents", icon: FileText },
+    { id: "discussion", label: "Discussion Board", icon: MessageSquare },
     { id: "profile", label: "Profile Information", icon: User },
     { id: "settings", label: "Account Settings", icon: Settings },
   ];

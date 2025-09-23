@@ -48,8 +48,8 @@ const DashboardTabRenderer = ({ activeTab, setActiveTab }: DashboardTabRendererP
       return <ResearchAidsPreviousWorks />;
     case "notifications":
       return <ResearchAidsNotifications />;
-    // case "discussion":
-    //   return <DiscussionTab />;
+    case "discussion":
+      return <DiscussionTab />;
     case "quality-feedback":
       return <QualityAssuranceAndFeedbackTab />;
     case "verification":

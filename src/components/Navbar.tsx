@@ -73,6 +73,7 @@ const Navbar = ({setActiveTab, activeTab}) => {
       { id: "my-bookings", label: t("myBookings"), icon: Calendar },
       { id: "upcoming", label: t("upcomingSessions"), icon: Calendar },
       { id: "past", label: t("pastSessions"), icon: Clock },
+      { id: "discussion", label: "Discussion Forum", icon: MessageSquare },
       { id: "full-thesis-support", label: t("fullThesisSupport"), icon: GraduationCap },
       { id: "payments", label: t("payments"), icon: DollarSign },
       { id: "messages", label: t("messages"), icon: MessageSquare },
@@ -100,6 +101,7 @@ const Navbar = ({setActiveTab, activeTab}) => {
     const researchAideMenuItems = [
       { id: "overview", label: t("dashboardOverview"), icon: LayoutDashboard },
       { id: "job-requests", label: t("jobRequests"), icon: Briefcase },
+      { id: "discussion", label: "Discussion Forum", icon: MessageSquare },
       { id: "messages", label: t("messages"), icon: MessageSquare },
       { id: "appointments", label: t("appointments"), icon: Calendar },
       { id: "files-deliverables", label: t("filesDeliverables"), icon: FileText },
