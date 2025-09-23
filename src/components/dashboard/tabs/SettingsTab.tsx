@@ -288,8 +288,7 @@ const SettingsTab = () => {
               <div className="text-gray-500">Loading profile...</div>
             </div>
           ) : userProfile ? (
-            <div className="space-y-6">
-              {/* Basic Information */}
+            <div className="space-y-6">              {/* Basic Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="name">Full Name</Label>
@@ -301,22 +300,25 @@ const SettingsTab = () => {
                     placeholder="Enter your full name"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="subtitle">Subtitle (e.g., Dr., Prof.)</Label>
-                  <Select
-                    value={userProfile.subtitle || ""}
-                    onValueChange={(value) => handleProfileFieldChange('subtitle', value)}
-                    disabled={!isEditingProfile}
-                  >
-                    <SelectTrigger id="subtitle">
-                      <SelectValue placeholder="Select your title (Dr. or Prof.)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Dr.">Dr.</SelectItem>
-                      <SelectItem value="Prof.">Prof.</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* Subtitle - Only show for experts/researchers */}
+                {userProfile.role === 'expert' && (
+                  <div>
+                    <Label htmlFor="subtitle">Subtitle (e.g., Dr., Prof.)</Label>
+                    <Select
+                      value={userProfile.subtitle || ""}
+                      onValueChange={(value) => handleProfileFieldChange('subtitle', value)}
+                      disabled={!isEditingProfile}
+                    >
+                      <SelectTrigger id="subtitle">
+                        <SelectValue placeholder="Select your title (Dr. or Prof.)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Dr.">Dr.</SelectItem>
+                        <SelectItem value="Prof.">Prof.</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div>
                   <Label htmlFor="email">Email</Label>
                   <Input
