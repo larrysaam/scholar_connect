@@ -18,7 +18,7 @@ const ContactFAQs = () => {
       answer: "Click on 'Join as a Researcher' and fill out the registration form with your academic credentials and expertise."
     },
     {
-      question: "What are the fees for using ScholarConnect?",
+      question: "What are the fees for using ResearchWhoa?",
       answer: "Basic membership is free. Premium features and consultations have varying rates set by individual researchers and research aids."
     },
     {
@@ -34,7 +34,7 @@ const ContactFAQs = () => {
       answer: "We offer various services including literature review, methodology guidance, data analysis, academic writing, and publication support."
     },
     {
-      question: "Is my data secure on ScholarConnect?",
+      question: "Is my data secure on ResearchWhoa?",
       answer: "Yes, we use industry-standard security measures to protect all user data and communications on our platform."
     }
   ];

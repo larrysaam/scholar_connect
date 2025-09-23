@@ -22,7 +22,7 @@ export class EmailService {
     matchedJobs: JobMatch[]
   ): WeeklyEmailSummary {
     const content = `
-      <h2>Your Weekly ScholarConnect Summary</h2>
+      <h2>Your Weekly ResearchWhoa Summary</h2>
       
       <h3>📊 Activity Summary</h3>
       <ul>
@@ -61,7 +61,7 @@ export class EmailService {
       ` : '<p>No new notifications this week.</p>'}
 
       <p>
-        <a href="https://scholarconnect.com/research-aids-dashboard">Visit your dashboard</a> to see all updates and apply for jobs.
+        <a href="https://ResearchWhoa.com/research-aids-dashboard">Visit your dashboard</a> to see all updates and apply for jobs.
       </p>
     `;
 

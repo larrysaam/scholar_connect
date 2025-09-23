@@ -73,7 +73,7 @@ const PlatformFeedbackModal: React.FC<PlatformFeedbackModalProps> = ({ feedbackC
 
       toast({
         title: "Feedback Submitted",
-        description: "Thank you for helping us improve ScholarConnect!"
+        description: "Thank you for helping us improve ResearchWhoa!"
       });
 
       // Reset form and close dialog
@@ -119,7 +119,7 @@ const PlatformFeedbackModal: React.FC<PlatformFeedbackModalProps> = ({ feedbackC
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Rate ScholarConnect Platform</DialogTitle>
+          <DialogTitle>Rate ResearchWhoa Platform</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div>
@@ -154,7 +154,7 @@ const PlatformFeedbackModal: React.FC<PlatformFeedbackModalProps> = ({ feedbackC
             <Label htmlFor="feedback-text">Your Feedback</Label>
             <Textarea
               id="feedback-text"
-              placeholder="Tell us about your experience with ScholarConnect..."
+              placeholder="Tell us about your experience with ResearchWhoa..."
               value={feedbackText}
               onChange={(e) => setFeedbackText(e.target.value)}
               rows={4}

@@ -50,7 +50,7 @@ const ContentManagement = () => {
   const videoTutorials = [
     {
       id: 1,
-      title: "Getting Started with ScholarConnect",
+      title: "Getting Started with ResearchWhoa",
       duration: "5:32",
       views: 2847,
       status: "published",

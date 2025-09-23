@@ -9,7 +9,7 @@ interface SEOHeadProps {
 }
 
 const SEOHead = ({ 
-  title = "ScholarConnect - Connecting Students with Research Experts",
+  title = "ResearchWhoa - Connecting Students with Research Experts",
   description = "Connect with leading researchers for personalized academic consultations and collaborative research opportunities. Find expert guidance for your research projects.",
   keywords = "research, academic consultation, scholarly collaboration, research experts, academic guidance, research mentorship",
   ogImage = "/lovable-uploads/327ccde5-c0c9-443a-acd7-4570799bb7f8.png"

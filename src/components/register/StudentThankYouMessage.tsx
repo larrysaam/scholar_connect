@@ -13,7 +13,7 @@ const StudentThankYouMessage = () => {
         <Card className="max-w-md mx-auto">
           <CardContent className="text-center p-8">
             <div className="text-6xl mb-4">🎉</div>
-            <h1 className="text-2xl font-bold mb-4">Welcome to ScholarConnect!</h1>
+            <h1 className="text-2xl font-bold mb-4">Welcome to ResearchWhoa!</h1>
             <p className="text-gray-600 mb-6">
               Your student account has been created successfully. You can now access your personalized dashboard 
               to browse expert support, track progress, and request consultations or mentorship.

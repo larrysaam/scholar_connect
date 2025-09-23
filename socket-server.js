@@ -1,5 +1,5 @@
 import 'dotenv/config';
-// Minimal ScholarConnect socket.io server for real-time messaging (ESM version)
+// Minimal ResearchWhoa socket.io server for real-time messaging (ESM version)
 import { Server } from 'socket.io';
 import http from 'http';
 import { createClient } from '@supabase/supabase-js';

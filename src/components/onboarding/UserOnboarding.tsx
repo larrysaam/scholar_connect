@@ -71,7 +71,7 @@ const UserOnboarding = () => {
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>Welcome to ScholarConnect!</span>
+          <span>Welcome to ResearchWhoa!</span>
           <Badge variant="secondary">
             {completedSteps}/{steps.length} Complete
           </Badge>
@@ -127,7 +127,7 @@ const UserOnboarding = () => {
               <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-3" />
               <h3 className="font-semibold text-green-900">Setup Complete!</h3>
               <p className="text-green-700 mb-4">
-                You're all set to start your academic journey with ScholarConnect.
+                You're all set to start your academic journey with ResearchWhoa.
               </p>
               <Button>Explore Researchers</Button>
             </div>

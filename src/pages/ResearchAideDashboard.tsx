@@ -121,11 +121,11 @@ const ResearchAideDashboard = () => {
           <h1 className="text-3xl font-bold mb-2">{getWelcomeMessage()}</h1>
           <p className="text-gray-600 mb-8">Manage your jobs, clients, and earnings</p>
           
-          {showOnboarding && (
+          {/* {showOnboarding && (
             <div className="mb-8">
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-2">Welcome to ScholarConnect!</h3>
+                  <h3 className="text-lg font-semibold mb-2">Welcome to ResearchWhao!</h3>
                   <p className="text-gray-600 mb-4">Complete your profile to start receiving research assistance requests.</p>
                   <button 
                     onClick={handleOnboardingComplete}
@@ -136,8 +136,12 @@ const ResearchAideDashboard = () => {
                 </CardContent>
               </Card>
             </div>
-          )}          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Sidebar - hidden on mobile, visible on tablet/desktop */}            <div className="hidden md:block md:col-span-1">
+          )}           */}
+          
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {/* Sidebar - hidden on mobile, visible on tablet/desktop */}            
+            <div className="hidden md:block md:col-span-1">
               <DashboardSidebar 
                 activeTab={activeTab} 
                 setActiveTab={handleTabChange} 

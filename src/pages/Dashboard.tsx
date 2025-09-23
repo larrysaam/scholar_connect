@@ -154,7 +154,7 @@ const Dashboard = () => {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 lg:mb-8 space-y-2 sm:space-y-0">
             <div className="min-w-0">
               <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 truncate">
-                Welcome back, {userName || 'Student'}
+                Welcome, {userName || 'Student'}
               </h1>
               <p className="text-sm sm:text-base text-gray-600 mt-1">
                 Ready to advance your research journey?
@@ -163,7 +163,7 @@ const Dashboard = () => {
           </div>
           
           {/* Show onboarding for new users */}
-          {showOnboarding && (
+          {/* {showOnboarding && (
             <div className="mb-4 sm:mb-6 lg:mb-8">
               <Card className="border-0 shadow-md">
                 <CardContent className="p-4 sm:p-6">
@@ -180,7 +180,7 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
             </div>
-          )}
+          )} */}
           
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
             {/* Sidebar - hidden on mobile and tablet, visible on large screens */}

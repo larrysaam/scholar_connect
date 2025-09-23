@@ -58,11 +58,11 @@ const AidJobManagementContent = ({ activeTab, setActiveTab }: AidJobManagementCo
 
   return (
     <>
-      {showOnboarding && (
+      {/* {showOnboarding && (
         <div className="mb-8">
           <Card>
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold mb-2">Welcome to ScholarConnect!</h3>
+              <h3 className="text-lg font-semibold mb-2">Welcome to ResearchWhao!</h3>
               <p className="text-gray-600 mb-4">Complete your profile to start managing your jobs.</p>
               <button 
                 onClick={handleOnboardingComplete}
@@ -73,7 +73,7 @@ const AidJobManagementContent = ({ activeTab, setActiveTab }: AidJobManagementCo
             </CardContent>
           </Card>
         </div>
-      )}
+      )} */}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsContent value={activeTab} className="mt-0">

@@ -16,8 +16,8 @@ const ContactInfo = () => {
           <Mail className="h-5 w-5 text-blue-600" />
           <div>
             <h4 className="font-semibold">{t("contact.info.email.title") || "Email"}</h4>
-            <p className="text-gray-600">{t("contact.info.email.general") || "info@scholarconnect.com"}</p>
-            <p className="text-gray-600">{t("contact.info.email.support") || "support@scholarconnect.com"}</p>
+            <p className="text-gray-600">{t("contact.info.email.general") || "info@ResearchWhoa.com"}</p>
+            <p className="text-gray-600">{t("contact.info.email.support") || "support@ResearchWhoa.com"}</p>
           </div>
         </div>
         

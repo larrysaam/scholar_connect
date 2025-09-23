@@ -222,7 +222,7 @@ const Partnerships = () => {
                   </CardHeader>
                   <CardContent>
                     <p className="text-gray-600 mb-6">
-                      Join us in revolutionizing academic research and education across Africa. ScholarConnect represents a significant opportunity to impact education while generating sustainable returns.
+                      Join us in revolutionizing academic research and education across Africa. ResearchWhoa represents a significant opportunity to impact education while generating sustainable returns.
                     </p>
                     <div className="grid md:grid-cols-2 gap-6 mb-8">
                       <div>
@@ -278,7 +278,7 @@ const Partnerships = () => {
                   </CardHeader>
                   <CardContent>
                     <p className="text-gray-600 mb-6">
-                      Partner with ScholarConnect to advance education and research capacity across Africa. We welcome collaboration with NGOs, development agencies, and international educational organizations.
+                      Partner with ResearchWhoa to advance education and research capacity across Africa. We welcome collaboration with NGOs, development agencies, and international educational organizations.
                     </p>
                     <div className="grid md:grid-cols-2 gap-6 mb-8">
                       <div>

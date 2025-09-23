@@ -13,13 +13,13 @@ const ResearchAidQualityTab = () => {
           <h2 className="text-xl font-semibold">Quality Feedback</h2>
           <InviteModal userType="research-aid" triggerText="Invite a Research Aid" />
         </div>
-        <p className="text-gray-600 mb-6">Help us improve ScholarConnect by sharing your feedback.</p>
+        <p className="text-gray-600 mb-6">Help us improve ResearchWhoa by sharing your feedback.</p>
         
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-lg">Rate this platform</CardTitle>
             <CardDescription>
-              How would you rate your overall experience with ScholarConnect?
+              How would you rate your overall experience with ResearchWhoa?
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -35,7 +35,7 @@ const TestimonialCard = ({ quote, author, role, type }: TestimonialProps) => (
 const Testimonials = () => {
   const testimonials = [
     {
-      quote: "ScholarConnect transformed my research journey. The guidance I received helped me complete my dissertation with confidence.",
+      quote: "ResearchWhoa transformed my research journey. The guidance I received helped me complete my dissertation with confidence.",
       author: "Michael Johnson",
       role: "PhD Student, Economics",
       type: "student" as const

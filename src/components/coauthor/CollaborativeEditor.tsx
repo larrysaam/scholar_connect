@@ -40,7 +40,7 @@ const CollaborativeEditor = ({
     { value: "pdf", label: "PDF" },
     { value: "docx", label: "Word (.docx)" },
     { value: "latex", label: "LaTeX" },
-    { value: "scholar", label: "ScholarConnect Submission" }
+    { value: "scholar", label: "ResearchWhoa Submission" }
   ];
 
   const updateWordCount = (text: string) => {
