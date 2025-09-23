@@ -439,89 +439,94 @@ const SettingsTab = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-              </div>
+                </div>              </div>
 
-              {/* Research Information */}
-              <Separator />
-              <div className="space-y-4">
-                <h4 className="text-lg font-semibold">Research Information</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="topic_title">Research Topic/Title</Label>
-                    <Input
-                      id="topic_title"
-                      value={userProfile.topic_title || ""}
-                      onChange={(e) => handleProfileFieldChange('topic_title', e.target.value)}
-                      disabled={!isEditingProfile}
-                      placeholder="Enter your research topic"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="research_stage">Research Stage</Label>
-                    <Select
-                      value={userProfile.research_stage || ""}
-                      onValueChange={(value) => handleProfileFieldChange('research_stage', value)}
-                      disabled={!isEditingProfile}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select research stage" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="planning">Planning</SelectItem>
-                        <SelectItem value="proposal">Proposal</SelectItem>
-                        <SelectItem value="data_collection">Data Collection</SelectItem>
-                        <SelectItem value="analysis">Analysis</SelectItem>
-                        <SelectItem value="writing">Writing</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                {/* Research Areas */}
-                <div>
-                  <Label>Research Areas</Label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {(userProfile.research_areas || []).map((area, index) => (
-                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                        {area}
-                        {isEditingProfile && (
-                          <X 
-                            className="h-3 w-3 cursor-pointer" 
-                            onClick={() => removeArrayItem('research_areas', index)}
-                          />
-                        )}
-                      </Badge>
-                    ))}
-                  </div>
-                  {isEditingProfile && (
-                    <div className="flex gap-2">
-                      <Input
-                        value={newResearchArea}
-                        onChange={(e) => setNewResearchArea(e.target.value)}
-                        placeholder="Add research area"
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            addArrayItem('research_areas', newResearchArea);
-                          }
-                        }}
-                      />
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => addArrayItem('research_areas', newResearchArea)}
-                        disabled={!newResearchArea.trim()}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
+              {/* Research Information - Only show for experts/researchers */}
+              {userProfile.role === 'expert' && (
+                <>
+                  <Separator />
+                  <div className="space-y-4">
+                    <h4 className="text-lg font-semibold">Research Information</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="topic_title">Research Topic/Title</Label>
+                        <Input
+                          id="topic_title"
+                          value={userProfile.topic_title || ""}
+                          onChange={(e) => handleProfileFieldChange('topic_title', e.target.value)}
+                          disabled={!isEditingProfile}
+                          placeholder="Enter your research topic"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="research_stage">Research Stage</Label>
+                        <Select
+                          value={userProfile.research_stage || ""}
+                          onValueChange={(value) => handleProfileFieldChange('research_stage', value)}
+                          disabled={!isEditingProfile}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select research stage" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="planning">Planning</SelectItem>
+                            <SelectItem value="proposal">Proposal</SelectItem>
+                            <SelectItem value="data_collection">Data Collection</SelectItem>
+                            <SelectItem value="analysis">Analysis</SelectItem>
+                            <SelectItem value="writing">Writing</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  )}
-                </div>
-              </div>
+                    
+                    {/* Research Areas */}
+                    <div>
+                      <Label>Research Areas</Label>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {(userProfile.research_areas || []).map((area, index) => (
+                          <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                            {area}
+                            {isEditingProfile && (
+                              <X 
+                                className="h-3 w-3 cursor-pointer" 
+                                onClick={() => removeArrayItem('research_areas', index)}
+                              />
+                            )}
+                          </Badge>
+                        ))}
+                      </div>
+                      {isEditingProfile && (
+                        <div className="flex gap-2">
+                          <Input
+                            value={newResearchArea}
+                            onChange={(e) => setNewResearchArea(e.target.value)}
+                            placeholder="Add research area"
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                addArrayItem('research_areas', newResearchArea);
+                              }
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => addArrayItem('research_areas', newResearchArea)}
+                            disabled={!newResearchArea.trim()}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
 
-              {/* Professional Information */}
+              {/* Professional Information - Only show for experts/researchers */}
+              {userProfile.role === 'expert' && (
+                <>
               <Separator />
               <div className="space-y-4">
                 <h4 className="text-lg font-semibold">Professional Information</h4>
@@ -632,9 +637,7 @@ const SettingsTab = () => {
                       </Button>
                     </div>
                   )}
-                </div>
-
-                {/* LinkedIn URL */}
+                </div>                {/* LinkedIn URL */}
                 <div>
                   <Label htmlFor="linkedin_url">LinkedIn Profile</Label>
                   <Input
@@ -647,6 +650,8 @@ const SettingsTab = () => {
                   />
                 </div>
               </div>
+              </>
+              )}
 
               {/* Payment Information */}
               <Separator />
