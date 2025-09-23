@@ -35,6 +35,9 @@ const DiscussionTab = () => {
   const [replies, setReplies] = useState<Record<string, any[]>>({});
   const [showReplies, setShowReplies] = useState<Record<string, boolean>>({});
 
+  // Optimistic like state for instant UI feedback
+  const [optimisticLikes, setOptimisticLikes] = useState<Record<string, boolean>>({});
+
   // Categories for discussion posts
   const categories = [
     'Questions',
@@ -82,6 +85,16 @@ const DiscussionTab = () => {
       return;
     }
 
+    const post = posts.find(p => p.id === postId);
+    const alreadyLiked = (typeof optimisticLikes[postId] === 'boolean' ? optimisticLikes[postId] : post?.user_has_liked);
+
+    // Optimistically update UI
+    setOptimisticLikes(prev => ({
+      ...prev,
+      [postId]: !alreadyLiked
+    }));
+
+    // Toggle like in DB (add if not liked, remove if already liked)
     await toggleLike(postId);
   };
 
@@ -288,13 +301,8 @@ const DiscussionTab = () => {
                   variant="ghost" 
                   size="sm"
                   onClick={() => handleLike(post.id)}
-                  className={post.user_has_liked ? "text-red-600" : ""}
-                >
-                  {post.user_has_liked ? (
-                    <Heart className="h-4 w-4 mr-1 fill-current" />
-                  ) : (
-                    <ThumbsUp className="h-4 w-4 mr-1" />
-                  )}
+                  className={((typeof optimisticLikes[post.id] === 'boolean' ? optimisticLikes[post.id] : post.user_has_liked) ? "text-blue-600" : "")}
+                >                  <ThumbsUp className={((typeof optimisticLikes[post.id] === 'boolean' ? optimisticLikes[post.id] : post.user_has_liked) ? "h-4 w-4 mr-1 text-blue-600" : "h-4 w-4 mr-1")}/>
                   {post.likes_count}
                 </Button>
                 <Button 
@@ -305,16 +313,14 @@ const DiscussionTab = () => {
                   <Reply className="h-4 w-4 mr-1" />
                   Reply
                 </Button>
-                {post.replies_count > 0 && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => handleViewReplies(post.id)}
-                  >
-                    <MessageSquare className="h-4 w-4 mr-1" />
-                    {showReplies[post.id] ? 'Hide' : 'View'} Replies ({post.replies_count})
-                  </Button>
-                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleViewReplies(post.id)}
+                >
+                  <MessageSquare className="h-4 w-4 mr-1" />
+                  {showReplies[post.id] ? 'Hide Replies' : `See Replies (${replies?.[post.id]?.length})`}
+                </Button>
               </div>
 
               {/* Reply Form */}

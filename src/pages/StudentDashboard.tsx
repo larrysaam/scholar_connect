@@ -24,6 +24,7 @@ import StudentMessagesTab from "@/components/dashboard/tabs/StudentMessagesTab";
 import StudentAIAssistantTab from "@/components/dashboard/tabs/StudentAIAssistantTab";
 import StudentJobApplicationsTab from "@/components/dashboard/tabs/StudentJobApplicationsTab";
 import PostJobTab from "@/components/dashboard/tabs/PostJobTab";
+import DiscussionTab from "@/components/dashboard/tabs/DiscussionTab";
 
 const StudentDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -72,7 +73,7 @@ const StudentDashboard = () => {
         return <FindResearchAidTab />;
       case "post-job":
         return <PostJobTab />;
-      case "my-applications": // New case
+      case "my-applications":
         return <StudentJobApplicationsTab />;
       case "session-booking":
         return <SessionBookingTab />;
@@ -94,6 +95,8 @@ const StudentDashboard = () => {
         return <DocumentsTab />;
       case "settings":
         return <SettingsTab />;
+      case "discussion":
+        return <DiscussionTab />;
       default:
         console.log("Unknown tab, defaulting to overview:", activeTab);
         return <StudentWelcomeOverviewTab />;

@@ -61,6 +61,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole, notificationCount
     { id: "my-bookings", label: "My Bookings", icon: Calendar },
     { id: "upcoming", label: "Upcoming Sessions", icon: Calendar },
     { id: "past", label: "Past Sessions", icon: Clock },
+    { id: "discussion", label: "Discussion Forum", icon: MessageSquare },
     { id: "full-thesis-support", label: "Full Thesis Support", icon: GraduationCap },
     { id: "payments", label: "Payments", icon: DollarSign },
     { id: "messages", label: "Messages", icon: MessageSquare },
