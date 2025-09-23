@@ -61,105 +61,103 @@ const FindResearcherTab = () => {
     else if (displayTitle) prefix = displayTitle;
     // Compose display name
     const displayName = prefix ? `${prefix} ${researcher.name}` : researcher.name;
+    
     return (
-      <Card className="group hover:shadow-xl hover:shadow-blue-100/50 transition-all duration-500 border-0 bg-gradient-to-br from-white to-blue-50/30 backdrop-blur-sm overflow-hidden relative">
-        {/* Gradient border effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-lg p-[2px]">
-          <div className="h-full w-full bg-white rounded-[6px]" />
-        </div>
-        
-        <CardContent className="relative p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-start space-y-3 sm:space-y-0 sm:space-x-4">
-            {/* Profile Image */}
-            <div className="relative mx-auto sm:mx-0 flex-shrink-0">
-              <div className="relative">
-                <img 
-                  src={researcher.imageUrl} 
-                  alt={researcher.name}
-                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-3 border-white shadow-lg group-hover:scale-105 transition-transform duration-300"
-                />
-                {researcher.featured && (
-                  <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-2 shadow-lg animate-pulse">
-                    <Award className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
-                  </div>
-                )}
-              </div>
-              {/* Online status indicator */}
-              <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
-            </div>
+      <Card className="group hover:shadow-lg transition-all duration-300 border border-gray-200 hover:border-gray-300 bg-white overflow-hidden">
+        <CardContent className="p-4 lg:p-6">
+          {/* Mobile-first stacked layout */}
+          <div className="space-y-4">
             
-            {/* Content */}
-            <div className="flex-1 min-w-0 text-center sm:text-left">
-              {/* Header */}
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3">
-                <div className="space-y-1">
-                  <h3 className="font-bold text-lg sm:text-xl bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+            {/* Header Section - Profile & Featured Badge */}
+            <div className="flex items-start justify-between">
+              <div className="flex items-start space-x-3 flex-1 min-w-0">
+                {/* Profile Image */}
+                <div className="relative flex-shrink-0">
+                  <img 
+                    src={researcher.imageUrl} 
+                    alt={researcher.name}
+                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-cover border-2 border-gray-100 shadow-sm"
+                  />
+                  {/* Online status indicator */}
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
+                </div>
+                
+                {/* Name & Title */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-base sm:text-lg text-gray-900 truncate">
                     {displayName}
                   </h3>
-                  <p className="text-sm sm:text-base text-blue-600 font-semibold">{researcher.title}</p>
-                  <div className="flex items-center justify-center sm:justify-start space-x-1 text-gray-600">
-                    <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="text-xs sm:text-sm font-medium">{researcher.institution}</span>
+                  <p className="text-sm text-blue-600 font-medium">{researcher.title}</p>
+                  <div className="flex items-center space-x-1 text-gray-500 mt-1">
+                    <BookOpen className="h-3 w-3 flex-shrink-0" />
+                    <span className="text-xs font-medium truncate">{researcher.institution}</span>
                   </div>
                 </div>
-                {researcher.featured && (
-                  <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 shadow-md mt-2 sm:mt-0 mx-auto sm:mx-0 w-fit">
-                    ⭐ Featured
-                  </Badge>
-                )}
               </div>
               
-              {/* Field & Location */}
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-3">
-                <Badge variant="outline" className="border-blue-300 text-blue-700 bg-blue-50/80 font-medium">
-                  {researcher.field}
+              {/* Featured Badge */}
+              {researcher.featured && (
+                <Badge className="bg-yellow-500 text-white border-0 shadow-sm flex-shrink-0">
+                  ⭐ Featured
                 </Badge>
-                {researcher.admin_verified && (
-                  <Badge className="bg-green-500 hover:bg-green-600 text-white border-0 shadow-sm">
-                    ✓ Verified
-                  </Badge>
-                )}
-                <div className="flex items-center space-x-1 text-gray-500">
-                  <MapPin className="h-3 w-3" />
-                  <span className="text-xs font-medium">{researcher.location}</span>
+              )}
+            </div>
+
+            {/* Field & Verification Row */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline" className="border-blue-200 text-blue-700 bg-blue-50 text-xs">
+                {researcher.field}
+              </Badge>
+              {researcher.admin_verified && (
+                <Badge className="bg-green-500 text-white border-0 shadow-sm text-xs">
+                  ✓ Verified
+                </Badge>
+              )}
+              <div className="flex items-center space-x-1 text-gray-500 ml-auto sm:ml-0">
+                <MapPin className="h-3 w-3" />
+                <span className="text-xs font-medium">{researcher.location}</span>
+              </div>
+            </div>
+            
+            {/* Specializations */}
+            <div className="flex flex-wrap gap-1">
+              {researcher.specializations.slice(0, 2).map((spec, index) => (
+                <Badge key={index} variant="secondary" className="text-xs bg-gray-100 text-gray-600 border-0">
+                  {spec}
+                </Badge>
+              ))}
+              {researcher.specializations.length > 2 && (
+                <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600 border-0">
+                  +{researcher.specializations.length - 2} more
+                </Badge>
+              )}
+            </div>
+            
+            {/* Bottom Row - Stats & Action */}
+            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+              <div className="flex items-center space-x-3">
+                {/* Rating */}
+                <div className="flex items-center space-x-1 bg-yellow-50 px-2 py-1 rounded-full">
+                  <Star className="h-3 w-3 text-yellow-500 fill-current" />
+                  <span className="text-xs font-bold text-yellow-700">{researcher.rating}</span>
+                  <span className="text-xs text-yellow-600">({researcher.reviewCount})</span>
+                </div>
+                
+                {/* Rate */}
+                <div className="text-xs sm:text-sm font-bold text-green-600">
+                  {researcher.hourlyRate.toLocaleString()} XAF/hr
                 </div>
               </div>
               
-              {/* Specializations */}
-              <div className="flex flex-wrap gap-1 mb-4 justify-center sm:justify-start">
-                {researcher.specializations.slice(0, 3).map((spec, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs bg-gradient-to-r from-gray-100 to-gray-50 text-gray-700 border border-gray-200">
-                    {spec}
-                  </Badge>
-                ))}
-                {researcher.specializations.length > 3 && (
-                  <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
-                    +{researcher.specializations.length - 3} more
-                  </Badge>
-                )}
-              </div>
-              
-              {/* Stats & Action */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-                <div className="flex items-center justify-center sm:justify-start space-x-4">
-                  <div className="flex items-center space-x-1 bg-yellow-50 px-2 py-1 rounded-full">
-                    <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                    <span className="text-sm font-bold text-yellow-700">{researcher.rating}</span>
-                    <span className="text-xs text-yellow-600">({researcher.reviewCount})</span>
-                  </div>
-                  <div className="text-sm font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                    {researcher.hourlyRate.toLocaleString()} XAF/hr
-                  </div>
-                </div>
-                <Button 
-                  size="sm" 
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto"
-                  onClick={() => navigate(`/researcher/${researcher.id}`)}
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  View Profile
-                </Button>
-              </div>
+              {/* Action Button */}
+              <Button 
+                size="sm" 
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors duration-200 text-xs px-3 py-1.5"
+                onClick={() => navigate(`/researcher/${researcher.id}`)}
+              >
+                <Eye className="h-3 w-3 mr-1.5" />
+                View
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -169,29 +167,22 @@ const FindResearcherTab = () => {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* Modern Hero Section */}
-      <div className=" relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-6 sm:p-8 rounded-2xl shadow-2xl">
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="relative z-10">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-center sm:text-left mb-4 sm:mb-0">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
-                Find Expert Researchers
-              </h1>
-              <p className="text-blue-100 text-sm sm:text-base lg:text-lg">
-                Connect with verified academic experts for personalized research guidance
-              </p>
-            </div>
-            <div className="flex items-center justify-center sm:justify-end space-x-2">
-              <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
-                <span className="text-white text-sm font-medium">{researchers.length} Experts</span>
-              </div>
-            </div>
+      {/* Simple Header */}
+      <div className="text-gray-800 p-6 rounded-lg" style={{ backgroundColor: '#edfdf4' }}>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold mb-2">
+              Find Expert Researchers
+            </h1>
+            <p className="text-gray-600">
+              Connect with verified academic experts for personalized research guidance
+            </p>
+          </div>
+          <div className="mt-4 sm:mt-0 text-center sm:text-right">
+            <div className="text-2xl font-bold">{researchers.length}</div>
+            <div className="text-gray-500 text-sm">Experts</div>
           </div>
         </div>
-        {/* Decorative elements */}
-        <div className="absolute top-4 right-4 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
-        <div className="absolute bottom-4 left-4 w-16 h-16 bg-yellow-400/20 rounded-full blur-lg"></div>
       </div>
 
       {/* Enhanced Search and Filters */}
@@ -344,7 +335,7 @@ const FindResearcherTab = () => {
       </Card>
 
       {/* Quick Stats */}
-      <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      {/* <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-blue-50 to-blue-100/50">
           <CardContent className="p-6 text-center">
             <div className="bg-blue-500 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
@@ -372,7 +363,7 @@ const FindResearcherTab = () => {
             <div className="text-sm text-gray-600 font-medium">Average Rating</div>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       {/* Loading State */}
       {loading && (
