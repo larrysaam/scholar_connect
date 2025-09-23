@@ -263,7 +263,7 @@ const DiscussionTab = () => {
         {posts.map((post) => (
           <Card key={post.id}>
             <CardHeader>
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0">
                 <div className="flex items-center space-x-3">
                   <Avatar>
                     <AvatarImage src={post.author.avatar_url} />
@@ -272,13 +272,13 @@ const DiscussionTab = () => {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h4 className="font-semibold">{post.title}</h4>
+                    <h4 className="font-semibold break-words max-w-[200px] sm:max-w-none">{post.title}</h4>
                     <p className="text-sm text-gray-600">
                       by {post.author.name} • {post.author.role} • {formatTimestamp(post.created_at)}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 mt-2 sm:mt-0">
                   <Badge variant="outline">{post.category}</Badge>
                   {user && user.id === post.author.id && (
                     <Button
@@ -294,15 +294,16 @@ const DiscussionTab = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-gray-700">{post.content}</p>
+              <p className="text-gray-700 break-words max-w-full">{post.content}</p>
               
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-wrap items-center gap-2 sm:space-x-4 sm:gap-0">
                 <Button 
                   variant="ghost" 
                   size="sm"
                   onClick={() => handleLike(post.id)}
                   className={((typeof optimisticLikes[post.id] === 'boolean' ? optimisticLikes[post.id] : post.user_has_liked) ? "text-blue-600" : "")}
-                >                  <ThumbsUp className={((typeof optimisticLikes[post.id] === 'boolean' ? optimisticLikes[post.id] : post.user_has_liked) ? "h-4 w-4 mr-1 text-blue-600" : "h-4 w-4 mr-1")}/>
+                >
+                  <ThumbsUp className={((typeof optimisticLikes[post.id] === 'boolean' ? optimisticLikes[post.id] : post.user_has_liked) ? "h-4 w-4 mr-1 text-blue-600" : "h-4 w-4 mr-1")}/>
                   {post.likes_count}
                 </Button>
                 <Button 
@@ -319,7 +320,7 @@ const DiscussionTab = () => {
                   onClick={() => handleViewReplies(post.id)}
                 >
                   <MessageSquare className="h-4 w-4 mr-1" />
-                  {showReplies[post.id] ? 'Hide Replies' : `See Replies (${replies?.[post.id]?.length})`}
+                  {showReplies[post.id] ? 'Hide Replies' : `See Replies`}
                 </Button>
               </div>
 

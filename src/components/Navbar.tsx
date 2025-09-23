@@ -253,7 +253,16 @@ const Navbar = ({setActiveTab, activeTab}) => {
 
           <div className="flex items-center space-x-4">
             <LanguageToggle />
-            
+            {/* Desktop Sign Out button for authenticated users */}
+            {user && (
+              <Button
+                onClick={handleSignOut}
+                variant="outline"
+                className="hidden md:inline-flex bg-red-400 text-white hover:bg-red-500 hover:text-white transition-colors"
+              >
+                {t("Sign Out")}
+              </Button>
+            )}
             {/* Mobile hamburger menu with comprehensive sidebar */}
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
@@ -308,12 +317,12 @@ const Navbar = ({setActiveTab, activeTab}) => {
                     <div className="space-y-3 mb-6 pb-4 border-b">
                       <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
                         <Button variant="outline" className="w-full">
-                          {t("signIn")}
+                          {t("SignIn")}
                         </Button>
                       </Link>
                       <GetStartedModal>
                         <Button className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-                          {t("getStarted")}
+                          {t("GetStarted")}
                         </Button>
                       </GetStartedModal>
                     </div>
@@ -344,10 +353,10 @@ const Navbar = ({setActiveTab, activeTab}) => {
             {!user && (
               <div className="hidden md:flex items-center space-x-4">
                 <Link to="/login">
-                  <Button variant="outline">{t("signIn")}</Button>
+                  <Button variant="outline">{t("Sign In")}</Button>
                 </Link>
                 <GetStartedModal>
-                  <Button>{t("getStarted")}</Button>
+                  <Button>{t("Get Started")}</Button>
                 </GetStartedModal>
               </div>
             )}
