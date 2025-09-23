@@ -70,6 +70,8 @@ const ResearcherDashboard = () => {  const [searchParams, setSearchParams] = use
         return <MessagingTab />;
       case "verification":
         return <VerificationTab />;
+      case "discussion":
+        return <DiscussionTab />;
       case "notifications":
         return <NotificationsTab setActiveTab={handleTabChange} />;
       case "co-author-invitations":
@@ -110,7 +112,8 @@ const ResearcherDashboard = () => {  const [searchParams, setSearchParams] = use
                 </CardContent>
               </Card>
             </div>
-          )}            <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 md:gap-6">
+          )}            
+          <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 md:gap-6">
             {/* Responsive Sidebar - hidden on mobile, visible on tablet/desktop */}
             <div className="hidden lg:block lg:col-span-1">              
               <ResponsiveDashboardSidebar 

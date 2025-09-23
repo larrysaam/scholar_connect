@@ -85,6 +85,7 @@ const ResponsiveDashboardSidebar = ({
     { id: "quality", label: "Quality & Feedback", icon: Star },
     { id: "messaging", label: "Messaging", icon: MessageSquare },
     { id: "verification", label: "Verification", icon: Shield },
+      { id: "discussion", label: "Discussion Board", icon: MessageSquare },
     { id: "notifications", label: "Notifications", icon: Bell, badge: notificationCount },
     { id: "documents", label: "Documents", icon: FileText },
     { id: "settings", label: "Account Settings", icon: Settings },
