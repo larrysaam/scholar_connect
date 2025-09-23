@@ -401,33 +401,11 @@ const FindResearchAidTab = () => {
       </Card>
 
       {/* Stats Cards */}
-      <StatsCards />
+      {/* <StatsCards /> */}
 
       {/* Research Aids Results */}
       <div className="min-w-0">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 p-6 bg-gradient-to-r from-white via-emerald-50/30 to-green-50/30 rounded-2xl border border-emerald-200/50 shadow-lg">
-          <div className="text-center sm:text-left mb-4 sm:mb-0">
-            <h3 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-700 via-green-700 to-teal-700 bg-clip-text text-transparent mb-1">
-              Available Research Aids
-            </h3>
-            <p className="text-gray-600 text-sm sm:text-base">
-              {filteredAids.length === 0 
-                ? "No results found with current filters" 
-                : `Showing ${filteredAids.length} of ${researchAids.length} research aids`}
-            </p>
-          </div>
-          <div className="flex items-center justify-center sm:justify-end space-x-4">
-            <div className="bg-gradient-to-r from-emerald-100 to-green-100 px-4 py-2 rounded-full">
-              <span className="text-emerald-700 text-sm font-semibold">{filteredAids.length} Results</span>
-            </div>
-            {filteredAids.length > 0 && (
-              <div className="flex items-center space-x-2 bg-green-100 px-3 py-2 rounded-full">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-green-700 text-xs font-medium">Live</span>
-              </div>
-            )}
-          </div>
-        </div>
+        
         
         {filteredAids.length > 0 ? (
           <div className="grid sm:grid-cols-2 grid-cols-1 gap-3 sm:gap-6">
