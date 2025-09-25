@@ -73,6 +73,7 @@ const ResponsiveDashboardSidebar = ({
     { id: "thesis-information", label: "Thesis Information", icon: BookOpen },
     { id: "documents", label: "Documents", icon: FileText },
     { id: "settings", label: "Account Settings", icon: Settings },
+    { id: "co-author-workspace", label: "Co-Author Workspace", icon: Users },
   ];
 
   const researcherMenuItems = [
@@ -85,10 +86,12 @@ const ResponsiveDashboardSidebar = ({
     { id: "quality", label: "Quality & Feedback", icon: Star },
     { id: "messaging", label: "Messaging", icon: MessageSquare },
     { id: "verification", label: "Verification", icon: Shield },
-      { id: "discussion", label: "Discussion Board", icon: MessageSquare },
+    { id: "discussion", label: "Discussion Board", icon: MessageSquare },
     { id: "notifications", label: "Notifications", icon: Bell, badge: notificationCount },
+    { id: "co-author-invitations", label: "Co-author Invitations", icon: UserPlus, badge: 2 },
     { id: "documents", label: "Documents", icon: FileText },
     { id: "settings", label: "Account Settings", icon: Settings },
+    { id: "co-author-workspace", label: "Co-Author Workspace", icon: Users },
   ];
 
   const researchAideMenuItems = [
@@ -118,17 +121,25 @@ const ResponsiveDashboardSidebar = ({
 
   const menuItems = getMenuItems();
   const handleMenuClick = (itemId: string) => {
-    console.log("Sidebar menu item clicked:", itemId);
-    setActiveTab(itemId);
-  };  // Sidebar content component
-  
+    if (itemId === "co-author-workspace") {
+      navigate("/co-author-workspace");
+    } else {
+      setActiveTab(itemId);
+    }
+  };
+
   const SidebarContent = ({ className = "" }: { className?: string }) => (
     <div className={`bg-white rounded-lg shadow-sm p-3 sm:p-4 ${className}`}>
       <div className="space-y-1 sm:space-y-2">
         {menuItems.map((item) => (
           <Button
             key={item.id}
-            variant={activeTab === item.id ? "default" : "ghost"}
+            variant={
+              activeTab === item.id ||
+              (item.id === "co-author-workspace" && window.location.pathname === "/co-author-workspace")
+                ? "default"
+                : "ghost"
+            }
             className="w-full justify-start text-sm sm:text-base py-2 sm:py-2.5"
             onClick={() => handleMenuClick(item.id)}
           >
@@ -143,7 +154,9 @@ const ResponsiveDashboardSidebar = ({
         ))}
       </div>
     </div>
-  );return (
+  );
+
+  return (
     <>
       {/* Desktop Sidebar - hamburger menu now handled in navbar */}
       <div className="block">

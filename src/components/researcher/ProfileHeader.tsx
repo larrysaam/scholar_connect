@@ -1,6 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Star, Users, Calendar, CheckCircle } from "lucide-react"; // Added CheckCircle
+import { useState } from "react";
+import { Button } from '@/components/ui/button';
 import StatusIndicator from "./StatusIndicator";
 import ComprehensiveBookingModal from "./booking/ComprehensiveBookingModal";
 import MessageModal from "./MessageModal";
@@ -40,6 +42,7 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
   };
 
   const showVerifiedBadge = isOverallVerified();
+  const [manualProjectId, setManualProjectId] = useState("");
 
   return (
     <Card>
@@ -130,8 +133,8 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
             
             <MessageModal researcher={researcher} />
 
-            {/* sudo disabled co-author invitation */}
-            {/* <CoAuthorInvitationModal researcher={researcher} /> */}
+            {/* Co-author invitation: always show modal, let modal handle project creation/selection */}
+            <CoAuthorInvitationModal researcher={researcher} />
           </div>
         </div>
 

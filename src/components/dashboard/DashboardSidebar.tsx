@@ -70,6 +70,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole, notificationCount
     { id: "thesis-information", label: "Thesis Information", icon: BookOpen },
     { id: "documents", label: "Documents", icon: FileText },
     { id: "settings", label: "Account Settings", icon: Settings },
+    { id: "co-author-workspace", label: "Co-Author Workspace", icon: Users },
   ];
 
   const researcherMenuItems = [
@@ -87,10 +88,11 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole, notificationCount
     { id: "verification", label: "Verification", icon: Shield },
     { id: "notifications", label: "Notifications", icon: Bell, badge: notificationCount },
     // sudo disabled for now
-    // { id: "co-author-invitations", label: "Co-author Invitations", icon: UserPlus, badge: 2 },
+    { id: "co-author-invitations", label: "Co-author Invitations", icon: UserPlus, badge: 2 },
     { id: "documents", label: "Documents", icon: FileText },
     // { id: "profile", label: "Profile Information", icon: User },
     { id: "settings", label: "Account Settings", icon: Settings },
+    { id: "co-author-workspace", label: "Co-Author Workspace", icon: Users },
   ];
 
   const researchAideMenuItems = [
@@ -122,8 +124,11 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole, notificationCount
   const menuItems = getMenuItems();
 
   const handleMenuClick = (itemId: string) => {
-    console.log("Sidebar menu item clicked:", itemId);
-    setActiveTab(itemId);
+    if (itemId === "co-author-workspace") {
+      navigate("/co-author-workspace");
+    } else {
+      setActiveTab(itemId);
+    }
   };
 
   return (
@@ -132,7 +137,12 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole, notificationCount
         {menuItems.map((item) => (
           <Button
             key={item.id}
-            variant={activeTab === item.id ? "default" : "ghost"}
+            variant={
+              activeTab === item.id ||
+              (item.id === "co-author-workspace" && window.location.pathname === "/co-author-workspace")
+                ? "default"
+                : "ghost"
+            }
             className="w-full justify-start text-xs lg:text-sm py-2 lg:py-2.5 px-2 lg:px-3 h-auto transition-all duration-200 hover:bg-gray-50 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
             onClick={() => handleMenuClick(item.id)}
           >

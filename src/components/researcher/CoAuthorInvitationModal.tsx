@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useCoauthors, createProject, inviteCoauthorDirect } from "@/hooks/useCoauthors";
 
 interface CoAuthorInvitationModalProps {
   researcher: {
@@ -17,14 +18,20 @@ interface CoAuthorInvitationModalProps {
 
 const CoAuthorInvitationModal = ({ researcher }: CoAuthorInvitationModalProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     problemStatement: "",
     researchObjectives: "",
     researchHypothesis: "",
-    countries: ""
+    countries: "",
+    description: "",
+    type: "Journal Article",
+    visibility: "Private"
   });
+  const [loading, setLoading] = useState(false);
+  const coauthorHooks = useCoauthors("");
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -33,7 +40,7 @@ const CoAuthorInvitationModal = ({ researcher }: CoAuthorInvitationModalProps) =
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.title || !formData.problemStatement || !formData.researchObjectives) {
       toast({
         title: "Missing Information",
@@ -42,56 +49,52 @@ const CoAuthorInvitationModal = ({ researcher }: CoAuthorInvitationModalProps) =
       });
       return;
     }
-
-    const invitationData = {
-      researcherId: researcher.id,
-      researcherName: researcher.name,
-      ...formData,
-      dateSent: new Date().toISOString(),
-      status: 'pending'
-    };
-
-    console.log("Co-author invitation sent:", invitationData);
-
-    // Store invitation in localStorage for the researcher dashboard to access
-    const existingInvitations = JSON.parse(localStorage.getItem('coauthor_invitations') || '[]');
-    existingInvitations.push({
-      id: Date.now().toString(),
-      fromUser: {
-        name: "Emmanuel Kenfack", // This would come from user context
-        title: "Master's Student",
-        institution: "University of Yaoundé I",
-        department: "Computer Science",
-        researchInterests: ["Machine Learning", "Healthcare Analytics", "Data Science"],
-        publications: 2,
-        hIndex: 1
-      },
-      publicationType: "Research Paper",
-      researchTopic: formData.title,
-      researchProblem: formData.problemStatement,
-      objectives: formData.researchObjectives,
-      methodology: "Mixed methods approach combining quantitative analysis and qualitative interviews",
-      roles: "Looking for co-author collaboration on data analysis and manuscript writing",
-      nextSteps: formData.researchHypothesis,
-      countries: formData.countries,
-      dateSent: new Date().toISOString(),
-      status: 'pending'
+    setLoading(true);
+    // 1. Create project in DB
+    const projectRes = await createProject({
+      title: formData.title,
+      description: formData.problemStatement + '\n' + formData.researchObjectives + (formData.researchHypothesis ? ('\nHypothesis: ' + formData.researchHypothesis) : ''),
+      type: formData.type,
+      visibility: formData.visibility
     });
-    localStorage.setItem('coauthor_invitations', JSON.stringify(existingInvitations));
-
-    toast({
-      title: "Invitation Sent!",
-      description: `Your co-author invitation has been sent to ${researcher.name}. They will receive a notification with your research details.`,
-    });
-    
-    setIsOpen(false);
-    setFormData({
-      title: "",
-      problemStatement: "",
-      researchObjectives: "",
-      researchHypothesis: "",
-      countries: ""
-    });
+    if (projectRes.error || !projectRes.data?.id) {
+      setLoading(false);
+      toast({ title: "Error", description: projectRes.error?.message || "Failed to create project", variant: "destructive" });
+      return;
+    }
+    const projectId = projectRes.data.id;
+    try {
+      const message = `Title: ${formData.title}\nProblem: ${formData.problemStatement}\nObjectives: ${formData.researchObjectives}\nHypothesis: ${formData.researchHypothesis}\nCountries: ${formData.countries}`;
+      const result = await inviteCoauthorDirect({
+        projectId,
+        inviterId: user?.id,
+        inviteeId: researcher.id,
+        message
+      });
+      setLoading(false);
+      if (result.error) {
+        toast({ title: "Error", description: result.error.message, variant: "destructive" });
+        return;
+      }
+      toast({
+        title: "Invitation Sent!",
+        description: `Your co-author invitation has been sent to ${researcher.name}. They will receive a notification with your research details.`,
+      });
+      setIsOpen(false);
+      setFormData({
+        title: "",
+        problemStatement: "",
+        researchObjectives: "",
+        researchHypothesis: "",
+        countries: "",
+        description: "",
+        type: "Journal Article",
+        visibility: "Private"
+      });
+    } catch (err: any) {
+      setLoading(false);
+      toast({ title: "Error", description: err.message || "Failed to send invitation", variant: "destructive" });
+    }
   };
 
   return (
@@ -106,7 +109,6 @@ const CoAuthorInvitationModal = ({ researcher }: CoAuthorInvitationModalProps) =
         <DialogHeader>
           <DialogTitle>Invite {researcher.name} to Co-Author</DialogTitle>
         </DialogHeader>
-        
         <div className="space-y-4 py-4">
           <div>
             <Label htmlFor="title" className="font-medium">Research Title *</Label>
@@ -118,7 +120,6 @@ const CoAuthorInvitationModal = ({ researcher }: CoAuthorInvitationModalProps) =
               className="mt-1"
             />
           </div>
-
           <div>
             <Label htmlFor="problemStatement" className="font-medium">Problem Statement *</Label>
             <Textarea
@@ -130,7 +131,6 @@ const CoAuthorInvitationModal = ({ researcher }: CoAuthorInvitationModalProps) =
               className="mt-1"
             />
           </div>
-
           <div>
             <Label htmlFor="researchObjectives" className="font-medium">Research Objectives *</Label>
             <Textarea
@@ -142,7 +142,6 @@ const CoAuthorInvitationModal = ({ researcher }: CoAuthorInvitationModalProps) =
               className="mt-1"
             />
           </div>
-
           <div>
             <Label htmlFor="researchHypothesis" className="font-medium">Research Hypothesis</Label>
             <Textarea
@@ -154,7 +153,6 @@ const CoAuthorInvitationModal = ({ researcher }: CoAuthorInvitationModalProps) =
               className="mt-1"
             />
           </div>
-
           <div>
             <Label htmlFor="countries" className="font-medium">Country(ies) Location(s)</Label>
             <Input
@@ -165,13 +163,13 @@ const CoAuthorInvitationModal = ({ researcher }: CoAuthorInvitationModalProps) =
               className="mt-1"
             />
           </div>
-
+          {/* Optionally add project type/visibility fields here if you want to expose them */}
           <Button 
             onClick={handleSubmit} 
             className="w-full"
-            disabled={!formData.title || !formData.problemStatement || !formData.researchObjectives}
+            disabled={!formData.title || !formData.problemStatement || !formData.researchObjectives || loading}
           >
-            Send Co-Author Invitation
+            {loading ? 'Sending...' : 'Send Co-Author Invitation'}
           </Button>
         </div>
       </DialogContent>
