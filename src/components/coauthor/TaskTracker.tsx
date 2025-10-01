@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CheckSquare, Plus, Calendar, User, Clock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TaskTrackerProps {
   projectId: string;
@@ -23,6 +23,8 @@ interface TaskTrackerProps {
 }
 
 const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) => {
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
   const [newTask, setNewTask] = useState({
     title: "",
@@ -32,41 +34,22 @@ const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) 
     priority: "medium"
   });
 
-  const [tasks] = useState([
-    {
-      id: 1,
-      title: "Complete literature review section",
-      description: "Review and summarize recent publications on AI in education",
-      assignee: "Dr. Sarah Johnson",
-      assigneeId: "1",
-      status: "in-progress",
-      priority: "high",
-      dueDate: "2024-01-20",
-      createdAt: "2024-01-15"
-    },
-    {
-      id: 2,
-      title: "Update methodology section",
-      description: "Add more details about data collection procedures",
-      assignee: "Prof. Michael Chen",
-      assigneeId: "2", 
-      status: "todo",
-      priority: "medium",
-      dueDate: "2024-01-22",
-      createdAt: "2024-01-15"
-    },
-    {
-      id: 3,
-      title: "Review and edit abstract",
-      description: "Final review of the abstract for clarity and conciseness",
-      assignee: "Dr. Emily Rodriguez",
-      assigneeId: "3",
-      status: "completed",
-      priority: "low",
-      dueDate: "2024-01-18",
-      createdAt: "2024-01-14"
+  useEffect(() => {
+    fetchTasks();
+  }, [projectId]);
+
+  const fetchTasks = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("project_tasks")
+      .select("*, profiles:assignee(name)")
+      .eq("project_id", projectId)
+      .order("created_at", { ascending: true });
+    if (!error && data) {
+      setTasks(data);
     }
-  ]);
+    setLoading(false);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -87,19 +70,29 @@ const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) 
     }
   };
 
-  const handleCreateTask = () => {
-    if (newTask.title.trim()) {
-      // In real app, this would save to database
-      console.log("Creating task:", newTask);
-      setNewTask({
-        title: "",
-        description: "",
-        assignee: "",
-        dueDate: "",
-        priority: "medium"
-      });
-      setShowNewTaskForm(false);
-    }
+  const handleCreateTask = async () => {
+    if (!newTask.title.trim()) return;
+    setLoading(true);
+    const { error } = await supabase.from("project_tasks").insert({
+      project_id: projectId,
+      title: newTask.title,
+      description: newTask.description,
+      assignee: newTask.assignee,
+      due_date: newTask.dueDate,
+      priority: newTask.priority,
+      status: "todo"
+    });
+    setShowNewTaskForm(false);
+    setNewTask({ title: "", description: "", assignee: "", dueDate: "", priority: "medium" });
+    await fetchTasks();
+    setLoading(false);
+  };
+
+  const handleUpdateTaskStatus = async (taskId: number, status: string) => {
+    setLoading(true);
+    await supabase.from("project_tasks").update({ status }).eq("id", taskId);
+    await fetchTasks();
+    setLoading(false);
   };
 
   const formatDate = (dateString: string) => {
@@ -222,27 +215,27 @@ const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) 
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4" />
-                      <span>{task.assignee}</span>
+                      <span>{task.profiles?.name || "Unassigned"}</span>
                     </div>
                     
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      <span>Due: {formatDate(task.dueDate)}</span>
+                      <span>Due: {formatDate(task.due_date)}</span>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4" />
-                    <span>Created: {formatDate(task.createdAt)}</span>
+                    <span>Created: {formatDate(task.created_at)}</span>
                   </div>
                 </div>
                 
                 {permissions.canAssignTasks && (
                   <div className="flex justify-end gap-2 pt-2 border-t">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => handleUpdateTaskStatus(task.id, "in-progress")}>
                       Edit
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => handleUpdateTaskStatus(task.id, "completed")}>
                       Mark Complete
                     </Button>
                   </div>

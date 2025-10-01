@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,11 +50,17 @@ const ResearcherCard = ({
       <Card className="overflow-hidden hover:shadow-lg transition-shadow">
         <CardContent className="p-0">
           <div className="relative h-48 bg-gradient-to-br from-blue-50 to-indigo-100">
-            <img 
-              src={imageUrl} 
-              alt={name}
-              className="w-20 h-20 rounded-full object-cover absolute bottom-4 left-4 border-4 border-white shadow-lg"
-            />
+            {(imageUrl && imageUrl !== '/default-avatar.png') ? (
+              <img 
+                src={imageUrl} 
+                alt={name}
+                className="w-20 h-20 rounded-full object-cover absolute bottom-4 left-4 border-4 border-white shadow-lg"
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-blue-400 flex items-center justify-center text-white text-3xl font-bold absolute bottom-4 left-4 border-4 border-white shadow-lg">
+                {name?.charAt(0).toUpperCase()}
+              </div>
+            )}
             <div className="absolute top-4 right-4">
               <VerificationBadge 
                 type="overall" 
@@ -95,7 +100,7 @@ const ResearcherCard = ({
                 <span className="text-sm text-gray-500">({reviews} reviews)</span>
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold text-green-600">{hourlyRate.toLocaleString()} XAF/hr</p>
+                {/* <p className="text-lg font-bold text-green-600">{hourlyRate.toLocaleString()} XAF/hr</p> */}
               </div>
             </div>
             

@@ -1,4 +1,3 @@
-
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,47 +9,34 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const SearchBar = () => {
+interface SearchBarProps {
+  onSearch: (query: string) => void;
+}
+
+const SearchBar = ({ onSearch }: SearchBarProps) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const query = (form.elements.namedItem('searchQuery') as HTMLInputElement).value;
+    onSearch(query);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onSearch(e.target.value);
+  };
+
   return (
-    <div className="w-full bg-white rounded-lg shadow-sm border p-4">
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="md:col-span-2">
-          <Input 
-            placeholder="Search by name or keywords" 
-            className="w-full" 
-          />
+    <div className="relative w-full">
+      <div className="relative">
+        <Input 
+          name="searchQuery"
+          placeholder="Search by name, topic, institution, or keywords..." 
+          className="w-full pl-10 py-3 text-base border-2 border-blue-100 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 rounded-xl transition-all duration-200"
+          onChange={handleInputChange}
+        />
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Search className="h-5 w-5 text-blue-500" />
         </div>
-        <div className="md:col-span-1">
-          <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="Field of Study" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="computer-science">Computer Science</SelectItem>
-              <SelectItem value="biology">Biology</SelectItem>
-              <SelectItem value="physics">Physics</SelectItem>
-              <SelectItem value="psychology">Psychology</SelectItem>
-              <SelectItem value="economics">Economics</SelectItem>
-              <SelectItem value="medicine">Medicine</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="md:col-span-1">
-          <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="Price Range" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="0-50">$0 - $50</SelectItem>
-              <SelectItem value="50-100">$50 - $100</SelectItem>
-              <SelectItem value="100-150">$100 - $150</SelectItem>
-              <SelectItem value="150+">$150+</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <Button className="md:col-span-1">
-          <Search size={16} className="mr-2" /> Search
-        </Button>
       </div>
     </div>
   );

@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SearchBar from "@/components/SearchBar";
@@ -12,131 +11,187 @@ import {
   PaginationItem, 
   PaginationLink, 
   PaginationNext, 
-  PaginationPrevious 
+  PaginationPrevious,
+  PaginationEllipsis
 } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Filter, Bell } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
-// Mock data for researchers with verification status
-const researchers = [
-  {
-    id: "1",
-    name: "Dr. Angeline Nkomo",
-    title: "Associate Professor",
-    institution: "University of Yaoundé I",
-    field: "Computer Science",
-    specialties: ["Machine Learning", "AI Ethics", "Data Mining"],
-    hourlyRate: 25000,
-    rating: 4.9,
-    reviews: 24,
-    imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1376&q=80",
-    verifications: {
-      academic: "verified" as const,
-      publication: "verified" as const,
-      institutional: "verified" as const
-    }
-  },
-  {
-    id: "2",
-    name: "Dr. Emmanuel Mbarga",
-    title: "Professor",
-    institution: "University of Douala",
-    field: "Physics",
-    specialties: ["Quantum Computing", "Theoretical Physics", "Astrophysics"],
-    hourlyRate: 30000,
-    rating: 4.8,
-    reviews: 32,
-    imageUrl: "https://images.unsplash.com/photo-1601582589907-f92af5ed9db8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1064&q=80",
-    verifications: {
-      academic: "verified" as const,
-      publication: "pending" as const,
-      institutional: "verified" as const
-    }
-  },
-  {
-    id: "3",
-    name: "Dr. Solange Ebang",
-    title: "Research Scientist",
-    institution: "University of Buea",
-    field: "Biology",
-    specialties: ["Genetics", "Molecular Biology", "Biotechnology"],
-    hourlyRate: 27000,
-    rating: 4.7,
-    reviews: 19,
-    imageUrl: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80",
-    verifications: {
-      academic: "verified" as const,
-      publication: "verified" as const,
-      institutional: "pending" as const
-    }
-  },
-  {
-    id: "4",
-    name: "Dr. Marcel Tchinda",
-    title: "Distinguished Professor",
-    institution: "University of Dschang",
-    field: "Economics",
-    specialties: ["Macroeconomics", "Economic Policy", "International Trade"],
-    hourlyRate: 32000,
-    rating: 4.9,
-    reviews: 28,
-    imageUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80",
-    verifications: {
-      academic: "pending" as const,
-      publication: "verified" as const,
-      institutional: "verified" as const
-    }
-  },
-  {
-    id: "5",
-    name: "Dr. Fadimatou Bello",
-    title: "Associate Professor",
-    institution: "University of Ngaoundéré",
-    field: "Psychology",
-    specialties: ["Cognitive Psychology", "Neuropsychology", "Research Methods"],
-    hourlyRate: 25000,
-    rating: 4.6,
-    reviews: 22,
-    imageUrl: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80",
-    verifications: {
-      academic: "unverified" as const,
-      publication: "pending" as const,
-      institutional: "unverified" as const
-    }
-  },
-  {
-    id: "6",
-    name: "Dr. Paul Messi",
-    title: "Professor",
-    institution: "Catholic University of Central Africa",
-    field: "Medicine",
-    specialties: ["Immunology", "Medical Research", "Clinical Trials"],
-    hourlyRate: 35000,
-    rating: 4.8,
-    reviews: 36,
-    imageUrl: "https://images.unsplash.com/photo-1622902046580-2b47f47f5471?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80",
-    verifications: {
-      academic: "verified" as const,
-      publication: "verified" as const,
-      institutional: "unverified" as const
-    }
-  }
-];
+interface ResearcherFilters {
+  availability?: string[];
+  rating?: number[];
+  expertise?: string;
+  field?: string;
+  specialty?: string[];
+  priceRange?: {
+    min: number;
+    max: number;
+  };
+}
+
+interface Researcher {
+  id: string;
+  name: string;
+  email: string;
+  title: string;
+  institution: string;
+  field: string;
+  department: string;
+  specialties: string[];
+  researchInterests: string[];
+  hourlyRate: number;
+  rating: number;
+  reviews: number;
+  onlineStatus: string;
+  bio: string;
+  imageUrl: string;
+  verifications: {
+    academic: 'verified' | 'pending' | 'unverified';
+    publication: 'verified' | 'pending' | 'unverified';
+    institutional: 'verified' | 'pending' | 'unverified';
+  };
+}
+
+const ITEMS_PER_PAGE = 9; // Show 9 researchers per page for a 3x3 grid
 
 const Researchers = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [researchers, setResearchers] = useState<Researcher[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<ResearcherFilters>({
+    availability: [],
+    rating: [0],
+    expertise: '',
+    specialty: [],
+    priceRange: { min: 0, max: 100000 }
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const handleFiltersChange = (filters: any) => {
-    console.log("Filters changed:", filters);
-    // TODO: Implement filter logic to filter researchers based on the filters
+  const fetchResearchers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch all expert users with profiles
+      const { data: allData, error: fetchError } = await supabase
+        .from('users')
+        .select(`
+          id,
+          name,
+          email,
+          institution,
+          avatar_url,
+          researcher_profiles:researcher_profiles_user_id_fkey(
+            title,
+            department,
+            hourly_rate,
+            rating,
+            total_reviews,
+            online_status,
+            profile_visibility,
+            verifications,
+            specialties,
+            research_interests,
+            bio
+          )
+        `)
+        .eq('role', 'expert');
+
+      if (fetchError) throw fetchError;
+
+      // List all researchers (no profile_visibility filter)
+      setTotalCount((allData || []).length);
+
+      // Map the raw data to our researcher format
+      const mappedData = (allData || []).map((r: any) => {
+        const profile = r.researcher_profiles;
+        
+        // Default values for verification status
+        const defaultVerifications = {
+          academic: 'pending',
+          publication: 'pending',
+          institutional: 'pending'
+        } as const;
+
+        return {
+          id: r.id,
+          name: r.name || '',
+          email: r.email || '',
+          title: profile?.title || (profile?.subtitle ? `${profile.subtitle} ${r.name}` : ''),
+          institution: r.institution || profile?.institution || '',
+          field: profile?.department || '',
+          department: profile?.department || '',
+          specialties: Array.isArray(profile?.specialties) ? profile.specialties : [],
+          researchInterests: Array.isArray(profile?.research_interests) ? profile.research_interests : [],
+          hourlyRate: typeof profile?.hourly_rate === 'number' ? profile.hourly_rate : 0,
+          rating: typeof profile?.rating === 'number' ? profile.rating : 0,
+          reviews: typeof profile?.total_reviews === 'number' ? profile.total_reviews : 0,
+          onlineStatus: profile?.online_status || 'offline',
+          bio: profile?.bio || '',
+          imageUrl: r.avatar_url || '/default-avatar.png',
+          verifications: {
+            ...defaultVerifications,
+            ...(profile?.verification_status || {})
+          }
+        };
+      });
+
+      // Apply search filter
+      let filteredData = mappedData;
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        filteredData = filteredData.filter(r => 
+          r.name.toLowerCase().includes(query) ||
+          r.title.toLowerCase().includes(query) ||
+          r.institution.toLowerCase().includes(query) ||
+          r.department.toLowerCase().includes(query) ||
+          r.specialties.some(s => s.toLowerCase().includes(query)) ||
+          r.researchInterests.some(i => i.toLowerCase().includes(query))
+        );
+      }
+
+      // Paginate in JS
+      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+      const endIndex = startIndex + ITEMS_PER_PAGE;
+      setResearchers(filteredData.slice(startIndex, endIndex));
+      setTotalCount(filteredData.length);
+    } catch (error: any) {
+      console.error('Error fetching researchers:', error);
+      setError(error.message || 'Failed to load researchers');
+      setResearchers([]);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchResearchers();
+  }, [filters, searchQuery, currentPage]);
+
+  const handleFiltersChange = (newFilters: ResearcherFilters) => {
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      ...newFilters
+    }));
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1); // Reset to first page when search changes
+  };
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
       <main className="flex-grow bg-gray-50 py-12">
         <div className="container mx-auto px-4 md:px-6">
           <div className="mb-8">
@@ -146,15 +201,10 @@ const Researchers = () => {
           
           {/* Search Section */}
           <div className="mb-6">
-            <SearchBar />
+            <SearchBar onSearch={handleSearch} />
             <div className="flex justify-between items-center mt-4">
               <Dialog open={showFilters} onOpenChange={setShowFilters}>
-                <DialogTrigger asChild>
-                  <Button variant="outline">
-                    <Filter className="h-4 w-4 mr-2" />
-                    Advanced Filters
-                  </Button>
-                </DialogTrigger>
+            
                 <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                   <AdvancedSearchFilters onFiltersChange={handleFiltersChange} />
                 </DialogContent>
@@ -162,10 +212,7 @@ const Researchers = () => {
               
               <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
                 <DialogTrigger asChild>
-                  <Button variant="outline">
-                    <Bell className="h-4 w-4 mr-2" />
-                    Notifications
-                  </Button>
+                  
                 </DialogTrigger>
                 <DialogContent>
                   <NotificationCenter />
@@ -173,37 +220,110 @@ const Researchers = () => {
               </Dialog>
             </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {researchers.map((researcher) => (
-              <ResearcherCard key={researcher.id} {...researcher} />
-            ))}
-          </div>
-          
-          <div className="mt-12">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious href="#" />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#" isActive>1</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#">2</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#">3</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext href="#" />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
+
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-4 text-gray-500">Loading researchers...</span>
+            </div>
+          ) : error ? (
+            <div className="text-center text-red-500 py-12">{error}</div>
+          ) : (
+            <div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {researchers.length === 0 ? (
+                  <div className="col-span-3 text-center text-gray-500 py-12">
+                    No researchers found matching your criteria.
+                  </div>
+                ) : (
+                  researchers.map((researcher) => (
+                    <ResearcherCard key={researcher.id} {...researcher} />
+                  ))
+                )}
+              </div>
+
+              {/* Pagination UI */}
+              {researchers.length > 0 && (
+                <div className="mt-12">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious 
+                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'} 
+                        />
+                      </PaginationItem>
+
+                      {/* First page */}
+                      <PaginationItem>
+                        <PaginationLink 
+                          onClick={() => setCurrentPage(1)}
+                          isActive={currentPage === 1}
+                          className="cursor-pointer"
+                        >
+                          1
+                        </PaginationLink>
+                      </PaginationItem>
+
+                      {/* Show ellipsis if there are many pages */}
+                      {currentPage > 3 && (
+                        <PaginationItem>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      )}
+
+                      {/* Show current page and surrounding pages */}
+                      {currentPage > 2 && currentPage < totalPages && (
+                        <PaginationItem>
+                          <PaginationLink 
+                            onClick={() => setCurrentPage(currentPage)}
+                            isActive={true}
+                            className="cursor-pointer"
+                          >
+                            {currentPage}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )}
+
+                      {/* Show ellipsis before last page */}
+                      {currentPage < totalPages - 2 && (
+                        <PaginationItem>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      )}
+
+                      {/* Last page */}
+                      {totalPages > 1 && (
+                        <PaginationItem>
+                          <PaginationLink 
+                            onClick={() => setCurrentPage(totalPages)}
+                            isActive={currentPage === totalPages}
+                            className="cursor-pointer"
+                          >
+                            {totalPages}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )}
+
+                      <PaginationItem>
+                        <PaginationNext 
+                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'} 
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+
+                  {/* Show total results */}
+                  <div className="text-center mt-4 text-sm text-gray-600">
+                    Showing {Math.min(ITEMS_PER_PAGE * (currentPage - 1) + 1, totalCount)} to {Math.min(ITEMS_PER_PAGE * currentPage, totalCount)} of {totalCount} researchers
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
-      
       <Footer />
     </div>
   );

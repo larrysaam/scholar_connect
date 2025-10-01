@@ -144,9 +144,9 @@ const FindResearcherTab = () => {
                 </div>
                 
                 {/* Rate */}
-                <div className="text-xs sm:text-sm font-bold text-green-600">
+                {/* <div className="text-xs sm:text-sm font-bold text-green-600">
                   {researcher.hourlyRate.toLocaleString()} XAF/hr
-                </div>
+                </div> */}
               </div>
               
               {/* Action Button */}

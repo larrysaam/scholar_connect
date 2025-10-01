@@ -19,6 +19,7 @@ const ResearchAidsDashboard = lazy(() => import("./pages/ResearchAidsDashboard")
 const ResearcherProfile = lazy(() => import("./pages/ResearcherProfile"));
 const CoAuthorWorkspace = lazy(() => import("./pages/CoAuthorWorkspace"));
 const WorkspaceDetails = lazy(() => import("./pages/WorkspaceDetails"));
+const ProjectWorkspace = lazy(() => import("./pages/ProjectWorkspace"));
 
 // Public pages accessible to unauthenticated users
 const AboutUs = lazy(() => import("./pages/AboutUs"));
@@ -95,10 +96,9 @@ const App = () => (
                   <ProtectedRoute>
                     <ResearchAidProfile />
                   </ProtectedRoute>
-                } />
-                <Route path="/workspace/:projectId" element={
+                } />                <Route path="/workspace/:projectId" element={
                   <ProtectedRoute>
-                    <WorkspaceDetails />
+                    <ProjectWorkspace />
                   </ProtectedRoute>
                 } />
                   {/* Dashboard routes - require authentication and specific roles */}

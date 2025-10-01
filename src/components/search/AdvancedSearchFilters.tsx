@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -8,14 +7,26 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import StatusIndicator from "../researcher/StatusIndicator";
 
+interface Filters {
+  availability: string[];
+  rating: number[];
+  expertise: string;
+  field?: string;
+  specialty?: string[];
+  priceRange?: {
+    min: number;
+    max: number;
+  };
+}
+
 interface AdvancedSearchFiltersProps {
-  onFiltersChange: (filters: any) => void;
+  onFiltersChange: (filters: Filters) => void;
 }
 
 const AdvancedSearchFilters = ({ onFiltersChange }: AdvancedSearchFiltersProps) => {
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<Filters>({
     availability: [],
-    rating: [0, 5],
+    rating: [0],
     expertise: '',
   });
 
@@ -51,9 +62,9 @@ const AdvancedSearchFilters = ({ onFiltersChange }: AdvancedSearchFiltersProps) 
   };
 
   const handleResetFilters = () => {
-    const resetFilters = {
+    const resetFilters: Filters = {
       availability: [],
-      rating: [0, 5],
+      rating: [0],
       expertise: '',
     };
     setFilters(resetFilters);

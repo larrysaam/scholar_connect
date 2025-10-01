@@ -31,7 +31,7 @@ import {
   Briefcase
 } from "lucide-react";
 
-const Navbar = ({setActiveTab, activeTab}) => {
+const Navbar = ({setActiveTab, activeTab}: {setActiveTab?: any; activeTab?: any}) => {
   const { user, profile, signOut } = useAuth();
   const { unreadCount } = useNotifications(); // Use the hook to get unreadCount
   const { t } = useLanguage();

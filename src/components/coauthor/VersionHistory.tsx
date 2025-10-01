@@ -4,18 +4,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { History, RotateCcw, Eye, Download } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { History, RotateCcw, Eye, Download, Plus, GitBranch, Clock, User } from "lucide-react";
+import { useVersionHistory } from "@/hooks/useVersionHistory";
 
 interface VersionHistoryProps {
   projectId: string;
   permissions: {
     canRestore?: boolean;
     canExport?: boolean;
+    canWrite?: boolean;
   };
 }
 
 const VersionHistory = ({ projectId, permissions }: VersionHistoryProps) => {
-  const [versions] = useState([
+  const { versions, loading, createVersion, restoreVersion, compareVersions } = useVersionHistory(projectId);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [newVersionTitle, setNewVersionTitle] = useState("");
+  const [selectedVersions, setSelectedVersions] = useState<string[]>([]);
     {
       id: 1,
       version: "v1.4",
