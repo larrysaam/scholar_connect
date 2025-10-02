@@ -236,47 +236,44 @@ const FindResearcherTab = () => {
               </div>
               
               {/* Filter Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 <Select value={selectedField} onValueChange={setSelectedField}>
-                  <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-blue-300 transition-colors rounded-xl">
-                    <SelectValue placeholder="Research Field" />
+                  <SelectTrigger className="h-9 border border-gray-300 rounded bg-white text-sm">
+                    <SelectValue placeholder="Field" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Fields</SelectItem>
                     {uniqueFields.map((field) => (
-                      <SelectItem key={field} value={field}>
-                        {field}
-                      </SelectItem>
+                      <SelectItem key={field} value={field}>{field}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                
+
                 <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                  <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-blue-300 transition-colors rounded-xl">
+                  <SelectTrigger className="h-9 border border-gray-300 rounded bg-white text-sm">
                     <SelectValue placeholder="Language" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Languages</SelectItem>
                     {uniqueLanguages.map((language) => (
-                      <SelectItem key={language} value={language.toLowerCase()}>
-                        {language}
-                      </SelectItem>
+                      <SelectItem key={language} value={language.toLowerCase()}>{language}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                
-                {/* price filter */}
-                {/* <Select value={priceRange} onValueChange={setPriceRange}>
-                  <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-blue-300 transition-colors rounded-xl">
-                    <SelectValue placeholder="Price Range" />
+
+                <Select value={priceRange} onValueChange={setPriceRange}>
+                  <SelectTrigger className="h-9 border border-gray-300 rounded bg-white text-sm">
+                    <SelectValue placeholder="Price" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Any Price</SelectItem>
-                    <SelectItem value="0-10000">0 - 10,000 XAF</SelectItem>
-                    <SelectItem value="10000-15000">10,000 - 15,000 XAF</SelectItem>
-                    <SelectItem value="15000+">15,000+ XAF</SelectItem>
+                    <SelectItem value="0-5000">Under 5,000 XAF/hr</SelectItem>
+                    <SelectItem value="5000-10000">5,000 - 10,000 XAF/hr</SelectItem>
+                    <SelectItem value="10000-15000">10,000 - 15,000 XAF/hr</SelectItem>
+                    <SelectItem value="15000-20000">15,000 - 20,000 XAF/hr</SelectItem>
+                    <SelectItem value="20000+">Above 20,000 XAF/hr</SelectItem>
                   </SelectContent>
-                </Select> */}
+                </Select>
               </div>
             </div>
           </div>

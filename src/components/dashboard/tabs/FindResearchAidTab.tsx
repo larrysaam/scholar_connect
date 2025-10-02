@@ -191,7 +191,7 @@ const FindResearchAidTab = () => {
           <div>
             <h1 className="text-2xl font-bold mb-2">Find Research Aids</h1>
             <p className="text-gray-600">
-              Connect with qualified research aids and book consultations
+              Connect with skilled research aids to help with specific tasks and projects
             </p>
           </div>
           <div className="mt-4 sm:mt-0 text-center sm:text-right">

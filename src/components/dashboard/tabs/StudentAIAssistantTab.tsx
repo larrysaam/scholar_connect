@@ -1,12 +1,91 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AIResearcherMatcher from "@/components/ai/AIResearcherMatcher";
 import AISchedulingAssistant from "@/components/ai/AISchedulingAssistant";
 import AITopicRecommender from "@/components/ai/AITopicRecommender";
 import { Brain, Users, Calendar, Lightbulb } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/components/ui/use-toast";
+
+interface ThesisInformation {
+  id: string;
+  user_id: string;
+  title?: string;
+  problem_statement?: string;
+  research_questions?: string[];
+  research_objectives?: string[];
+  research_hypothesis?: string;
+  expected_outcomes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface StudentData {
+  id: string;
+  name: string;
+  research_areas?: string[];
+  topic_title?: string;
+  research_stage?: string;
+  languages?: string[];
+  thesis_info?: ThesisInformation;
+}
 
 const StudentAIAssistantTab = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [studentData, setStudentData] = useState<StudentData | null>(null);
+  const [loading, setLoading] = useState(true);
+  // Fetch student profile data
+  useEffect(() => {
+    const fetchStudentData = async () => {
+      if (!user?.id) return;
+      
+      try {
+        setLoading(true);
+        
+        // Fetch student data including research info
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('id, name, research_areas, topic_title, research_stage, languages')
+          .eq('id', user.id)
+          .single();
+          
+        if (userError) throw userError;
+        
+        // Also fetch thesis information if available
+        const { data: thesisData, error: thesisError } = await supabase
+          .from('thesis_information')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (thesisError && thesisError.code !== 'PGRST116') { // Ignore "no rows returned" error
+          console.warn('Error fetching thesis data:', thesisError);
+        }
+        
+        const combinedData: StudentData = {
+          ...userData,
+          thesis_info: thesisData || undefined
+        };
+        
+        console.log('Combined student data:', combinedData);
+        setStudentData(combinedData);
+      } catch (error) {
+        console.error('Error fetching student data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load your research data. Some AI features may be limited.",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchStudentData();
+  }, [user?.id, toast]);
+
   return (
     <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
       <div className="space-y-2">
@@ -36,7 +115,7 @@ const StudentAIAssistantTab = () => {
         </TabsList>
         
         <TabsContent value="matcher" className="mt-4 sm:mt-6">
-          <AIResearcherMatcher />
+          <AIResearcherMatcher studentData={studentData} isLoading={loading} />
         </TabsContent>
         
         <TabsContent value="scheduling" className="mt-4 sm:mt-6">

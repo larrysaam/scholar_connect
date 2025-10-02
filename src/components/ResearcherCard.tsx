@@ -18,6 +18,7 @@ interface ResearcherCardProps {
   rating: number;
   reviews: number;
   imageUrl: string;
+  studentsSupervised?: number;
   verifications: {
     academic: "verified" | "pending" | "unverified";
     publication: "verified" | "pending" | "unverified";
@@ -36,6 +37,7 @@ const ResearcherCard = ({
   rating,
   reviews,
   imageUrl,
+  studentsSupervised,
   verifications
 }: ResearcherCardProps) => {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -72,9 +74,12 @@ const ResearcherCard = ({
           
           <div className="p-6">
             <div className="mb-4">
-              <h3 className="text-xl font-semibold text-gray-900 mb-1">{name}</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-1">{title ? `${title} ` : ""}{name}</h3>
               <p className="text-sm text-gray-600 mb-1">{title}</p>
               <p className="text-sm text-gray-500">{institution}</p>
+              {typeof studentsSupervised === 'number' && (
+                <p className="text-sm text-blue-700 mt-1">{studentsSupervised} students supervised</p>
+              )}
             </div>
             
             <div className="mb-4">
@@ -114,14 +119,7 @@ const ResearcherCard = ({
                 <Eye className="h-4 w-4 mr-1" />
                 View Profile
               </Button>
-              <Button 
-                size="sm" 
-                className="flex-1"
-                onClick={() => setIsBookingModalOpen(true)}
-              >
-                <Calendar className="h-4 w-4 mr-1" />
-                Book Now
-              </Button>
+              
             </div>
           </div>
         </CardContent>

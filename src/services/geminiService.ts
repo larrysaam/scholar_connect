@@ -10,21 +10,53 @@ if (!GEMINI_API_KEY) {
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 export async function getAIRecommendations(
-  studentInfo: { researchInterests: string[]; challenges: string[] },
+  studentInfo: { 
+    researchInterests: string[]; 
+    challenges: string[]; 
+    topicTitle?: string;
+    researchStage?: string;
+    languages?: string[];
+    problemStatement?: string;
+    researchQuestions?: string[];
+    researchObjectives?: string[];
+    researchHypothesis?: string;
+    expectedOutcomes?: string;
+  },
   researchers: any[]
 ) {
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-  console.log(studentInfo, researchers);
+  console.log("Student Info for AI:", studentInfo);
+  console.log("Available researchers for matching:", researchers.length);
 
   const prompt = `
     You are an expert academic advisor. Your task is to match a student with the most suitable researchers based on their profile and needs.
 
     Student Information:
-    - Research Interests: ${studentInfo.researchInterests.join(", ")}
+    - Research Interests: ${studentInfo.researchInterests.join(", ") || "Not specified"}
+    - Research Topic: ${studentInfo.topicTitle || "Not specified"}
+    - Research Stage: ${studentInfo.researchStage || "Not specified"}
+    - Languages: ${studentInfo.languages?.join(", ") || "Not specified"}
     - Challenges: ${studentInfo.challenges.join(", ")}
+    ${studentInfo.problemStatement ? `- Problem Statement: ${studentInfo.problemStatement}` : ''}
+    ${studentInfo.researchQuestions && studentInfo.researchQuestions.length > 0 ? `- Research Questions: ${studentInfo.researchQuestions.join("; ")}` : ''}
+    ${studentInfo.researchObjectives && studentInfo.researchObjectives.length > 0 ? `- Research Objectives: ${studentInfo.researchObjectives.join("; ")}` : ''}
+    ${studentInfo.researchHypothesis ? `- Research Hypothesis: ${studentInfo.researchHypothesis}` : ''}
+    ${studentInfo.expectedOutcomes ? `- Expected Outcomes: ${studentInfo.expectedOutcomes}` : ''}
 
     Available Researchers:
-    ${researchers.map(r => `-${r.id}, name:${r.name}: ${r.title} at ${r.institution}, specializing in ${r.specialties.join(", ")}`).join("\n")}
+    ${researchers.map(r => `-${r.id}, name:${r.name}: ${r.title} at ${r.institution}, specializing in ${r.specialties.join(", ")}${r.languages ? `, languages: ${r.languages.join(", ")}` : ""}`).join("\n")}
+    
+    Match Criteria:
+    1. Research alignment: Match researchers with expertise in the student's research areas and topic
+    2. Thesis relevance: Researchers whose expertise aligns with the student's thesis problem statement, research questions, and objectives
+    3. Stage relevance: Researchers who have experience with the student's current research stage
+    4. Language compatibility: Researchers who speak the same languages as the student
+    5. Challenge assistance: Researchers who can help address the student's specific challenges
+    
+    For each match, provide:
+    - researcher: The researcher's name
+    - matchScore: A number between 1-100 representing match quality
+    - explanation: Why this researcher is a good match, specifically mentioning shared interests and capabilities
 
     Please return a ranked list of the top 3 researchers who would be the best match for this student. For each recommended researcher, provide a "matchScore" (out of 100) and a brief explanation for why they are a good fit.
 

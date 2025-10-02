@@ -44,6 +44,7 @@ interface Researcher {
   hourlyRate: number;
   rating: number;
   reviews: number;
+  studentsSupervised: number;
   onlineStatus: string;
   bio: string;
   imageUrl: string;
@@ -72,7 +73,6 @@ const Researchers = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-
   const fetchResearchers = async () => {
     try {
       setLoading(true);
@@ -106,25 +106,55 @@ const Researchers = () => {
       if (fetchError) throw fetchError;
 
       // List all researchers (no profile_visibility filter)
-      setTotalCount((allData || []).length);
+      setTotalCount((allData || []).length);      // Fetch consultation counts for all researchers      const researcherIds = (allData || []).map(r => r.id);
+      console.log('Total researchers found:', researcherIds.length);
+        const { data: consultationCounts, error: consultationError } = await supabase
+        .from('service_bookings')
+        .select('provider_id, client_id')
+        .in('provider_id', researcherIds)        .in('status', ['confirmed', 'completed']);
+
+      if (consultationError) {
+        console.error('Error fetching consultation counts:', consultationError);
+      }
+
+      console.log('Total consultation records:', consultationCounts?.length || 0);
+
+      // Calculate unique students supervised per researcher
+      const studentsSupervisionMap = new Map<string, Set<string>>();
+      (consultationCounts || []).forEach(booking => {
+        if (!studentsSupervisionMap.has(booking.provider_id)) {
+          studentsSupervisionMap.set(booking.provider_id, new Set());
+        }
+        studentsSupervisionMap.get(booking.provider_id)?.add(booking.client_id);
+      });      // Debug: Log supervision counts
+      console.log('--- Supervision Summary ---');
+      studentsSupervisionMap.forEach((students, providerId) => {
+        const researcher = (allData || []).find(r => r.id === providerId);
+        const researcherName = researcher?.name || 'Unknown';
+        console.log(`${researcherName} (${providerId}): ${students.size} unique students`);
+      });
+
+      const totalUniqueStudents = new Set<string>();
+      studentsSupervisionMap.forEach((students) => {
+        students.forEach(studentId => totalUniqueStudents.add(studentId));
+      });
+      console.log(`Total unique students across platform: ${totalUniqueStudents.size}`);
 
       // Map the raw data to our researcher format
       const mappedData = (allData || []).map((r: any) => {
         const profile = r.researcher_profiles;
-        
-        // Default values for verification status
         const defaultVerifications = {
           academic: 'pending',
           publication: 'pending',
           institutional: 'pending'
-        } as const;
-
+        } as const;        const studentsSupervised = studentsSupervisionMap.get(r.id)?.size || 0;
+        
         return {
           id: r.id,
           name: r.name || '',
           email: r.email || '',
-          title: profile?.title || (profile?.subtitle ? `${profile.subtitle} ${r.name}` : ''),
-          institution: r.institution || profile?.institution || '',
+          title: profile?.title || '',
+          institution: r.institution || '',
           field: profile?.department || '',
           department: profile?.department || '',
           specialties: Array.isArray(profile?.specialties) ? profile.specialties : [],
@@ -132,6 +162,7 @@ const Researchers = () => {
           hourlyRate: typeof profile?.hourly_rate === 'number' ? profile.hourly_rate : 0,
           rating: typeof profile?.rating === 'number' ? profile.rating : 0,
           reviews: typeof profile?.total_reviews === 'number' ? profile.total_reviews : 0,
+          studentsSupervised,
           onlineStatus: profile?.online_status || 'offline',
           bio: profile?.bio || '',
           imageUrl: r.avatar_url || '/default-avatar.png',
@@ -154,12 +185,18 @@ const Researchers = () => {
           r.specialties.some(s => s.toLowerCase().includes(query)) ||
           r.researchInterests.some(i => i.toLowerCase().includes(query))
         );
-      }
-
-      // Paginate in JS
+      }      // Paginate in JS
       const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
       const endIndex = startIndex + ITEMS_PER_PAGE;
-      setResearchers(filteredData.slice(startIndex, endIndex));
+      const paginatedResearchers = filteredData.slice(startIndex, endIndex);
+      
+      // Debug: Show what's being passed to UI
+      console.log('--- Researchers Being Displayed on Current Page ---');
+      paginatedResearchers.forEach(researcher => {
+        console.log(`UI Display: ${researcher.name} - ${researcher.studentsSupervised} students supervised`);
+      });
+      
+      setResearchers(paginatedResearchers);
       setTotalCount(filteredData.length);
     } catch (error: any) {
       console.error('Error fetching researchers:', error);
