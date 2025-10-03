@@ -32,7 +32,8 @@ const BasicInfoSection = ({
     "Translation Services",
     "Literature Review",
     "Data Collection",
-    "Report Writing"
+    "Report Writing",
+    "Others"
   ];
 
   return (
