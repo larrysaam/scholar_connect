@@ -7,10 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MessageSquare, ThumbsUp, Reply, Plus, Heart, Trash2, Send, Search, X } from "lucide-react";
+import { MessageSquare, ThumbsUp, Reply, Heart, Trash2, Send, Search, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useDiscussions } from "@/hooks/useDiscussions";
+import { NewDiscussionModal } from "../discussion/NewDiscussionModal";
 
 const DiscussionTab = () => {
   const { toast } = useToast();
@@ -25,11 +26,7 @@ const DiscussionTab = () => {
     deletePost, 
     deleteReply 
   } = useDiscussions();
-
   // Form states
-  const [newPostTitle, setNewPostTitle] = useState("");
-  const [newPostContent, setNewPostContent] = useState("");
-  const [newPostCategory, setNewPostCategory] = useState<string>("");
   const [replyText, setReplyText] = useState("");
   const [activeReply, setActiveReply] = useState<string | null>(null);
   const [replies, setReplies] = useState<Record<string, any[]>>({});
@@ -63,33 +60,9 @@ const DiscussionTab = () => {
     setSearchCategory("all");
     setSearchQuery("");
   };
-
   // Handle new post creation
-  const handleNewPost = async () => {
-    if (!newPostTitle.trim() || !newPostContent.trim() || !newPostCategory) {
-      toast({
-        title: "Incomplete Form",
-        description: "Please fill in title, content, and select a category",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to create a post",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    await createPost(newPostTitle, newPostContent, newPostCategory);
-    
-    // Clear form
-    setNewPostTitle("");
-    setNewPostContent("");
-    setNewPostCategory("");
+  const handleNewPost = async (title: string, content: string, category: string) => {
+    await createPost(title, content, category);
   };
 
   // Handle like toggle
@@ -282,60 +255,10 @@ const DiscussionTab = () => {
             </p>
           </div>
         </div>
-      </div>
-
-      {/* Create New Post */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Plus className="h-5 w-5 mr-2" />
-            Start New Discussion
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="post-title">Title</Label>
-            <Input
-              id="post-title"
-              value={newPostTitle}
-              onChange={(e) => setNewPostTitle(e.target.value)}
-              placeholder="What would you like to discuss?"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="post-category">Category</Label>
-            <Select value={newPostCategory} onValueChange={setNewPostCategory}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="post-content">Content</Label>
-            <Textarea
-              id="post-content"
-              value={newPostContent}
-              onChange={(e) => setNewPostContent(e.target.value)}
-              placeholder="Share your thoughts, questions, or research insights..."
-              rows={4}
-            />
-          </div>
-
-          <Button onClick={handleNewPost} className="w-full">
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Post Discussion
-          </Button>
-        </CardContent>
-      </Card>      {/* No Posts Message */}
+      </div>      {/* New Discussion Button */}
+      <div className="flex justify-end">
+        <NewDiscussionModal onCreatePost={handleNewPost} categories={categories} />
+      </div>{/* No Posts Message */}
       {filteredPosts.length === 0 && posts.length > 0 && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
