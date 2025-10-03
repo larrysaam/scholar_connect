@@ -127,15 +127,16 @@ export const useProjectFiles = (projectId: string) => {
           is_public: false,
           download_count: 0,
         })
-        .select(`
-          *,
-          uploader:uploaded_by(name, email)
-        `)
-        .single();
+        .select(`*, uploader:uploaded_by(name, email)`).single();
 
       if (dbError) {
         // If database insert fails, clean up the uploaded file
         await supabase.storage.from('lovable-uploads').remove([filePath]);
+        toast({
+          title: 'Upload Failed',
+          description: dbError.message,
+          variant: 'destructive',
+        });
         throw dbError;
       }
 

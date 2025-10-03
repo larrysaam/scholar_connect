@@ -5,10 +5,25 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CheckSquare, Plus, Calendar, User, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  assignee: string;
+  status: 'todo' | 'in-progress' | 'completed' | 'overdue';
+  priority: 'low' | 'medium' | 'high';
+  due_date: string;
+  created_at: string;
+  project_id: string;
+  created_by: string;
+  profiles?: {
+    name: string;
+  };
+}
 
 interface TaskTrackerProps {
   projectId: string;
@@ -23,12 +38,20 @@ interface TaskTrackerProps {
   }>;
 }
 
+interface NewTask {
+  title: string;
+  description: string;
+  assignee: string;
+  dueDate: string;
+  priority: 'low' | 'medium' | 'high';
+}
+
 const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) => {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
   const { toast } = useToast();
-  const [newTask, setNewTask] = useState({
+  const [newTask, setNewTask] = useState<NewTask>({
     title: "",
     description: "",
     assignee: "",
@@ -39,52 +62,97 @@ const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) 
   useEffect(() => {
     fetchTasks();
   }, [projectId]);
+
   const fetchTasks = async () => {
     setLoading(true);
     try {
-      // First check if project_tasks table exists, if not use mock data
       const { data, error } = await supabase
         .from("project_tasks")
-        .select("*, assignee:assignee(name)")
+        .select("*, profiles:assignee(name)")
         .eq("project_id", projectId)
         .order("created_at", { ascending: true });
         
-      if (error && error.code === '42P01') {
-        // Table doesn't exist, use mock data
-        setTasks([
-          {
-            id: 1,
-            title: "Review methodology section",
-            description: "Review and provide feedback on the methodology section",
-            assignee: teamMembers[0]?.id || "",
-            profiles: { name: teamMembers[0]?.name || "Unassigned" },
-            status: "todo",
-            priority: "high",
-            due_date: "2024-01-20",
-            created_at: "2024-01-15T10:00:00Z"
-          },
-          {
-            id: 2,
-            title: "Update literature review",
-            description: "Add recent papers and citations",
-            assignee: teamMembers[1]?.id || "",
-            profiles: { name: teamMembers[1]?.name || "Unassigned" },
-            status: "in-progress",
-            priority: "medium",
-            due_date: "2024-01-25",
-            created_at: "2024-01-15T11:00:00Z"
-          }
-        ]);
-      } else if (!error && data) {
-        setTasks(data);
-      }
+      if (error) throw error;
+      setTasks(data || []);
     } catch (error) {
       console.error('Error fetching tasks:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load tasks. Please try again.",
+        variant: "destructive"
+      });
     }
     setLoading(false);
   };
 
-  const getStatusColor = (status: string) => {
+  const handleCreateTask = async () => {
+    if (!newTask.title.trim()) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.from("project_tasks").insert({
+        project_id: projectId,
+        title: newTask.title,
+        description: newTask.description,
+        assignee: newTask.assignee,
+        due_date: newTask.dueDate,
+        priority: newTask.priority,
+        status: "todo",
+        created_by: (await supabase.auth.getUser()).data.user?.id
+      });
+
+      if (error) throw error;
+
+      setShowNewTaskForm(false);
+      setNewTask({
+        title: "",
+        description: "",
+        assignee: "",
+        dueDate: "",
+        priority: "medium"
+      });
+      await fetchTasks();
+      toast({
+        title: "Success",
+        description: "Task created successfully",
+      });
+    } catch (error) {
+      console.error('Error creating task:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create task. Please try again.",
+        variant: "destructive"
+      });
+    }
+    setLoading(false);
+  };
+
+  const handleUpdateTaskStatus = async (taskId: string, status: Task['status']) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("project_tasks")
+        .update({ status })
+        .eq("id", taskId);
+
+      if (error) throw error;
+      await fetchTasks();
+      toast({
+        title: "Success",
+        description: "Task status updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating task:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update task status. Please try again.",
+        variant: "destructive"
+      });
+    }
+    setLoading(false);
+  };
+
+  const getStatusColor = (status: Task['status']) => {
     switch (status) {
       case "completed": return "bg-green-100 text-green-800";
       case "in-progress": return "bg-blue-100 text-blue-800";
@@ -94,7 +162,7 @@ const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) 
     }
   };
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityColor = (priority: Task['priority']) => {
     switch (priority) {
       case "high": return "bg-red-100 text-red-800";
       case "medium": return "bg-yellow-100 text-yellow-800";
@@ -103,34 +171,9 @@ const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) 
     }
   };
 
-  const handleCreateTask = async () => {
-    if (!newTask.title.trim()) return;
-    setLoading(true);
-    const { error } = await supabase.from("project_tasks").insert({
-      project_id: projectId,
-      title: newTask.title,
-      description: newTask.description,
-      assignee: newTask.assignee,
-      due_date: newTask.dueDate,
-      priority: newTask.priority,
-      status: "todo"
-    });
-    setShowNewTaskForm(false);
-    setNewTask({ title: "", description: "", assignee: "", dueDate: "", priority: "medium" });
-    await fetchTasks();
-    setLoading(false);
-  };
-
-  const handleUpdateTaskStatus = async (taskId: number, status: string) => {
-    setLoading(true);
-    await supabase.from("project_tasks").update({ status }).eq("id", taskId);
-    await fetchTasks();
-    setLoading(false);
-  };
-
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
+    if (!dateString) return "No date set";
+    return new Date(dateString).toLocaleDateString();
   };
 
   return (
@@ -153,7 +196,6 @@ const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) 
         </CardHeader>
         
         <CardContent className="space-y-6">
-          {/* New Task Form */}
           {showNewTaskForm && permissions.canAssignTasks && (
             <div className="border rounded-lg p-4 space-y-4 bg-gray-50">
               <h4 className="font-medium">Create New Task</h4>
@@ -200,7 +242,7 @@ const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) 
                 </div>
                 
                 <div>
-                  <Select value={newTask.priority} onValueChange={(value) => setNewTask({...newTask, priority: value})}>
+                  <Select value={newTask.priority} onValueChange={(value) => setNewTask({...newTask, priority: value as Task['priority']})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Priority" />
                     </SelectTrigger>
@@ -224,7 +266,6 @@ const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) 
             </div>
           )}
 
-          {/* Tasks List */}
           <div className="space-y-4">
             {tasks.map((task) => (
               <div key={task.id} className="border rounded-lg p-4 space-y-3">
@@ -265,12 +306,16 @@ const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) 
                 
                 {permissions.canAssignTasks && (
                   <div className="flex justify-end gap-2 pt-2 border-t">
-                    <Button variant="outline" size="sm" onClick={() => handleUpdateTaskStatus(task.id, "in-progress")}>
-                      Edit
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleUpdateTaskStatus(task.id, "completed")}>
-                      Mark Complete
-                    </Button>
+                    {task.status === "todo" && (
+                      <Button variant="outline" size="sm" onClick={() => handleUpdateTaskStatus(task.id, "in-progress")}>
+                        Start Task
+                      </Button>
+                    )}
+                    {task.status === "in-progress" && (
+                      <Button variant="outline" size="sm" onClick={() => handleUpdateTaskStatus(task.id, "completed")}>
+                        Complete Task
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>
