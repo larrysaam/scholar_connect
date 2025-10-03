@@ -4,12 +4,13 @@ import QuickStatsCards from "../overview/QuickStatsCards";
 import NextSessionCard from "../overview/NextSessionCard";
 import RecentSummariesCard from "../overview/RecentSummariesCard";
 import QuickActionsCard from "../overview/QuickActionsCard";
+import ResearcherAidStats from "../overview/ResearcherAidStats";
 import { useStudentWelcomeOverview } from "@/hooks/useStudentWelcomeOverview";
 import { Loader2 } from "lucide-react";
 
 const StudentWelcomeOverviewTab = () => {
   const navigate = useNavigate();
-  const { loading, stats, nextSession, recentSummaries } = useStudentWelcomeOverview();
+  const { loading: overviewLoading, stats, nextSession, recentSummaries } = useStudentWelcomeOverview();
 
   const handleFindResearcher = () => {
     navigate("/researchers");
@@ -31,7 +32,7 @@ const StudentWelcomeOverviewTab = () => {
     window.open('https://meet.google.com/new', '_blank');
   };
 
-  if (loading) {
+  if (overviewLoading) {
     return (
       <div className="flex justify-center items-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
@@ -44,6 +45,7 @@ const StudentWelcomeOverviewTab = () => {
     <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
       <div className="grid grid-cols-1 gap-4 sm:gap-6">
         <QuickStatsCards stats={stats} />
+       
         
         {nextSession && (
           <NextSessionCard 
@@ -64,7 +66,9 @@ const StudentWelcomeOverviewTab = () => {
             onCheckMessages={handleCheckMessages}
             onMyProgress={handleMyProgress}
           />
+          
         </div>
+        <ResearcherAidStats />
       </div>
     </div>
   );

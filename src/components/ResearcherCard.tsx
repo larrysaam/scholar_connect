@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,6 @@ interface ResearcherCardProps {
   rating: number;
   reviews: number;
   imageUrl: string;
-  studentsSupervised?: number;
   verifications: {
     academic: "verified" | "pending" | "unverified";
     publication: "verified" | "pending" | "unverified";
@@ -37,7 +37,6 @@ const ResearcherCard = ({
   rating,
   reviews,
   imageUrl,
-  studentsSupervised,
   verifications
 }: ResearcherCardProps) => {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -52,17 +51,11 @@ const ResearcherCard = ({
       <Card className="overflow-hidden hover:shadow-lg transition-shadow">
         <CardContent className="p-0">
           <div className="relative h-48 bg-gradient-to-br from-blue-50 to-indigo-100">
-            {(imageUrl && imageUrl !== '/default-avatar.png') ? (
-              <img 
-                src={imageUrl} 
-                alt={name}
-                className="w-20 h-20 rounded-full object-cover absolute bottom-4 left-4 border-4 border-white shadow-lg"
-              />
-            ) : (
-              <div className="w-20 h-20 rounded-full bg-blue-400 flex items-center justify-center text-white text-3xl font-bold absolute bottom-4 left-4 border-4 border-white shadow-lg">
-                {name?.charAt(0).toUpperCase()}
-              </div>
-            )}
+            <img 
+              src={imageUrl} 
+              alt={name}
+              className="w-20 h-20 rounded-full object-cover absolute bottom-4 left-4 border-4 border-white shadow-lg"
+            />
             <div className="absolute top-4 right-4">
               <VerificationBadge 
                 type="overall" 
@@ -74,12 +67,9 @@ const ResearcherCard = ({
           
           <div className="p-6">
             <div className="mb-4">
-              <h3 className="text-xl font-semibold text-gray-900 mb-1">{title ? `${title} ` : ""}{name}</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-1">{name}</h3>
               <p className="text-sm text-gray-600 mb-1">{title}</p>
               <p className="text-sm text-gray-500">{institution}</p>
-              {typeof studentsSupervised === 'number' && (
-                <p className="text-sm text-blue-700 mt-1">{studentsSupervised} students supervised</p>
-              )}
             </div>
             
             <div className="mb-4">
@@ -119,7 +109,14 @@ const ResearcherCard = ({
                 <Eye className="h-4 w-4 mr-1" />
                 View Profile
               </Button>
-              
+              <Button 
+                size="sm" 
+                className="flex-1"
+                onClick={() => setIsBookingModalOpen(true)}
+              >
+                <Calendar className="h-4 w-4 mr-1" />
+                Book Now
+              </Button>
             </div>
           </div>
         </CardContent>

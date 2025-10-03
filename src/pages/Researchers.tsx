@@ -101,17 +101,21 @@ const Researchers = () => {
             bio
           )
         `)
-        .eq('role', 'expert');
-
-      if (fetchError) throw fetchError;
+        .eq('role', 'expert');      if (fetchError) throw fetchError;
 
       // List all researchers (no profile_visibility filter)
-      setTotalCount((allData || []).length);      // Fetch consultation counts for all researchers      const researcherIds = (allData || []).map(r => r.id);
+      setTotalCount((allData || []).length);
+      
+      // Get researcher IDs for consultation counts
+      const researcherIds = (allData || []).map(r => r.id);
       console.log('Total researchers found:', researcherIds.length);
-        const { data: consultationCounts, error: consultationError } = await supabase
+      
+      // Fetch consultation counts for all researchers
+      const { data: consultationCounts, error: consultationError } = await supabase
         .from('service_bookings')
         .select('provider_id, client_id')
-        .in('provider_id', researcherIds)        .in('status', ['confirmed', 'completed']);
+        .in('provider_id', researcherIds)
+        .in('status', ['confirmed', 'completed']);
 
       if (consultationError) {
         console.error('Error fetching consultation counts:', consultationError);
