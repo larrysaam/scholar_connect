@@ -36,6 +36,7 @@ interface Researcher {
   name: string;
   email: string;
   title: string;
+  subtitle?: string;
   institution: string;
   field: string;
   department: string;
@@ -86,9 +87,9 @@ const Researchers = () => {
           name,
           email,
           institution,
-          avatar_url,
-          researcher_profiles:researcher_profiles_user_id_fkey(
+          avatar_url,          researcher_profiles:researcher_profiles_user_id_fkey(
             title,
+            subtitle,
             department,
             hourly_rate,
             rating,
@@ -101,7 +102,11 @@ const Researchers = () => {
             bio
           )
         `)
-        .eq('role', 'expert');      if (fetchError) throw fetchError;
+        .eq('role', 'expert');      
+
+        console.log('Fetched researchers data:', allData);
+        
+        if (fetchError) throw fetchError;
 
       // List all researchers (no profile_visibility filter)
       setTotalCount((allData || []).length);
@@ -147,25 +152,29 @@ const Researchers = () => {
       // Map the raw data to our researcher format
       const mappedData = (allData || []).map((r: any) => {
         const profile = r.researcher_profiles;
+        console.log("Profile data for researcher:", r.name, profile);
         const defaultVerifications = {
           academic: 'pending',
           publication: 'pending',
           institutional: 'pending'
-        } as const;        const studentsSupervised = studentsSupervisionMap.get(r.id)?.size || 0;
+        } as const;        
         
-        return {
+        const studentsSupervised = studentsSupervisionMap.get(r.id)?.size || 0;
+        console.log("subtitle : ", profile[0]?.subtitle);
+          return {
           id: r.id,
           name: r.name || '',
           email: r.email || '',
-          title: profile?.title || '',
+          title: profile[0]?.title || '',
+          subtitle: profile[0]?.subtitle || '',
           institution: r.institution || '',
           field: profile?.department || '',
           department: profile?.department || '',
-          specialties: Array.isArray(profile?.specialties) ? profile.specialties : [],
-          researchInterests: Array.isArray(profile?.research_interests) ? profile.research_interests : [],
-          hourlyRate: typeof profile?.hourly_rate === 'number' ? profile.hourly_rate : 0,
-          rating: typeof profile?.rating === 'number' ? profile.rating : 0,
-          reviews: typeof profile?.total_reviews === 'number' ? profile.total_reviews : 0,
+          specialties: Array.isArray(profile[0]?.specialties) ? profile[0]?.specialties : [],
+          researchInterests: Array.isArray(profile[0]?.research_interests) ? profile[0]?.research_interests : [],
+          hourlyRate: typeof profile[0]?.hourly_rate === 'number' ? profile[0]?.hourly_rate : 0,
+          rating: typeof profile[0]?.rating === 'number' ? profile[0]?.rating : 0,
+          reviews: typeof profile[0]?.total_reviews === 'number' ? profile[0]?.total_reviews : 0,
           studentsSupervised,
           onlineStatus: profile?.online_status || 'offline',
           bio: profile?.bio || '',

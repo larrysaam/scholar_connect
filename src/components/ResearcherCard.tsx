@@ -12,6 +12,7 @@ interface ResearcherCardProps {
   id: string;
   name: string;
   title: string;
+  subtitle?: string;
   institution: string;
   field: string;
   specialties: string[];
@@ -31,6 +32,7 @@ const ResearcherCard = ({
   id,
   name,
   title,
+  subtitle,
   institution,
   field,
   specialties,
@@ -84,28 +86,40 @@ const ResearcherCard = ({
               />
             </div>
           </div>
-          
-          <div className="p-6">
+            <div className="p-6">
             <div className="mb-4">
-              <h3 className="text-xl font-semibold text-gray-900 mb-1">{name}</h3>
-              <p className="text-sm text-gray-600 mb-1">{title}</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                {subtitle && <span className="">{subtitle} </span>}
+                {name}
+              </h3>
+              {title && (
+                <p className="text-sm font-medium text-blue-600 mb-1">{title}</p>
+              )}
               <p className="text-sm text-gray-500">{institution}</p>
             </div>
             
             <div className="mb-4">
-              <Badge variant="secondary" className="mb-2">{field}</Badge>
-              <div className="flex flex-wrap gap-1">
-                {specialties.slice(0, 2).map((specialty, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {specialty}
-                  </Badge>
-                ))}
-                {specialties.length > 2 && (
-                  <Badge variant="outline" className="text-xs">
-                    +{specialties.length - 2} more
-                  </Badge>
-                )}
+              <div className="mb-3">
+                <p className="text-xs font-medium text-gray-700 mb-2">SPECIALIZATIONS</p>
+                <div className="flex flex-wrap gap-1">
+                  {specialties.slice(0, 3).map((specialty, index) => (
+                    <Badge key={index} variant="default" className="text-xs bg-blue-100 text-blue-800 hover:bg-blue-200">
+                      {specialty}
+                    </Badge>
+                  ))}
+                  {specialties.length > 3 && (
+                    <Badge variant="outline" className="text-xs text-gray-600">
+                      +{specialties.length - 3} more
+                    </Badge>
+                  )}
+                </div>
               </div>
+              
+              {field && (
+                <div className="mb-2">
+                  <Badge variant="secondary" className="bg-gray-100 text-gray-700">{field}</Badge>
+                </div>
+              )}
             </div>
               <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-1">
@@ -130,14 +144,7 @@ const ResearcherCard = ({
                 <Eye className="h-4 w-4 mr-1" />
                 View Profile
               </Button>
-              <Button 
-                size="sm" 
-                className="flex-1"
-                onClick={() => setIsBookingModalOpen(true)}
-              >
-                <Calendar className="h-4 w-4 mr-1" />
-                Book Now
-              </Button>
+              
             </div>
           </div>
         </CardContent>
