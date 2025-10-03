@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input"; // Added Input
-import { Label } from "@/components/ui/label"; // Added Label
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useJobManagement, Job, JobApplication } from "@/hooks/useJobManagement";
 import { useAuth } from "@/hooks/useAuth";
-import { CheckCircle, XCircle, Info, FileText, Upload } from "lucide-react"; // Added FileText, Upload
+import { CheckCircle, XCircle, Info, FileText, Upload, Search, Filter } from "lucide-react";
 import { Chat } from "@/components/Chat";
 
 const JobApplicationsManagement = () => {
@@ -40,12 +41,17 @@ const JobApplicationsManagement = () => {
   };
 
   const [studentJobs, setStudentJobs] = useState<Job[]>([]);
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [jobApplications, setJobApplications] = useState<{ [jobId: string]: JobApplication[] }>({});
   const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [meetingLink, setMeetingLink] = useState<string | null>(null);
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false); // State to control dialog open/close
+
+  // Search and filter states
+  const [searchCategory, setSearchCategory] = useState<string>("");
+  const [searchText, setSearchText] = useState<string>("");
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false); // New state for upload modal
   const [fileToUpload, setFileToUpload] = useState<File | null>(null); // New state for file
