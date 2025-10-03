@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MessageSquare, ThumbsUp, Reply, Plus, Heart, Trash2, Send } from "lucide-react";
+import { MessageSquare, ThumbsUp, Reply, Plus, Heart, Trash2, Send, Search, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useDiscussions } from "@/hooks/useDiscussions";
@@ -34,6 +34,9 @@ const DiscussionTab = () => {
   const [activeReply, setActiveReply] = useState<string | null>(null);
   const [replies, setReplies] = useState<Record<string, any[]>>({});
   const [showReplies, setShowReplies] = useState<Record<string, boolean>>({});
+  // Search and filter states
+  const [searchCategory, setSearchCategory] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Optimistic like state for instant UI feedback
   const [optimisticLikes, setOptimisticLikes] = useState<Record<string, boolean>>({});
@@ -45,6 +48,21 @@ const DiscussionTab = () => {
     'Opportunities',
     'General Discussion'
   ];
+  // Filter posts based on search criteria
+  const filteredPosts = posts.filter(post => {
+    const matchesCategory = searchCategory === "all" || post.category === searchCategory;
+    const matchesQuery = !searchQuery || 
+      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.author.name.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return matchesCategory && matchesQuery;
+  });
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchCategory("all");
+    setSearchQuery("");
+  };
 
   // Handle new post creation
   const handleNewPost = async () => {
@@ -176,7 +194,6 @@ const DiscussionTab = () => {
       return date.toLocaleDateString();
     }
   };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -189,7 +206,82 @@ const DiscussionTab = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Discussion Forum</h2>
-        <Badge variant="secondary">{posts.length} Active Discussions</Badge>
+        <Badge variant="secondary">{filteredPosts.length} of {posts.length} Discussions</Badge>
+      </div>
+
+      {/* Search and Filter Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Search className="h-5 w-5 mr-2" />
+            Search & Filter Discussions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Search by text */}
+            <div className="space-y-2">
+              <Label htmlFor="search-query">Search by keyword</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  id="search-query"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search titles, content, or authors..."
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            {/* Filter by category */}
+            <div className="space-y-2">
+              <Label htmlFor="search-category">Filter by category</Label>              <Select value={searchCategory} onValueChange={setSearchCategory}>                <SelectTrigger id="search-category">
+                  <SelectValue placeholder="All categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All categories</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Clear filters */}
+            <div className="space-y-2">
+              <Label>&nbsp;</Label>
+              <Button 
+                variant="outline" 
+                onClick={clearFilters}
+                className="w-full"
+                disabled={searchCategory === "all" && !searchQuery}
+              >
+                <X className="h-4 w-4 mr-2" />
+                Clear Filters
+              </Button>
+            </div>
+          </div>
+        </CardContent>      </Card>
+
+      {/* Email Notification Info */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-start space-x-3">
+          <div className="flex-shrink-0">
+            <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
+              <MessageSquare className="w-4 h-4 text-blue-600" />
+            </div>
+          </div>
+          <div className="flex-1">
+            <h4 className="text-sm font-medium text-blue-900">Stay Connected</h4>
+            <p className="text-sm text-blue-700 mt-1">
+              Get email notifications when someone replies to your discussions! You can manage your notification preferences in 
+              <span className="font-medium"> Settings</span>.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Create New Post */}
@@ -243,9 +335,27 @@ const DiscussionTab = () => {
             Post Discussion
           </Button>
         </CardContent>
-      </Card>
+      </Card>      {/* No Posts Message */}
+      {filteredPosts.length === 0 && posts.length > 0 && (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Search className="h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No matching discussions</h3>
+            <p className="text-gray-500 text-center max-w-md">
+              Try adjusting your search criteria or clear the filters to see all discussions.
+            </p>
+            <Button 
+              variant="outline" 
+              onClick={clearFilters}
+              className="mt-4"
+            >
+              Clear Filters
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* No Posts Message */}
+      {/* No Posts at all Message */}
       {posts.length === 0 && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
@@ -260,7 +370,7 @@ const DiscussionTab = () => {
 
       {/* Discussion Posts */}
       <div className="space-y-4">
-        {posts.map((post) => (
+        {filteredPosts.map((post) => (
           <Card key={post.id}>
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0">
@@ -322,9 +432,7 @@ const DiscussionTab = () => {
                   <MessageSquare className="h-4 w-4 mr-1" />
                   {showReplies[post.id] ? 'Hide Replies' : `See Replies`}
                 </Button>
-              </div>
-
-              {/* Reply Form */}
+              </div>              {/* Reply Form */}
               {activeReply === post.id && (
                 <div className="border-t pt-4 space-y-3">
                   <Textarea
@@ -333,18 +441,25 @@ const DiscussionTab = () => {
                     placeholder="Write your reply..."
                     rows={3}
                   />
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={() => handleReply(post.id)}>
-                      <Send className="h-4 w-4 mr-1" />
-                      Post Reply
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      onClick={() => setActiveReply(null)}
-                    >
-                      Cancel
-                    </Button>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => handleReply(post.id)}>
+                        <Send className="h-4 w-4 mr-1" />
+                        Post Reply
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => setActiveReply(null)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                    {user?.id !== post.author.id && (
+                      <p className="text-xs text-gray-500">
+                        📧 {post.author.name} will be notified of your reply
+                      </p>
+                    )}
                   </div>
                 </div>
               )}

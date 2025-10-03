@@ -1,4 +1,3 @@
-
 import { Notification, JobMatch, WeeklyEmailSummary } from "@/types/notifications";
 
 export class EmailService {
@@ -14,6 +13,58 @@ export class EmailService {
     
     // Mock successful send
     return true;
+  }
+
+  // Send discussion reply notification
+  async sendDiscussionReplyNotification(
+    postAuthorEmail: string,
+    postAuthorName: string,
+    postTitle: string,
+    replyAuthorName: string,
+    replyContent: string,
+    postId: string
+  ): Promise<boolean> {
+    const subject = `New reply to your discussion: "${postTitle}"`;
+    
+    const content = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2563eb;">New Reply to Your Discussion</h2>
+        
+        <p>Hi ${postAuthorName},</p>
+        
+        <p>Someone has replied to your discussion post on Scholar Consult Connect!</p>
+        
+        <div style="background-color: #f8fafc; border-left: 4px solid #2563eb; padding: 16px; margin: 20px 0;">
+          <h3 style="margin: 0 0 8px 0; color: #1e40af;">Your Post: "${postTitle}"</h3>
+          <p style="margin: 0; color: #64748b; font-size: 14px;">
+            <strong>${replyAuthorName}</strong> replied:
+          </p>
+          <p style="margin: 8px 0 0 0; color: #334155;">
+            "${replyContent}"
+          </p>
+        </div>
+        
+        <div style="margin: 24px 0;">
+          <a href="${window.location.origin}/dashboard?tab=discussions&post=${postId}" 
+             style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+            View Discussion
+          </a>
+        </div>
+        
+        <p style="color: #64748b; font-size: 14px; margin-top: 24px;">
+          You're receiving this email because someone replied to your discussion post. 
+          You can manage your email preferences in your dashboard settings.
+        </p>
+        
+        <hr style="margin: 20px 0; border: none; border-top: 1px solid #e2e8f0;">
+        
+        <p style="color: #94a3b8; font-size: 12px; text-align: center;">
+          Scholar Consult Connect - Connecting Researchers Worldwide
+        </p>
+      </div>
+    `;
+
+    return this.sendEmailNotification(postAuthorEmail, subject, content);
   }
 
   // Generate weekly email summary

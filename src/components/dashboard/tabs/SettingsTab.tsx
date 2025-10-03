@@ -75,8 +75,12 @@ const SettingsTab = () => {
       if (researcherError && researcherError.code !== 'PGRST116') {
         // PGRST116 = no rows found, ignore if not a researcher
         console.error('Error fetching researcher profile:', researcherError);
+      }      setUserProfile({ ...userData, subtitle: researcherProfile?.subtitle ?? '' });
+      
+      // Set email notification preference from database
+      if (userData.email_notifications !== null && userData.email_notifications !== undefined) {
+        setEmailNotifications(userData.email_notifications);
       }
-      setUserProfile({ ...userData, subtitle: researcherProfile?.subtitle ?? '' });
     } catch (error) {
       console.error('Error fetching user profile:', error);
     } finally {
@@ -193,20 +197,40 @@ const SettingsTab = () => {
       description: "Your password has been updated successfully"
     });
   };
+  const handleSaveSettings = async () => {
+    try {
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "User not authenticated",
+          variant: "destructive"
+        });
+        return;
+      }
 
-  const handleSaveSettings = () => {
-    const settings = {
-      emailNotifications,
-      smsNotifications,
-      profileVisible
-    };
-    
-    console.log("Saving settings:", settings);
-    
-    toast({
-      title: "Settings Saved",
-      description: "Your account settings have been updated successfully"
-    });
+      // Update user's email notification preference in the database
+      const { error } = await supabase
+        .from('users')
+        .update({ 
+          email_notifications: emailNotifications,
+          // Note: SMS notifications and profile visibility would be added here when those fields exist
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Settings Saved",
+        description: "Your notification preferences have been updated successfully"
+      });
+    } catch (error: any) {
+      console.error('Error saving settings:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save settings. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleLogout = () => {
@@ -713,17 +737,28 @@ const SettingsTab = () => {
         <CardHeader>
           <CardTitle>Notification Preferences</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
+        <CardContent className="space-y-4">          <div className="flex items-center justify-between">
             <div>
               <Label htmlFor="email-notifications">Email Notifications</Label>
-              <p className="text-sm text-gray-600">Receive notifications via email</p>
+              <p className="text-sm text-gray-600">
+                Get notified when someone replies to your discussion posts
+              </p>
             </div>
             <Switch
               id="email-notifications"
               checked={emailNotifications}
               onCheckedChange={setEmailNotifications}
             />
+          </div>
+          
+          {/* Email notification details */}
+          <div className="bg-gray-50 p-3 rounded-lg">
+            <h4 className="text-sm font-medium text-gray-900 mb-2">Email notifications include:</h4>
+            <ul className="text-sm text-gray-600 space-y-1">
+              <li>• Replies to your discussion posts</li>
+              <li>• Weekly digest of forum activity (coming soon)</li>
+              <li>• Important platform updates (coming soon)</li>
+            </ul>
           </div>
           <div className="flex items-center justify-between">
             <div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { EmailService } from '@/services/emailService';
 
 export interface DiscussionPost {
   id: string;
@@ -213,13 +214,39 @@ export const useDiscussions = () => {
       return [];
     }
   };
-
   // Create a reply to a post
   const createReply = async (postId: string, content: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      // Get the post author details for email notification
+      const { data: postData, error: postError } = await supabase
+        .from('discussion_posts')
+        .select(`
+          title,
+          author:users!author_id (
+            id,
+            name,
+            email,
+            email_notifications
+          )
+        `)
+        .eq('id', postId)
+        .single();
+
+      if (postError) throw postError;
+
+      // Get the reply author's name
+      const { data: replyAuthorData, error: authorError } = await supabase
+        .from('users')
+        .select('name')
+        .eq('id', user.id)
+        .single();
+
+      if (authorError) throw authorError;
+
+      // Insert the reply
       const { error } = await supabase
         .from('discussion_replies')
         .insert({
@@ -229,6 +256,30 @@ export const useDiscussions = () => {
         });
 
       if (error) throw error;
+
+      // Send email notification to post author (if it's not their own reply and they have notifications enabled)
+      if (postData?.author && 
+          postData.author.id !== user.id && 
+          postData.author.email_notifications !== false) {
+        
+        const emailService = new EmailService();
+        
+        try {
+          await emailService.sendDiscussionReplyNotification(
+            postData.author.email,
+            postData.author.name,
+            postData.title,
+            replyAuthorData?.name || 'Anonymous User',
+            content,
+            postId
+          );
+          
+          console.log(`Email notification sent to ${postData.author.email} for reply to "${postData.title}"`);
+        } catch (emailError) {
+          console.error('Failed to send email notification:', emailError);
+          // Don't fail the reply creation if email fails
+        }
+      }
 
       toast({
         title: "Success",
