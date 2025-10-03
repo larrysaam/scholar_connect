@@ -24,6 +24,21 @@ const JobApplicationsManagement = () => {
   } = useJobManagement();
   const { toast } = useToast();
 
+  // Helper function to safely get deliverables array
+  const getDeliverables = (job: any) => {
+    if (!job || !job.file_path) return [];
+    if (Array.isArray(job.file_path)) return job.file_path;
+    if (typeof job.file_path === 'string') {
+      try {
+        const parsed = JSON.parse(job.file_path);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  };
+
   const [studentJobs, setStudentJobs] = useState<Job[]>([]);
   const [jobApplications, setJobApplications] = useState<{ [jobId: string]: JobApplication[] }>({});
   const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
@@ -73,20 +88,6 @@ const JobApplicationsManagement = () => {
         return;
       }
 
-
-      //  const { success, meetLink, bookingId: newBookingId } = await confirmJobApplication(
-      //   selectedApplication.id,
-      //   selectedApplication.applicant_id,
-      //   job.id,
-      //   job.title,
-      //   job.description,
-      //   job.budget,
-      //   job.currency,
-      //   job.category,
-      //   job.duration,
-      //   job.deadline
-      // );
-
       const { success } = await confirmJobApplication(
        selectedApplication.id,
         selectedApplication.applicant_id,
@@ -104,12 +105,6 @@ const JobApplicationsManagement = () => {
           title: "Success",
           description: "Researcher Aid confirmed and booking created!",
         });
-        // if (meetLink) {
-        //   setMeetingLink(meetLink);
-        // }
-        // if (newBookingId) {
-        //   setBookingId(newBookingId);
-        // }
         const jobsData = await fetchJobs();
         setStudentJobs(jobsData);
         const applicationsMap: { [jobId: string]: JobApplication[] } = {};
@@ -262,47 +257,44 @@ const JobApplicationsManagement = () => {
                             />
                           )}
                         </div>
-                      </div>
-
-                      {/* Conditional rendering for Deliverables Section and Upload Button */}
-                      {console.log("JobApplicationsManagement - Current Application:", application)}
-                      {console.log("JobApplicationsManagement - Application Status:", application.status)}
-                      {console.log("JobApplicationsManagement - Application Job Object:", application.job)}
+                      </div>                      {/* Conditional rendering for Deliverables Section and Upload Button */}
                       {application.status === "accepted" && (
                         <>
                           {/* Deliverables Section */}
-                          {console.log("JobApplicationsManagement - application.job.file_path:", application.job.file_path)}
-                          {application.job.file_path && application.job.file_path.length > 0 && (
-                            <div className="mt-4">
-                              <h4 className="font-medium mb-2">Deliverables:</h4>
-                              <div className="flex flex-wrap gap-2">
-                                {application.job.file_path.map((deliverable, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="flex items-center space-x-1 text-sm bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-colors duration-200"
-                                  >
-                                    <a
-                                      href={deliverable.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex items-center space-x-1"
+                          {(() => {
+                            const deliverables = getDeliverables(application.job);
+                            return deliverables.length > 0 ? (
+                              <div className="mt-4">
+                                <h4 className="font-medium mb-2">Deliverables:</h4>
+                                <div className="flex flex-wrap gap-2">
+                                  {deliverables.map((deliverable, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="flex items-center space-x-1 text-sm bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-colors duration-200"
                                     >
-                                      <FileText className="h-3 w-3 text-blue-600" />
-                                      <span>{deliverable.name}</span>
-                                    </a>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-4 w-4"
-                                      onClick={() => handleDeleteDeliverable(application.job_id, deliverable.url)}
-                                    >
-                                      <XCircle className="h-3 w-3 text-red-500" />
-                                    </Button>
-                                  </div>
-                                ))}
+                                      <a
+                                        href={deliverable.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center space-x-1"
+                                      >
+                                        <FileText className="h-3 w-3 text-blue-600" />
+                                        <span>{deliverable.name}</span>
+                                      </a>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-4 w-4"
+                                        onClick={() => handleDeleteDeliverable(application.job_id, deliverable.url)}
+                                      >
+                                        <XCircle className="h-3 w-3 text-red-500" />
+                                      </Button>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            ) : null;
+                          })()}
 
                           {/* Upload Deliverable Button */}
                           <div className="mt-4">
