@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,18 +15,20 @@ interface ThesisData {
   research_objectives: string[];
   research_hypothesis: string;
   expected_outcomes: string;
+  research_methodology: string;
 }
 
 const ThesisInformationTab = () => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [thesisData, setThesisData] = useState<ThesisData>({
-    title: "",
-    problem_statement: "",
-    research_questions: [],
-    research_objectives: [],
-    research_hypothesis: "",
-    expected_outcomes: "",
+    title: '',
+    problem_statement: '',
+    research_questions: [''],
+    research_objectives: [''],
+    research_hypothesis: '',
+    expected_outcomes: '',
+    research_methodology: '',
   });
   const [user, setUser] = useState<any>(null);
 
@@ -246,6 +247,37 @@ const ThesisInformationTab = () => {
             >
               Add Objective
             </Button>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Research Methodology */}
+      <Card className="mb-4">
+        <CardHeader>
+          <CardTitle>Research Methodology</CardTitle>
+          {isEditing && (
+            <CardDescription>
+              Describe your research methodology, including your research design, data collection methods, and analysis approach.
+            </CardDescription>
+          )}
+        </CardHeader>
+        <CardContent>
+          {isEditing ? (
+            <Textarea
+              placeholder="Enter your research methodology"
+              value={thesisData.research_methodology || ''}
+              onChange={(e) =>
+                setThesisData((prev) => ({
+                  ...prev,
+                  research_methodology: e.target.value,
+                }))
+              }
+              className="min-h-[150px]"
+            />
+          ) : (
+            <p className="whitespace-pre-wrap">
+              {thesisData.research_methodology || 'No research methodology provided yet.'}
+            </p>
           )}
         </CardContent>
       </Card>
