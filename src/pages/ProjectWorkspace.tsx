@@ -162,35 +162,61 @@ const ProjectWorkspace = () => {
       });
     }
   };
-
   const fetchTeamMembers = async () => {
     if (!projectId) return;
 
     try {
-      // For now, we'll use mock data since we don't have project_members table yet
-      // In a real implementation, you would query project_members with user profiles
-      const mockTeamMembers = [
-        {
-          id: "1",
-          name: "Dr. Sarah Wilson",
-          email: "sarah.wilson@university.edu",
-          role: "Principal Investigator"
-        },
-        {
-          id: "2", 
-          name: "John Smith",
-          email: "john.smith@university.edu",
-          role: "Research Assistant"
-        },
-        {
-          id: "3",
-          name: "Prof. Michael Chen", 
-          email: "michael.chen@university.edu",
-          role: "Co-Investigator"
-        }
-      ];
-      
-      setTeamMembers(mockTeamMembers);
+      // Get project owner
+      const { data: projectData } = await supabase
+        .from('projects')
+        .select('owner_id, users:owner_id(id, name, email)')
+        .eq('id', projectId)
+        .single();
+
+      // Get coauthor memberships
+      const { data: memberships } = await supabase
+        .from('coauthor_memberships')
+        .select(`
+          user_id,
+          role,
+          joined_at,
+          users:user_id(id, name, email)
+        `)
+        .eq('project_id', projectId);
+
+      const members = [];
+
+      // Add project owner
+      if (projectData?.users) {
+        members.push({
+          id: projectData.users.id,
+          name: projectData.users.name || 'Unknown',
+          email: projectData.users.email || '',
+          role: 'Owner',
+          avatar: null,
+          status: 'active',
+          joinedAt: new Date().toISOString()
+        });
+      }
+
+      // Add team members
+      if (memberships) {
+        memberships.forEach((membership: any) => {
+          if (membership.users && membership.users.id !== projectData?.owner_id) {
+            members.push({
+              id: membership.users.id,
+              name: membership.users.name || 'Unknown',
+              email: membership.users.email || '',
+              role: membership.role || 'Co-Author',
+              avatar: null,
+              status: 'active',
+              joinedAt: membership.joined_at
+            });
+          }
+        });
+      }
+
+      setTeamMembers(members);
     } catch (error) {
       console.error('Error fetching team members:', error);
       toast({

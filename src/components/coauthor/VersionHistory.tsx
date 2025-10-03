@@ -24,6 +24,8 @@ const VersionHistory = ({ projectId, permissions }: VersionHistoryProps) => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newVersionTitle, setNewVersionTitle] = useState("");
   const [selectedVersions, setSelectedVersions] = useState<string[]>([]);
+  
+  const mockVersions = [
     {
       id: 1,
       version: "v1.4",
@@ -48,8 +50,7 @@ const VersionHistory = ({ projectId, permissions }: VersionHistoryProps) => {
       id: 3,
       version: "v1.2",
       title: "Revised abstract and introduction",
-      author: "Dr. Emily Rodriguez",
-      avatar: null,
+      author: "Dr. Emily Rodriguez",      avatar: null,
       timestamp: "2024-01-14T16:45:00Z",
       changes: 15,
       isCurrent: false
@@ -74,7 +75,7 @@ const VersionHistory = ({ projectId, permissions }: VersionHistoryProps) => {
       changes: 0,
       isCurrent: false
     }
-  ]);
+  ];
 
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -86,7 +87,6 @@ const VersionHistory = ({ projectId, permissions }: VersionHistoryProps) => {
     if (diffDays < 7) return `${diffDays} days ago`;
     return date.toLocaleDateString();
   };
-
   const handleRestore = (versionId: number) => {
     console.log("Restoring version:", versionId);
   };
@@ -99,6 +99,9 @@ const VersionHistory = ({ projectId, permissions }: VersionHistoryProps) => {
     console.log("Exporting version:", versionId);
   };
 
+  // Use real versions if available, otherwise use mock data
+  const displayVersions = versions.length > 0 ? versions : mockVersions;
+
   return (
     <div className="space-y-6">
       <Card>
@@ -110,7 +113,7 @@ const VersionHistory = ({ projectId, permissions }: VersionHistoryProps) => {
         </CardHeader>
         
         <CardContent className="space-y-4">
-          {versions.map((version, index) => (
+          {displayVersions.map((version, index) => (
             <div 
               key={version.id} 
               className={`border rounded-lg p-4 ${version.isCurrent ? 'bg-blue-50 border-blue-200' : ''}`}
@@ -171,9 +174,8 @@ const VersionHistory = ({ projectId, permissions }: VersionHistoryProps) => {
                 </div>
               </div>
             </div>
-          ))}
-          
-          {versions.length === 0 && (
+          ))}          
+          {displayVersions.length === 0 && (
             <div className="text-center py-8">
               <History className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No version history</h3>
