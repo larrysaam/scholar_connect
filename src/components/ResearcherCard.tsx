@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MessageCircle, Calendar, Star, Eye } from "lucide-react";
+import { MessageCircle, Calendar, Star, Eye, Users } from "lucide-react";
 import VerificationBadge from "@/components/verification/VerificationBadge";
 import ServiceBookingModal from "@/components/payment/ServiceBookingModal";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +19,7 @@ interface ResearcherCardProps {
   rating: number;
   reviews: number;
   imageUrl: string;
+  studentsSupervised?: number;
   verifications: {
     academic: "verified" | "pending" | "unverified";
     publication: "verified" | "pending" | "unverified";
@@ -37,25 +38,44 @@ const ResearcherCard = ({
   rating,
   reviews,
   imageUrl,
+  studentsSupervised = 0,
   verifications
 }: ResearcherCardProps) => {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const navigate = useNavigate();
 
   const handleViewProfile = () => {
     navigate(`/researcher/${id}`);
   };
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const shouldShowFallback = !imageUrl || imageError;
+
   return (
     <>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-        <CardContent className="p-0">
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow">        <CardContent className="p-0">
           <div className="relative h-48 bg-gradient-to-br from-blue-50 to-indigo-100">
-            <img 
-              src={imageUrl} 
-              alt={name}
-              className="w-20 h-20 rounded-full object-cover absolute bottom-4 left-4 border-4 border-white shadow-lg"
-            />
+            {shouldShowFallback ? (
+              <div className="w-20 h-20 rounded-full bg-blue-600 text-white flex items-center justify-center text-xl font-bold absolute bottom-4 left-4 border-4 border-white shadow-lg">
+                {getInitials(name)}
+              </div>
+            ) : (
+              <img 
+                src={imageUrl} 
+                alt={name}
+                className="w-20 h-20 rounded-full object-cover absolute bottom-4 left-4 border-4 border-white shadow-lg"
+                onError={() => setImageError(true)}
+              />
+            )}
             <div className="absolute top-4 right-4">
               <VerificationBadge 
                 type="overall" 
@@ -87,15 +107,16 @@ const ResearcherCard = ({
                 )}
               </div>
             </div>
-            
-            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-1">
                 <Star className="h-4 w-4 text-yellow-400 fill-current" />
                 <span className="text-sm font-medium">{rating}</span>
                 <span className="text-sm text-gray-500">({reviews} reviews)</span>
               </div>
-              <div className="text-right">
-                {/* <p className="text-lg font-bold text-green-600">{hourlyRate.toLocaleString()} XAF/hr</p> */}
+              <div className="flex items-center space-x-1 text-blue-600">
+                <Users className="h-4 w-4" />
+                <span className="text-sm font-medium">{studentsSupervised}</span>
+                <span className="text-sm text-gray-500">students</span>
               </div>
             </div>
             
