@@ -438,30 +438,12 @@ const SettingsTab = () => {
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select study level" />
-                      </SelectTrigger>
-                      <SelectContent>
+                      </SelectTrigger>                    <SelectContent>
+                        <SelectItem value="diploma">Diploma</SelectItem>
                         <SelectItem value="undergraduate">Undergraduate</SelectItem>
                         <SelectItem value="masters">Masters</SelectItem>
                         <SelectItem value="phd">PhD</SelectItem>
                         <SelectItem value="postdoc">Post-doctorate</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="role">Role</Label>
-                    <Select
-                      value={userProfile.role}
-                      onValueChange={(value) => handleProfileFieldChange('role', value as UserRole)}
-                      disabled={!isEditingProfile}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="student">Student</SelectItem>
-                        <SelectItem value="expert">Expert</SelectItem>
-                        <SelectItem value="aid">Research Aid</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
