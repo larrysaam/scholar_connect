@@ -410,8 +410,8 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
                 onClick={() => { setProjectFilter('all'); setActiveProjectsPage(1); }} 
                 className={`text-xs sm:text-sm rounded-lg px-4 py-2 transition-all duration-200 ${
                   projectFilter === 'all' 
-                    ? 'bg-white shadow-sm font-medium' 
-                    : 'hover:bg-white/50'
+                    ? 'bg-blue-600 text-white shadow-sm font-medium' // blue background, white text
+                    : 'bg-white hover:bg-blue-50 text-blue-700'
                 }`}
               >
                 All
@@ -422,8 +422,8 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
                 onClick={() => { setProjectFilter('ongoing'); setActiveProjectsPage(1); }} 
                 className={`text-xs sm:text-sm rounded-lg px-4 py-2 transition-all duration-200 ${
                   projectFilter === 'ongoing' 
-                    ? 'bg-white shadow-sm font-medium' 
-                    : 'hover:bg-white/50'
+                    ? 'bg-blue-600 text-white shadow-sm font-medium' // blue background, white text
+                    : 'bg-white hover:bg-blue-50 text-blue-700'
                 }`}
               >
                 Ongoing
@@ -434,8 +434,8 @@ const FullThesisSupportTab = ({ userRole, setActiveTab }: FullThesisSupportTabPr
                 onClick={() => { setProjectFilter('complete'); setActiveProjectsPage(1); }} 
                 className={`text-xs sm:text-sm rounded-lg px-4 py-2 transition-all duration-200 ${
                   projectFilter === 'complete' 
-                    ? 'bg-white shadow-sm font-medium' 
-                    : 'hover:bg-white/50'
+                    ? 'bg-blue-600 text-white shadow-sm font-medium' // blue background, white text
+                    : 'bg-white hover:bg-blue-50 text-blue-700'
                 }`}
               >
                 Complete
