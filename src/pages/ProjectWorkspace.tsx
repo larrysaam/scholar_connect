@@ -8,6 +8,7 @@ import { ArrowLeft, Users, Settings, FileText, MessageSquare, History } from "lu
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/use-toast";
+import { useVersionHistory } from "@/hooks/useVersionHistory";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FileManager from "@/components/coauthor/FileManager";
@@ -38,6 +39,7 @@ const ProjectWorkspace = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { createVersion } = useVersionHistory(projectId || '');
   
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,13 +58,15 @@ const ProjectWorkspace = () => {
     canExport: false,
     canManageTeam: false,
   });
-
   // Team members
   const [teamMembers, setTeamMembers] = useState<Array<{
     id: string;
     name: string;
     email: string;
     role: string;
+    avatar?: string;
+    status: string;
+    joinedAt: string;
   }>>([]);
   useEffect(() => {
     if (projectId && user) {
@@ -225,32 +229,62 @@ const ProjectWorkspace = () => {
         variant: "destructive"
       });
     }
-  };
-
-  const handleSave = async () => {
+  };  const handleSave = async () => {
     if (!projectId || !project) return;
 
     try {
+      console.log('Starting save process...');
+      
+      // Calculate total word count across all document fields
+      const fields = [document.title, document.abstract, document.content, document.references];
+      const wordCount = Math.max(0, Math.floor(
+        fields
+          .filter(Boolean)
+          .map(f => String(f || "").trim().split(/\s+/).filter(w => w.length > 0).length)
+          .reduce((a, b) => a + b, 0)
+      ));
+
+      const contentData = {
+        title: document.title,
+        abstract: document.abstract,
+        content: document.content,
+        references: document.references
+      };
+
+      console.log('Updating project in database...', { projectId, contentData, wordCount });
+
+      // Update the project in the database
       const { error } = await supabase
         .from('projects')
         .update({
           title: document.title,
-          content: {
-            title: document.title,
-            abstract: document.abstract,
-            content: document.content,
-            references: document.references
-          },
-          word_count: document.content.split(/\s+/).length,
+          content: contentData,
+          word_count: wordCount,
           updated_at: new Date().toISOString()
         })
         .eq('id', projectId);
 
       if (error) throw error;
 
+      console.log('Project updated successfully, creating version...');
+
+      // Create a version entry for this save
+      const versionTitle = `Auto-save - ${new Date().toLocaleString()}`;
+      const versionData = {
+        ...contentData,
+        title: versionTitle // Ensure title is at the top level
+      };
+      const changesSummary = `Updated document content (${wordCount} words)`;
+      
+      console.log('Calling createVersion...', { versionTitle, versionData, changesSummary });
+      
+      const versionSuccess = await createVersion(versionTitle, versionData, changesSummary);
+      
+      console.log('Version creation result:', versionSuccess);
+
       toast({
         title: "Success",
-        description: "Project saved successfully!"
+        description: "Project saved successfully and version created!"
       });
 
       // Refresh project data
@@ -440,19 +474,16 @@ const ProjectWorkspace = () => {
                 canChangeRoles: permissions.canManageTeam,
               }}
             />
-          </TabsContent>
-
-          <TabsContent value="versions" className="mt-6">
+          </TabsContent>          <TabsContent value="versions" className="mt-6">
             <VersionHistory
               projectId={projectId!}
               permissions={permissions}
+              currentDocument={document}
             />
-          </TabsContent>
-
-          <TabsContent value="comments" className="mt-6">
+          </TabsContent><TabsContent value="comments" className="mt-6">
             <CommentsSection
               projectId={projectId!}
-              permissions={permissions}
+              canComment={permissions.canWrite}
             />
           </TabsContent>
         </Tabs>

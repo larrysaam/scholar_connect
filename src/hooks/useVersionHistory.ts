@@ -49,26 +49,38 @@ export function useVersionHistory(projectId: string) {
       setLoading(false);
     }
   };
-
   const createVersion = async (title: string, content: any, changesSummary?: string): Promise<boolean> => {
     try {
+      console.log('createVersion called with:', { title, content, changesSummary, projectId, userId: user?.id });
+      
       if (!user?.id) throw new Error('User not authenticated');
 
       // Get the next version number
       const nextVersionNumber = versions.length > 0 ? Math.max(...versions.map(v => v.version_number)) + 1 : 1;
+      
+      console.log('Next version number:', nextVersionNumber, 'Current versions count:', versions.length);
+
+      const insertData = {
+        project_id: projectId,
+        version_number: nextVersionNumber,
+        title,
+        content,
+        changes_summary: changesSummary,
+        created_by: user.id
+      };
+      
+      console.log('Inserting version data:', insertData);
 
       const { error } = await supabase
         .from('project_versions')
-        .insert({
-          project_id: projectId,
-          version_number: nextVersionNumber,
-          title,
-          content,
-          changes_summary: changesSummary,
-          created_by: user.id
-        });
+        .insert(insertData);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      console.log('Version inserted successfully');
 
       toast({
         title: 'Success',
