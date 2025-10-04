@@ -103,10 +103,7 @@ const CollaborativeEditor = ({
               <FileText className="h-5 w-5" />
               Document Editor
             </CardTitle>
-            <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </Button>
+            
           </div>
         </CardHeader>
         
