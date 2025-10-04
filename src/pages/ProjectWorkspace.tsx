@@ -116,7 +116,7 @@ const ProjectWorkspace = () => {
         description: "Failed to load project",
         variant: "destructive"
       });
-      navigate('/coauthor-workspace');
+      navigate('/co-author-workspace');
     } finally {
       setLoading(false);
     }
@@ -434,7 +434,7 @@ const ProjectWorkspace = () => {
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Project Not Found</h2>
             <p className="text-gray-600 mb-6">The project you're looking for doesn't exist or you don't have access to it.</p>
-            <Button onClick={() => navigate('/coauthor-workspace')}>
+            <Button onClick={() => navigate('/co-author-workspace')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Workspace
             </Button>
@@ -466,7 +466,7 @@ const ProjectWorkspace = () => {
           <div className="flex items-center justify-between mb-4">
             <Button 
               variant="ghost" 
-              onClick={() => navigate('/coauthor-workspace')}
+              onClick={() => navigate('/co-author-workspace')}
               className="mb-2"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />

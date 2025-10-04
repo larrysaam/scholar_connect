@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, LogOut, Trash2, User, Edit, Save, X, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useURLValidation } from "@/hooks/useURLValidation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import ProfileImage from "../ProfileImage";
@@ -34,7 +35,6 @@ const SettingsTab = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
-
   // Profile states
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -42,6 +42,12 @@ const SettingsTab = () => {
   const [newExpertise, setNewExpertise] = useState("");
   const [newLanguage, setNewLanguage] = useState("");
   const [newResearchArea, setNewResearchArea] = useState("");
+  
+  // URL validation
+  const { error: linkedinError, clearError: clearLinkedinError } = useURLValidation(
+    userProfile?.linkedin_url || '', 
+    'linkedinAccount'
+  );
 
   // Fetch user profile on component mount
   useEffect(() => {
@@ -648,14 +654,23 @@ const SettingsTab = () => {
                 </div>                {/* LinkedIn URL */}
                 <div>
                   <Label htmlFor="linkedin_url">LinkedIn Profile</Label>
-                  <Input
-                    id="linkedin_url"
-                    value={userProfile.linkedin_url || ""}
-                    onChange={(e) => handleProfileFieldChange('linkedin_url', e.target.value)}
-                    disabled={!isEditingProfile}
-                    placeholder="https://linkedin.com/in/yourprofile"
-                    type="url"
-                  />
+                  <div className="space-y-1">
+                    <Input
+                      id="linkedin_url"
+                      value={userProfile.linkedin_url || ""}
+                      onChange={(e) => {
+                        handleProfileFieldChange('linkedin_url', e.target.value);
+                        clearLinkedinError();
+                      }}
+                      disabled={!isEditingProfile}
+                      placeholder="https://linkedin.com/in/yourprofile"
+                      type="url"
+                      className={linkedinError ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                    />
+                    {linkedinError && (
+                      <p className="text-sm text-red-500">{linkedinError}</p>
+                    )}
+                  </div>
                 </div>
               </div>
               </>

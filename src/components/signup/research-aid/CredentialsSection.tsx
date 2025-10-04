@@ -2,6 +2,7 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useURLValidation } from "@/hooks/useURLValidation";
 
 interface CredentialsSectionProps {
   formData: {
@@ -19,6 +20,16 @@ const CredentialsSection = ({
   onSetCvFile,
   onSetCertFile
 }: CredentialsSectionProps) => {
+  // URL validation for LinkedIn field
+  const { error: linkedinError, clearError: clearLinkedinError } = useURLValidation(
+    formData.linkedInUrl, 
+    'linkedinAccount'
+  );
+
+  const handleLinkedInChange = (value: string) => {
+    onInputChange("linkedInUrl", value);
+    clearLinkedinError();
+  };
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold border-b pb-2">Professional Credentials</h3>
@@ -59,18 +70,22 @@ const CredentialsSection = ({
           onChange={(e) => onSetCertFile(e.target.files?.[0] || null)}
         />
         <p className="text-xs text-gray-500 mt-1">Optional</p>
-      </div>
-
-      <div>
+      </div>      <div>
         <Label htmlFor="linkedInUrl">LinkedIn / Personal Website</Label>
-        <Input 
-          id="linkedInUrl"
-          type="url"
-          value={formData.linkedInUrl}
-          onChange={(e) => onInputChange("linkedInUrl", e.target.value)}
-          placeholder="https://linkedin.com/in/yourprofile"
-        />
-        <p className="text-xs text-gray-500 mt-1">Optional</p>
+        <div className="space-y-1">
+          <Input 
+            id="linkedInUrl"
+            type="url"
+            value={formData.linkedInUrl}
+            onChange={(e) => handleLinkedInChange(e.target.value)}
+            placeholder="https://linkedin.com/in/yourprofile"
+            className={linkedinError ? 'border-red-500 focus-visible:ring-red-500' : ''}
+          />
+          {linkedinError && (
+            <p className="text-xs text-red-500">{linkedinError}</p>
+          )}
+          <p className="text-xs text-gray-500">Optional</p>
+        </div>
       </div>
     </div>
   );

@@ -233,23 +233,32 @@ const ResearcherSignup = () => {
                 
                 <FormField
                   label="LinkedIn Account"
+                  type="url"
                   value={formData.linkedinAccount}
                   onChange={(value) => handleInputChange('linkedinAccount', value)}
                   placeholder="https://linkedin.com/in/yourprofile"
+                  validateURL={true}
+                  fieldName="linkedinAccount"
                 />
 
                 <FormField
                   label="ResearchGate"
+                  type="url"
                   value={formData.researchgateAccount}
                   onChange={(value) => handleInputChange('researchgateAccount', value)}
                   placeholder="https://researchgate.net/profile/yourprofile"
+                  validateURL={true}
+                  fieldName="researchgateAccount"
                 />
 
                 <FormField
                   label="Academia.edu"
+                  type="url"
                   value={formData.academiaEduAccount}
                   onChange={(value) => handleInputChange('academiaEduAccount', value)}
                   placeholder="https://institution.academia.edu/yourprofile"
+                  validateURL={true}
+                  fieldName="academiaEduAccount"
                 />
 
                 <FormField

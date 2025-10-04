@@ -678,9 +678,7 @@ const SettingsTab = () => {
                       </Button>
                     </div>
                   )}
-                </div>
-
-                {/* LinkedIn URL */}
+                </div>                {/* LinkedIn URL */}
                 <div>
                   <Label htmlFor="linkedin_url">LinkedIn Profile</Label>
                   <Input
@@ -690,7 +688,8 @@ const SettingsTab = () => {
                     disabled={!isEditingProfile}
                     placeholder="https://linkedin.com/in/yourprofile"
                     type="url"
-                  />                </div>
+                  />
+                </div>
               </div>
 
               {/* Payment Information */}
