@@ -1,5 +1,6 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SearchBar from "@/components/SearchBar";
@@ -16,87 +17,98 @@ import {
 } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Filter, Bell } from "lucide-react";
-
-// Mock data for research aids with verification status
-const researchAids = [
-  {
-    id: "1",
-    name: "Dr. Ngozi Amina",
-    title: "GIS Specialist",
-    specialization: "Geographic Information Systems",
-    skills: ["ArcGIS", "QGIS", "Remote Sensing", "Spatial Analysis"],
-    hourlyRate: 15000,
-    rating: 4.8,
-    reviews: 32,
-    imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1376&q=80",
-    languages: ["English", "French", "Fulfulde"],
-    company: "MapTech Solutions Cameroon",
-    verifications: {
-      academic: "verified" as const,
-      publication: "verified" as const,
-      institutional: "verified" as const
-    }
-  },
-  {
-    id: "2", 
-    name: "Emmanuel Talla",
-    title: "Statistician",
-    specialization: "Statistical Analysis",
-    skills: ["SPSS", "R", "Python", "Survey Design", "Data Visualization"],
-    hourlyRate: 12500,
-    rating: 4.9,
-    reviews: 28,
-    imageUrl: "https://images.unsplash.com/photo-1601582589907-f92af5ed9db8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1064&q=80",
-    languages: ["English", "French"],
-    company: "DataCrunch Analytics",
-    verifications: {
-      academic: "verified" as const,
-      publication: "pending" as const,
-      institutional: "verified" as const
-    }
-  },
-  {
-    id: "3",
-    name: "Marie Chantal Fokou",
-    title: "Academic Editor",
-    specialization: "Academic Publishing",
-    skills: ["Copy Editing", "Proofreading", "LaTeX", "Citation Management"],
-    hourlyRate: 10000,
-    rating: 4.7,
-    reviews: 45,
-    imageUrl: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80",
-    languages: ["English", "French", "German"],
-    company: "Academic Excellence Services",
-    verifications: {
-      academic: "verified" as const,
-      publication: "verified" as const,
-      institutional: "pending" as const
-    }
-  },
-  {
-    id: "4",
-    name: "Paul Biya Jr.",
-    title: "Research Methodology Consultant", 
-    specialization: "Research Design",
-    skills: ["Qualitative Research", "Mixed Methods", "Survey Design", "Interview Techniques"],
-    hourlyRate: 18000,
-    rating: 4.6,
-    reviews: 22,
-    imageUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80",
-    languages: ["English", "French"],
-    company: "Research Hub Cameroon",
-    verifications: {
-      academic: "pending" as const,
-      publication: "verified" as const,
-      institutional: "verified" as const
-    }
-  }
-];
+import { Filter, Bell, Loader2 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+interface ResearchAid {
+  id: string;
+  name: string;
+  title: string;
+  specialization: string;
+  skills: string[];
+  hourlyRate: number;
+  rating: number;
+  reviews: number;
+  imageUrl?: string;
+  languages: string[];
+  company: string;
+  verifications: {
+    academic: "verified" | "pending" | "unverified";
+    publication: "verified" | "pending" | "unverified";
+    institutional: "verified" | "pending" | "unverified";
+  };
+  jobsCompleted?: number;
+}
 
 const ResearchAides = () => {
-  const [showFilters, setShowFilters] = useState(false);
+  const [researchAids, setResearchAids] = useState<ResearchAid[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);  const [showFilters, setShowFilters] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const fetchResearchAids = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Get all research aids users
+        const { data: users, error: userError } = await supabase
+          .from('users')
+          .select('id, name, expertise, languages, avatar_url')
+          .eq('role', 'aid');
+          
+        if (userError) throw userError;
+
+        // Get all profiles for those users
+        const userIds = users.map((u: any) => u.id);
+        const { data: profiles, error: profileError } = await supabase
+          .from('research_aid_profiles')
+          .select('id, title, location, hourly_rate, availability, admin_verified, rating, total_consultations_completed, verifications, skills')
+          .in('id', userIds);
+
+        if (profileError) throw profileError;
+
+        // Create a map of id to profile for efficient lookup
+        const profileMap = Object.fromEntries(
+          profiles.map((p: any) => [p.id, p])
+        );
+
+        // Map the data
+        const mappedAids: ResearchAid[] = users.map((user: any) => {
+          const profile = profileMap[user.id];
+          return {
+            id: user.id,
+            name: user.name || 'Unknown',
+            title: profile?.title || 'Research Aid',
+            specialization: profile?.skills?.[0] || user.expertise?.[0] || 'General Research',
+            skills: profile?.skills || user.expertise || [],
+            hourlyRate: profile?.hourly_rate || 0,
+            rating: profile?.rating || 0,
+            reviews: 0, // TODO: Implement reviews count
+            imageUrl: user.avatar_url,
+            languages: user.languages || [],
+            company: profile?.location || 'Location not set',
+            jobsCompleted: profile?.total_consultations_completed || 0,
+            verifications: profile?.verifications || {
+              academic: "unverified",
+              publication: "unverified",
+              institutional: "unverified"
+            }
+          };
+        }).filter(aid => aid.hourlyRate > 0); // Only show aids with set hourly rates
+
+        setResearchAids(mappedAids);
+      } catch (err: any) {
+        console.error('Error fetching research aids:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResearchAids();
+  }, []);
 
   const handleFiltersChange = (filters: any) => {
     console.log("Filters changed:", filters);
@@ -143,12 +155,29 @@ const ResearchAides = () => {
               </Dialog>
             </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {researchAids.map((aid) => (
-              <ResearchAidCard key={aid.id} {...aid} />
-            ))}
-          </div>
+            {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : error ? (
+            <Alert variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>
+                {error}
+              </AlertDescription>
+            </Alert>
+          ) : researchAids.length === 0 ? (
+            <div className="text-center py-12">
+              <h3 className="text-lg font-semibold">No Research Aids Found</h3>
+              <p className="text-gray-600 mt-2">Try adjusting your search criteria</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {researchAids.map((aid) => (
+                <ResearchAidCard key={aid.id} {...aid} />
+              ))}
+            </div>
+          )}
           
           <div className="mt-12">
             <Pagination>
