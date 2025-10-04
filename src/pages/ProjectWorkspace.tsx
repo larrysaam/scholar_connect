@@ -299,12 +299,114 @@ const ProjectWorkspace = () => {
     }
   };
 
-  const handleExport = (format: string) => {
+  const handleExport = async (format: string) => {
+    let fileName = `${document.title || project?.title || 'project'}_${new Date().toISOString()}`;
+
+    if (format === "json") {
+      const dataStr = JSON.stringify(document, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      fileName += ".json";
+      const url = window.URL.createObjectURL(blob);
+      const link = window.document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast({ title: "Export Success", description: `Project exported as JSON` });
+      return;
+    }
+
+    if (format === "txt") {
+      const dataStr = `${document.title}\n\n${document.abstract}\n\n${document.content}\n\nReferences:\n${document.references}`;
+      const blob = new Blob([dataStr], { type: "text/plain" });
+      fileName += ".txt";
+      const url = window.URL.createObjectURL(blob);
+      const link = window.document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast({ title: "Export Success", description: `Project exported as TXT` });
+      return;
+    }
+
+    if (format === "pdf") {
+      // PDF export using jsPDF
+      try {
+        const { jsPDF } = await import('jspdf');
+        const doc = new jsPDF();
+        let y = 10;
+        doc.setFontSize(16);
+        doc.text(document.title, 10, y);
+        y += 10;
+        doc.setFontSize(12);
+        doc.text("Abstract:", 10, y);
+        y += 8;
+        doc.text(document.abstract, 10, y);
+        y += 12;
+        doc.text("Content:", 10, y);
+        y += 8;
+        doc.text(document.content, 10, y);
+        y += 12;
+        doc.text("References:", 10, y);
+        y += 8;
+        doc.text(document.references, 10, y);
+        fileName += ".pdf";
+        doc.save(fileName);
+        toast({ title: "Export Success", description: `Project exported as PDF` });
+      } catch (err) {
+        toast({ title: "Export Error", description: "PDF export failed. Please install 'jspdf'.", variant: "destructive" });
+      }
+      return;
+    }
+
+    if (format === "docx") {
+      // DOCX export using docx
+      try {
+        const { Document, Packer, Paragraph, TextRun } = await import('docx');
+        const doc = new Document({
+          sections: [
+            {
+              properties: {},
+              children: [
+                new Paragraph({ children: [new TextRun({ text: document.title, bold: true, size: 32 })] }),
+                new Paragraph({ children: [new TextRun("")]}),
+                new Paragraph({ children: [new TextRun({ text: "Abstract:", bold: true })] }),
+                new Paragraph(document.abstract),
+                new Paragraph({ children: [new TextRun({ text: "Content:", bold: true })] }),
+                new Paragraph(document.content),
+                new Paragraph({ children: [new TextRun({ text: "References:", bold: true })] }),
+                new Paragraph(document.references),
+              ],
+            },
+          ],
+        });
+        const blob = await Packer.toBlob(doc);
+        fileName += ".docx";
+        const url = window.URL.createObjectURL(blob);
+        const link = window.document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        window.document.body.appendChild(link);
+        link.click();
+        window.document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        toast({ title: "Export Success", description: `Project exported as DOCX` });
+      } catch (err) {
+        toast({ title: "Export Error", description: "DOCX export failed. Please install 'docx'.", variant: "destructive" });
+      }
+      return;
+    }
+
     toast({
-      title: "Export Started",
-      description: `Exporting project as ${format.toUpperCase()}...`
+      title: "Export Error",
+      description: `Unsupported export format: ${format}`,
+      variant: "destructive"
     });
-    // Implementation would depend on chosen export library
   };
 
   if (loading) {
