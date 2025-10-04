@@ -27,6 +27,19 @@ export function useVersionHistory(projectId: string) {
   const fetchVersions = async () => {
     try {
       setLoading(true);
+
+      // Debug: Check table structure
+      const { data: tableInfo, error: tableError } = await supabase
+        .from('project_versions')
+        .select('id')
+        .limit(1);
+
+      if (tableError) {
+        console.error('Table check error:', tableError);
+        throw tableError;
+      }
+      console.log('Table check result:', tableInfo);
+
       const { data, error } = await supabase
         .from('project_versions')
         .select(`
@@ -49,6 +62,7 @@ export function useVersionHistory(projectId: string) {
       setLoading(false);
     }
   };
+
   const createVersion = async (title: string, content: any, changesSummary?: string): Promise<boolean> => {
     try {
       console.log('createVersion called with:', { title, content, changesSummary, projectId, userId: user?.id });
@@ -57,30 +71,31 @@ export function useVersionHistory(projectId: string) {
 
       // Get the next version number
       const nextVersionNumber = versions.length > 0 ? Math.max(...versions.map(v => v.version_number)) + 1 : 1;
-      
-      console.log('Next version number:', nextVersionNumber, 'Current versions count:', versions.length);
 
+      // Debug: Try a simpler insert first
       const insertData = {
         project_id: projectId,
         version_number: nextVersionNumber,
-        title,
-        content,
-        changes_summary: changesSummary,
-        created_by: user.id
+        title: title,
+        content: content,
+        created_by: user.id,
+        changes_summary: changesSummary
       };
       
-      console.log('Inserting version data:', insertData);
+      console.log('Debug: Attempting insert with data:', insertData);
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('project_versions')
-        .insert(insertData);
+        .insert([insertData])
+        .select()
+        .single();
 
       if (error) {
-        console.error('Supabase error:', error);
+        console.error('Insert error:', error);
         throw error;
       }
 
-      console.log('Version inserted successfully');
+      console.log('Insert success:', data);
 
       toast({
         title: 'Success',
