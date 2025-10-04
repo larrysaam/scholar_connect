@@ -4,11 +4,12 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { validateResearchProfileURL } from '@/utils/urlValidation';
+import { useORCIDValidation } from '@/hooks/useORCIDValidation';
 
 interface FormFieldProps {
   label: string;
   required?: boolean;
-  type?: 'text' | 'email' | 'tel' | 'date' | 'password' | 'select' | 'url';
+  type?: 'text' | 'email' | 'tel' | 'date' | 'password' | 'select' | 'url' | 'orcid';
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -36,6 +37,9 @@ const FormField = ({
 }: FormFieldProps) => {
   const fieldId = label.toLowerCase().replace(/\s+/g, '-');
   const [urlError, setUrlError] = useState<string>('');
+  
+  // ORCID validation
+  const { error: orcidError, handleORCIDChange, clearError: clearORCIDError } = useORCIDValidation(value);
 
   // URL validation effect
   useEffect(() => {
@@ -48,13 +52,27 @@ const FormField = ({
   }, [value, validateURL, fieldName]);
 
   const handleInputChange = (inputValue: string) => {
-    onChange(inputValue);
+    if (type === 'orcid') {
+      const formattedValue = handleORCIDChange(inputValue);
+      onChange(formattedValue);
+    } else {
+      onChange(inputValue);
+    }
     
     // Clear URL error when user starts typing
     if (urlError) {
       setUrlError('');
     }
   };
+
+  const handleFocus = () => {
+    if (type === 'orcid') {
+      clearORCIDError();
+    }
+  };
+
+  // Determine the current error to display
+  const currentError = type === 'orcid' ? orcidError : urlError;
   return (
     <div className="space-y-2">
       <Label htmlFor={fieldId}>
@@ -92,19 +110,25 @@ const FormField = ({
             />
           )}
         </div>
-      ) : (
-        <div className="space-y-1">
+      ) : (        <div className="space-y-1">
           <Input
             id={fieldId}
-            type={type === 'url' ? 'url' : type}
+            type={type === 'url' ? 'url' : type === 'orcid' ? 'text' : type}
             value={value}
             onChange={(e) => handleInputChange(e.target.value)}
-            placeholder={placeholder}
+            onFocus={handleFocus}
+            placeholder={placeholder || (type === 'orcid' ? '0000-0000-0000-0000' : undefined)}
             required={required}
-            className={urlError ? 'border-red-500 focus-visible:ring-red-500' : ''}
+            maxLength={type === 'orcid' ? 19 : undefined} // 16 digits + 3 dashes
+            className={currentError ? 'border-red-500 focus-visible:ring-red-500' : ''}
           />
-          {urlError && (
-            <p className="text-sm text-red-500">{urlError}</p>
+          {currentError && (
+            <p className="text-sm text-red-500">{currentError}</p>
+          )}
+          {type === 'orcid' && (
+            <p className="text-xs text-gray-500">
+              Enter 16 digits (dashes will be added automatically)
+            </p>
           )}
         </div>
       )}

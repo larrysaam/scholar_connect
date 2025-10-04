@@ -22,6 +22,58 @@ export const isValidURL = (url: string): boolean => {
 };
 
 /**
+ * Validates ORCID ID format (16 digits with dashes: 0000-0000-0000-0000)
+ */
+export const validateORCIDID = (orcidId: string): URLValidationResult => {
+  if (!orcidId || orcidId.trim() === '') {
+    return { isValid: true }; // Optional field
+  }
+
+  // Remove any existing dashes and spaces
+  const cleanedId = orcidId.replace(/[-\s]/g, '');
+  
+  // Check if it contains only digits
+  if (!/^\d+$/.test(cleanedId)) {
+    return { 
+      isValid: false, 
+      error: 'ORCID ID should contain only digits' 
+    };
+  }
+
+  // Check if it has exactly 16 digits
+  if (cleanedId.length !== 16) {
+    return { 
+      isValid: false, 
+      error: 'ORCID ID must be exactly 16 digits long' 
+    };
+  }
+
+  return { isValid: true };
+};
+
+/**
+ * Formats ORCID ID with proper dashes (0000-0000-0000-0000)
+ */
+export const formatORCIDID = (orcidId: string): string => {
+  if (!orcidId) return '';
+  
+  // Remove any existing dashes and spaces
+  const cleanedId = orcidId.replace(/[-\s]/g, '');
+  
+  // Only format if it contains only digits
+  if (!/^\d+$/.test(cleanedId)) {
+    return orcidId; // Return original if it contains non-digits
+  }
+  
+  // Add dashes every 4 digits, but only if we have enough digits
+  if (cleanedId.length >= 4) {
+    return cleanedId.replace(/(\d{4})/g, '$1-').replace(/-$/, '');
+  }
+  
+  return cleanedId;
+};
+
+/**
  * Validates LinkedIn URL format
  */
 export const validateLinkedInURL = (url: string): URLValidationResult => {
@@ -175,6 +227,11 @@ export const validateResearchProfileURL = (
     case 'academia_edu_account':
       return validateAcademiaEduURL(url);
     
+    case 'orcidid':
+    case 'orcid':
+    case 'orcid_id':
+      return validateORCIDID(url);
+
     default:
       // For any other URL field, just validate it's a proper URL
       if (!url || url.trim() === '') {

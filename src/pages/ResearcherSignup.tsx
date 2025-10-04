@@ -263,9 +263,9 @@ const ResearcherSignup = () => {
 
                 <FormField
                   label="ORCID ID"
+                  type="orcid"
                   value={formData.orcidId}
                   onChange={(value) => handleInputChange('orcidId', value)}
-                  placeholder="0000-0000-0000-0000"
                 />
 
                 <FormField
