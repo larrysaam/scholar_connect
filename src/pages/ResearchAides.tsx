@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
@@ -39,12 +38,17 @@ interface ResearchAid {
   jobsCompleted?: number;
 }
 
-const ResearchAides = () => {
-  const [researchAids, setResearchAids] = useState<ResearchAid[]>([]);
+const ResearchAides = () => {  const [researchAids, setResearchAids] = useState<ResearchAid[]>([]);
+  const [filteredAids, setFilteredAids] = useState<ResearchAid[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);  const [showFilters, setShowFilters] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState({
+    expertise: "all",
+    rating: "all",
+    priceRange: "all"
+  });
 
   useEffect(() => {
     const fetchResearchAids = async () => {
@@ -124,6 +128,37 @@ const ResearchAides = () => {
     fetchResearchAids();
   }, []);
 
+  useEffect(() => {
+    // Filter research aids based on search query and filters
+    const filtered = researchAids.filter(aid => {
+      // Search query filter
+      const matchesSearch = !searchQuery || 
+        aid.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        aid.specialization.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        aid.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        aid.skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      // Expertise filter
+      const matchesExpertise = filters.expertise === "all" ||
+        aid.skills.some(skill => skill.toLowerCase().includes(filters.expertise.toLowerCase()));
+
+      // Rating filter
+      const matchesRating = filters.rating === "all" ||
+        (filters.rating === "4+" && aid.rating >= 4) ||
+        (filters.rating === "3+" && aid.rating >= 3);
+
+      // Price range filter
+      const matchesPriceRange = filters.priceRange === "all" ||
+        (filters.priceRange === "0-5000" && aid.hourlyRate <= 5000) ||
+        (filters.priceRange === "5000-10000" && aid.hourlyRate > 5000 && aid.hourlyRate <= 10000) ||
+        (filters.priceRange === "10000+" && aid.hourlyRate > 10000);
+
+      return matchesSearch && matchesExpertise && matchesRating && matchesPriceRange;
+    });
+
+    setFilteredAids(filtered);
+  }, [searchQuery, filters, researchAids]);
+
   const handleFiltersChange = (filters: any) => {
     console.log("Filters changed:", filters);
     // TODO: Implement filter logic to filter researchAids based on the filters
@@ -139,35 +174,15 @@ const ResearchAides = () => {
             <h1 className="text-3xl font-bold mb-2">Find Research Aids</h1>
             <p className="text-gray-600">Connect with specialized research support professionals</p>
           </div>
-          
-          {/* Search and Filter Section */}
+            {/* Search and Filter Section */}
           <div className="mb-6">
-            <SearchBar />
-            <div className="flex justify-between items-center mt-4">
-              <Dialog open={showFilters} onOpenChange={setShowFilters}>
-                <DialogTrigger asChild>
-                  <Button variant="outline">
-                    <Filter className="h-4 w-4 mr-2" />
-                    Advanced Filters
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                  <AdvancedSearchFilters onFiltersChange={handleFiltersChange} />
-                </DialogContent>
-              </Dialog>
-              
-              <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
-                <DialogTrigger asChild>
-                  <Button variant="outline">
-                    <Bell className="h-4 w-4 mr-2" />
-                    Notifications
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <NotificationCenter />
-                </DialogContent>
-              </Dialog>
-            </div>
+            <SearchBar 
+              value={searchQuery}
+              onSearch={setSearchQuery}
+              onFilterChange={(field, value) => {
+                setFilters(prev => ({ ...prev, [field]: value }));
+              }}
+            />
           </div>
             {loading ? (
             <div className="flex justify-center items-center py-12">
@@ -179,16 +194,20 @@ const ResearchAides = () => {
               <AlertDescription>
                 {error}
               </AlertDescription>
-            </Alert>
-          ) : researchAids.length === 0 ? (
+            </Alert>          ) : filteredAids.length === 0 ? (
             <div className="text-center py-12">
               <h3 className="text-lg font-semibold">No Research Aids Found</h3>
               <p className="text-gray-600 mt-2">Try adjusting your search criteria</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {researchAids.map((aid) => (
-                <ResearchAidCard key={aid.id} {...aid} />
+              {filteredAids.map((aid) => (
+                <ResearchAidCard 
+                  key={aid.id}
+                  {...aid}
+                  jobTitle={aid.title}
+                  acceptedJobs={aid.jobsCompleted || 0}
+                />
               ))}
             </div>
           )}

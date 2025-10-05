@@ -26,7 +26,7 @@ interface ResearchAidCardProps {
   hourlyRate: number;
   rating: number;
   reviews: number;
-  imageUrl: string;
+  imageUrl?: string;
   languages: string[];
   company: string;
   acceptedJobs: number;
