@@ -50,15 +50,29 @@ const ResearchAides = () => {
     const fetchResearchAids = async () => {
       try {
         setLoading(true);
-        setError(null);
-
-        // Get all research aids users
+        setError(null);        // Get all research aids users
         const { data: users, error: userError } = await supabase
           .from('users')
           .select('id, name, expertise, languages, avatar_url')
           .eq('role', 'aid');
           
         if (userError) throw userError;
+
+        // Get accepted jobs count for each aid
+        const { data: acceptedJobs, error: acceptedJobsError } = await supabase
+          .from('job_applications')
+          .select('applicant_id')
+          .eq('status', 'accepted')
+          .in('applicant_id', users.map(u => u.id));
+          
+
+        if (acceptedJobsError) throw acceptedJobsError;
+
+        // Count accepted jobs for each aid
+        const acceptedJobsCount = (acceptedJobs || []).reduce((acc, job) => {
+          acc[job.applicant_id] = (acc[job.applicant_id] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
 
         // Get all profiles for those users
         const userIds = users.map((u: any) => u.id);
@@ -82,21 +96,20 @@ const ResearchAides = () => {
             name: user.name || 'Unknown',
             title: profile?.title || 'Research Aid',
             specialization: profile?.skills?.[0] || user.expertise?.[0] || 'General Research',
-            skills: profile?.skills || user.expertise || [],
-            hourlyRate: profile?.hourly_rate || 0,
+            skills: profile?.skills || user.expertise || [],            hourlyRate: profile?.hourly_rate || 0,
             rating: profile?.rating || 0,
             reviews: 0, // TODO: Implement reviews count
-            imageUrl: user.avatar_url,
+            imageUrl: user.avatar_url || "",
             languages: user.languages || [],
             company: profile?.location || 'Location not set',
+            acceptedJobs: acceptedJobsCount[user.id] || 0,
             jobsCompleted: profile?.total_consultations_completed || 0,
             verifications: profile?.verifications || {
               academic: "unverified",
               publication: "unverified",
               institutional: "unverified"
-            }
-          };
-        }).filter(aid => aid.hourlyRate > 0); // Only show aids with set hourly rates
+            }          };
+        }); // Remove the hourly rate filter to show all aids
 
         setResearchAids(mappedAids);
       } catch (err: any) {
@@ -179,27 +192,7 @@ const ResearchAides = () => {
             </div>
           )}
           
-          <div className="mt-12">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious href="#" />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#" isActive>1</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#">2</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#">3</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext href="#" />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
+          
         </div>
       </main>
       
