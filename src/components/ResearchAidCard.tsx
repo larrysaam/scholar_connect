@@ -78,44 +78,33 @@ const ResearchAidCard = ({
   };
 
   return (
-    <>
-      <Card className="overflow-hidden transition-all hover:shadow-md">
+    <>      <Card className="overflow-hidden transition-all hover:shadow-md flex flex-col h-full">
         <CardHeader className="p-0">
-          <div className="relative h-48 w-full bg-green-100">
-            <img 
-              src={imageUrl} 
-              alt={name} 
-              className="w-full h-full object-cover opacity-20"
-            />
-            <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-white to-transparent pt-16">
-              <div className="flex items-end">            <div className="h-20 w-20 rounded-full bg-white border-4 border-white shadow-sm overflow-hidden">
-                  {imageUrl ? (
-                    <img
-                      src={imageUrl}
-                      alt={name}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="h-full w-full bg-primary flex items-center justify-center text-2xl font-semibold text-white">
-                      {name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                </div>
+          <div className="relative h-32 w-full bg-gradient-to-r from-green-50 to-blue-50">
+            <div className="absolute -bottom-10 left-6">
+              <div className="h-20 w-20 rounded-full bg-white border-4 border-white shadow-md overflow-hidden">
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt={name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-primary flex items-center justify-center text-2xl font-semibold text-white">
+                    {name.charAt(0).toUpperCase()}
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-6">
+        
+        <CardContent className="pt-12 flex-1">
           <div className="flex justify-between items-start mb-3">
             <div>
               <CardTitle className="text-lg font-semibold">{name}</CardTitle>
-              <CardDescription className="text-sm">{title} at {company}</CardDescription>
+              <CardDescription className="text-sm text-gray-600">{title} at {company}</CardDescription>
             </div>
-            
-          </div>
-
-          {/* Single Verification Badge */}
-          <div className="flex items-center mb-4">
             <VerificationBadge 
               type="overall" 
               status="verified" 
@@ -124,10 +113,11 @@ const ResearchAidCard = ({
             />
           </div>
           
-          <div className="mt-4">
-            <div className="flex flex-wrap gap-2 mb-4">
+          <div className="space-y-4">
+            {/* Skills */}
+            <div className="flex flex-wrap gap-2">
               {skills.slice(0, 3).map((skill, index) => (
-                <Badge key={index} variant="secondary" className="text-xs">
+                <Badge key={index} variant="secondary" className="text-xs bg-gray-100 text-gray-700">
                   {skill}
                 </Badge>
               ))}
@@ -138,7 +128,8 @@ const ResearchAidCard = ({
               )}
             </div>
 
-            <div className="flex flex-wrap gap-1 mb-4">
+            {/* Languages */}
+            <div className="flex flex-wrap gap-1">
               {languages.map((language, index) => (
                 <Badge key={index} variant="outline" className="text-xs bg-blue-50 text-blue-700">
                   {language}
@@ -146,7 +137,9 @@ const ResearchAidCard = ({
               ))}
             </div>
             
-            <div className="flex justify-between items-center mt-4">              <div className="flex items-center space-x-4">
+            {/* Stats */}
+            <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center space-x-4">
                 <div className="flex items-center">
                   <div className="flex items-center">
                     {Array(5).fill(0).map((_, i) => (
@@ -162,22 +155,20 @@ const ResearchAidCard = ({
                   </div>
                   <span className="ml-1 text-sm text-gray-600">{rating} ({reviews})</span>
                 </div>
-                <div className="flex items-center">
-                  <Badge variant="secondary" className="text-xs">
-                    {acceptedJobs} Jobs
-                  </Badge>
-                </div>
+                <Badge variant="secondary" className="text-xs">
+                  {acceptedJobs} Jobs
+                </Badge>
               </div>
               <div className="text-right">
-                <span className="block text-xl font-bold text-gray-900">{hourlyRate} XAF</span>
+                <span className="block text-lg font-bold text-primary">{hourlyRate} XAF</span>
                 <span className="block text-xs text-gray-500">per hour</span>
               </div>
             </div>
           </div>
         </CardContent>
-        <CardFooter className="border-t pt-4 bg-gray-50 flex space-x-2">
-        
-          <Button asChild className="flex-1">
+
+        <CardFooter className="mt-auto border-t bg-gray-50 p-4">
+          <Button asChild className="w-full bg-primary hover:bg-primary/90">
             <Link to={`/research-aids/${id}`}>View Profile</Link>
           </Button>
         </CardFooter>
