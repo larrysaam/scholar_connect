@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useCoAuthorInvitations } from '@/hooks/useCoAuthorInvitations';
 import { 
   LayoutDashboard,
   Calendar,
@@ -38,6 +39,7 @@ const ResponsiveDashboardSidebar = ({
 }: ResponsiveDashboardSidebarProps) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { pendingCount: coAuthorInvitationsCount } = useCoAuthorInvitations();
 
   const handleSignOut = async () => {
     await signOut();
@@ -85,10 +87,9 @@ const ResponsiveDashboardSidebar = ({
     { id: "payments", label: "Payments & Earnings", icon: DollarSign },
     { id: "quality", label: "Quality & Feedback", icon: Star },
     { id: "messaging", label: "Messaging", icon: MessageSquare },
-    { id: "verification", label: "Verification", icon: Shield },
-    { id: "discussion", label: "Discussion Board", icon: MessageSquare },
+    { id: "verification", label: "Verification", icon: Shield },    { id: "discussion", label: "Discussion Board", icon: MessageSquare },
     { id: "notifications", label: "Notifications", icon: Bell, badge: notificationCount },
-    { id: "co-author-invitations", label: "Co-author Invitations", icon: UserPlus, badge: 2 },
+    { id: "co-author-invitations", label: "Co-author Invitations", icon: UserPlus, badge: coAuthorInvitationsCount },
     { id: "documents", label: "Documents", icon: FileText },
     { id: "settings", label: "Account Settings", icon: Settings },
     { id: "co-author-workspace", label: "Co-Author Workspace", icon: Users },
