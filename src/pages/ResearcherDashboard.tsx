@@ -47,19 +47,17 @@ const ResearcherDashboard = () => {  const [searchParams, setSearchParams] = use
     localStorage.setItem('researcher_onboarding_complete', 'true');
     setShowOnboarding(false);
   };
-
   const renderTabContent = () => {
-    switch (activeTab) {
-      case "overview":
-        return <WelcomeOverviewTab />;
+    switch (activeTab) {      case "overview":
+        return <WelcomeOverviewTab setActiveTab={handleTabChange} />;
       case "consultation-services":
-        return <ConsultationServicesTab userRole="researcher" />;
+        return <ConsultationServicesTab />;
       case "upcoming":
         return <UpcomingTab userRole="researcher" />;
       case "past":
         return <PastTab userRole="researcher" />;
       case "full-thesis-support":
-        return <FullThesisSupportTab />;
+        return <FullThesisSupportTab userRole="researcher" setActiveTab={handleTabChange} />;
       case "payments":
         return <PaymentsEarningsTab />;
       case "performance":
@@ -80,9 +78,8 @@ const ResearcherDashboard = () => {  const [searchParams, setSearchParams] = use
         return <DocumentsTab />;
   
       case "settings":
-        return <SettingsTab />;
-      default:
-        return <WelcomeOverviewTab />;
+        return <SettingsTab />;      default:
+        return <WelcomeOverviewTab setActiveTab={handleTabChange} />;
     }
     
   };

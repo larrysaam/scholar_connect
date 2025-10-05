@@ -6,7 +6,11 @@ import { Calendar, Clock, DollarSign, Users, TrendingUp, MessageSquare, Loader2 
 import { useAuth } from "@/hooks/useAuth";
 import { useWelcomeOverview } from "@/hooks/useWelcomeOverview";
 
-const WelcomeOverviewTab = () => {
+interface WelcomeOverviewTabProps {
+  setActiveTab?: (tab: string) => void;
+}
+
+const WelcomeOverviewTab = ({ setActiveTab }: WelcomeOverviewTabProps) => {
   const { profile } = useAuth();
   const {
     loading,
@@ -169,19 +173,25 @@ const WelcomeOverviewTab = () => {
         <Card>
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button className="w-full justify-start">
-              <Calendar className="mr-2 h-4 w-4" />
-              View Calendar
-            </Button>
-            <Button variant="outline" className="w-full justify-start">
+          </CardHeader>          <CardContent className="space-y-3">            <Button 
+              variant="default" 
+              className="w-full justify-start bg-primary hover:bg-primary/90"
+              onClick={() => setActiveTab?.("messaging")}
+            >
               <MessageSquare className="mr-2 h-4 w-4" />
               Check Messages
+             
             </Button>
-            <Button variant="outline" className="w-full justify-start">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start"
+              onClick={() => setActiveTab?.("payments")}
+            >
               <DollarSign className="mr-2 h-4 w-4" />
-              View Earnings
+              View Payments
+              <Badge variant="secondary" className="ml-auto">
+                {weeklyStats.earnings.toLocaleString()} XAF
+              </Badge>
             </Button>
           </CardContent>
         </Card>
