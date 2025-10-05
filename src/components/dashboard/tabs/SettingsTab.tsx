@@ -481,7 +481,7 @@ const SettingsTab = () => {
                 </div>              </div>
 
               {/* Research Information - Only show for experts/researchers */}
-              {userProfile.role === 'expert' && (
+              {userProfile.role === 'student' && (
                 <>
                   <Separator />
                   <div className="space-y-4">
