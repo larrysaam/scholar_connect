@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { 
@@ -21,6 +20,7 @@ interface ResearchAidCardProps {
   id: string;
   name: string;
   title: string;
+  jobTitle: string;
   specialization: string;
   skills: string[];
   hourlyRate: number;

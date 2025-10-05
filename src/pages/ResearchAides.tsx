@@ -86,17 +86,17 @@ const ResearchAides = () => {
         // Create a map of id to profile for efficient lookup
         const profileMap = Object.fromEntries(
           profiles.map((p: any) => [p.id, p])
-        );
-
-        // Map the data
+        );        // Map the data
         const mappedAids: ResearchAid[] = users.map((user: any) => {
           const profile = profileMap[user.id];
+          const validTitle = profile?.title === 'Dr.' || profile?.title === 'Prof.' ? profile.title : '';
           return {
             id: user.id,
-            name: user.name || 'Unknown',
+            name: validTitle ? `${validTitle} ${user.name || 'Unknown'}` : user.name || 'Unknown',
             title: profile?.title || 'Research Aid',
             specialization: profile?.skills?.[0] || user.expertise?.[0] || 'General Research',
-            skills: profile?.skills || user.expertise || [],            hourlyRate: profile?.hourly_rate || 0,
+            skills: profile?.skills || user.expertise || [],
+            hourlyRate: profile?.hourly_rate || 0,
             rating: profile?.rating || 0,
             reviews: 0, // TODO: Implement reviews count
             imageUrl: user.avatar_url || "",
@@ -108,7 +108,8 @@ const ResearchAides = () => {
               academic: "unverified",
               publication: "unverified",
               institutional: "unverified"
-            }          };
+            }
+          };
         }); // Remove the hourly rate filter to show all aids
 
         setResearchAids(mappedAids);
