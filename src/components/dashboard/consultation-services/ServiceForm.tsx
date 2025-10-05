@@ -35,10 +35,26 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
       // Also set title if it's empty or default
       if (!formData.title || formData.title === '') {
         updatedData.title = 'Free Consultation Session';
-      }
-      // Set default duration to 60 minutes
+      }      // Set default duration to 60 minutes
       if (!formData.duration_minutes || formData.duration_minutes === 0) {
         updatedData.duration_minutes = 60;
+      }
+    } else {
+      // Set appropriate default duration based on category
+      if (!formData.duration_minutes || formData.duration_minutes === 0) {
+        switch (value) {
+          case 'Chapter Review':
+            updatedData.duration_minutes = 10080; // 7 days
+            break;
+          case 'Full Thesis Review':
+            updatedData.duration_minutes = 43200; // 30 days
+            break;
+          case 'Full Thesis Cycle Support':
+            updatedData.duration_minutes = 129600; // 90 days
+            break;
+          default:
+            updatedData.duration_minutes = 60; // 1 hour
+        }
       }
     }
     
@@ -52,9 +68,74 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     updateFormData({ description: e.target.value });
   };
+  const handleDurationChange = (value: string) => {
+    // Convert duration to minutes based on the selected value
+    const durationMap: { [key: string]: number } = {
+      '1': 60,     // 1 hour
+      '2': 120,    // 2 hours
+      '3': 180,    // 3 hours
+      '4': 240,    // 4 hours
+      '5': 300,    // 5 hours
+      '7': 10080,  // 7 days in minutes
+      '14': 20160, // 14 days in minutes
+      '30': 43200, // 30 days in minutes
+      '90': 129600, // 90 days in minutes
+      '180': 259200, // 180 days in minutes
+      '365': 525600  // 365 days in minutes
+    };
+    updateFormData({ duration_minutes: durationMap[value] || 60 });
+  };
 
-  const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateFormData({ duration_minutes: parseInt(e.target.value) || 60 });
+  const getCurrentDurationValue = () => {
+    const minutes = formData.duration_minutes;
+    // Map minutes back to dropdown values
+    const durationMap: { [key: number]: string } = {
+      60: '1',      // 1 hour
+      120: '2',     // 2 hours
+      180: '3',     // 3 hours
+      240: '4',     // 4 hours
+      300: '5',     // 5 hours
+      10080: '7',   // 7 days
+      20160: '14',  // 14 days
+      43200: '30',  // 30 days
+      129600: '90', // 90 days
+      259200: '180', // 180 days
+      525600: '365'  // 365 days
+    };
+    return durationMap[minutes] || '1';
+  };
+
+  const getDurationOptions = () => {
+    switch (formData.category) {
+      case 'General Consultation':
+      case 'Free Consultation':
+        return [
+          { value: '1', label: '1 hour' },
+          { value: '2', label: '2 hours' },
+          { value: '3', label: '3 hours' },
+          { value: '4', label: '4 hours' },
+          { value: '5', label: '5 hours' }
+        ];
+      case 'Chapter Review':
+        return [
+          { value: '7', label: '7 days' },
+          { value: '14', label: '14 days' },
+          { value: '30', label: '30 days' }
+        ];
+      case 'Full Thesis Review':
+        return [
+          { value: '30', label: '30 days' },
+          { value: '90', label: '90 days' }
+        ];
+      case 'Full Thesis Cycle Support':
+        return [
+          { value: '90', label: '90 days' },
+          { value: '180', label: '180 days' },
+          { value: '365', label: '365 days' }
+        ];
+      default:
+        return [{ value: '1', label: '1 hour' }];
+    }
   };
 
   const addPricing = () => {
@@ -122,17 +203,23 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
               <SelectItem value="Free Consultation">Free Consultation</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-        <div>
-          <Label htmlFor="duration" className="text-sm font-medium">Duration (minutes)</Label>
-          <Input
-            id="duration"
-            type="number"
-            value={formData.duration_minutes}
-            onChange={handleDurationChange}
-            placeholder="60"
-            className="text-sm"
-          />
+        </div>        <div>
+          <Label htmlFor="duration" className="text-sm font-medium">Duration</Label>
+          <Select
+            value={getCurrentDurationValue()}
+            onValueChange={handleDurationChange}
+          >
+            <SelectTrigger className="text-sm">
+              <SelectValue placeholder="Select duration" />
+            </SelectTrigger>
+            <SelectContent>
+              {getDurationOptions().map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

@@ -48,12 +48,30 @@ const ServiceManagement = ({
     pricing: [{ academic_level: 'Undergraduate', price: 0, currency: 'XAF' }],
     addons: []
   });
-  const resetForm = () => {
+
+  // Helper function to format duration in a user-friendly way
+  const formatDuration = (minutes: number) => {
+    if (minutes >= 525600) { // 365 days or more
+      const years = Math.round(minutes / 525600);
+      return `${years} year${years > 1 ? 's' : ''}`;
+    } else if (minutes >= 43200) { // 30 days or more
+      const months = Math.round(minutes / 43200);
+      return `${months} month${months > 1 ? 's' : ''}`;
+    } else if (minutes >= 1440) { // 1 day or more
+      const days = Math.round(minutes / 1440);
+      return `${days} day${days > 1 ? 's' : ''}`;
+    } else if (minutes >= 60) { // 1 hour or more
+      const hours = Math.round(minutes / 60);
+      return `${hours} hour${hours > 1 ? 's' : ''}`;
+    } else {
+      return `${minutes} minute${minutes > 1 ? 's' : ''}`;
+    }
+  };const resetForm = () => {
     setFormData({
       category: 'General Consultation',
       title: '',
       description: '',
-      duration_minutes: 60,
+      duration_minutes: 60, // 1 hour default for General Consultation
       pricing: [{ academic_level: 'Undergraduate', price: 0, currency: 'XAF' }],
       addons: []
     });
@@ -176,7 +194,9 @@ const ServiceManagement = ({
             </DialogFooter>          </DialogContent>
         </Dialog>
         </div>
-      </div>{/* Services List */}
+      </div>
+      
+      {/* Services List */}
       <div className="space-y-3 sm:space-y-4">
         {services.length === 0 ? (
           <Card>
@@ -228,11 +248,10 @@ const ServiceManagement = ({
                       </div>
                     </div>
                     
-                    <p className="text-sm sm:text-base text-gray-700 mb-4 line-clamp-2 leading-relaxed">{service.description}</p>                    
-                    <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:gap-6 text-xs sm:text-sm text-gray-600">
+                    <p className="text-sm sm:text-base text-gray-700 mb-4 line-clamp-2 leading-relaxed">{service.description}</p>                    <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:gap-6 text-xs sm:text-sm text-gray-600">
                       <div className="flex items-center gap-1">
                         <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                        <span className="truncate">{service.duration_minutes} minutes</span>
+                        <span className="truncate">{formatDuration(service.duration_minutes)}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
@@ -264,7 +283,26 @@ const ServiceManagement = ({
                           </>
                         )}
                       </div>
-                    </div></div>
+                    </div>
+
+                    {/* Add-ons Display */}
+                    {service.addons.length > 0 && (
+                      <div className="mt-3 sm:mt-4">
+                        <h5 className="text-xs sm:text-sm font-medium text-gray-700 mb-2">Available Add-ons:</h5>
+                        <div className="flex flex-wrap gap-1 sm:gap-2">
+                          {service.addons.slice(0, 2).map((addon, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                              {addon.name}: {addon.price.toLocaleString()} {addon.currency}
+                            </Badge>
+                          ))}
+                          {service.addons.length > 2 && (
+                            <Badge variant="secondary" className="text-xs bg-gray-50 text-gray-600 border-gray-200">
+                              +{service.addons.length - 2} more add-ons
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}</div>
 
                   {/* Actions */}
                   <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:gap-2 sm:ml-4 w-full sm:w-auto">

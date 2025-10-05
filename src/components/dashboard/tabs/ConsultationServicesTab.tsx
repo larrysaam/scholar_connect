@@ -88,14 +88,7 @@ const ConsultationServicesTab = () => {
           <p className="text-xs sm:text-sm md:text-base text-gray-600 mt-1">Manage your service offerings, pricing, and bookings</p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-          <Button 
-            onClick={() => setShowAddService(true)} 
-            variant="default" 
-            className="flex items-center justify-center gap-2 w-full sm:w-auto text-sm py-2 px-3 sm:px-4"
-          >
-            <Plus className="h-3 w-3 sm:h-4 sm:w-4" /> 
-            <span className="font-medium">Add Service</span>
-          </Button>
+          
           <div className="flex flex-wrap items-center justify-start sm:justify-center gap-2 text-xs sm:text-sm">
             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 px-2 py-1">
               <span className="hidden sm:inline">Active: </span>{activeServices.length}
