@@ -54,6 +54,25 @@ interface BookingFormData {
 }
 
 const AppointmentBooking = () => {
+  // Helper function to format duration in a user-friendly way
+  const formatDuration = (minutes: number) => {
+    if (minutes >= 525600) { // 365 days or more
+      const years = Math.round(minutes / 525600);
+      return `${years} year${years > 1 ? 's' : ''}`;
+    } else if (minutes >= 43200) { // 30 days or more
+      const months = Math.round(minutes / 43200);
+      return `${months} month${months > 1 ? 's' : ''}`;
+    } else if (minutes >= 1440) { // 1 day or more
+      const days = Math.round(minutes / 1440);
+      return `${days} day${days > 1 ? 's' : ''}`;
+    } else if (minutes >= 60) { // 1 hour or more
+      const hours = Math.round(minutes / 60);
+      return `${hours} hour${hours > 1 ? 's' : ''}`;
+    } else {
+      return `${minutes} minute${minutes > 1 ? 's' : ''}`;
+    }
+  };
+
   const [researchAids, setResearchAids] = useState<ResearchAid[]>([]);
   const [services, setServices] = useState<ConsultationService[]>([]);
   const [selectedAid, setSelectedAid] = useState<ResearchAid | null>(null);
@@ -424,12 +443,11 @@ const AppointmentBooking = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="Choose a service" />
                 </SelectTrigger>
-                <SelectContent>
-                  {services
+                <SelectContent>                  {services
                     .filter(s => s.user_id === selectedAid?.id)
                     .map(service => (
                       <SelectItem key={service.id} value={service.id}>
-                        {service.title} ({service.duration_minutes} min)
+                        {service.title} ({formatDuration(service.duration_minutes)})
                       </SelectItem>
                     ))}
                 </SelectContent>

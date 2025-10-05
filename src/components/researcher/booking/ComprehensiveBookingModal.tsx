@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useBookingSystem } from "@/hooks/useBookingSystem";
+import { useResearcherAvailability } from "@/hooks/useResearcherAvailability";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 
@@ -67,6 +68,30 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
     creating, 
     processing 
   } = useBookingSystem();
+    const { 
+    getResearcherAvailability,
+    getAvailableSlots: getResearcherAvailableSlots, 
+    isDateAvailable 
+  } = useResearcherAvailability();
+
+  // Helper function to format duration in a user-friendly way
+  const formatDuration = (minutes: number) => {
+    if (minutes >= 525600) { // 365 days or more
+      const years = Math.round(minutes / 525600);
+      return `${years} year${years > 1 ? 's' : ''}`;
+    } else if (minutes >= 43200) { // 30 days or more
+      const months = Math.round(minutes / 43200);
+      return `${months} month${months > 1 ? 's' : ''}`;
+    } else if (minutes >= 1440) { // 1 day or more
+      const days = Math.round(minutes / 1440);
+      return `${days} day${days > 1 ? 's' : ''}`;
+    } else if (minutes >= 60) { // 1 hour or more
+      const hours = Math.round(minutes / 60);
+      return `${hours} hour${hours > 1 ? 's' : ''}`;
+    } else {
+      return `${minutes} minute${minutes > 1 ? 's' : ''}`;
+    }
+  };
 
   // Modal state
   const [isOpen, setIsOpen] = useState(false);
@@ -88,11 +113,12 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
   // Available slots
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
-
   // Add state for services and loading
   const [services, setServices] = useState<any[]>([]);
   const [servicesLoading, setServicesLoading] = useState(true);
-
+    // Add state for researcher availability
+  const [researcherAvailability, setResearcherAvailability] = useState<any>(null);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
   // Fetch all active services for this researcher on open
   useEffect(() => {
     if (!isOpen) return;
@@ -110,8 +136,26 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
       }
       setServicesLoading(false);
     };
+      const fetchAvailability = async () => {
+      setAvailabilityLoading(true);
+      try {
+        const availability = await getResearcherAvailability(researcher.id);
+        setResearcherAvailability(availability);
+      } catch (error) {
+        console.error('Failed to load researcher availability:', error);
+        toast({
+          title: "Availability Error",
+          description: "Failed to load researcher availability. Some dates may not be accurate.",
+          variant: "destructive"
+        });
+      } finally {
+        setAvailabilityLoading(false);
+      }
+    };
+    
     fetchServices();
-  }, [isOpen, researcher.id]);
+    fetchAvailability();
+  }, [isOpen, researcher.id, getResearcherAvailability]);
 
   // researcherServices now just filters the fetched services
   const researcherServices = services;
@@ -178,17 +222,31 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
   const getTotalPrice = () => {
     return getServicePrice() + getAddonPrice();
   };
-
   // Check if booking is free
   const isBookingFree = () => {
     return getTotalPrice() === 0;
   };
-
+  // Check if a date should be disabled (synchronous version for Calendar component)
+  const isDateDisabled = (date: Date) => {
+    // Disable past dates
+    if (date < new Date()) return true;
+    
+    // If availability is not loaded yet, allow all future dates
+    if (!researcherAvailability) return false;
+    
+    // Check if the day of week is available
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const dayOfWeek = dayNames[date.getDay()];
+    const dayAvailability = researcherAvailability[dayOfWeek];
+    
+    return !dayAvailability?.enabled;
+  };
   // Load available slots when date changes
   useEffect(() => {
     if (selectedDate && researcher.id) {
       setLoadingSlots(true);
-      getAvailableSlots(researcher.id, format(selectedDate, 'yyyy-MM-dd'))
+      // Use researcher availability instead of generic getAvailableSlots
+      getResearcherAvailableSlots(researcher.id, format(selectedDate, 'yyyy-MM-dd'))
         .then(slots => {
           setAvailableSlots(slots);
           setLoadingSlots(false);
@@ -198,7 +256,7 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
           setAvailableSlots([]);
         });
     }
-  }, [selectedDate, researcher.id]);
+  }, [selectedDate, researcher.id, getResearcherAvailableSlots]);
 
   // Handle challenge toggle
   const handleChallengeToggle = (challenge: string) => {
@@ -388,11 +446,10 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <h4 className="font-medium">{service.title}</h4>
-                          <p className="text-sm text-gray-600 mt-1">{service.description}</p>
-                          <div className="flex items-center gap-2 mt-2">
+                          <p className="text-sm text-gray-600 mt-1">{service.description}</p>                          <div className="flex items-center gap-2 mt-2">
                             <Badge variant="outline">{service.category}</Badge>
                             <span className="text-sm text-gray-500">
-                              {service.duration_minutes} minutes
+                              {formatDuration(service.duration_minutes)}
                             </span>
                           </div>
                         </div>
@@ -462,20 +519,26 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
           </div>
         );
 
-      case 2:
-        return (
+      case 2:        return (
           <div className="space-y-6">
             <div>
               <Label className="text-base font-medium">Select Date</Label>
-              <div className="mt-3">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  disabled={(date) => date < new Date() || date.getDay() === 0} // Disable past dates and Sundays
-                  className="rounded-md border"
-                />
-              </div>
+              {availabilityLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                  <span className="ml-2">Loading researcher availability...</span>
+                </div>
+              ) : (
+                <div className="mt-3">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    disabled={isDateDisabled}
+                    className="rounded-md border"
+                  />
+                </div>
+              )}
             </div>
 
             {selectedDate && (
@@ -624,11 +687,14 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
 
             <Card className="bg-green-50 border-green-200">
               <CardContent className="p-4">
-                <h4 className="font-medium mb-3 text-green-800">Booking Summary</h4>
-                <div className="space-y-2 text-sm">
+                <h4 className="font-medium mb-3 text-green-800">Booking Summary</h4>                <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>Service:</span>
                     <span>{getSelectedService()?.title}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Duration:</span>
+                    <span>{getSelectedService() ? formatDuration(getSelectedService()!.duration_minutes) : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Academic Level:</span>

@@ -15,13 +15,38 @@ import { useURLValidation } from "@/hooks/useURLValidation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import ProfileImage from "../ProfileImage";
-import type { Database } from "@/integrations/supabase/types";
+import AvailabilitySettings from "../consultation-services/AvailabilitySettings";
 
-type UserProfile = Database['public']['Tables']['users']['Row'] & {
+type UserProfile = {
+  id: string;
+  email: string;
+  name?: string | null;
+  role?: 'student' | 'expert' | 'aid' | 'admin' | null;
   subtitle?: string | null;
+  phone_number?: string | null;
+  country?: string | null;
+  institution?: string | null;
+  faculty?: string | null;
+  study_level?: string | null;
+  sex?: string | null;
+  date_of_birth?: string | null;
+  research_areas?: string[] | null;
+  topic_title?: string | null;
+  research_stage?: string | null;
+  languages?: string[] | null;
+  expertise?: string[] | null;
+  other_expertise?: string | null;
+  experience?: string | null;
+  linkedin_url?: string | null;
+  wallet_balance?: number | null;
+  preferred_payout_method?: 'mobile_money' | 'bank_transfer' | 'paypal' | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  email_notifications?: boolean | null;
 };
-type UserRole = Database['public']['Enums']['user_role'];
-type PayoutMethod = Database['public']['Enums']['payout_method'];
+
+type UserRole = 'student' | 'expert' | 'aid' | 'admin';
+type PayoutMethod = 'mobile_money' | 'bank_transfer' | 'paypal';
 
 const SettingsTab = () => {
   const { toast } = useToast();
@@ -831,8 +856,10 @@ const SettingsTab = () => {
           >
             Change Password
           </Button>
-        </CardContent>
-      </Card>
+        </CardContent>      </Card>
+
+      {/* Availability Settings - Only show for experts/researchers */}
+      {userProfile?.role === 'expert' && <AvailabilitySettings />}
 
       <div className="flex gap-4">
         <Button onClick={handleSaveSettings} className="flex-1">
