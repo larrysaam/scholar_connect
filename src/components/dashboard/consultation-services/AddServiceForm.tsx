@@ -1,12 +1,11 @@
-
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, DollarSign, Loader2 } from "lucide-react";
+import { Plus, Trash2, DollarSign, Loader2, Info } from "lucide-react";
 import PriceGridModal from "./PriceGridModal";
 
 interface AcademicLevelPrice {
@@ -32,14 +31,13 @@ interface AddServiceFormProps {
   loading: boolean;
 }
 
-const AddServiceForm = ({ onSubmit, onCancel, loading }: AddServiceFormProps) => {
+const AddServiceForm: React.FC<AddServiceFormProps> = ({ onSubmit, onCancel, loading }) => {
   const [newService, setNewService] = useState<Partial<ServiceFormData>>({
     category: "General Consultation",
     academicLevelPrices: [],
     description: "",
     addOns: []
   });
-
   const [tempAcademicLevel, setTempAcademicLevel] = useState<"Undergraduate" | "Master's" | "PhD">("Undergraduate");
   const [tempPrice, setTempPrice] = useState<number>(0);
   const [tempAddOnName, setTempAddOnName] = useState<string>("");
@@ -66,13 +64,13 @@ const AddServiceForm = ({ onSubmit, onCancel, loading }: AddServiceFormProps) =>
         return [
           "Formatting & Language Polishing",
           "Citation & Reference Check",
-          "Express Review (72 hours)"
+          "72-hour Express Full Review"
         ];
       case "Full Thesis Cycle Support":
         return [
-          "Formatting & Language Polishing",
-          "Citation & Reference Check",
-          "Express Review"
+          "Statistical Analysis Package",
+          "Research Software Training",
+          "Monthly Progress Report"
         ];
       default:
         return [];
@@ -160,25 +158,44 @@ const AddServiceForm = ({ onSubmit, onCancel, loading }: AddServiceFormProps) =>
       
       <fieldset disabled={loading} className="space-y-4">
         <div>
-          <Label htmlFor="category">Service Category</Label>
-          <div className="flex items-center space-x-2">
-            <Select
-              value={newService.category}
-              onValueChange={(value) => setNewService(prev => ({ ...prev, category: value as any }))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {serviceCategories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="flex-1">
+              <Label htmlFor="category">Service Category</Label>
+              <div className="flex items-center space-x-2">
+                <Select
+                  value={newService.category}
+                  onValueChange={(value: string) => {
+                    setNewService(prev => {
+                      const updated = { ...prev, category: value as any };
+                      // Clear add-ons if switching to Free Consultation or a category that doesn't support add-ons
+                      if (value === 'Free Consultation' || getAvailableAddOns(value).length === 0) {
+                        updated.addOns = [];
+                      }
+                      return updated;
+                    });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {serviceCategories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             {newService.category && (
-              <PriceGridModal category={newService.category} />
+              <div className="flex items-center">
+                <PriceGridModal 
+                  category={newService.category} 
+                  variant="ghost"
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                />
+              </div>
             )}
           </div>
         </div>
@@ -189,19 +206,27 @@ const AddServiceForm = ({ onSubmit, onCancel, loading }: AddServiceFormProps) =>
             id="description"
             placeholder="Describe your service offering..."
             value={newService.description}
-            onChange={(e) => setNewService(prev => ({ ...prev, description: e.target.value }))}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => 
+              setNewService(prev => ({ ...prev, description: e.target.value }))}
           />
         </div>
 
         {/* Academic Level and Price Input */}
         <div className="space-y-3">
-          <Label>Academic Level Pricing</Label>
+          <div className="flex items-center justify-between">
+            <Label>Academic Level Pricing</Label>
+            <div className="flex items-center gap-2 text-xs text-blue-600">
+              <Info className="h-3 w-3" />
+              <span>Check price grid for recommendations</span>
+            </div>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
               <Label htmlFor="academicLevel">Academic Level</Label>
               <Select
                 value={tempAcademicLevel}
-                onValueChange={(value) => setTempAcademicLevel(value as any)}
+                onValueChange={(value: string) => 
+                  setTempAcademicLevel(value as "Undergraduate" | "Master's" | "PhD")}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -223,7 +248,8 @@ const AddServiceForm = ({ onSubmit, onCancel, loading }: AddServiceFormProps) =>
                 type="number"
                 placeholder="Enter price"
                 value={tempPrice || ''}
-                onChange={(e) => setTempPrice(parseInt(e.target.value) || 0)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                  setTempPrice(parseInt(e.target.value) || 0)}
               />
             </div>
             
@@ -266,7 +292,7 @@ const AddServiceForm = ({ onSubmit, onCancel, loading }: AddServiceFormProps) =>
         </div>
 
         {/* Add-ons Section */}
-        {newService.category && getAvailableAddOns(newService.category).length > 0 && (
+        {newService.category && newService.category !== 'Free Consultation' && getAvailableAddOns(newService.category).length > 0 && (
           <div className="space-y-3">
             <Label>Optional Add-ons</Label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -274,7 +300,7 @@ const AddServiceForm = ({ onSubmit, onCancel, loading }: AddServiceFormProps) =>
                 <Label htmlFor="addonName">Add-on Service</Label>
                 <Select
                   value={tempAddOnName}
-                  onValueChange={setTempAddOnName}
+                  onValueChange={(value: string) => setTempAddOnName(value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select add-on" />
@@ -296,7 +322,8 @@ const AddServiceForm = ({ onSubmit, onCancel, loading }: AddServiceFormProps) =>
                   type="number"
                   placeholder="Enter price"
                   value={tempAddOnPrice || ''}
-                  onChange={(e) => setTempAddOnPrice(parseInt(e.target.value) || 0)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                    setTempAddOnPrice(parseInt(e.target.value) || 0)}
                 />
               </div>
               
