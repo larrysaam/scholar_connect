@@ -160,21 +160,20 @@ const Researchers = () => {
         } as const;        
         
         const studentsSupervised = studentsSupervisionMap.get(r.id)?.size || 0;
-        console.log("subtitle : ", profile[0]?.subtitle);
           return {
           id: r.id,
           name: r.name || '',
           email: r.email || '',
-          title: profile[0]?.title || '',
-          subtitle: profile[0]?.subtitle || '',
+          title: profile?.title || '',
+          subtitle: profile?.subtitle || '',
           institution: r.institution || '',
           field: profile?.department || '',
           department: profile?.department || '',
-          specialties: Array.isArray(profile[0]?.specialties) ? profile[0]?.specialties : [],
-          researchInterests: Array.isArray(profile[0]?.research_interests) ? profile[0]?.research_interests : [],
-          hourlyRate: typeof profile[0]?.hourly_rate === 'number' ? profile[0]?.hourly_rate : 0,
-          rating: typeof profile[0]?.rating === 'number' ? profile[0]?.rating : 0,
-          reviews: typeof profile[0]?.total_reviews === 'number' ? profile[0]?.total_reviews : 0,
+          specialties: Array.isArray(profile?.specialties) ? profile.specialties : [],
+          researchInterests: Array.isArray(profile?.research_interests) ? profile.research_interests : [],
+          hourlyRate: typeof profile?.hourly_rate === 'number' ? profile.hourly_rate : 0,
+          rating: typeof profile?.rating === 'number' ? profile.rating : 0,
+          reviews: typeof profile?.total_reviews === 'number' ? profile.total_reviews : 0,
           studentsSupervised,
           onlineStatus: profile?.online_status || 'offline',
           bio: profile?.bio || '',

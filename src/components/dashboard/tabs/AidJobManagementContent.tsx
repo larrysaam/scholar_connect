@@ -34,7 +34,7 @@ const AidJobManagementContent = ({ activeTab, setActiveTab }: AidJobManagementCo
   const renderTabContent = () => {
     switch (activeTab) {
       case "overview":
-        return <WelcomeOverviewTab setActiveTab={setActiveTab} />;
+        return <WelcomeOverviewTab />;
       case "job-applications":
         return <AidJobApplicationsTab />;
       case "current-jobs":
@@ -52,7 +52,7 @@ const AidJobManagementContent = ({ activeTab, setActiveTab }: AidJobManagementCo
       case "settings":
         return <SettingsTab />;
       default:
-        return <WelcomeOverviewTab setActiveTab={setActiveTab} />;
+        return <WelcomeOverviewTab />;
     }
   };
 

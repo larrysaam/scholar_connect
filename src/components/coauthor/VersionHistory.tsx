@@ -4,43 +4,69 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { History, RotateCcw, Eye, Download, Plus, GitBranch, Clock, User } from "lucide-react";
-import { useVersionHistory } from "@/hooks/useVersionHistory";
+import { History, RotateCcw, Eye, Download } from "lucide-react";
 
 interface VersionHistoryProps {
   projectId: string;
   permissions: {
     canRestore?: boolean;
     canExport?: boolean;
-    canWrite?: boolean;
-  };
-  currentDocument?: {
-    title: string;
-    abstract: string;
-    content: string;
-    references: string;
   };
 }
 
-const VersionHistory = ({ projectId, permissions, currentDocument }: VersionHistoryProps) => {
-  const { versions, loading, createVersion, restoreVersion, compareVersions } = useVersionHistory(projectId);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [newVersionTitle, setNewVersionTitle] = useState("");
-  const [selectedVersions, setSelectedVersions] = useState<string[]>([]);
-    // Convert real versions to display format
-  const convertVersionToDisplayFormat = (version: any, index: number) => ({
-    id: version.id,
-    version: `v${version.version_number}`,
-    title: version.title,
-    author: version.author?.name || "Unknown User",
-    avatar: null,
-    timestamp: version.created_at,
-    changes: 0, // Could be calculated if needed
-    isCurrent: index === 0 // First version is current
-  });
+const VersionHistory = ({ projectId, permissions }: VersionHistoryProps) => {
+  const [versions] = useState([
+    {
+      id: 1,
+      version: "v1.4",
+      title: "Added methodology section",
+      author: "Dr. Sarah Johnson",
+      avatar: null,
+      timestamp: "2024-01-15T10:30:00Z",
+      changes: 47,
+      isCurrent: true
+    },
+    {
+      id: 2,
+      version: "v1.3",
+      title: "Updated literature review",
+      author: "Prof. Michael Chen",
+      avatar: null,
+      timestamp: "2024-01-15T08:15:00Z",
+      changes: 23,
+      isCurrent: false
+    },
+    {
+      id: 3,
+      version: "v1.2",
+      title: "Revised abstract and introduction",
+      author: "Dr. Emily Rodriguez",
+      avatar: null,
+      timestamp: "2024-01-14T16:45:00Z",
+      changes: 15,
+      isCurrent: false
+    },
+    {
+      id: 4,
+      version: "v1.1",
+      title: "Initial draft structure",
+      author: "Dr. Sarah Johnson",
+      avatar: null,
+      timestamp: "2024-01-14T09:30:00Z",
+      changes: 89,
+      isCurrent: false
+    },
+    {
+      id: 5,
+      version: "v1.0",
+      title: "Project created",
+      author: "Dr. Sarah Johnson",
+      avatar: null,
+      timestamp: "2024-01-10T14:20:00Z",
+      changes: 0,
+      isCurrent: false
+    }
+  ]);
 
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -51,95 +77,32 @@ const VersionHistory = ({ projectId, permissions, currentDocument }: VersionHist
     if (diffDays === 1) return "Yesterday";
     if (diffDays < 7) return `${diffDays} days ago`;
     return date.toLocaleDateString();
-  };  const handleRestore = async (versionId: string) => {
-    const success = await restoreVersion(versionId);
-    if (success) {
-      // Refresh the page or notify parent component
-      window.location.reload();
-    }
   };
 
-  const handlePreview = (versionId: string) => {
+  const handleRestore = (versionId: number) => {
+    console.log("Restoring version:", versionId);
+  };
+
+  const handlePreview = (versionId: number) => {
     console.log("Previewing version:", versionId);
-    // Could open a modal with version content
   };
 
-  const handleExport = (versionId: string) => {
+  const handleExport = (versionId: number) => {
     console.log("Exporting version:", versionId);
-    // Could download the version content
-  };  const handleCreateVersion = async () => {
-    if (!newVersionTitle.trim()) return;
-    
-    // Use passed current document or fallback to empty content
-    const versionContent = currentDocument || {
-      title: "Current Project Title",
-      abstract: "",
-      content: "",
-      references: ""
-    };
-    
-    const success = await createVersion(newVersionTitle, versionContent, "Manual version creation");
-    if (success) {
-      setShowCreateDialog(false);
-      setNewVersionTitle("");
-    }
   };
 
-  // Always prioritize real versions from the database
-  const displayVersions = versions.length > 0 
-    ? versions.map((version, index) => convertVersionToDisplayFormat(version, index))
-    : []; // Show empty state instead of mock data
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <History className="h-5 w-5" />
-              Version History
-            </CardTitle>
-            {permissions.canWrite && (
-              <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-                <DialogTrigger asChild>
-                  <Button size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Version
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create New Version</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Input
-                        placeholder="Version title (e.g., 'Major revision', 'Final draft')"
-                        value={newVersionTitle}
-                        onChange={(e) => setNewVersionTitle(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleCreateVersion} disabled={!newVersionTitle.trim()}>
-                      Create Version
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            )}
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <History className="h-5 w-5" />
+            Version History
+          </CardTitle>
         </CardHeader>
         
-        <CardContent className="space-y-4">{loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading version history...</p>
-            </div>
-          ) : (
-            displayVersions.map((version, index) => (
+        <CardContent className="space-y-4">
+          {versions.map((version, index) => (
             <div 
               key={version.id} 
               className={`border rounded-lg p-4 ${version.isCurrent ? 'bg-blue-50 border-blue-200' : ''}`}
@@ -198,10 +161,11 @@ const VersionHistory = ({ projectId, permissions, currentDocument }: VersionHist
                     </Button>
                   )}
                 </div>
-              </div>            </div>
-          ))
-          )}          
-          {!loading && displayVersions.length === 0 && (
+              </div>
+            </div>
+          ))}
+          
+          {versions.length === 0 && (
             <div className="text-center py-8">
               <History className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No version history</h3>

@@ -26,60 +26,43 @@ const CoAuthorWorkspace = () => {
   const [showJoinModal, setShowJoinModal] = useState(false);
 
   const userRole = profile?.role || "student";
+
   const fetchProjects = useCallback(async () => {
     if (!user?.id) return;
     setLoading(true);
     setError(null);
-    
-    try {
-      // Fetch projects where user is owner - simple query without joins
-      const { data: owned, error: ownedErr } = await supabase
+    // Fetch projects where user is owner or member
+    const { data: owned, error: ownedErr } = await supabase
+      .from("projects")
+      .select("*")
+      .eq("owner_id", user.id);
+    const { data: memberships, error: memberErr } = await supabase
+      .from("coauthor_memberships")
+      .select("project_id, role")
+      .eq("user_id", user.id);
+    let memberProjects: any[] = [];
+    if (memberships && memberships.length > 0) {
+      const ids = memberships.map((m) => m.project_id);
+      const { data: memberProjectsData } = await supabase
         .from("projects")
         .select("*")
-        .eq("owner_id", user.id);
-      
-      if (ownedErr) throw ownedErr;
-
-      // Fetch projects where user is a member - simple queries without complex joins
-      const { data: memberships, error: memberErr } = await supabase
-        .from("coauthor_memberships")
-        .select("project_id, role")
-        .eq("user_id", user.id);
-      
-      if (memberErr) throw memberErr;
-
-      let memberProjects: any[] = [];
-      if (memberships && memberships.length > 0) {
-        const ids = memberships.map((m) => m.project_id);
-        const { data: memberProjectsData } = await supabase
-          .from("projects")
-          .select("*")
-          .in("id", ids);
-        
-        memberProjects = (memberProjectsData || []).map((proj) => {
-          const membership = memberships.find((m) => m.project_id === proj.id);
-          return { ...proj, role: membership?.role || "Co-Author" };
-        });
-      }
-
-      // Combine owned and member projects
-      let allProjects = [
-        ...(owned || []).map((p) => ({ ...p, role: "Primary Author" })),
-        ...memberProjects,
-      ];
-
-      // Remove duplicates (if user is both owner and member)
-      allProjects = allProjects.filter(
-        (p, idx, arr) => arr.findIndex((x) => x.id === p.id) === idx
-      );
-
-      setProjects(allProjects);
-    } catch (error: any) {
-      console.error('Error fetching projects:', error);
-      setError(error?.message || 'Failed to load projects');
-    } finally {
-      setLoading(false);
+        .in("id", ids);
+      memberProjects = (memberProjectsData || []).map((proj) => {
+        const membership = memberships.find((m) => m.project_id === proj.id);
+        return { ...proj, role: membership?.role || "Co-Author" };
+      });
     }
+    let allProjects = [
+      ...(owned || []).map((p) => ({ ...p, role: "Primary Author" })),
+      ...memberProjects,
+    ];
+    // Remove duplicates (if user is both owner and member)
+    allProjects = allProjects.filter(
+      (p, idx, arr) => arr.findIndex((x) => x.id === p.id) === idx
+    );
+    setProjects(allProjects);
+    setLoading(false);
+    if (ownedErr || memberErr) setError(ownedErr?.message || memberErr?.message);
   }, [user?.id]);
 
   useEffect(() => {

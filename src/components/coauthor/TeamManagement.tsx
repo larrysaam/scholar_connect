@@ -7,8 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users, Plus, Mail, MoreHorizontal, UserMinus } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 
 interface TeamManagementProps {
   projectId: string;
@@ -32,7 +30,6 @@ const TeamManagement = ({ projectId, teamMembers, permissions }: TeamManagementP
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("Co-Author");
-  const { toast } = useToast();
 
   const roles = [
     { value: "Primary Author", label: "Primary Author", description: "Full control over the project" },
@@ -64,97 +61,22 @@ const TeamManagement = ({ projectId, teamMembers, permissions }: TeamManagementP
     const date = new Date(dateString);
     return date.toLocaleDateString();
   };
-  const handleInvite = async () => {
-    if (!inviteEmail.trim()) return;
 
-    try {
-      // Check if user exists by email
-      const { data: existingUser } = await supabase
-        .from('users')
-        .select('id')
-        .eq('email', inviteEmail.trim())
-        .single();
-
-      // Create invitation
-      const { error } = await supabase
-        .from('coauthor_invitations')
-        .insert({
-          project_id: projectId,
-          inviter_id: (await supabase.auth.getUser()).data.user?.id,
-          invitee_id: existingUser?.id || null,
-          invitee_email: inviteEmail.trim(),
-          status: 'pending'
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Invitation sent successfully"
-      });
-
+  const handleInvite = () => {
+    if (inviteEmail.trim()) {
+      console.log("Inviting user:", { email: inviteEmail, role: inviteRole });
       setInviteEmail("");
+      setInviteRole("Co-Author");
       setShowInviteForm(false);
-    } catch (error: any) {
-      console.error('Error sending invitation:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send invitation",
-        variant: "destructive"
-      });
     }
   };
 
-  const handleChangeRole = async (memberId: string, newRole: string) => {
-    try {
-      const { error } = await supabase
-        .from('coauthor_memberships')
-        .update({ role: newRole })
-        .eq('project_id', projectId)
-        .eq('user_id', memberId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Role updated successfully"
-      });
-
-      window.location.reload();
-    } catch (error: any) {
-      console.error('Error updating role:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update role",
-        variant: "destructive"
-      });
-    }
+  const handleChangeRole = (memberId: string, newRole: string) => {
+    console.log("Changing role for member:", memberId, "to:", newRole);
   };
 
-  const handleRemoveMember = async (memberId: string) => {
-    try {
-      const { error } = await supabase
-        .from('coauthor_memberships')
-        .delete()
-        .eq('project_id', projectId)
-        .eq('user_id', memberId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Member removed successfully"
-      });
-
-      window.location.reload();
-    } catch (error: any) {
-      console.error('Error removing member:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to remove member",
-        variant: "destructive"
-      });
-    }
+  const handleRemoveMember = (memberId: string) => {
+    console.log("Removing member:", memberId);
   };
 
   return (
