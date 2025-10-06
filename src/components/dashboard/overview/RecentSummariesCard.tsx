@@ -30,13 +30,13 @@ const RecentSummariesCard = ({ summaries, onViewNotes }: RecentSummariesCardProp
                 <p className="text-sm text-gray-600">with {summary.researcher} • {summary.date}</p>
                 <p className="text-sm text-green-600 mt-1">{summary.notes}</p>
               </div>
-              <Button 
+              {/* <Button 
                 variant="outline" 
                 size="sm"
                 onClick={() => onViewNotes(summary.id)}
               >
                 View Notes
-              </Button>
+              </Button> */}
             </div>
           ))}
         </div>

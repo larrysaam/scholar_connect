@@ -25,6 +25,7 @@ import StudentAIAssistantTab from "@/components/dashboard/tabs/StudentAIAssistan
 import StudentJobApplicationsTab from "@/components/dashboard/tabs/StudentJobApplicationsTab";
 import PostJobTab from "@/components/dashboard/tabs/PostJobTab";
 import DiscussionTab from "@/components/dashboard/tabs/DiscussionTab";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const StudentDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -32,6 +33,7 @@ const StudentDashboard = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
   const { profile } = useAuth();
+  const { unreadCount } = useNotifications();
 
   const getWelcomeMessage = () => {
     if (!profile?.name) return "Student Dashboard";
@@ -130,13 +132,12 @@ const StudentDashboard = () => {
           )}
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Sidebar - hidden on mobile, visible on tablet/desktop */}
-            <div className="hidden md:block md:col-span-1">
+            {/* Sidebar - hidden on mobile, visible on tablet/desktop */}            <div className="hidden md:block md:col-span-1">
               <DashboardSidebar 
                 activeTab={activeTab} 
                 setActiveTab={handleTabChange} 
                 userRole="student"
-                notificationCount={0}
+                notificationCount={unreadCount}
               />
             </div>
             

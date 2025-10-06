@@ -14,30 +14,58 @@ interface ProfileHeaderProps {
 }
 
 const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
-  // Helper functions for verification status (copied from VerificationTab.tsx)
+  // Helper functions for verification status
   const hasVerifiedDocuments = (documents?: { status: 'pending' | 'verified' | 'rejected'; }[]) => {
     return documents?.some(doc => doc.status === 'verified') || false;
   };
 
   const getDisplayStatus = (
-    topLevelStatus: 'pending' | 'verified' | 'rejected',
+    topLevelStatus: 'pending' | 'verified' | 'rejected' | string,
     documents?: { status: 'pending' | 'verified' | 'rejected'; }[]
   ) => {
-    if (topLevelStatus === 'verified' || hasVerifiedDocuments(documents)) {
+    // Handle both string and object verification structures
+    if (typeof topLevelStatus === 'string') {
+      if (topLevelStatus === 'verified') return 'verified';
+      if (topLevelStatus === 'pending') return 'pending';
+      return 'unverified';
+    }
+    
+    // Fallback to document-based verification
+    if (hasVerifiedDocuments(documents)) {
       return 'verified';
     }
-    if (topLevelStatus === 'pending' || documents?.some(doc => doc.status === 'pending')) {
+    if (documents?.some(doc => doc.status === 'pending')) {
       return 'pending';
     }
     return 'unverified';
   };
 
   const isOverallVerified = () => {
-    const academicStatus = getDisplayStatus(researcher.verifications.academic, researcher.verifications.education?.documents);
-    const publicationStatus = getDisplayStatus(researcher.verifications.publication, researcher.verifications.publications?.documents);
-    const institutionalStatus = getDisplayStatus(researcher.verifications.institutional, researcher.verifications.employment?.documents);
+    if (!researcher.verifications) return false;
 
-    console.log("Verification statuses:", { academicStatus, publicationStatus, institutionalStatus })
+    // Handle the default verification structure from migration
+    const verifications = researcher.verifications as any;
+    
+    const academicStatus = getDisplayStatus(
+      verifications.academic || verifications.education, 
+      verifications.education?.documents
+    );
+    const publicationStatus = getDisplayStatus(
+      verifications.publication || verifications.publications, 
+      verifications.publications?.documents
+    );
+    const institutionalStatus = getDisplayStatus(
+      verifications.institutional || verifications.employment, 
+      verifications.employment?.documents
+    );
+
+    console.log("Verification statuses:", { 
+      academicStatus, 
+      publicationStatus, 
+      institutionalStatus,
+      rawVerifications: verifications
+    });
+
     return academicStatus === "verified" && publicationStatus === "verified" && institutionalStatus === "verified";
   };
 

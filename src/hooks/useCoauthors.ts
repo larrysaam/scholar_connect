@@ -54,7 +54,6 @@ export function useCoauthors(projectId: string) {
     if (error) setError(error.message);
     else setMembers(data || []);
   };
-
   // Invite a co-author by email or userId
   const inviteCoauthor = async (invitee_id: string, message?: string, invitee_email?: string) => {
     setLoading(true);
@@ -70,19 +69,43 @@ export function useCoauthors(projectId: string) {
       console.warn('[inviteCoauthor] No project selected');
       return { data: null, error: { message: 'No project selected' } };
     }
+
+    // Get invitee's email if not provided but invitee_id is available
+    let finalInviteeEmail = invitee_email;
+    if (invitee_id && !invitee_email) {
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('email')
+        .eq('id', invitee_id)
+        .single();
+      
+      if (userError) {
+        console.error('Error fetching user email:', userError);
+        setError('Failed to fetch user email');
+        setLoading(false);
+        return { data: null, error: { message: 'Failed to fetch user email' } };
+      }
+      finalInviteeEmail = userData.email;
+    }
+
     const insertObj: any = {
       project_id: projectId,
       inviter_id: user.id,
-      message,
+      message: message || '',
       status: "pending"
     };
+    
     if (invitee_id) insertObj.invitee_id = invitee_id;
-    if (invitee_email) insertObj.invitee_email = invitee_email;
+    if (finalInviteeEmail) insertObj.invitee_email = finalInviteeEmail;
+    
     console.log('[inviteCoauthor] Insert object:', insertObj);
+    
     const { data, error } = await supabase
       .from("coauthor_invitations")
       .insert(insertObj)
+      .select()
       .single();
+    
     setLoading(false);
     if (error) {
       setError(error.message);
@@ -202,17 +225,48 @@ export async function inviteCoauthorDirect({ projectId, inviterId, inviteeId, me
   if (!projectId) {
     return { data: null, error: { message: 'No project selected' } };
   }
+
+  // Get invitee's email if not provided but inviteeId is available
+  let finalInviteeEmail = inviteeEmail;
+  if (inviteeId && !inviteeEmail) {
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('email')
+      .eq('id', inviteeId)
+      .single();
+    
+    if (userError) {
+      console.error('Error fetching user email:', userError);
+      return { data: null, error: { message: 'Failed to fetch user email' } };
+    }
+    finalInviteeEmail = userData.email;
+  }
+
   const insertObj: any = {
     project_id: projectId,
     inviter_id: inviterId,
-    message,
+    message: message || '',
     status: "pending"
   };
-  if (inviteeId) { insertObj.invitee_id = inviteeId; }
-  if (inviteeEmail) { insertObj.invitee_email = inviteeEmail; }
+  
+  if (inviteeId) { 
+    insertObj.invitee_id = inviteeId; 
+  }
+  if (finalInviteeEmail) { 
+    insertObj.invitee_email = finalInviteeEmail; 
+  }
+
+  console.log('Inserting coauthor invitation:', insertObj);
+
   const { data, error } = await supabase
     .from("coauthor_invitations")
     .insert(insertObj)
+    .select()
     .single();
+  
+  if (error) {
+    console.error('Coauthor invitation insert error:', error);
+  }
+  
   return { data, error };
 }

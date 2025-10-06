@@ -17,7 +17,8 @@ import {
   Home,
   Settings,
   CheckCircle,
-  LogOut
+  LogOut,
+  Mail
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -32,13 +33,13 @@ const AdminSidebar = ({ activeTab, setActiveTab }: AdminSidebarProps) => {
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
-  };
-  const menuItems = [
+  };  const menuItems = [
     { id: "dashboard", label: "Dashboard Overview", icon: Home },
     { id: "users", label: "User Management", icon: Users },
     { id: "consultations", label: "Consultation Management", icon: Calendar },
     { id: "tasks", label: "Task Orders", icon: ClipboardList },
     { id: "payments", label: "Payments & Transactions", icon: CreditCard },
+    { id: "email-notifications", label: "Email Notifications", icon: Mail },
     { id: "content", label: "Content Management", icon: FileText },
     { id: "reports", label: "Reports & Analytics", icon: TrendingUp },
     { id: "membership", label: "Membership & VIP", icon: Crown },

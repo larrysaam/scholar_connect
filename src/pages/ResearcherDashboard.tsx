@@ -24,10 +24,12 @@ import PerformanceReputationTab from "@/components/dashboard/tabs/PerformanceRep
 import FullThesisSupportTab from "@/components/dashboard/tabs/FullThesisSupportTab";
 import MessagingTab from "@/components/dashboard/tabs/MessagingTab";
 import MisconductReportModal from "@/components/dashboard/MisconductReportModal";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const ResearcherDashboard = () => {  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(() => searchParams.get("tab") || "overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const { unreadCount } = useNotifications();
 
   const handleTabChange = (tab: string) => {
     console.log("Researcher Dashboard tab change requested:", tab);
@@ -112,12 +114,11 @@ const ResearcherDashboard = () => {  const [searchParams, setSearchParams] = use
           )}            
           <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 md:gap-6">
             {/* Responsive Sidebar - hidden on mobile, visible on tablet/desktop */}
-            <div className="hidden lg:block lg:col-span-1">              
-              <ResponsiveDashboardSidebar 
+            <div className="hidden lg:block lg:col-span-1">                <ResponsiveDashboardSidebar 
                 activeTab={activeTab} 
                 setActiveTab={handleTabChange}
                 userRole="researcher"
-                notificationCount={0}
+                notificationCount={unreadCount}
               />
             </div>
             

@@ -1,0 +1,93 @@
+name: 📧 Booking Reminders
+
+on:
+  schedule:
+    # Run every hour to check for booking reminders
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    # Allow manual triggering
+    inputs:
+      test_mode:
+        description: 'Run in test mode (dry run)'
+        required: false
+        default: 'false'
+
+jobs:
+  send-booking-reminders:
+    name: Send Booking Reminders
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🔍 Check for booking reminders
+        run: |
+          echo "Checking for upcoming bookings that need reminders..."
+          
+          # Call the Supabase Edge Function for booking reminders
+          RESPONSE=$(curl -s -w "%{http_code}" -X POST \
+            https://yujuomiqwydnwovgwtrg.supabase.co/functions/v1/booking-reminder-cron \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{"test_mode": "${{ github.event.inputs.test_mode || 'false' }}"}' \
+            -o response.json)
+          
+          HTTP_CODE="${RESPONSE: -3}"
+          
+          echo "HTTP Response Code: $HTTP_CODE"
+          
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "✅ Booking reminders processed successfully"
+            echo "Response:"
+            cat response.json
+          else
+            echo "❌ Error processing booking reminders"
+            echo "Response:"
+            cat response.json
+            exit 1
+          fi
+
+      - name: 📊 Log execution
+        if: always()
+        run: |
+          echo "Booking reminder job completed at $(date)"
+          echo "Triggered by: ${{ github.event_name }}"
+          
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual trigger with test_mode: ${{ github.event.inputs.test_mode }}"
+          fi
+
+  health-check:
+    name: Email System Health Check
+    runs-on: ubuntu-latest
+    needs: send-booking-reminders
+    if: github.event_name == 'schedule' # Only run health check on scheduled runs
+    
+    steps:
+      - name: 🏥 Test email system health
+        run: |
+          echo "Testing email system connectivity..."
+          
+          # Test the send-email-notification function
+          HEALTH_RESPONSE=$(curl -s -w "%{http_code}" -X POST \
+            https://yujuomiqwydnwovgwtrg.supabase.co/functions/v1/send-email-notification \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{"test": true, "checkConnection": true}' \
+            -o health_response.json)
+          
+          HEALTH_CODE="${HEALTH_RESPONSE: -3}"
+          
+          echo "Health check HTTP Response Code: $HEALTH_CODE"
+          
+          if [ "$HEALTH_CODE" -eq 200 ]; then
+            echo "✅ Email system is healthy"
+          else
+            echo "⚠️ Email system health check failed"
+            echo "Response:"
+            cat health_response.json
+          fi
+
+      - name: 📈 Report status
+        if: always()
+        run: |
+          echo "Health check completed"
+          echo "Next scheduled run: $(date -d '+1 hour')"

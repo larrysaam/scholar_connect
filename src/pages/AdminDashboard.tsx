@@ -8,6 +8,7 @@ import UserManagement from "@/components/admin/tabs/UserManagement";
 import ConsultationManagement from "@/components/admin/tabs/ConsultationManagement";
 import TaskOrdersManagement from "@/components/admin/tabs/TaskOrdersManagement";
 import PaymentTransactions from "@/components/admin/tabs/PaymentTransactions";
+import EmailNotificationDashboard from "@/components/admin/EmailNotificationDashboard";
 import ContentManagement from "@/components/admin/tabs/ContentManagement";
 import ReportsAnalytics from "@/components/admin/tabs/ReportsAnalytics";
 import MembershipSettings from "@/components/admin/tabs/MembershipSettings";
@@ -17,7 +18,6 @@ import VerificationManagement from "@/components/admin/tabs/VerificationManageme
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
-
   const renderTabContent = () => {
     switch (activeTab) {
       case "dashboard":
@@ -30,6 +30,8 @@ const AdminDashboard = () => {
         return <TaskOrdersManagement />;
       case "payments":
         return <PaymentTransactions />;
+      case "email-notifications":
+        return <EmailNotificationDashboard />;
       case "content":
         return <ContentManagement />;
       case "reports":

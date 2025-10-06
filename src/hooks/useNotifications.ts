@@ -45,6 +45,9 @@ export interface CreateNotificationData {
   action_label?: string;
   metadata?: Record<string, any>;
   expires_at?: string;
+  sendEmail?: boolean; // New option to send email notification
+  emailTemplate?: string; // Email template to use
+  emailData?: Record<string, any>; // Data for email template
 }
 
 export const useNotifications = () => {
@@ -298,17 +301,346 @@ export const useNotifications = () => {
     }
   };
 
+  // Enhanced create notification function with email support
+  const createNotificationWithEmail = async (
+    data: CreateNotificationData, 
+    recipientUserId?: string
+  ): Promise<boolean> => {
+    const targetUserId = recipientUserId || user?.id;
+    if (!targetUserId) return false;
+
+    try {
+      // Create the notification in database
+      const { data: notification, error } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: targetUserId,
+          title: data.title,
+          message: data.message,
+          type: data.type || 'info',
+          category: data.category || 'system',
+          action_url: data.action_url,
+          action_label: data.action_label,
+          metadata: data.metadata || {},
+          expires_at: data.expires_at
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating notification:', error);
+        return false;
+      }
+
+      // Send email notification if requested and user is current user
+      if (data.sendEmail && targetUserId === user?.id) {
+        try {
+          await sendEmailNotification({
+            userId: targetUserId,
+            template: data.emailTemplate || 'generic',
+            templateData: {
+              title: data.title,
+              content: data.message,
+              actionUrl: data.action_url,
+              actionLabel: data.action_label,
+              ...data.emailData
+            },
+            notificationType: data.category || 'system'
+          });
+        } catch (emailError) {
+          console.error('Error sending email notification:', emailError);
+          // Don't fail the main notification if email fails
+        }
+      }
+
+      // Update local state only if it's for current user
+      if (targetUserId === user?.id) {
+        setNotifications(prev => [notification, ...prev]);
+        setUnreadCount(prev => prev + 1);
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error creating notification:', error);
+      return false;
+    }
+  };
+
+  // Send email notification function
+  const sendEmailNotification = async ({
+    userId,
+    email,
+    template,
+    templateData,
+    notificationType,
+    subject,
+    html
+  }: {
+    userId?: string;
+    email?: string;
+    template?: string;
+    templateData?: Record<string, any>;
+    notificationType?: string;
+    subject?: string;
+    html?: string;
+  }): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-email-notification', {
+        body: {
+          userId: userId,
+          to: email,
+          template: template,
+          templateData: templateData,
+          notificationType: notificationType,
+          subject: subject,
+          html: html
+        }
+      });
+
+      if (error) {
+        console.error('Error invoking email function:', error);
+        return false;
+      }
+
+      return data?.success || false;
+    } catch (error) {
+      console.error('Error sending email notification:', error);
+      return false;
+    }
+  };
+
+  // Send booking reminder emails
+  const sendBookingReminder = async (bookingId: string): Promise<boolean> => {
+    try {
+      // Get booking details
+      const { data: booking, error: bookingError } = await supabase
+        .from('service_bookings')
+        .select(`
+          *,
+          researcher:users!provider_id(name),
+          service:consultation_services(title),
+          client:users!client_id(name, email)
+        `)
+        .eq('id', bookingId)
+        .single();
+
+      if (bookingError || !booking) {
+        console.error('Error fetching booking:', bookingError);
+        return false;
+      }
+
+      // Calculate time until booking
+      const bookingDateTime = new Date(`${booking.scheduled_date}T${booking.scheduled_time}`);
+      const now = new Date();
+      const hoursUntil = Math.round((bookingDateTime.getTime() - now.getTime()) / (1000 * 60 * 60));
+      
+      let timeUntil = '';
+      if (hoursUntil > 12) {
+        timeUntil = 'tomorrow';
+      } else if (hoursUntil > 1) {
+        timeUntil = `${hoursUntil} hours`;
+      } else {
+        timeUntil = '1 hour';
+      }
+
+      // Send email reminder
+      return await sendEmailNotification({
+        userId: booking.client_id,
+        template: 'booking_reminder',
+        templateData: {
+          date: booking.scheduled_date,
+          time: booking.scheduled_time,
+          timeUntil: timeUntil,
+          researcherName: booking.researcher?.name || 'Your researcher',
+          serviceName: booking.service?.title || 'Consultation',
+          meetingLink: booking.meeting_link,
+          dashboardUrl: `${window.location.origin}/dashboard?tab=my-bookings`
+        },
+        notificationType: 'consultation'
+      });
+    } catch (error) {
+      console.error('Error sending booking reminder:', error);
+      return false;
+    }
+  };
+
+  // Send consultation confirmation email
+  const sendConsultationConfirmationEmail = async (bookingId: string): Promise<boolean> => {
+    try {
+      const { data: booking, error } = await supabase
+        .from('service_bookings')
+        .select(`
+          *,
+          researcher:users!provider_id(name),
+          service:consultation_services(title),
+          client:users!client_id(name, email)
+        `)
+        .eq('id', bookingId)
+        .single();
+
+      if (error || !booking) return false;
+
+      return await sendEmailNotification({
+        userId: booking.client_id,
+        template: 'consultation_confirmed',
+        templateData: {
+          date: booking.scheduled_date,
+          time: booking.scheduled_time,
+          researcherName: booking.researcher?.name || 'Your researcher',
+          serviceName: booking.service?.title || 'Consultation',
+          meetingLink: booking.meeting_link,
+          dashboardUrl: `${window.location.origin}/dashboard?tab=my-bookings`
+        },
+        notificationType: 'consultation'
+      });
+    } catch (error) {
+      console.error('Error sending consultation confirmation email:', error);
+      return false;
+    }
+  };
+
+  // Send payment confirmation email
+  const sendPaymentConfirmationEmail = async (transactionId: string): Promise<boolean> => {
+    try {
+      const { data: transaction, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('id', transactionId)
+        .single();
+
+      if (error || !transaction) return false;
+
+      return await sendEmailNotification({
+        userId: transaction.user_id,
+        template: 'payment_received',
+        templateData: {
+          amount: transaction.amount,
+          currency: transaction.currency || 'XAF',
+          transactionId: transaction.payment_id,
+          date: new Date(transaction.created_at).toLocaleDateString(),
+          serviceName: transaction.description || 'Service',
+          dashboardUrl: `${window.location.origin}/dashboard?tab=payments`
+        },
+        notificationType: 'payment'
+      });
+    } catch (error) {
+      console.error('Error sending payment confirmation email:', error);
+      return false;
+    }
+  };
+
+  // Send job application acceptance email
+  const sendJobApplicationAcceptedEmail = async (applicationId: string): Promise<boolean> => {
+    try {
+      const { data: application, error } = await supabase
+        .from('job_applications')
+        .select(`
+          *,
+          job:jobs(
+            title,
+            budget,
+            currency,
+            client:users(name)
+          ),
+          applicant:users(name, email)
+        `)
+        .eq('id', applicationId)
+        .single();
+
+      if (error || !application) return false;
+
+      return await sendEmailNotification({
+        userId: application.applicant_id,
+        template: 'job_application_accepted',
+        templateData: {
+          jobTitle: application.job?.title || 'Job',
+          clientName: application.job?.client?.name || 'Client',
+          budget: application.job?.budget || 0,
+          currency: application.job?.currency || 'XAF',
+          startDate: application.start_date || 'To be determined',
+          dashboardUrl: `${window.location.origin}/dashboard?tab=my-jobs`
+        },
+        notificationType: 'application'
+      });
+    } catch (error) {
+      console.error('Error sending job application acceptance email:', error);
+      return false;
+    }
+  };
+
+  // Send coauthor invitation email
+  const sendCoauthorInvitationEmail = async (invitationId: string): Promise<boolean> => {
+    try {
+      const { data: invitation, error } = await supabase
+        .from('coauthor_invitations')
+        .select(`
+          *,
+          project:projects(
+            title,
+            description,
+            owner:users(name)
+          ),
+          invitee:users(name, email)
+        `)
+        .eq('id', invitationId)
+        .single();
+
+      if (error || !invitation) return false;
+
+      return await sendEmailNotification({
+        userId: invitation.invitee_id,
+        template: 'coauthor_invitation',
+        templateData: {
+          projectTitle: invitation.project?.title || 'Research Project',
+          projectDescription: invitation.project?.description || 'No description provided',
+          inviterName: invitation.project?.owner?.name || 'Project owner',
+          role: 'Collaborator',
+          acceptUrl: `${window.location.origin}/dashboard?tab=collaborations&invitation=${invitation.id}`,
+          dashboardUrl: `${window.location.origin}/dashboard?tab=collaborations`
+        },
+        notificationType: 'collaboration'
+      });
+    } catch (error) {
+      console.error('Error sending coauthor invitation email:', error);
+      return false;
+    }
+  };
+
+  // Send custom email with generic template
+  const sendCustomEmail = async (params: {
+    userId?: string;
+    email?: string;
+    subject: string;
+    title: string;
+    content: string;
+    actionUrl?: string;
+    actionLabel?: string;
+    notificationType?: string;
+  }): Promise<boolean> => {
+    return await sendEmailNotification({
+      userId: params.userId,
+      email: params.email,
+      template: 'generic',
+      templateData: {
+        subject: params.subject,
+        subtitle: 'System Notification',
+        title: params.title,
+        content: params.content,
+        actionUrl: params.actionUrl,
+        actionLabel: params.actionLabel
+      },
+      notificationType: params.notificationType || 'system'
+    });
+  };
+
   // Update notification preferences
   const updatePreferences = async (updates: Partial<NotificationPreferences>): Promise<boolean> => {
-    if (!user || !preferences) return false;
+    if (!user) return false;
 
     try {
       const { data, error } = await supabase
         .from('notification_preferences')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
+        .update(updates)
         .eq('user_id', user.id)
         .select()
         .single();
@@ -403,6 +735,14 @@ export const useNotifications = () => {
     markAllAsRead,
     deleteNotification,
     createNotification,
+    createNotificationWithEmail, // Enhanced function with email
+    sendEmailNotification, // Direct email sending
+    sendBookingReminder, // Booking reminder emails
+    sendConsultationConfirmationEmail, // Consultation confirmation
+    sendPaymentConfirmationEmail, // Payment confirmation
+    sendJobApplicationAcceptedEmail, // Job application acceptance
+    sendCoauthorInvitationEmail, // Coauthor invitation
+    sendCustomEmail, // Custom email with generic template
     updatePreferences,
     fetchNotifications,
     cleanupExpiredNotifications
