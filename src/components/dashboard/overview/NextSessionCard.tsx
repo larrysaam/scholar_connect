@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Video } from "lucide-react";
+import { Clock, Video, Calendar, Plus } from "lucide-react";
 
 interface UpcomingSession {
   id: string;
@@ -12,11 +12,37 @@ interface UpcomingSession {
 }
 
 interface NextSessionCardProps {
-  session: UpcomingSession;
-  onJoinSession: (sessionId: string) => void;
+  session?: UpcomingSession | null;
+  onJoinSession?: (sessionId: string) => void;
+  onBookSession?: () => void;
 }
 
-const NextSessionCard = ({ session, onJoinSession }: NextSessionCardProps) => {
+const NextSessionCard = ({ session, onJoinSession, onBookSession }: NextSessionCardProps) => {
+  if (!session) {
+    return (
+      <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
+            <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+            <span>Schedule Your Next Session</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center text-center p-4 sm:p-6 bg-gradient-to-r from-gray-50 to-slate-50 rounded-lg">
+            <p className="text-sm text-gray-600 mb-4">No upcoming consultations scheduled. Book your next session to get started!</p>
+            <Button
+              onClick={onBookSession}
+              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Book Consultation</span>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200">
       <CardHeader className="pb-3">
@@ -37,14 +63,14 @@ const NextSessionCard = ({ session, onJoinSession }: NextSessionCardProps) => {
               <p className="text-xl sm:text-2xl font-bold text-blue-600">{session.countdownHours}h</p>
               <p className="text-xs text-gray-500">until session</p>
             </div>
-            <Button 
+            {/* <Button 
               size="sm"
               className="flex-shrink-0 bg-blue-600 hover:bg-blue-700"
-              onClick={() => onJoinSession(session.id)}
+              onClick={() => onJoinSession?.(session.id)}
             >
               <Video className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               <span className="text-xs sm:text-sm">Join Session</span>
-            </Button>
+            </Button> */}
           </div>
         </div>
       </CardContent>
