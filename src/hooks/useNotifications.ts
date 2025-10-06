@@ -384,6 +384,7 @@ export const useNotifications = () => {
     subject?: string;
     html?: string;
   }): Promise<boolean> => {
+    console.log("sendEmailNotification")
     try {
       const { data, error } = await supabase.functions.invoke('send-email-notification', {
         body: {
@@ -584,6 +585,8 @@ export const useNotifications = () => {
         `)
         .eq('id', invitationId)
         .single();
+
+        console.log("sendCoauthorInvitationEmail ")
 
       if (error || !invitation) return false;
 

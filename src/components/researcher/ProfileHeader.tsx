@@ -144,9 +144,9 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
             </div>
 
             {/* Hourly Rate */}
-            <div className="text-lg font-bold text-green-600">
+            {/* <div className="text-lg font-bold text-green-600">
               {(typeof researcher.hourly_rate === 'number' ? researcher.hourly_rate : 0).toLocaleString()} XAF/hour
-            </div>
+            </div> */}
           </div>
 
           {/* Action Buttons */}

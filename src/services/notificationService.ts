@@ -185,27 +185,52 @@ export class NotificationService {
   /**
    * Collaboration-related notifications
    */
-  static async notifyCollaborationInvite(userId: string, inviterName: string, projectTitle: string) {
+  static async notifyCollaborationInvite(userId: string, inviterName: string, projectTitle: string, invitationId?: string, projectId?: string) {
     return this.createNotification({
       userId,
       title: 'Collaboration Invitation',
       message: `${inviterName} has invited you to collaborate on "${projectTitle}".`,
       type: 'info',
       category: 'collaboration',
-      actionUrl: '/dashboard?tab=collaboration',
-      actionLabel: 'View Invitation'
+      actionUrl: invitationId ? `/dashboard?tab=collaborations&invitation=${invitationId}` : '/dashboard?tab=collaborations',
+      actionLabel: 'View Invitation',
+      metadata: {
+        invitation_id: invitationId,
+        project_id: projectId,
+        inviter_name: inviterName
+      }
     });
   }
 
-  static async notifyCollaborationAccepted(userId: string, collaboratorName: string, projectTitle: string) {
+  static async notifyCollaborationAccepted(userId: string, collaboratorName: string, projectTitle: string, projectId?: string) {
     return this.createNotification({
       userId,
       title: 'Collaboration Accepted',
       message: `${collaboratorName} has accepted your invitation to collaborate on "${projectTitle}".`,
       type: 'success',
       category: 'collaboration',
-      actionUrl: '/dashboard?tab=collaboration',
-      actionLabel: 'View Project'
+      actionUrl: projectId ? `/dashboard?tab=collaborations&project=${projectId}` : '/dashboard?tab=collaborations',
+      actionLabel: 'View Project',
+      metadata: {
+        project_id: projectId,
+        collaborator_name: collaboratorName
+      }
+    });
+  }
+
+  static async notifyCollaborationDeclined(userId: string, collaboratorName: string, projectTitle: string, projectId?: string) {
+    return this.createNotification({
+      userId,
+      title: 'Collaboration Declined',
+      message: `${collaboratorName} has declined your invitation to collaborate on "${projectTitle}".`,
+      type: 'info',
+      category: 'collaboration',
+      actionUrl: projectId ? `/dashboard?tab=collaborations&project=${projectId}` : '/dashboard?tab=collaborations',
+      actionLabel: 'View Project',
+      metadata: {
+        project_id: projectId,
+        collaborator_name: collaboratorName
+      }
     });
   }
 

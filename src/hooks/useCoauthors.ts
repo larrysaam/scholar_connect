@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/supabaseClient";
 import { useAuth } from "@/hooks/useAuth";
+import { NotificationService } from "@/services/notificationService";
+import { useNotifications } from "@/hooks/useNotifications";
 
 export interface CoauthorInvitation {
   id: string;
@@ -24,6 +26,7 @@ export interface CoauthorMembership {
 
 export function useCoauthors(projectId: string) {
   const { user } = useAuth();
+  const { sendCoauthorInvitationEmail } = useNotifications();
   const [invitations, setInvitations] = useState<CoauthorInvitation[]>([]);
   const [members, setMembers] = useState<CoauthorMembership[]>([]);
   const [loading, setLoading] = useState(false);
@@ -99,8 +102,7 @@ export function useCoauthors(projectId: string) {
     if (finalInviteeEmail) insertObj.invitee_email = finalInviteeEmail;
     
     console.log('[inviteCoauthor] Insert object:', insertObj);
-    
-    const { data, error } = await supabase
+      const { data, error } = await supabase
       .from("coauthor_invitations")
       .insert(insertObj)
       .select()
@@ -111,49 +113,195 @@ export function useCoauthors(projectId: string) {
       setError(error.message);
       console.error('[inviteCoauthor] Supabase error:', error, 'Insert object:', insertObj);
     } else {
-      fetchInvitations();
       console.log('[inviteCoauthor] Success:', data);
+      
+      // Create onsite notification for invitee
+      if (invitee_id && data) {
+        try {
+          // Get project details for better notification context
+          const { data: projectData } = await supabase
+            .from('projects')
+            .select('title, description')
+            .eq('id', projectId)
+            .single();
+
+          // Get inviter details
+          const { data: inviterData } = await supabase
+            .from('users')
+            .select('name')
+            .eq('id', user.id)
+            .single();
+
+          await NotificationService.createNotification({
+            userId: invitee_id,
+            title: 'New Collaboration Invitation',
+            message: `${inviterData?.name || 'Someone'} invited you to collaborate on "${projectData?.title || 'a research project'}"`,
+            type: 'info',
+            category: 'collaboration',
+            actionUrl: `/dashboard?tab=collaborations&invitation=${data.id}`,
+            actionLabel: 'View Invitation',
+            metadata: {
+              invitation_id: data.id,
+              project_id: projectId,
+              inviter_id: user.id
+            }
+          });
+
+          // Send email notification
+          await sendCoauthorInvitationEmail(data.id);
+          
+        } catch (notificationError) {
+          console.error('Error creating coauthor invitation notifications:', notificationError);
+          // Don't fail the invitation creation if notifications fail
+        }
+      }
+      
+      fetchInvitations();
     }
     return { data, error };
   };
-
   // Accept an invitation
   const acceptInvitation = async (invitationId: string) => {
     setLoading(true);
-    // Update invitation status
-    const { error: updateError } = await supabase
-      .from("coauthor_invitations")
-      .update({ status: "accepted", responded_at: new Date().toISOString() })
-      .eq("id", invitationId);
-    if (updateError) {
-      setError(updateError.message);
-      setLoading(false);
-      return;
-    }
-    // Add to memberships
-    const invitation = invitations.find(i => i.id === invitationId);
-    if (invitation) {
-      await supabase.from("coauthor_memberships").insert({
-        project_id: invitation.project_id,
-        user_id: invitation.invitee_id,
-        role: "coauthor"
-      });
-    }
-    setLoading(false);
-    fetchInvitations();
-    fetchMembers();
-  };
+    
+    try {
+      // Get invitation details before accepting
+      const invitation = invitations.find(i => i.id === invitationId);
+      if (!invitation) {
+        setError('Invitation not found');
+        setLoading(false);
+        return;
+      }
 
+      // Update invitation status
+      const { error: updateError } = await supabase
+        .from("coauthor_invitations")
+        .update({ status: "accepted", responded_at: new Date().toISOString() })
+        .eq("id", invitationId);
+      
+      if (updateError) {
+        setError(updateError.message);
+        setLoading(false);
+        return;
+      }
+
+      // Add to memberships
+      if (invitation) {
+        await supabase.from("coauthor_memberships").insert({
+          project_id: invitation.project_id,
+          user_id: invitation.invitee_id,
+          role: "coauthor"
+        });
+
+        // Notify the inviter that their invitation was accepted
+        try {
+          const { data: projectData } = await supabase
+            .from('projects')
+            .select('title, owner_id')
+            .eq('id', invitation.project_id)
+            .single();
+
+          const { data: accepterData } = await supabase
+            .from('users')
+            .select('name')
+            .eq('id', invitation.invitee_id || user?.id)
+            .single();
+
+          if (projectData?.owner_id) {
+            await NotificationService.createNotification({
+              userId: projectData.owner_id,
+              title: 'Collaboration Invitation Accepted',
+              message: `${accepterData?.name || 'Someone'} accepted your invitation to collaborate on "${projectData.title || 'your project'}"`,
+              type: 'success',
+              category: 'collaboration',
+              actionUrl: `/dashboard?tab=collaborations&project=${invitation.project_id}`,
+              actionLabel: 'View Project',
+              metadata: {
+                invitation_id: invitationId,
+                project_id: invitation.project_id,
+                accepter_id: invitation.invitee_id || user?.id
+              }
+            });
+          }
+        } catch (notificationError) {
+          console.error('Error creating acceptance notification:', notificationError);
+        }
+      }
+      
+      setLoading(false);
+      fetchInvitations();
+      fetchMembers();
+    } catch (error) {
+      console.error('Error accepting invitation:', error);
+      setError('Failed to accept invitation');
+      setLoading(false);
+    }
+  };
   // Decline an invitation
   const declineInvitation = async (invitationId: string) => {
     setLoading(true);
-    const { error } = await supabase
-      .from("coauthor_invitations")
-      .update({ status: "declined", responded_at: new Date().toISOString() })
-      .eq("id", invitationId);
-    setLoading(false);
-    if (error) setError(error.message);
-    fetchInvitations();
+    
+    try {
+      // Get invitation details before declining
+      const invitation = invitations.find(i => i.id === invitationId);
+      if (!invitation) {
+        setError('Invitation not found');
+        setLoading(false);
+        return;
+      }
+
+      const { error } = await supabase
+        .from("coauthor_invitations")
+        .update({ status: "declined", responded_at: new Date().toISOString() })
+        .eq("id", invitationId);
+      
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+        return;
+      }
+
+      // Notify the inviter that their invitation was declined
+      try {
+        const { data: projectData } = await supabase
+          .from('projects')
+          .select('title, owner_id')
+          .eq('id', invitation.project_id)
+          .single();
+
+        const { data: declinerData } = await supabase
+          .from('users')
+          .select('name')
+          .eq('id', invitation.invitee_id || user?.id)
+          .single();
+
+        if (projectData?.owner_id) {
+          await NotificationService.createNotification({
+            userId: projectData.owner_id,
+            title: 'Collaboration Invitation Declined',
+            message: `${declinerData?.name || 'Someone'} declined your invitation to collaborate on "${projectData.title || 'your project'}"`,
+            type: 'info',
+            category: 'collaboration',
+            actionUrl: `/dashboard?tab=collaborations&project=${invitation.project_id}`,
+            actionLabel: 'View Project',
+            metadata: {
+              invitation_id: invitationId,
+              project_id: invitation.project_id,
+              decliner_id: invitation.invitee_id || user?.id
+            }
+          });
+        }
+      } catch (notificationError) {
+        console.error('Error creating decline notification:', notificationError);
+      }
+
+      setLoading(false);
+      fetchInvitations();
+    } catch (error) {
+      console.error('Error declining invitation:', error);
+      setError('Failed to decline invitation');
+      setLoading(false);
+    }
   };
 
   // Remove a co-author
@@ -266,6 +414,64 @@ export async function inviteCoauthorDirect({ projectId, inviterId, inviteeId, me
   
   if (error) {
     console.error('Coauthor invitation insert error:', error);
+    return { data, error };
+  }
+
+  // Create notifications and send email after successful invitation creation
+  if (inviteeId && data) {
+    try {
+      // Get project details for better notification context
+      const { data: projectData } = await supabase
+        .from('projects')
+        .select('title, description')
+        .eq('id', projectId)
+        .single();
+
+      // Get inviter details
+      const { data: inviterData } = await supabase
+        .from('users')
+        .select('name')
+        .eq('id', inviterId)
+        .single();      // Create onsite notification
+      await NotificationService.createNotification({
+        userId: inviteeId,
+        title: 'New Collaboration Invitation',
+        message: `${inviterData?.name || 'Someone'} invited you to collaborate on "${projectData?.title || 'a research project'}"`,
+        type: 'info',
+        category: 'collaboration',
+        actionUrl: `/dashboard?tab=collaborations&invitation=${data.id}`,
+        actionLabel: 'View Invitation',
+        metadata: {
+          invitation_id: data.id,
+          project_id: projectId,
+          inviter_id: inviterId
+        }
+      });
+
+      // Send email notification
+      const { data: emailService } = await supabase.functions.invoke('send-email-notification', {
+        body: {
+          userId: inviteeId,
+          to: finalInviteeEmail,
+          template: 'coauthor_invitation',
+          templateData: {
+            projectTitle: projectData?.title || 'Research Project',
+            projectDescription: projectData?.description || 'No description provided',
+            inviterName: inviterData?.name || 'Project owner',
+            role: 'Collaborator',
+            acceptUrl: `${window.location.origin}/dashboard?tab=collaborations&invitation=${data.id}`,
+            dashboardUrl: `${window.location.origin}/dashboard?tab=collaborations`
+          },
+          notificationType: 'collaboration'
+        }
+      });
+
+      console.log('Coauthor invitation notifications and email sent successfully', emailService);
+      
+    } catch (notificationError) {
+      console.error('Error creating coauthor invitation notifications:', notificationError);
+      // Don't fail the invitation creation if notifications fail
+    }
   }
   
   return { data, error };
