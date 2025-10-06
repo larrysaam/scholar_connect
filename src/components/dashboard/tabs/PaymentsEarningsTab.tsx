@@ -21,7 +21,6 @@ import { useToast } from "@/hooks/use-toast";
 import { usePayments } from "@/hooks/usePayments";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Tables } from "@/integrations/supabase/types";
 import { Select as OperatorSelect, SelectContent as OperatorSelectContent, SelectItem as OperatorSelectItem, SelectTrigger as OperatorSelectTrigger, SelectValue as OperatorSelectValue } from "@/components/ui/select";
 
 const PaymentsEarningsTab = () => {
@@ -31,10 +30,11 @@ const PaymentsEarningsTab = () => {
   const [paymentMethodType, setPaymentMethodType] = useState("");
   const [paymentDetails, setPaymentDetails] = useState<any>({});
   const [editingPaymentMethod, setEditingPaymentMethod] = useState<any>(null);
-  const [withdrawals, setWithdrawals] = useState<Tables<'withdrawals'>[]>([]);
-  const [withdrawalsLoading, setWithdrawalsLoading] = useState(false);
-  const [withdrawalPhone, setWithdrawalPhone] = useState("");
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [withdrawalsLoading, setWithdrawalsLoading] = useState(false);  const [withdrawalPhone, setWithdrawalPhone] = useState("");
   const [withdrawalOperator, setWithdrawalOperator] = useState("");
+  const [lastWithdrawalAttempt, setLastWithdrawalAttempt] = useState(0);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
   const { toast } = useToast();
 
   const {
@@ -57,13 +57,73 @@ const PaymentsEarningsTab = () => {
   const pendingEarnings = earnings.reduce((sum, earning) => 
     earning.status === "pending" ? sum + earning.amount : sum, 0
   );
-
   // Pagination state for transactions
   const [transactionPage, setTransactionPage] = useState(1);
   const transactionsPerPage = 10;
   const [paginatedTransactions, setPaginatedTransactions] = useState<any[]>([]);
   const [totalTransactionPages, setTotalTransactionPages] = useState(1);
   const [transactionsLoading, setTransactionsLoading] = useState(false);
+  // Rate limiting function
+  const canAttemptWithdrawal = () => {
+    const timeSinceLastAttempt = Date.now() - lastWithdrawalAttempt;
+    const minimumWaitTime = 30 * 1000; // 30 seconds in milliseconds
+
+    if (timeSinceLastAttempt < minimumWaitTime) {
+      const waitSeconds = Math.ceil((minimumWaitTime - timeSinceLastAttempt) / 1000);
+      toast({
+        title: "Rate Limited",
+        description: `Please wait ${waitSeconds} seconds before attempting another withdrawal`,
+        variant: "destructive"
+      });
+      return false;
+    }
+    return true;
+  };
+  // Check if withdrawal is allowed without showing toast
+  const isWithdrawalAllowed = () => {
+    if (isWithdrawing) return false;
+    const timeSinceLastAttempt = Date.now() - lastWithdrawalAttempt;
+    const minimumWaitTime = 30 * 1000; // 30 seconds in milliseconds
+    return timeSinceLastAttempt >= minimumWaitTime;
+  };
+  // Get remaining cooldown time
+  const getRemainingCooldown = () => {
+    const timeSinceLastAttempt = Date.now() - lastWithdrawalAttempt;
+    const minimumWaitTime = 30 * 1000; // 30 seconds in milliseconds
+    const remaining = Math.max(0, minimumWaitTime - timeSinceLastAttempt);
+    return Math.ceil(remaining / 1000);
+  };  // Send withdrawal success email notification using Supabase function
+  const sendWithdrawalSuccessEmail = async (withdrawalId: string, amount: number, phone: string, operator: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-email-notification', {
+        body: {
+          userId: user.id,
+          to: user.email,
+          template: 'withdrawal_successful',
+          templateData: {
+            amount: amount.toLocaleString(),
+            currency: 'XAF',
+            paymentMethod: `${operator} Mobile Money`,
+            phoneNumber: phone,
+            date: new Date().toLocaleDateString(),
+            transactionId: withdrawalId,
+            dashboardUrl: `${window.location.origin}/dashboard?tab=earnings`
+          },
+          notificationType: 'withdrawal'
+        }
+      });
+
+      if (error) {
+        console.error('Email notification error:', error);
+        throw new Error('Failed to send email notification');
+      }
+      
+      console.log('Email notification sent successfully:', data);
+    } catch (error) {
+      console.error('Email notification error:', error);
+      throw error;
+    }
+  };
 
   // Fetch transactions from Supabase (replace 'transactions' with your table name if needed)
   useEffect(() => {
@@ -133,9 +193,7 @@ const PaymentsEarningsTab = () => {
     updatePaymentMethod({ ...method, details: paymentDetails });
     setEditingPaymentMethod(null);
     setPaymentDetails({});
-  };
-
-  const handleRequestWithdrawal = async () => {
+  };  const handleRequestWithdrawal = async () => {
     const amount = parseFloat(withdrawalAmount);
     if (!amount || amount <= 0) {
       toast({ title: "Error", description: "Invalid amount", variant: "destructive" });
@@ -150,6 +208,20 @@ const PaymentsEarningsTab = () => {
       toast({ title: "Error", description: "Insufficient balance (pending withdrawals included)", variant: "destructive" });
       return;
     }
+    
+    // Check rate limiting
+    if (!canAttemptWithdrawal()) {
+      return;
+    }
+
+    // Prevent multiple simultaneous requests
+    if (isWithdrawing) {
+      toast({ title: "Error", description: "Withdrawal already in progress", variant: "destructive" });
+      return;
+    }
+
+    setIsWithdrawing(true);
+
     try {
       const response = await fetch("http://localhost:4000/api/mesomb-withdraw", {
         method: "POST",
@@ -158,41 +230,88 @@ const PaymentsEarningsTab = () => {
           receiver: withdrawalPhone,
           amount,
           service: withdrawalOperator,
-          country: "CM", // Cameroon (set as needed)
-          currency: "XAF", // Central African CFA franc (set as needed)
+          country: "CM",
+          currency: "XAF",
           customer: user.id,
         }),
       });
+
+      if (!response.ok) {
+        throw new Error('API request failed');
+      }
+
       const result = await response.json();
-      if (result.operationSuccess && result.transactionSuccess) {
-        const { error } = await supabase.from('withdrawals').insert({
-          researcher_id: user.id,
-          amount,
-          status: 'completed',
-          notes: `Withdrawal via MeSomb (${withdrawalOperator}) to ${withdrawalPhone}`,
+      
+      // Determine withdrawal status based on both API response and operation success
+      const withdrawalStatus = response.ok && result.operationSuccess && result.transactionSuccess 
+        ? 'completed' 
+        : 'failed';
+
+      // Construct detailed notes including failure reason if applicable
+      const failureReason = !result.operationSuccess ? 'Operation failed at payment provider' :
+                           !result.transactionSuccess ? 'Transaction failed' : '';
+      const withdrawalNotes = `Withdrawal via MeSomb (${withdrawalOperator}) to ${withdrawalPhone}${failureReason ? ` - ${failureReason}` : ''}`;
+
+      const { data: withdrawal, error } = await supabase.from('withdrawals').insert({
+        researcher_id: user.id,
+        amount,
+        status: withdrawalStatus,
+        notes: withdrawalNotes,
+      }).select().single();
+
+      if (!error && withdrawal) {
+        // Update last withdrawal attempt time
+        setLastWithdrawalAttempt(Date.now());
+
+        // Show appropriate toast based on status
+        const message = withdrawalStatus === 'completed'
+          ? `Withdrawal of ${amount.toLocaleString()} XAF has been completed successfully.`
+          : `Withdrawal of ${amount.toLocaleString()} XAF has failed. ${failureReason}`;
+
+        toast({
+          title: withdrawalStatus === 'completed' ? "Withdrawal Successful" : "Withdrawal Failed",
+          description: message,
+          variant: withdrawalStatus === 'completed' ? "default" : "destructive"
         });
-        if (!error) {
-          toast({ title: "Withdrawal Requested", description: `Withdrawal of ${amount.toLocaleString()} XAF has been requested.` });
-          setWithdrawalAmount("");
-          setWithdrawalPhone("");
-          setWithdrawalOperator("");
-          const { data } = await supabase
-            .from('withdrawals')
-            .select('*')
-            .eq('researcher_id', user.id)
-            .order('requested_at', { ascending: false });
-          setWithdrawals(data || []);
-        } else {
-          toast({ title: "Error", description: "Failed to record withdrawal", variant: "destructive" });
+
+        // Send email notification for successful withdrawals
+        if (withdrawalStatus === 'completed') {
+          try {
+            await sendWithdrawalSuccessEmail(withdrawal.id, amount, withdrawalPhone, withdrawalOperator);
+          } catch (emailError) {
+            console.error('Error sending withdrawal success email:', emailError);
+            // Don't show error to user as withdrawal was successful
+          }
         }
+
+        // Reset form only on success or after recording the attempt
+        setWithdrawalAmount("");
+        setWithdrawalPhone("");
+        setWithdrawalOperator("");
+
+        // Refresh withdrawals list
+        const { data } = await supabase
+          .from('withdrawals')
+          .select('*')
+          .eq('researcher_id', user.id)
+          .order('requested_at', { ascending: false });
+        setWithdrawals(data || []);
       } else {
-        toast({ title: "Error", description: "Withdrawal failed at payment provider", variant: "destructive" });
+        throw new Error('Failed to record withdrawal');
       }
     } catch (err) {
-      toast({ title: "Error", description: "Withdrawal failed", variant: "destructive" });
+      // Update rate limit timer even on error to prevent spam
+      setLastWithdrawalAttempt(Date.now());
+      
+      toast({ 
+        title: "Error", 
+        description: err instanceof Error ? err.message : "Withdrawal failed", 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsWithdrawing(false);
     }
   };
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
@@ -201,11 +320,12 @@ const PaymentsEarningsTab = () => {
         return <Badge variant="secondary">Pending</Badge>;
       case "processing":
         return <Badge className="bg-blue-600">Processing</Badge>;
+      case "failed":
+        return <Badge className="bg-red-600">Failed</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
-
   useEffect(() => {
     const fetchWithdrawals = async () => {
       if (!user) return;
@@ -220,10 +340,28 @@ const PaymentsEarningsTab = () => {
     };
     if (user) fetchWithdrawals();
   }, [user]);
+  // Timer to update button text during cooldown
+  useEffect(() => {
+    if (!isWithdrawalAllowed() && !isWithdrawing) {
+      const interval = setInterval(() => {
+        // Force re-render to update button text by triggering a minimal state change
+        setLastWithdrawalAttempt(prev => prev);
+      }, 1000);
 
+      const timeout = setTimeout(() => {
+        clearInterval(interval);
+      }, getRemainingCooldown() * 1000);
+
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+      };
+    }
+  }, [lastWithdrawalAttempt, isWithdrawing]);
   const totalWithdrawn = withdrawals.filter(w => w.status === "completed").reduce((sum, w) => sum + Number(w.amount), 0);
-  const pendingWithdrawals = withdrawals.filter(w => w.status === "pending" || w.status === "requested").reduce((sum, w) => sum + Number(w.amount), 0);
+  const pendingWithdrawals = withdrawals.filter(w => w.status === "pending" || w.status === "processing").reduce((sum, w) => sum + Number(w.amount), 0);
   // Calculate available balance as: Total Earnings - (Total Withdrawn + Pending Withdrawals)
+  // Failed withdrawals are not included in pending or completed, so they don't affect balance
   const computedAvailableBalance = totalEarnings - (totalWithdrawn + pendingWithdrawals);
 
   if (loading) {
@@ -509,13 +647,13 @@ const PaymentsEarningsTab = () => {
             <div className="bg-blue-100 rounded p-2 text-blue-800 mb-2">
               Available Balance: <span className="font-bold">{computedAvailableBalance.toLocaleString()} XAF</span>
             </div>
-            <Label htmlFor="withdrawal-amount">Amount (XAF)</Label>
-            <Input
+            <Label htmlFor="withdrawal-amount">Amount (XAF)</Label>            <Input
               id="withdrawal-amount"
               type="number"
               placeholder="Enter amount"
               value={withdrawalAmount}
               onChange={(e) => setWithdrawalAmount(e.target.value)}
+              disabled={isWithdrawing}
             />
             <Label htmlFor="withdrawal-phone">Phone Number</Label>
             <Input
@@ -524,9 +662,10 @@ const PaymentsEarningsTab = () => {
               placeholder="Enter phone number"
               value={withdrawalPhone}
               onChange={(e) => setWithdrawalPhone(e.target.value)}
+              disabled={isWithdrawing}
             />
             <Label htmlFor="withdrawal-operator">Operator</Label>
-            <OperatorSelect value={withdrawalOperator} onValueChange={setWithdrawalOperator}>
+            <OperatorSelect value={withdrawalOperator} onValueChange={setWithdrawalOperator} disabled={isWithdrawing}>
               <OperatorSelectTrigger>
                 <OperatorSelectValue placeholder="Select operator" />
               </OperatorSelectTrigger>
@@ -535,9 +674,21 @@ const PaymentsEarningsTab = () => {
                 <OperatorSelectItem value="ORANGE">ORANGE</OperatorSelectItem>
                 
               </OperatorSelectContent>
-            </OperatorSelect>
-            <Button onClick={handleRequestWithdrawal} className="w-full mt-2">
-              Request Withdrawal
+            </OperatorSelect>            <Button 
+              onClick={handleRequestWithdrawal} 
+              className="w-full mt-2" 
+              disabled={!isWithdrawalAllowed() || isWithdrawing}
+            >
+              {isWithdrawing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : isWithdrawalAllowed() ? (
+                "Request Withdrawal" 
+              ) : (
+                `Wait ${getRemainingCooldown()}s`
+              )}
             </Button>
           </div>
           <div className="mt-4">

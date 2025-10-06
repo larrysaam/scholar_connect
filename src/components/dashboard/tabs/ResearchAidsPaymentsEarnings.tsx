@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Tables } from "@/integrations/supabase/types";
 import { Select as OperatorSelect, SelectContent as OperatorSelectContent, SelectItem as OperatorSelectItem, SelectTrigger as OperatorSelectTrigger, SelectValue as OperatorSelectValue } from "@/components/ui/select";
 
 const ResearchAidsPaymentsEarnings = () => {
@@ -34,10 +33,11 @@ const ResearchAidsPaymentsEarnings = () => {
   const [paymentMethodType, setPaymentMethodType] = useState("");
   const [paymentDetails, setPaymentDetails] = useState<any>({});
   const [editingPaymentMethod, setEditingPaymentMethod] = useState<any>(null);
-  const [withdrawals, setWithdrawals] = useState<Tables<'withdrawals'>[]>([]);
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [withdrawalsLoading, setWithdrawalsLoading] = useState(false);
   const [withdrawalPhone, setWithdrawalPhone] = useState("");
-  const [withdrawalOperator, setWithdrawalOperator] = useState("");
+  const [withdrawalOperator, setWithdrawalOperator] = useState("");  const [lastWithdrawalAttempt, setLastWithdrawalAttempt] = useState(0);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
   
   // Pagination state for transactions
   const [transactionPage, setTransactionPage] = useState(1);
@@ -45,6 +45,70 @@ const ResearchAidsPaymentsEarnings = () => {
   const [paginatedTransactions, setPaginatedTransactions] = useState<any[]>([]);
   const [totalTransactionPages, setTotalTransactionPages] = useState(1);
   const [transactionsLoading, setTransactionsLoading] = useState(false);
+
+  // Rate limiting function
+  const canAttemptWithdrawal = () => {
+    const timeSinceLastAttempt = Date.now() - lastWithdrawalAttempt;
+    const minimumWaitTime = 30 * 1000; // 30 seconds in milliseconds
+
+    if (timeSinceLastAttempt < minimumWaitTime) {
+      const waitSeconds = Math.ceil((minimumWaitTime - timeSinceLastAttempt) / 1000);
+      toast({
+        title: "Rate Limited",
+        description: `Please wait ${waitSeconds} seconds before attempting another withdrawal`,
+        variant: "destructive"
+      });
+      return false;
+    }
+    return true;
+  };
+
+  // Check if withdrawal is allowed without showing toast
+  const isWithdrawalAllowed = () => {
+    if (isWithdrawing) return false;
+    const timeSinceLastAttempt = Date.now() - lastWithdrawalAttempt;
+    const minimumWaitTime = 30 * 1000; // 30 seconds in milliseconds
+    return timeSinceLastAttempt >= minimumWaitTime;
+  };
+
+  // Get remaining cooldown time
+  const getRemainingCooldown = () => {
+    const timeSinceLastAttempt = Date.now() - lastWithdrawalAttempt;
+    const minimumWaitTime = 30 * 1000; // 30 seconds in milliseconds
+    const remaining = Math.max(0, minimumWaitTime - timeSinceLastAttempt);
+    return Math.ceil(remaining / 1000);
+  };  // Send withdrawal success email notification using Supabase function
+  const sendWithdrawalSuccessEmail = async (withdrawalId: string, amount: number, phone: string, operator: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-email-notification', {
+        body: {
+          userId: user.id,
+          to: user.email,
+          template: 'withdrawal_successful',
+          templateData: {
+            amount: amount.toLocaleString(),
+            currency: 'XAF',
+            paymentMethod: `${operator} Mobile Money`,
+            phoneNumber: phone,
+            date: new Date().toLocaleDateString(),
+            transactionId: withdrawalId,
+            dashboardUrl: `${window.location.origin}/dashboard?tab=earnings`
+          },
+          notificationType: 'withdrawal'
+        }
+      });
+
+      if (error) {
+        console.error('Email notification error:', error);
+        throw new Error('Failed to send email notification');
+      }
+      
+      console.log('Email notification sent successfully:', data);
+    } catch (error) {
+      console.error('Email notification error:', error);
+      throw error;
+    }
+  };
 
   const {
     earnings,
@@ -77,7 +141,6 @@ const ResearchAidsPaymentsEarnings = () => {
     };
     if (user) fetchTransactions();
   }, [user, transactionPage]);
-
   // Fetch withdrawal history
   useEffect(() => {
     const fetchWithdrawals = async () => {
@@ -93,6 +156,25 @@ const ResearchAidsPaymentsEarnings = () => {
     };
     if (user) fetchWithdrawals();
   }, [user]);
+
+  // Timer to update button text during cooldown
+  useEffect(() => {
+    if (!isWithdrawalAllowed() && !isWithdrawing) {
+      const interval = setInterval(() => {
+        // Force re-render to update button text by triggering a minimal state change
+        setLastWithdrawalAttempt(prev => prev);
+      }, 1000);
+
+      const timeout = setTimeout(() => {
+        clearInterval(interval);
+      }, getRemainingCooldown() * 1000);
+
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+      };
+    }
+  }, [lastWithdrawalAttempt, isWithdrawing]);
 
   const totalEarnings = earnings.reduce((sum, earning) => 
     earning.status === "completed" || earning.status === "confirmed" ? sum + earning.amount : sum, 0
@@ -170,9 +252,13 @@ const ResearchAidsPaymentsEarnings = () => {
       title: "Payment Method Updated",
       description: "Payment method has been updated successfully"
     });
-  };
-  const handleRequestWithdrawal = async () => {
+  };  const handleRequestWithdrawal = async () => {
     const amount = parseFloat(withdrawalAmount);
+    
+    // Check rate limiting first
+    if (!canAttemptWithdrawal()) {
+      return;
+    }
     
     if (!amount || amount <= 0) {
       toast({
@@ -202,8 +288,27 @@ const ResearchAidsPaymentsEarnings = () => {
       return;
     }
 
+    if (amount < 500) {
+      toast({
+        title: "Minimum withdrawal is 500 FCFA",
+        description: "Please enter an amount of at least 500 FCFA",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsWithdrawing(true);
+    setLastWithdrawalAttempt(Date.now());
+
     try {
-      const response = await fetch("http://localhost:4000/api/mesomb-withdraw", {
+      console.log('Initiating withdrawal:', {
+        amount,
+        phone: withdrawalPhone,
+        operator: withdrawalOperator,
+        userId: user.id
+      });
+
+      const response = await fetch("http://localhost:3001/api/withdraw", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -213,44 +318,80 @@ const ResearchAidsPaymentsEarnings = () => {
           country: "CM", // Cameroon
           currency: "XAF", // Central African CFA franc
           customer: user.id,
+          type: 'research_aid'
         }),
       });
       
       const result = await response.json();
-      if (result.operationSuccess && result.transactionSuccess) {
-        const { error } = await supabase.from('withdrawals').insert({
-          researcher_id: user.id,
-          amount,
-          status: 'completed',
-          notes: `Withdrawal via MeSomb (${withdrawalOperator}) to ${withdrawalPhone}`,
+      console.log('Withdrawal response:', result);
+
+      // Check for proper success status based on backend response
+      const withdrawalStatus = response.ok && result.operationSuccess && result.transactionSuccess 
+        ? 'completed' : 'failed';
+
+      // Construct detailed notes including failure reason if applicable
+      const failureReason = !result.operationSuccess ? 'Operation failed at payment provider' :
+                           !result.transactionSuccess ? 'Transaction failed' : '';
+      const withdrawalNotes = `Withdrawal via MeSomb (${withdrawalOperator}) to ${withdrawalPhone}${failureReason ? ` - ${failureReason}` : ''}`;
+
+      const { data: withdrawal, error } = await supabase.from('withdrawals').insert({
+        researcher_id: user.id,
+        amount,
+        status: withdrawalStatus,
+        notes: withdrawalNotes,
+      }).select().single();
+
+      if (!error && withdrawal) {
+        // Show appropriate toast based on status
+        const message = withdrawalStatus === 'completed'
+          ? `Withdrawal of ${amount.toLocaleString()} XAF has been completed successfully.`
+          : `Withdrawal of ${amount.toLocaleString()} XAF has failed. ${failureReason}`;
+
+        toast({
+          title: withdrawalStatus === 'completed' ? "Withdrawal Successful" : "Withdrawal Failed",
+          description: message,
+          variant: withdrawalStatus === 'completed' ? "default" : "destructive"
         });
-        if (!error) {
-          toast({ 
-            title: "Withdrawal Successful", 
-            description: `Withdrawal of ${amount.toLocaleString()} XAF has been processed.` 
-          });
-          setWithdrawalAmount("");
-          setWithdrawalPhone("");
-          setWithdrawalOperator("");
-          
-          // Refresh withdrawal history
-          const { data } = await supabase
-            .from('withdrawals')
-            .select('*')
-            .eq('researcher_id', user.id)
-            .order('requested_at', { ascending: false });
-          setWithdrawals(data || []);
-        } else {
-          toast({ title: "Error", description: "Failed to record withdrawal", variant: "destructive" });
+
+        // Send email notification for successful withdrawals
+        if (withdrawalStatus === 'completed') {
+          try {
+            await sendWithdrawalSuccessEmail(withdrawal.id, amount, withdrawalPhone, withdrawalOperator);
+            console.log('Email notification sent successfully');
+          } catch (emailError) {
+            console.error('Error sending withdrawal success email:', emailError);
+            // Don't show error to user as withdrawal was successful
+          }
         }
+
+        // Reset form only on success or after recording the attempt
+        setWithdrawalAmount("");
+        setWithdrawalPhone("");
+        setWithdrawalOperator("");
+
+        // Refresh withdrawals list
+        const { data } = await supabase
+          .from('withdrawals')
+          .select('*')
+          .eq('researcher_id', user.id)
+          .order('requested_at', { ascending: false });
+        setWithdrawals(data || []);
       } else {
-        toast({ title: "Error", description: "Withdrawal failed at payment provider", variant: "destructive" });
+        throw new Error('Failed to record withdrawal');
       }
     } catch (err) {
-      toast({ title: "Error", description: "Withdrawal failed", variant: "destructive" });
+      // Update rate limit timer even on error to prevent spam
+      setLastWithdrawalAttempt(Date.now());
+      
+      toast({ 
+        title: "Error", 
+        description: err instanceof Error ? err.message : "Withdrawal failed", 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsWithdrawing(false);
     }
   };
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
@@ -259,6 +400,8 @@ const ResearchAidsPaymentsEarnings = () => {
         return <Badge variant="secondary">Pending</Badge>;
       case "processing":
         return <Badge className="bg-blue-600">Processing</Badge>;
+      case "failed":
+        return <Badge className="bg-red-600">Failed</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -479,9 +622,21 @@ const ResearchAidsPaymentsEarnings = () => {
                 <OperatorSelectItem value="MTN">MTN</OperatorSelectItem>
                 <OperatorSelectItem value="ORANGE">ORANGE</OperatorSelectItem>
               </OperatorSelectContent>
-            </OperatorSelect>
-            <Button onClick={handleRequestWithdrawal} className="w-full mt-2">
-              Request Withdrawal
+            </OperatorSelect>            <Button 
+              onClick={handleRequestWithdrawal} 
+              className="w-full mt-2"
+              disabled={!isWithdrawalAllowed() || isWithdrawing}
+            >
+              {isWithdrawing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : isWithdrawalAllowed() ? (
+                "Request Withdrawal" 
+              ) : (
+                `Wait ${getRemainingCooldown()}s`
+              )}
             </Button>
           </div>
           <div className="mt-4">
