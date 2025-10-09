@@ -203,7 +203,7 @@ const Dashboard = () => {
             <div className="col-span-1 lg:col-span-3">
               {/* Notifications Banner */}
               <div className="mb-4">
-                <NotificationsBanner />
+                <NotificationsBanner  notificationCount={unreadCount} setActiveTab={handleTabChange}/>
               </div>
               
               {/* Main Content Area */}
