@@ -362,7 +362,9 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
               <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
               Add Add-on
             </Button>
-          </div>          <div className="space-y-3">
+          </div>          
+          
+          <div className="space-y-3">
             {formData.addons?.map((addon, index) => (
               <div key={`addon-${index}`} className="p-3 border rounded-lg space-y-3">
                 <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center gap-2 sm:gap-3">
