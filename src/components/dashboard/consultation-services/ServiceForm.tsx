@@ -9,6 +9,22 @@ import { CreateServiceData } from "@/hooks/useConsultationServices";
 import { AcademicLevelPrice, ServiceAddon } from "@/types/consultations";
 import PriceGridModal from "./PriceGridModal";
 
+// Predefined add-on options with descriptions
+const ADDON_OPTIONS = [
+  {
+    name: 'Express Review',
+    description: 'Expedited review process with faster turnaround time',
+  },
+  {
+    name: 'Citation & Reference Check',
+    description: 'Thorough check and verification of citations and references',
+  },
+  {
+    name: 'Formatting & Language Polishing',
+    description: 'Advanced formatting and academic language enhancement',
+  }
+];
+
 interface ServiceFormProps {
   formData: CreateServiceData;
   onFormDataChange: (data: CreateServiceData) => void;
@@ -162,10 +178,17 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
       )
     });
   };
-
   const addAddon = () => {
+    // Add a new add-on with first option as default
+    const defaultAddon = ADDON_OPTIONS[0];
     updateFormData({
-      addons: [...(formData.addons || []), { name: '', description: '', price: 0, currency: 'XAF', is_active: true }]
+      addons: [...(formData.addons || []), { 
+        name: defaultAddon.name, 
+        description: defaultAddon.description, 
+        price: 0, 
+        currency: 'XAF', 
+        is_active: true 
+      }]
     });
   };
 
@@ -339,17 +362,31 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
               <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
               Add Add-on
             </Button>
-          </div>
-          <div className="space-y-3">
+          </div>          <div className="space-y-3">
             {formData.addons?.map((addon, index) => (
               <div key={`addon-${index}`} className="p-3 border rounded-lg space-y-3">
                 <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center gap-2 sm:gap-3">
-                  <Input
+                  <Select
                     value={addon.name}
-                    onChange={(e) => updateAddon(index, 'name', e.target.value)}
-                    placeholder="Add-on name"
-                    className="flex-1 text-xs sm:text-sm"
-                  />
+                    onValueChange={(value) => {
+                      const selectedAddon = ADDON_OPTIONS.find(opt => opt.name === value);
+                      updateAddon(index, 'name', value);
+                      if (selectedAddon) {
+                        updateAddon(index, 'description', selectedAddon.description);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="flex-1 text-xs sm:text-sm">
+                      <SelectValue placeholder="Select an add-on" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ADDON_OPTIONS.map((option) => (
+                        <SelectItem key={option.name} value={option.name} className="text-xs sm:text-sm">
+                          {option.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
@@ -370,12 +407,9 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
                     </Button>
                   </div>
                 </div>
-                <Input
-                  value={addon.description || ''}
-                  onChange={(e) => updateAddon(index, 'description', e.target.value)}
-                  placeholder="Add-on description (optional)"
-                  className="text-xs sm:text-sm"
-                />
+                <p className="text-xs sm:text-sm text-gray-600">
+                  {addon.description}
+                </p>
               </div>
             ))}
           </div>
