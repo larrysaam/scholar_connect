@@ -34,6 +34,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 
 const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [tabData, setTabData] = useState({})
   const [activeTab, setActiveTab] = useState(() => searchParams.get("tab") || "overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [userName, setUserName] = useState("");
@@ -86,9 +87,11 @@ const Dashboard = () => {
     setShowOnboarding(false);
   };
 
-  const handleTabChange = (tab: string) => {
+  const handleTabChange = (tab: string, data = null) => {
     console.log("Dashboard tab change requested:", tab);
     setActiveTab(tab);
+    setTabData(data);
+
     // Update URL parameters to reflect the current tab
     setSearchParams({ tab });
   };
@@ -109,7 +112,7 @@ const Dashboard = () => {
       case "post-job":
         return <PostJobTab />;
       case "my-bookings":
-        return <MyBookingsTab />;
+        return <MyBookingsTab  setActiveTab={handleTabChange}/>;
       case "session-booking":
         return <SessionBookingTab />;
       case "performance":
@@ -123,7 +126,7 @@ const Dashboard = () => {
       case "payments":
         return <PaymentsTab />;
       case "messages":
-        return <StudentMessagesTab />;
+        return <StudentMessagesTab  TabData={tabData}/>;
       case "quality":
         return <QualityFeedbackTab />;
       case "discussion":

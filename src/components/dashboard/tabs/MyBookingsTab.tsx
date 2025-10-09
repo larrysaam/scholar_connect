@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,7 +55,8 @@ import { useBookingSystem } from "@/hooks/useBookingSystem";
 import { AddReviewDialog } from "./AddReviewDialog";
 import { Booking } from "@/types/bookings";
 
-const MyBookingsTab = () => {
+const MyBookingsTab = ({setActiveTab}) => {
+  const navigate = useNavigate();
   const {
     bookings,
     loading,
@@ -243,7 +245,7 @@ const MyBookingsTab = () => {
                 <span className="truncate capitalize">{booking.academic_level}</span>
               </div>
               <div className="flex items-center gap-1 min-w-0">
-                <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+              
                 <span className="truncate font-medium">
                   {booking.total_price.toLocaleString()} {booking.currency}
                 </span>
@@ -428,12 +430,18 @@ const MyBookingsTab = () => {
                 <span className="hidden sm:inline">Reviewed</span>
                 <span className="sm:hidden">Reviewed</span>
               </Button>
-            )}
-
+            )}            
             <Button 
               size="sm" 
               variant="outline"
               className="w-full sm:w-auto text-xs sm:text-sm"
+              onClick={() => setActiveTab('messages', {
+                openChat: true,
+                recipientId: booking.provider_id,
+                recipientName: booking.provider?.name,
+                bookingId: booking.id,
+                consultationTitle: booking.service?.title
+              })}
             >
               <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Message</span>

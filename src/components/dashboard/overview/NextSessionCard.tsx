@@ -30,13 +30,13 @@ const NextSessionCard = ({ session, onJoinSession, onBookSession }: NextSessionC
         <CardContent>
           <div className="flex flex-col items-center text-center p-4 sm:p-6 bg-gradient-to-r from-gray-50 to-slate-50 rounded-lg">
             <p className="text-sm text-gray-600 mb-4">No upcoming consultations scheduled. Book your next session to get started!</p>
-            <Button
+            {/* <Button
               onClick={onBookSession}
               className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
             >
               <Plus className="h-4 w-4" />
               <span>Book Consultation</span>
-            </Button>
+            </Button> */}
           </div>
         </CardContent>
       </Card>
