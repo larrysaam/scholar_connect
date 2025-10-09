@@ -40,11 +40,28 @@ const DiscussionTab = () => {
 
   // Categories for discussion posts
   const categories = [
-    'Questions',
-    'Tools & Resources', 
-    'Opportunities',
-    'General Discussion'
-  ];
+  "Dedication",
+  "Acknowledgement",
+  "Table of Contents",
+  "Title",
+  "Abstract",
+  "Introduction",
+  "Problem Statement",
+  "Objectives",
+  "Research Questions",
+  "Hypotheses",
+  "Literature Review",
+  "Theoretical Framework",
+  "Conceptual Framework",
+  "Methodology",
+  "Data Analysis",
+  "Results",
+  "Discussion",
+  "Conclusion",
+  "References",
+  "Annexes",
+  "General Discussions"
+]
   // Filter posts based on search criteria
   const filteredPosts = posts.filter(post => {
     const matchesCategory = searchCategory === "all" || post.category === searchCategory;
