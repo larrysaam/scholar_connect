@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Shield, CheckCircle, AlertTriangle, Upload, FileText, User, GraduationCap, Award, Building, Loader2, XCircle } from "lucide-react";
+import { Shield, CheckCircle, AlertTriangle, Upload, FileText, User, GraduationCap, Award, Building, Loader2, XCircle, File, FileImage, FileText as FileTextIcon } from "lucide-react";
 import { useAuth } from '@/hooks/useAuth';
 import { useResearcherProfile } from '@/hooks/useResearcherProfile';
 import { useDocumentUpload } from '@/hooks/useDocumentUpload';
@@ -62,7 +62,6 @@ const VerificationTab = () => {
   const [otherEmployment, setOtherEmployment] = useState("");
 
   useEffect(() => {
-    console.log("verficaions : ", researcher);
     if (researcher?.verifications?.employment?.otherDetails) {
       setOtherEmployment(researcher.verifications.employment.otherDetails);
     }
@@ -221,6 +220,26 @@ const VerificationTab = () => {
     );
   };
 
+  // Helper to get file icon based on extension
+  const getFileIcon = (filename: string) => {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'pdf':
+        return <FileText className="h-5 w-5 text-red-500" />;
+      case 'doc':
+      case 'docx':
+        return <FileText className="h-5 w-5 text-blue-500" />;
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+      case 'webp':
+        return <FileImage className="h-5 w-5 text-green-500" />;
+      default:
+        return <File className="h-5 w-5 text-gray-500" />;
+    }
+  };
+
   // Helper to get status info for badges
   const getStatusInfo = (status: VerificationDocument['status']) => {
     switch (status) {
@@ -248,10 +267,8 @@ const VerificationTab = () => {
     <div className="space-y-6">
       {VERIFICATION_ITEMS.map((item) => {
         const verifications = researcher?.verifications || {};
-        console.log(`Rendering item ${item.key}:`, verifications[item.key]);
         const categoryData = verifications[item.key];
         const documents = (categoryData?.documents || []) as VerificationDocument[];
-        console.log(`Documents for ${item.key}:`, documents);
 
         const statusInfo = getStatusInfo(documents[0]?.status || 'pending');
 
@@ -279,32 +296,31 @@ const VerificationTab = () => {
               {/* Document List */}
             
               {documents.length > 0 && (
-                <div className="space-y-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                   
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {documents.map((doc) => (
-                   
-                    <div key={doc.id} className="relative p-4 border rounded-lg">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <p className="font-medium">{doc.filename}</p>
-                          <p className="text-sm text-gray-500">
+                    <Card key={doc.id} className="relative p-4 hover:shadow-lg transition-shadow duration-200">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2">
+                            {getFileIcon(doc.filename)}
+                            <p className="font-semibold text-sm truncate">{doc.filename}</p>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
                             Uploaded {new Date(doc.uploadedAt).toLocaleDateString()}
                           </p>
                           {doc.rejectionReason && (
-                            <p className="text-sm text-red-600 mt-1">
-                              Reason: {doc.rejectionReason}
-                            </p>
+                            <Badge variant="destructive" className="mt-1 text-xs">
+                              Rejected: {doc.rejectionReason}
+                            </Badge>
                           )}
-                          <p className="text-xs text-gray-500">
-                            Document URL: {doc.url || 'No URL available'}
-                          </p>
                         </div>
                         {isProfileOwner && (
                           <Button
-                            variant="destructive"
+                            variant="ghost"
                             size="sm"
                             onClick={() => handleDeleteDocument(item.key, doc.id)}
                             disabled={loadingStates[item.key]}
+                            className="absolute top-2 right-2 h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
                           >
                             {loadingStates[item.key] ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -314,15 +330,18 @@ const VerificationTab = () => {
                           </Button>
                         )}
                       </div>
-                      {doc.url ? (
-                        <>
-                          {console.log('Attempting to preview document:', doc)}
-                          {getFilePreview(doc.url, doc.filename)}
-                        </>
-                      ) : (
-                        <p className="text-sm text-red-600 mt-2">URL not available for this document</p>
-                      )}
-                    </div>
+                      <div className="mt-3">
+                        {doc.url ? (
+                          <div className="border rounded-md overflow-hidden bg-muted/50">
+                            {getFilePreview(doc.url, doc.filename)}
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center h-32 bg-muted/50 rounded-md">
+                            <p className="text-sm text-muted-foreground">Preview not available</p>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
                   ))}
                 </div>
               )}
