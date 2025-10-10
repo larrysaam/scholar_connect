@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Shield, CheckCircle, AlertTriangle, Upload, FileText, User, GraduationCap, Award, Building, Loader2, XCircle } from "lucide-react";
@@ -10,375 +9,377 @@ import { useAuth } from '@/hooks/useAuth';
 import { useResearcherProfile } from '@/hooks/useResearcherProfile';
 import { useDocumentUpload } from '@/hooks/useDocumentUpload';
 import { useToast } from '@/components/ui/use-toast';
+import { verificationService, type VerificationDocument } from '@/services/verificationService';
 
-// Define the structure for a single verification document
-interface VerificationDocument {
-  documentType: string;
-  status: 'verified' | 'pending' | 'rejected' | 'not_started';
-  fileUrl?: string;
-  fileName?: string;
-  uploadedAt?: string;
-  rejectionReason?: string;
+interface VerificationItem {
+  key: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  maxFiles?: number;
+  required?: boolean;
 }
 
-// Define the structure for a verification category
-interface VerificationCategory {
-  documents: VerificationDocument[];
-  otherDetails?: string;
-}
-
-// Define the overall verifications structure
-interface Verifications {
-  [key: string]: VerificationCategory;
-}
+const VERIFICATION_ITEMS: VerificationItem[] = [
+  {
+    key: 'identity',
+    title: 'Identity Document',
+    description: 'A government-issued ID (passport, national ID, or driver\'s license)',
+    icon: <User className="h-6 w-6" />,
+    maxFiles: 1,
+    required: true
+  },
+  {
+    key: 'academic',
+    title: 'Academic Credentials',
+    description: 'Your highest academic qualification (degree, diploma, or certificate)',
+    icon: <GraduationCap className="h-6 w-6" />,
+    maxFiles: 3,
+    required: true
+  },
+  {
+    key: 'professional',
+    title: 'Professional Certifications',
+    description: 'Any relevant professional certifications or licenses',
+    icon: <Award className="h-6 w-6" />,
+    maxFiles: 5
+  },
+  {
+    key: 'employment',
+    title: 'Employment',
+    description: 'Current or previous employment verification',
+    icon: <Building className="h-6 w-6" />
+  }
+];
 
 const VerificationTab = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { researcher, loading: profileLoading, updateProfile, refetch } = useResearcherProfile(user?.id || '');
-  const { uploadDocument } = useDocumentUpload();
-
+  const { uploadDocument, deleteDocument, isUploading } = useDocumentUpload(user?.id || '', 'researcher');
+  
   const [loadingStates, setLoadingStates] = useState<{ [key: string]: boolean }>({});
   const [otherEmployment, setOtherEmployment] = useState("");
 
   useEffect(() => {
+    console.log("verficaions : ", researcher);
     if (researcher?.verifications?.employment?.otherDetails) {
       setOtherEmployment(researcher.verifications.employment.otherDetails);
     }
   }, [researcher]);
 
-  // Helper to always get verifications as an object
-  function getCurrentVerifications(verifications: any): Verifications {
-    if (typeof verifications === 'string') {
-      try {
-        return JSON.parse(verifications);
-      } catch {
-        return {};
-      }
-    } else if (typeof verifications === 'object' && verifications !== null) {
-      return { ...verifications };
+  useEffect(() => {
+    if (researcher?.verifications) {
+      console.log('Researcher verifications:', researcher.verifications);
     }
-    return {};
-  }
+  }, [researcher]);
 
-  // Helper to get file preview type
-  function getFilePreview(fileUrl: string, fileName?: string) {
-    const ext = (fileName || fileUrl).split('.').pop()?.toLowerCase();
-    if (!ext) return null;
-    if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(ext)) {
-      return <img src={fileUrl} alt={fileName} className="max-h-32 max-w-xs rounded border" />;
+  // Check if user is profile owner
+  const isProfileOwner = user && researcher && user.id === researcher.id;
+
+  // File upload handler with improved error handling and type validation
+  const handleFileUpload = async (categoryKey: string) => {
+    if (!user) {
+      toast({ title: 'Error', description: 'You must be logged in to upload documents.', variant: 'destructive' });
+      return;
     }
-    if (["pdf"].includes(ext)) {
+
+    // Create file input
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp';
+    
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      // Set loading state
+      setLoadingStates(prev => ({ ...prev, [categoryKey]: true }));
+      
+      try {
+        // Upload the document
+        const result = await uploadDocument(file, categoryKey);
+        if (!result) throw new Error('Failed to upload file');
+
+        // Refresh profile data
+        await refetch();
+
+        toast({
+          title: 'Success',
+          description: 'Document uploaded successfully.',
+        });
+      } catch (error) {
+        console.error('Upload error:', error);
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'Failed to upload document',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoadingStates(prev => ({ ...prev, [categoryKey]: false }));
+      }
+    };
+
+    input.click();
+  };
+
+  // Document deletion handler
+  const handleDeleteDocument = async (categoryKey: string, documentId: string) => {
+    if (!user || !researcher) return;
+
+    try {
+      // Set loading state
+      setLoadingStates(prev => ({ ...prev, [categoryKey]: true }));
+
+      // Delete document
+      await deleteDocument(categoryKey, documentId);
+      
+      // Refresh profile data
+      await refetch();
+
+      toast({
+        title: 'Success',
+        description: 'Document deleted successfully.',
+      });
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to delete document',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [categoryKey]: false }));
+    }
+  };
+
+  // Helper to get file preview type with enhanced preview
+  const getFilePreview = (fileUrl: string, fileName: string) => {
+    console.log('getFilePreview called with:', { fileUrl, fileName });
+    
+    if (!fileUrl || !fileName) {
+      console.warn('Missing URL or filename for preview:', { fileUrl, fileName });
+      return null;
+    }
+
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    if (!ext) {
+      console.warn('Could not determine file extension:', fileName);
+      return null;
+    }
+    
+    console.log('Attempting to render preview:', { fileUrl, fileName, ext });
+    
+    // Image files - show thumbnail
+    if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(ext)) {
       return (
-        <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="block text-blue-600 underline">
-          PDF Preview
-        </a>
+        <div className="mt-2">
+          <img 
+            src={fileUrl} 
+            alt={fileName} 
+            className="max-h-32 max-w-full rounded border cursor-pointer hover:opacity-80 transition-opacity" 
+            onClick={() => window.open(fileUrl, '_blank')}
+            onError={(e) => {
+              console.error('Image load error:', e);
+              const img = e.currentTarget;
+              console.log('Failed image URL:', img.src);
+              img.src = '/placeholder.svg';
+            }}
+          />
+        </div>
       );
     }
-    // For doc, docx, etc.
-    return (
-      <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="block text-blue-600 underline">
-        Download {fileName || 'File'}
-      </a>
-    );
-  }
-
-  const aidVerificationItems = [
-    {
-      key: 'identity',
-      title: "Identity Verification",
-      description: "Government-issued ID verification",
-      icon: User,
-      documents: ["Passport", "Driver's License", "National ID Card"]
-    },
-    {
-      key: 'education',
-      title: "Educational Background",
-      description: "Academic credentials and degrees (e.g., BSc, MSc, PhD)",
-      icon: GraduationCap,
-      documents: ["Degree Certificate", "Academic Transcript"]
-    },
-    {
-      key: 'employment',
-      title: "Employment Verification",
-      description: "Current or previous institutional affiliation (if any)",
-      icon: Building,
-      documents: ["Employment Letter", "Institutional ID"],
-      hasOtherField: true
-    },
-    {
-      key: 'skills',
-      title: "Skills & Certifications",
-      description: "Professional certifications or proof of skills",
-      icon: Award,
-      documents: ["Certification Document", "Reference Letter"]
+    
+    // PDF files - show preview
+    if (ext === "pdf") {
+      return (
+        <div className="mt-2">
+          <iframe 
+            src={`${fileUrl}#toolbar=0`}
+            className="w-full h-[200px] border rounded-md"
+            title={fileName}
+            onLoad={() => console.log('PDF iframe loaded successfully')}
+            onError={(e) => console.error('PDF load error:', e)}
+          />
+        </div>
+      );
     }
-  ];
+    
+    // Other files - show download link
+    return (
+      <div className="mt-2 p-2 bg-gray-50 border border-gray-200 rounded">
+        <a 
+          href={fileUrl} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="flex items-center text-gray-600 hover:text-gray-800 font-medium"
+        >
+          <FileText className="h-4 w-4 mr-2" />
+          Download {fileName}
+        </a>
+      </div>
+    );
+  };
 
-  const verificationItems = aidVerificationItems;
-
+  // Helper to get status info for badges
   const getStatusInfo = (status: VerificationDocument['status']) => {
     switch (status) {
-      case 'verified':
+      case 'approved':
         return { color: 'bg-green-100 text-green-800', icon: <CheckCircle className="h-4 w-4 text-green-600" /> };
       case 'pending':
         return { color: 'bg-yellow-100 text-yellow-800', icon: <AlertTriangle className="h-4 w-4 text-yellow-600" /> };
       case 'rejected':
         return { color: 'bg-red-100 text-red-800', icon: <AlertTriangle className="h-4 w-4 text-red-600" /> };
       default:
-        return { color: 'bg-gray-100 text-gray-800', icon: <AlertTriangle className="h-4 w-4 text-gray-500" /> };
+        return { color: 'bg-gray-100 text-gray-800', icon: <Shield className="h-4 w-4 text-gray-500" /> };
     }
-  };
-
-  // Defensive: Only allow actions if user is profile owner
-  const isProfileOwner = user && researcher && user.id === researcher.id;
-
-  // Improved file upload with error handling and owner check
-  const handleFileUpload = async (categoryKey: string, documentType: string) => {
-    if (!isProfileOwner) {
-      toast({ title: 'Permission Denied', description: 'You can only upload documents for your own profile.', variant: 'destructive' });
-      return;
-    }
-    const loadingKey = `${categoryKey}-${documentType}`;
-    setLoadingStates(prev => ({ ...prev, [loadingKey]: true }));
-    try {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
-      input.onchange = async (e) => {
-        const file = (e.target as HTMLInputElement).files?.[0];
-        if (file && user) {
-          try {
-            const path = `public/${user.id}/${file.name}`;
-            const fileUrl = await uploadDocument(file, 'lovable-uploads', path);
-            if (fileUrl && researcher) {
-              let currentVerifications: Verifications = getCurrentVerifications(researcher.verifications);
-              if (!currentVerifications[categoryKey]) {
-                currentVerifications[categoryKey] = { documents: [] };
-              }
-              const docIndex = currentVerifications[categoryKey].documents.findIndex(d => d.documentType === documentType);
-              const newDocument: VerificationDocument = {
-                documentType,
-                status: 'pending',
-                fileUrl,
-                fileName: file.name,
-                uploadedAt: new Date().toISOString(),
-              };
-              if (docIndex > -1) {
-                currentVerifications[categoryKey].documents[docIndex] = newDocument;
-              } else {
-                currentVerifications[categoryKey].documents.push(newDocument);
-              }
-              await updateProfile({ verifications: currentVerifications });
-              refetch();
-            }
-          } catch (err: any) {
-            toast({ title: 'Upload Failed', description: err?.message || 'An error occurred during upload.', variant: 'destructive' });
-          }
-        }
-        setLoadingStates(prev => ({ ...prev, [loadingKey]: false }));
-      };
-      input.click();
-      input.oncancel = () => {
-        setLoadingStates(prev => ({ ...prev, [loadingKey]: false }));
-      };
-    } catch (err: any) {
-      setLoadingStates(prev => ({ ...prev, [loadingKey]: false }));
-      toast({ title: 'Upload Error', description: err?.message || 'An error occurred.', variant: 'destructive' });
-    }
-  };
-
-  // Improved remove file with error handling and owner check
-  const handleRemoveFile = async (categoryKey: string, documentType: string) => {
-    if (!isProfileOwner) {
-      toast({ title: 'Permission Denied', description: 'You can only remove documents from your own profile.', variant: 'destructive' });
-      return;
-    }
-    try {
-      if (!researcher) return;
-      let currentVerifications: Verifications = getCurrentVerifications(researcher.verifications);
-      if (!currentVerifications[categoryKey]) return;
-      currentVerifications[categoryKey].documents = currentVerifications[categoryKey].documents.filter(
-        d => d.documentType !== documentType
-      );
-      await updateProfile({ verifications: currentVerifications });
-      refetch();
-    } catch (err: any) {
-      toast({ title: 'Remove Failed', description: err?.message || 'An error occurred while removing the file.', variant: 'destructive' });
-    }
-  };
-
-  const handleSaveOtherEmployment = async () => {
-    if (!researcher) return;
-    let currentVerifications: Verifications = getCurrentVerifications(researcher.verifications);
-    if (!currentVerifications.employment) {
-      currentVerifications.employment = { documents: [] };
-    }
-    currentVerifications.employment.otherDetails = otherEmployment;
-    await updateProfile({ verifications: currentVerifications });
-    toast({ title: "Success", description: "Employment details saved." });
   };
 
   if (profileLoading) {
-    return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    return (
+      <div className="h-[200px] flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
-  // Use parsed verifications for progress calculation
-  const parsedVerifications: Verifications = getCurrentVerifications(researcher?.verifications);
-  const totalRequiredDocs = verificationItems.flatMap(item => item.documents).length;
-  const totalVerifiedDocs = Object.values(parsedVerifications)
-    .flatMap((c: any) => Array.isArray(c.documents) ? c.documents : [])
-    .filter((d: any) => d.status === 'verified').length;
-  const verificationProgress = totalRequiredDocs > 0 ? (totalVerifiedDocs / totalRequiredDocs) * 100 : 0;
-
-  // Calculate overall verification status (all required docs must be verified)
-  const allCategoriesVerified = totalVerifiedDocs === totalRequiredDocs && totalRequiredDocs > 0;
-
-  // Use parsedVerifications for category status
-  const getCategoryStatus = (categoryKey: string): VerificationDocument['status'] => {
-    const category = parsedVerifications?.[categoryKey];
-    if (!category || !Array.isArray(category.documents) || category.documents.length === 0) return 'not_started';
-    if (category.documents.some(d => d.status === 'verified')) return 'verified';
-    if (category.documents.some(d => d.status === 'pending')) return 'pending';
-    if (category.documents.some(d => d.status === 'rejected')) return 'rejected';
-    return 'not_started';
-  };
-
+  // Render verification items
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-            <span className="text-lg sm:text-xl">Verification Status</span>
-          </CardTitle>
-          <CardDescription className="text-sm">
-            Complete your verification to build trust with students and enhance your profile visibility.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3 sm:space-y-4">
-            <div>
-              <div className="flex justify-between text-xs sm:text-sm mb-2">
-                <span>Overall Progress</span>
-                <span>{verificationProgress.toFixed(0)}% Complete</span>
-              </div>
-              <Progress value={verificationProgress} className="h-2 sm:h-3" aria-valuenow={verificationProgress} aria-valuemin={0} aria-valuemax={100} aria-label="Verification Progress" />
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-4">
-              <span className="font-medium text-sm sm:text-base">Verification Status</span>
-              <Badge className={`text-xs w-fit ${allCategoriesVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                {allCategoriesVerified ? 'VERIFIED' : 'INCOMPLETE'}
-              </Badge>
-            </div>
-            <Progress value={allCategoriesVerified ? 100 : 0} className="h-2 mt-2" aria-valuenow={allCategoriesVerified ? 100 : 0} aria-valuemin={0} aria-valuemax={100} aria-label="Overall Verification Status" />
-          </div>
-        </CardContent>
-      </Card>
+    <div className="space-y-6">
+      {VERIFICATION_ITEMS.map((item) => {
+        const verifications = researcher?.verifications || {};
+        console.log(`Rendering item ${item.key}:`, verifications[item.key]);
+        const categoryData = verifications[item.key];
+        const documents = (categoryData?.documents || []) as VerificationDocument[];
+        console.log(`Documents for ${item.key}:`, documents);
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        {verificationItems.map((item) => {
-          const categoryStatus = getCategoryStatus(item.key);
-          const { color, icon } = getStatusInfo(categoryStatus);
+        const statusInfo = getStatusInfo(documents[0]?.status || 'pending');
 
-          return (
-            <Card key={item.key}>
-              <CardHeader>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-                  <CardTitle className="text-base sm:text-lg flex items-center space-x-2">
-                    <item.icon className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                    <span className="truncate">{item.title}</span>
-                  </CardTitle>
-                  <div className="flex items-center space-x-2">
-                    {icon}
-                    <Badge className={`${color} text-xs`}>
-                      {categoryStatus.replace('_', ' ').toUpperCase()}
-                    </Badge>
-                  </div>
-                </div>
-                <CardDescription className="text-sm">{item.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3 sm:space-y-4">
-                  {item.hasOtherField && (
-                    <div className="space-y-2">
-                      <Label htmlFor="other-employment" className="text-sm">Other Employment Details</Label>
-                      <Input
-                        id="other-employment"
-                        value={otherEmployment}
-                        onChange={(e) => setOtherEmployment(e.target.value)}
-                        placeholder="Enter other employment information..."
-                        className="text-sm"
-                      />
-                      <Button size="sm" onClick={handleSaveOtherEmployment} className="text-xs">Save Details</Button>
-                    </div>
-                  )}
-                  
+        return (
+          <Card key={item.key} className="relative">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="flex items-center space-x-2">
+                  {item.icon}
                   <div>
-                    <h4 className="font-medium text-sm mb-2">Required Documents:</h4>
-                    <div className="space-y-2 sm:space-y-3">
-                      {item.documents.map((doc) => {
-                        const docData = parsedVerifications?.[item.key]?.documents.find(d => d.documentType === doc);
-                        const isLoading = loadingStates[`${item.key}-${doc}`];
-                        const statusInfo = getStatusInfo(docData?.status || 'not_started');
-
-                        return (
-                          <div key={doc} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-2 border rounded gap-2 sm:gap-0">
-                            <div className="flex-1 min-w-0">
-                              <span className="text-xs sm:text-sm flex items-center space-x-2">
-                                {docData ? statusInfo.icon : <FileText className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />}
-                                <span className="truncate">{doc}</span>
-                              </span>
-                              {docData?.fileName && (
-                                <div className="mt-1 text-xs text-gray-600 space-y-1">
-                                  {getFilePreview(docData.fileUrl!, docData.fileName)}
-                                  <a href={docData.fileUrl} target="_blank" rel="noopener noreferrer" className="hover:underline block truncate">
-                                    {docData.fileName}
-                                  </a>
-                                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                                    <Badge variant="outline" className={`${statusInfo.color} text-xs w-fit`}>{docData.status}</Badge>
-                                    <Progress value={docData.status === 'verified' ? 100 : docData.status === 'pending' ? 50 : 0} className="h-2 w-full sm:w-32" />
-                                  </div>
-                                </div>
-                              )}
-                              {docData?.status === 'rejected' && docData.rejectionReason && (
-                                <p className="text-xs text-red-600 mt-1">Reason: {docData.rejectionReason}</p>
-                              )}
-                            </div>
-                            <div className="flex items-center space-x-1 sm:ml-2">
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => handleFileUpload(item.key, doc)}
-                                className="text-xs w-full sm:w-auto"
-                                disabled={isLoading || !isProfileOwner}
-                              >
-                                {isLoading ? <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" /> : <Upload className="h-3 w-3 sm:h-4 sm:w-4" />}
-                                <span className="ml-1">{docData ? 'Replace' : 'Upload'}</span>
-                              </Button>
-                              {docData && (
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="text-red-500 hover:text-red-700"
-                                  onClick={() => handleRemoveFile(item.key, doc)}
-                                  disabled={isLoading || !isProfileOwner}
-                                >
-                                  <XCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                    <CardTitle>{item.title}</CardTitle>
+                    <CardDescription>{item.description}</CardDescription>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                <Badge variant="outline" className={statusInfo.color}>
+                  <div className="flex items-center space-x-1">
+                    {statusInfo.icon}
+                    <span>{documents[0]?.status || 'Not uploaded'}</span>
+                  </div>
+                </Badge>
+              </div>
+            </CardHeader>
+
+            <CardContent>
+              {/* Document List */}
+            
+              {documents.length > 0 && (
+                <div className="space-y-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                   
+                  {documents.map((doc) => (
+                   
+                    <div key={doc.id} className="relative p-4 border rounded-lg">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <p className="font-medium">{doc.filename}</p>
+                          <p className="text-sm text-gray-500">
+                            Uploaded {new Date(doc.uploadedAt).toLocaleDateString()}
+                          </p>
+                          {doc.rejectionReason && (
+                            <p className="text-sm text-red-600 mt-1">
+                              Reason: {doc.rejectionReason}
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-500">
+                            Document URL: {doc.url || 'No URL available'}
+                          </p>
+                        </div>
+                        {isProfileOwner && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteDocument(item.key, doc.id)}
+                            disabled={loadingStates[item.key]}
+                          >
+                            {loadingStates[item.key] ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <XCircle className="h-4 w-4" />
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                      {doc.url ? (
+                        <>
+                          {console.log('Attempting to preview document:', doc)}
+                          {getFilePreview(doc.url, doc.filename)}
+                        </>
+                      ) : (
+                        <p className="text-sm text-red-600 mt-2">URL not available for this document</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Upload Button */}
+              {isProfileOwner && (!item.maxFiles || documents.length < item.maxFiles) && (
+                <div className="mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleFileUpload(item.key)}
+                    disabled={loadingStates[item.key] || isUploading}
+                    className="w-full"
+                  >
+                    {loadingStates[item.key] || isUploading ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <Upload className="h-4 w-4 mr-2" />
+                    )}
+                    Upload Document
+                  </Button>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Supported formats: PDF, DOC, DOCX, JPG, PNG (max 5MB)
+                  </p>
+                </div>
+              )}
+
+              {/* Other Details Input (for Employment) */}
+              {item.key === 'employment' && isProfileOwner && (
+                <div className="mt-4">
+                  <Label htmlFor="otherEmployment">Other Employment Details</Label>
+                  <Input
+                    id="otherEmployment"
+                    value={otherEmployment}
+                    onChange={(e) => setOtherEmployment(e.target.value)}
+                    onBlur={async () => {
+                      const currentVerifications = researcher?.verifications || {};
+                      if (!currentVerifications.employment) {
+                        currentVerifications.employment = { documents: [] };
+                      }
+                      currentVerifications.employment.otherDetails = otherEmployment;
+                      await verificationService.uploadDocument(
+                        new File([otherEmployment], 'employment-details.txt', { type: 'text/plain' }),
+                        'employment',
+                        user.id,
+                        'researcher'
+                      );
+                      await refetch();
+                    }}
+                    placeholder="Enter any other employment details..."
+                    className="mt-1"
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 };
