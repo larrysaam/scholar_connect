@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { NotificationBadge, NotificationDropdown } from './NotificationComponents';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -71,59 +70,6 @@ export const NotificationCenter = ({ onNavigate, className }: NotificationCenter
         onMarkAllAsRead={handleMarkAllAsRead}
       />
     </div>
-  );
-};
-
-export default NotificationCenter;
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-80">
-          <div className="space-y-3">
-            {notifications.map((notification) => (
-              <div 
-                key={notification.id} 
-                className={`p-3 border rounded-lg ${!notification.isRead ? 'bg-blue-50 border-blue-200' : 'bg-white'} ${notification.urgent ? 'border-l-4 border-l-red-500' : ''}`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-2 flex-1">
-                    <div className="mt-1">
-                      {getIcon(notification.type)}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-sm">{notification.title}</h4>
-                      <p className="text-xs text-gray-600 mt-1">{notification.message}</p>
-                      <p className="text-xs text-gray-400 mt-1">{notification.timestamp}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    {!notification.isRead && (
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        onClick={() => markAsRead(notification.id)}
-                        className="h-6 w-6 p-0"
-                      >
-                        <Check className="h-3 w-3" />
-                      </Button>
-                    )}
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      onClick={() => removeNotification(notification.id)}
-                      className="h-6 w-6 p-0"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
-      </CardContent>
-    </Card>
   );
 };
 

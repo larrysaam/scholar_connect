@@ -80,7 +80,8 @@ const ResearcherDashboard = () => {  const [searchParams, setSearchParams] = use
         return <DocumentsTab />;
   
       case "settings":
-        return <SettingsTab />;      default:
+        return <SettingsTab  setActiveTab={handleTabChange}/>;      
+        default:
         return <WelcomeOverviewTab setActiveTab={handleTabChange} />;
     }
     

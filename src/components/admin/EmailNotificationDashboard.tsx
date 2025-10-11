@@ -482,7 +482,7 @@ const EmailNotificationDashboard: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="testing" className="space-y-4">
-          <EmailSystemTestPanel />
+          {/* <EmailSystemTestPanel /> */}
         </TabsContent>
       </Tabs>
     </div>

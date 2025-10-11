@@ -368,9 +368,7 @@ export class EmailSystemTester {
   }
 }
 
-/**
- * React component for testing email system in UI
- */
+// React component for testing email system in UI
 export const EmailSystemTestPanel: React.FC = () => {
   const [testing, setTesting] = useState(false);
   const [results, setResults] = useState<EmailTestResult[]>([]);
@@ -384,42 +382,7 @@ export const EmailSystemTestPanel: React.FC = () => {
     setTesting(false);
   };
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Email System Testing</h3>
-        <button
-          onClick={runTests}
-          disabled={testing}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-        >
-          {testing ? 'Running Tests...' : 'Run Email Tests'}
-        </button>
-      </div>
-
-      {results.length > 0 && (
-        <div className="space-y-2">
-          <h4 className="font-medium">Test Results:</h4>
-          {results.map((result, index) => (
-            <div
-              key={index}
-              className={`p-3 rounded border ${
-                result.success 
-                  ? 'bg-green-50 border-green-200 text-green-800' 
-                  : 'bg-red-50 border-red-200 text-red-800'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-medium">{result.test}</span>
-                <span>{result.success ? '✅' : '❌'}</span>
-              </div>
-              <p className="text-sm mt-1">{result.message}</p>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+ 
 };
 
 // Export individual test functions for specific testing

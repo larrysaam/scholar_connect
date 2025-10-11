@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 
@@ -14,13 +13,17 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { userId, categoryKey, documentType, newStatus } = await req.json();
+    const { userId, categoryKey, documentType, newStatus, profileType = 'researcher' } = await req.json();
+
+    // Determine table name based on profile type
+    const tableName = profileType === 'researcher' ? 'researcher_profiles' : 'research_aid_profiles';
+    const idField = profileType === 'researcher' ? 'user_id' : 'id';
 
     // Fetch the current profile
     const { data: profile, error: fetchError } = await supabaseAdmin
-      .from('researcher_profiles')
+      .from(tableName)
       .select('verifications')
-      .eq('user_id', userId)
+      .eq(idField, userId)
       .single();
 
     if (fetchError) {
@@ -28,7 +31,7 @@ Deno.serve(async (req) => {
     }
 
     const newVerifications = JSON.parse(JSON.stringify(profile.verifications));
-    const docIndex = newVerifications[categoryKey]?.documents.findIndex((d: any) => d.documentType === documentType);
+    const docIndex = newVerifications[categoryKey]?.documents.findIndex((d: any) => d.type === documentType);
 
     if (docIndex > -1) {
       newVerifications[categoryKey].documents[docIndex].status = newStatus;
@@ -38,9 +41,9 @@ Deno.serve(async (req) => {
 
     // Update the profile
     const { error: updateError } = await supabaseAdmin
-      .from('researcher_profiles')
+      .from(tableName)
       .update({ verifications: newVerifications })
-      .eq('user_id', userId);
+      .eq(idField, userId);
 
     if (updateError) {
       throw new Error(`Failed to update verification status: ${updateError.message}`);
