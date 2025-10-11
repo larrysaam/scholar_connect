@@ -1,4 +1,3 @@
-
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -27,6 +26,9 @@ const Contact = lazy(() => import("./pages/Contact"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks"));
 const Partnerships = lazy(() => import("./pages/Partnerships"));
 const Blogs = lazy(() => import("./pages/Blogs"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const FAQ = lazy(() => import("./pages/FAQ"));
 
 // Protected pages that require authentication
 const Researchers = lazy(() => import("./pages/Researchers"));
@@ -66,6 +68,9 @@ const App = () => (
                 <Route path="/how-it-works" element={<HowItWorks />} />
                 <Route path="/partnerships" element={<Partnerships />} />
                 <Route path="/blogs" element={<Blogs />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route path="/faq" element={<FAQ />} />
                 <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
                 
                 {/* Authentication routes */}
