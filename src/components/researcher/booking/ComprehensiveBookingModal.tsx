@@ -109,6 +109,7 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
   // Payment state
   const [paymentMethod, setPaymentMethod] = useState<string>("");
   const [paymentDetails, setPaymentDetails] = useState<any>({});
+  const [selectedOperator, setSelectedOperator] = useState<string>("");
 
   // Available slots
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
@@ -672,14 +673,28 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
                 )}
 
                 {paymentMethod === 'mobile_money' && (
-                  <div>
-                    <Label htmlFor="phoneNumber">Phone Number</Label>
-                    <Input
-                      id="phoneNumber"
-                      placeholder="+237 6XX XXX XXX"
-                      value={paymentDetails.phoneNumber || ''}
-                      onChange={(e) => setPaymentDetails(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                    />
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="operator">Mobile Money Operator</Label>
+                      <Select value={selectedOperator} onValueChange={setSelectedOperator}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select your operator" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="MTN">MTN Mobile Money</SelectItem>
+                          <SelectItem value="ORANGE">Orange Money</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="phoneNumber">Phone Number</Label>
+                      <Input
+                        id="phoneNumber"
+                        placeholder="+237 6XX XXX XXX"
+                        value={paymentDetails.phoneNumber || ''}
+                        onChange={(e) => setPaymentDetails(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                      />
+                    </div>
                   </div>
                 )}
               </>
@@ -846,7 +861,7 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
                 ) : (
                   <>
                     <CalendarIcon className="h-4 w-4 mr-2" />
-                    Book for Free
+                    Book 
                   </>
                 )}
               </Button>

@@ -37,6 +37,28 @@ const TransactionsTab = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
+  const fetchWalletBalance = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('wallet')
+        .select('balance')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+        throw error;
+      }
+
+      setWalletBalance(data?.balance || 0);
+    } catch (error) {
+      console.error('Error fetching wallet balance:', error);
+      // If wallet doesn't exist, balance is 0
+      setWalletBalance(0);
+    }
+  };
+
   const fetchTransactions = async () => {
     if (!user) return;
 
@@ -50,12 +72,6 @@ const TransactionsTab = () => {
 
       if (error) throw error;
       setTransactions(data || []);
-      
-      // Calculate wallet balance from successful topup transactions
-      const balance = (data || [])
-        .filter(transaction => transaction.status === 'topup')
-        .reduce((total, transaction) => total + transaction.amount, 0);
-      setWalletBalance(balance);
     } catch (error) {
       console.error('Error fetching transactions:', error);
       toast({
@@ -69,6 +85,7 @@ const TransactionsTab = () => {
   };
 
   useEffect(() => {
+    fetchWalletBalance();
     fetchTransactions();
   }, [user]);
 
@@ -160,12 +177,28 @@ const TransactionsTab = () => {
           })
           .eq('id', transactionData.id);
 
+        // Update wallet balance
+        const { error: walletError } = await supabase
+          .from('wallet')
+          .upsert({
+            user_id: user.id,
+            balance: walletBalance + amount
+          }, {
+            onConflict: 'user_id'
+          });
+
+        if (walletError) {
+          console.error('Error updating wallet:', walletError);
+          // Don't fail the deposit if wallet update fails, but log it
+        }
+
         toast({
           title: "Deposit Successful",
           description: `Your wallet has been credited with ${amount.toLocaleString()} XAF`,
         });
 
-        // Refresh transactions
+        // Refresh data
+        fetchWalletBalance();
         fetchTransactions();
 
         // Reset form
