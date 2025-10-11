@@ -8,6 +8,7 @@ import { Users } from "lucide-react";
 const CoAuthorInvitationsTab = () => {
   const { user } = useAuth();
   const [invitations, setInvitations] = useState<any[]>([]);
+  const [inviterNames, setInviterNames] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,8 +22,28 @@ const CoAuthorInvitationsTab = () => {
         .select("*")
         .eq("invitee_id", user.id)
         .eq("status", "pending");
-      if (error) setError(error.message);
-      else setInvitations(data || []);
+      if (error) {
+        setError(error.message);
+      } else {
+        setInvitations(data || []);
+        
+        // Fetch inviter names
+        const inviterIds = [...new Set((data || []).map(inv => inv.inviter_id))];
+        if (inviterIds.length > 0) {
+          const { data: usersData, error: usersError } = await supabase
+            .from("users")
+            .select("id, name")
+            .in("id", inviterIds);
+          
+          if (!usersError && usersData) {
+            const namesMap: Record<string, string> = {};
+            usersData.forEach(user => {
+              namesMap[user.id] = user.name || "Unknown User";
+            });
+            setInviterNames(namesMap);
+          }
+        }
+      }
       setLoading(false);
     };
     fetchUserInvitations();
@@ -46,7 +67,7 @@ const CoAuthorInvitationsTab = () => {
           <Card key={inv.id} className="shadow-md border border-gray-200">
             <CardContent className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6">
               <div className="flex-1 min-w-0">
-                <div className="mb-2 text-gray-700"><b>From:</b> <span className="font-mono text-blue-700">{inv.inviter_id}</span></div>
+                <div className="mb-2 text-gray-700"><b>From:</b> <span className="font-mono text-blue-700">{inviterNames[inv.inviter_id] || inv.inviter_id}</span></div>
                 <div className="mb-2 text-gray-700"><b>Message:</b> <span className="whitespace-pre-line">{inv.message || "No message"}</span></div>
                 <div className="text-xs text-gray-400">Invitation ID: {inv.id}</div>
               </div>
