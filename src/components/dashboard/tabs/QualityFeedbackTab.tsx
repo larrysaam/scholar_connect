@@ -11,13 +11,13 @@ const QualityFeedbackTab = () => {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Quality Feedback</h2>
         </div>
-        <p className="text-gray-600 mb-6">Help us improve ResearchWhoa by sharing your feedback.</p>
+        <p className="text-gray-600 mb-6">Help us improve ResearchWow by sharing your feedback.</p>
         
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-lg">Rate this platform</CardTitle>
             <CardDescription>
-              How would you rate your overall experience with ResearchWhoa?
+              How would you rate your overall experience with ResearchWow?
             </CardDescription>
           </CardHeader>
           <CardContent>

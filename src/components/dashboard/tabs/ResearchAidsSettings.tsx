@@ -405,7 +405,7 @@ const ResearchAidsSettings = () => {
                   </DialogHeader>
                   <div className="space-y-4">
                     <p className="text-sm text-gray-600">
-                      Help us understand why you want to delete your account. Your feedback will help us improve ResearchWhoa.
+                      Help us understand why you want to delete your account. Your feedback will help us improve ResearchWow.
                     </p>
                     
                     <div>

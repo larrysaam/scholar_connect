@@ -318,7 +318,7 @@ const ResearchAidProfile = () => {
             to: profile.email,
             template: 'generic',
             templateData: {
-              subject: 'New Appointment Request - ResearchWhoa',
+              subject: 'New Appointment Request - ResearchWow',
               subtitle: 'Appointment Request Notification',
               title: 'New Appointment Request',
               content: `
@@ -365,7 +365,7 @@ const ResearchAidProfile = () => {
             to: user.email,
             template: 'generic',
             templateData: {
-              subject: 'Appointment Request Submitted - ResearchWhoa',
+              subject: 'Appointment Request Submitted - ResearchWow',
               subtitle: 'Confirmation of Your Request',
               title: 'Appointment Request Submitted',
               content: `
@@ -387,7 +387,7 @@ const ResearchAidProfile = () => {
                     <li>You can track the status in your dashboard</li>
                   </ul>
                 </div>
-                <p>Thank you for using ResearchWhoa! We'll notify you as soon as there's an update.</p>
+                <p>Thank you for using ResearchWow! We'll notify you as soon as there's an update.</p>
               `,
               actionUrl: `${window.location.origin}/dashboard?tab=my-bookings`,
               actionLabel: 'View My Bookings'

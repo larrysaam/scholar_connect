@@ -105,7 +105,7 @@ const ResearcherSignup = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-2xl">
         <AuthHeader
-          title="Join ResearchWhao as a Research Expert"
+          title="Join ResearchWow as a Research Expert"
           subtitle="Give Students the Right Academic Support at Every Step of their Research Journey. Connect with students at all academic levels, give expert assistance, and elevate their thesis or dissertation."
         />
         

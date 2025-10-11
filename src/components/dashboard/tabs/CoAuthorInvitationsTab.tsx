@@ -93,14 +93,7 @@ const CoAuthorInvitationsTab = () => {
                     Decline
                   </button>
                 </div>
-                <a
-                  href={`/coauthor-workspace/${inv.project_id}`}
-                  className="mt-2 inline-block bg-blue-600 hover:bg-blue-700 transition text-white px-4 py-2 rounded shadow text-center text-sm font-medium"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Go to Co-Author Workspace
-                </a>
+                
               </div>
             </CardContent>
           </Card>

@@ -248,7 +248,7 @@ const Navbar = ({setActiveTab, activeTab}: {setActiveTab?: any; activeTab?: any}
             className="flex items-center"
             state={{ fromNavigation: true }}
           >
-            <ResearchWhoaLogo size="lg" showText={true} />
+            <ResearchWhoaLogo size="lg" showText={true} color='black'/>
           </Link>
 
           

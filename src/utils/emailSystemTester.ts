@@ -297,7 +297,7 @@ export class EmailSystemTester {
     const baseData = {
       userName: 'John Doe',
       userEmail: 'john.doe@example.com',
-      dashboardUrl: 'https://researchwhoa.com/dashboard'
+      dashboardUrl: 'https://researchwow.com/dashboard'
     };
 
     switch (templateName) {
@@ -338,7 +338,7 @@ export class EmailSystemTester {
           projectDescription: 'A comprehensive study on AI applications in educational settings',
           inviterName: 'Dr. Alice Researcher',
           role: 'Co-Author',
-          acceptUrl: 'https://researchwhoa.com/collaborations/accept/123'
+          acceptUrl: 'https://researchwow.com/collaborations/accept/123'
         };
 
       case 'booking_reminder':
@@ -358,7 +358,7 @@ export class EmailSystemTester {
           subject: 'Test Generic Email',
           title: 'System Test Notification',
           content: 'This is a test email to verify the generic template functionality.',
-          actionUrl: 'https://researchwhoa.com/dashboard',
+          actionUrl: 'https://researchwow.com/dashboard',
           actionLabel: 'Go to Dashboard'
         };
 
