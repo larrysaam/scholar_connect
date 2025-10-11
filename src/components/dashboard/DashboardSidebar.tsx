@@ -66,6 +66,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole, notificationCount
     { id: "discussion", label: "Discussion Forum", icon: MessageSquare },
     { id: "full-thesis-support", label: "Full Thesis Support", icon: GraduationCap },
     { id: "payments", label: "Payments", icon: DollarSign },
+    { id: "transactions", label: "Transactions", icon: DollarSign },
     { id: "messages", label: "Messages", icon: MessageSquare },
     // { id: "performance", label: "My Progress", icon: TrendingUp },
     { id: "notifications", label: "Notifications", icon: Bell, badge: notificationCount },

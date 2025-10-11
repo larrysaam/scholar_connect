@@ -144,6 +144,57 @@ app.post('/api/mesomb-payment', async (req, res) => {
   }
 });
 
+// Payment endpoint for deposits/top-ups
+app.post("/api/mesomb-topup", async (req, res) => {
+  console.log("[MeSomb Payment] Request received", req.body);
+  try {
+    if (!applicationKey || !accessKey || !secretKey) {
+      return res.status(500).json({ error: "MeSomb credentials not set" });
+    }
+
+    const {
+      amount,
+      service,
+      payer,
+      country = 'CM',
+      currency = 'XAF',
+      description,
+      customer,
+      location,
+      products
+    } = req.body;
+
+    console.log("Processing payment:", { amount, service, payer, customer });
+
+    const client = new PaymentOperation({ applicationKey, accessKey, secretKey });
+
+    // Use makeCollect to collect payment from customer
+    const response = await client.makeCollect({
+      amount,
+      service,
+      payer,
+      country,
+      currency,
+      description,
+      customer,
+      location: location || { town: 'Douala', region: 'Littoral', country: 'CM' },
+      products: products || [{ name: 'Wallet Top-up', category: 'deposit', quantity: 1, amount }],
+    });
+
+    const isSuccess = response.isOperationSuccess() && response.isTransactionSuccess();
+    console.log(`[MeSomb Payment] ${isSuccess ? 'Payment processed successfully' : 'Payment failed'}`);
+
+    res.json({
+      operationSuccess: response.isOperationSuccess(),
+      transactionSuccess: response.isTransactionSuccess(),
+      raw: response,
+    });
+  } catch (err) {
+    console.error('[MeSomb Payment] Error:', err);
+    res.status(500).json({ error: err?.message || 'Payment failed', details: err });
+  }
+});
+
 // Secure booking creation endpoint with service price validation
 app.post('/api/create-booking', async (req, res) => {
   if (!applicationKey || !accessKey || !secretKey) {

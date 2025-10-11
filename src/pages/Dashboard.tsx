@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -27,6 +26,7 @@ import SessionBookingTab from "@/components/dashboard/tabs/SessionBookingTab";
 import FullThesisSupportTab from "@/components/dashboard/tabs/FullThesisSupportTab";
 import ThesisInformationTab from "@/components/dashboard/tabs/ThesisInformationTab";
 import MyBookingsTab from "@/components/dashboard/tabs/MyBookingsTab";
+import TransactionsTab from "@/components/dashboard/tabs/TransactionsTab";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -125,6 +125,8 @@ const Dashboard = () => {
         return <FullThesisSupportTab userRole={profile?.role} setActiveTab={handleTabChange} />;
       case "payments":
         return <PaymentsTab />;
+      case "transactions":
+        return <TransactionsTab />;
       case "messages":
         return <StudentMessagesTab  TabData={tabData}/>;
       case "quality":
