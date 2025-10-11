@@ -1,13 +1,29 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CheckSquare, Plus, Calendar, User, Clock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  assignee: string;
+  status: 'todo' | 'in-progress' | 'completed' | 'overdue';
+  priority: 'low' | 'medium' | 'high';
+  due_date: string;
+  created_at: string;
+  project_id: string;
+  created_by: string;
+  profiles?: {
+    name: string;
+  };
+}
 
 interface TaskTrackerProps {
   projectId: string;
@@ -22,9 +38,20 @@ interface TaskTrackerProps {
   }>;
 }
 
+interface NewTask {
+  title: string;
+  description: string;
+  assignee: string;
+  dueDate: string;
+  priority: 'low' | 'medium' | 'high';
+}
+
 const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) => {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
-  const [newTask, setNewTask] = useState({
+  const { toast } = useToast();
+  const [newTask, setNewTask] = useState<NewTask>({
     title: "",
     description: "",
     assignee: "",
@@ -32,43 +59,100 @@ const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) 
     priority: "medium"
   });
 
-  const [tasks] = useState([
-    {
-      id: 1,
-      title: "Complete literature review section",
-      description: "Review and summarize recent publications on AI in education",
-      assignee: "Dr. Sarah Johnson",
-      assigneeId: "1",
-      status: "in-progress",
-      priority: "high",
-      dueDate: "2024-01-20",
-      createdAt: "2024-01-15"
-    },
-    {
-      id: 2,
-      title: "Update methodology section",
-      description: "Add more details about data collection procedures",
-      assignee: "Prof. Michael Chen",
-      assigneeId: "2", 
-      status: "todo",
-      priority: "medium",
-      dueDate: "2024-01-22",
-      createdAt: "2024-01-15"
-    },
-    {
-      id: 3,
-      title: "Review and edit abstract",
-      description: "Final review of the abstract for clarity and conciseness",
-      assignee: "Dr. Emily Rodriguez",
-      assigneeId: "3",
-      status: "completed",
-      priority: "low",
-      dueDate: "2024-01-18",
-      createdAt: "2024-01-14"
-    }
-  ]);
+  useEffect(() => {
+    fetchTasks();
+  }, [projectId]);
 
-  const getStatusColor = (status: string) => {
+  const fetchTasks = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("project_tasks")
+        .select("*, profiles:assignee(name)")
+        .eq("project_id", projectId)
+        .order("created_at", { ascending: true });
+        
+      if (error) throw error;
+      setTasks(data || []);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load tasks. Please try again.",
+        variant: "destructive"
+      });
+    }
+    setLoading(false);
+  };
+
+  const handleCreateTask = async () => {
+    if (!newTask.title.trim()) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.from("project_tasks").insert({
+        project_id: projectId,
+        title: newTask.title,
+        description: newTask.description,
+        assignee: newTask.assignee,
+        due_date: newTask.dueDate,
+        priority: newTask.priority,
+        status: "todo",
+        created_by: (await supabase.auth.getUser()).data.user?.id
+      });
+
+      if (error) throw error;
+
+      setShowNewTaskForm(false);
+      setNewTask({
+        title: "",
+        description: "",
+        assignee: "",
+        dueDate: "",
+        priority: "medium"
+      });
+      await fetchTasks();
+      toast({
+        title: "Success",
+        description: "Task created successfully",
+      });
+    } catch (error) {
+      console.error('Error creating task:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create task. Please try again.",
+        variant: "destructive"
+      });
+    }
+    setLoading(false);
+  };
+
+  const handleUpdateTaskStatus = async (taskId: string, status: Task['status']) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("project_tasks")
+        .update({ status })
+        .eq("id", taskId);
+
+      if (error) throw error;
+      await fetchTasks();
+      toast({
+        title: "Success",
+        description: "Task status updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating task:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update task status. Please try again.",
+        variant: "destructive"
+      });
+    }
+    setLoading(false);
+  };
+
+  const getStatusColor = (status: Task['status']) => {
     switch (status) {
       case "completed": return "bg-green-100 text-green-800";
       case "in-progress": return "bg-blue-100 text-blue-800";
@@ -78,7 +162,7 @@ const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) 
     }
   };
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityColor = (priority: Task['priority']) => {
     switch (priority) {
       case "high": return "bg-red-100 text-red-800";
       case "medium": return "bg-yellow-100 text-yellow-800";
@@ -87,24 +171,9 @@ const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) 
     }
   };
 
-  const handleCreateTask = () => {
-    if (newTask.title.trim()) {
-      // In real app, this would save to database
-      console.log("Creating task:", newTask);
-      setNewTask({
-        title: "",
-        description: "",
-        assignee: "",
-        dueDate: "",
-        priority: "medium"
-      });
-      setShowNewTaskForm(false);
-    }
-  };
-
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
+    if (!dateString) return "No date set";
+    return new Date(dateString).toLocaleDateString();
   };
 
   return (
@@ -127,7 +196,6 @@ const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) 
         </CardHeader>
         
         <CardContent className="space-y-6">
-          {/* New Task Form */}
           {showNewTaskForm && permissions.canAssignTasks && (
             <div className="border rounded-lg p-4 space-y-4 bg-gray-50">
               <h4 className="font-medium">Create New Task</h4>
@@ -174,7 +242,7 @@ const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) 
                 </div>
                 
                 <div>
-                  <Select value={newTask.priority} onValueChange={(value) => setNewTask({...newTask, priority: value})}>
+                  <Select value={newTask.priority} onValueChange={(value) => setNewTask({...newTask, priority: value as Task['priority']})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Priority" />
                     </SelectTrigger>
@@ -198,7 +266,6 @@ const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) 
             </div>
           )}
 
-          {/* Tasks List */}
           <div className="space-y-4">
             {tasks.map((task) => (
               <div key={task.id} className="border rounded-lg p-4 space-y-3">
@@ -222,29 +289,33 @@ const TaskTracker = ({ projectId, permissions, teamMembers }: TaskTrackerProps) 
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4" />
-                      <span>{task.assignee}</span>
+                      <span>{task.profiles?.name || "Unassigned"}</span>
                     </div>
                     
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      <span>Due: {formatDate(task.dueDate)}</span>
+                      <span>Due: {formatDate(task.due_date)}</span>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4" />
-                    <span>Created: {formatDate(task.createdAt)}</span>
+                    <span>Created: {formatDate(task.created_at)}</span>
                   </div>
                 </div>
                 
                 {permissions.canAssignTasks && (
                   <div className="flex justify-end gap-2 pt-2 border-t">
-                    <Button variant="outline" size="sm">
-                      Edit
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      Mark Complete
-                    </Button>
+                    {task.status === "todo" && (
+                      <Button variant="outline" size="sm" onClick={() => handleUpdateTaskStatus(task.id, "in-progress")}>
+                        Start Task
+                      </Button>
+                    )}
+                    {task.status === "in-progress" && (
+                      <Button variant="outline" size="sm" onClick={() => handleUpdateTaskStatus(task.id, "completed")}>
+                        Complete Task
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>

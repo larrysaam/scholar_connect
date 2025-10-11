@@ -87,10 +87,9 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole, notificationCount
     { id: "quality", label: "Quality & Feedback", icon: Star },
     { id: "messaging", label: "Messaging", icon: MessageSquare }, // <-- Added Messaging tab
     { id: "discussion", label: "Discussion Board", icon: MessageSquare },
-    { id: "verification", label: "Verification", icon: Shield },
-    { id: "notifications", label: "Notifications", icon: Bell, badge: notificationCount },
+    { id: "verification", label: "Verification", icon: Shield },    { id: "notifications", label: "Notifications", icon: Bell, badge: notificationCount },
     // sudo disabled for now
-    { id: "co-author-invitations", label: "Co-author Invitations", icon: UserPlus, badge: 2 },
+    { id: "co-author-invitations", label: "Co-author Invitations", icon: UserPlus, badge: coAuthorInvitationsCount },
     { id: "documents", label: "Documents", icon: FileText },
     // { id: "profile", label: "Profile Information", icon: User },
     { id: "settings", label: "Account Settings", icon: Settings },

@@ -10,7 +10,19 @@ import { useMessages, Conversation, Message } from "@/hooks/useMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from 'date-fns';
 
-const StudentMessagesTab = () => {
+interface StudentMessagesTabData {
+  openChat?: boolean;
+  recipientId?: string;
+  recipientName?: string;
+  bookingId?: string;
+  consultationTitle?: string;
+}
+
+interface StudentMessagesTabProps {
+  TabData?: StudentMessagesTabData;
+}
+
+const StudentMessagesTab = ({ TabData }: StudentMessagesTabProps) => {
   const { user } = useAuth();
   const { 
     conversations, 
@@ -26,14 +38,34 @@ const StudentMessagesTab = () => {
   const [newMessage, setNewMessage] = useState("");
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Handle navigation from MyBookingsTab
+  useEffect(() => {
+    if (TabData?.openChat && TabData?.bookingId && !selectedConversation) {
+      const targetConversation = conversations.find(conv => conv.id === TabData.bookingId);
+      console.log(" Target : ", targetConversation)
+      if (targetConversation) {
+        setSelectedConversation(targetConversation);
+      } else if (TabData.recipientId && TabData.recipientName) {
+        // Create a new conversation object if it doesn't exist
+        const newConversation: Conversation = {
+          id: TabData.bookingId,
+          other_user_id: TabData.recipientId,
+          other_user_name: TabData.recipientName,
+          last_message: '',
+          last_message_at: new Date().toISOString()
+        };
+        setSelectedConversation(newConversation);
+      }
+    }
+  }, [TabData, conversations, selectedConversation, setSelectedConversation]);
 
   useEffect(() => {
-    // Only auto-select first conversation on desktop (md and up)
+    // Only auto-select first conversation on desktop (md and up) if no specific conversation is requested
     const isDesktop = window.matchMedia('(min-width: 768px)').matches;
-    if (!selectedConversation && conversations.length > 0 && isDesktop) {
+    if (!selectedConversation && conversations.length > 0 && isDesktop && !TabData?.openChat) {
       setSelectedConversation(conversations[0]);
     }
-  }, [conversations, selectedConversation, setSelectedConversation]);
+  }, [conversations, selectedConversation, setSelectedConversation, TabData]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

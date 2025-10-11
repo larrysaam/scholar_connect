@@ -13,11 +13,12 @@ import { useToast } from "@/hooks/use-toast";
 
 // Interfaces based on VerificationTab.tsx
 interface VerificationDocument {
-  documentType: string;
+  id: string;
+  type: string;
+  url: string;
+  filename: string;
+  uploadedAt: string;
   status: 'verified' | 'pending' | 'rejected' | 'not_started';
-  fileUrl?: string;
-  fileName?: string;
-  uploadedAt?: string;
   rejectionReason?: string;
 }
 interface VerificationCategory {
@@ -258,11 +259,12 @@ const VerificationManagement = () => {
     userId: string,
     categoryKey: string,
     documentType: string,
-    newStatus: 'verified' | 'rejected' | 'pending'
+    newStatus: 'verified' | 'rejected' | 'pending',
+    profileType: 'researcher' | 'research_aid' = 'researcher'
   ) => {
     try {
       const { data, error } = await supabase.functions.invoke('update-verification-status', {
-        body: { userId, categoryKey, documentType, newStatus },
+        body: { userId, categoryKey, documentType, newStatus, profileType },
       });
 
       if (error) {
@@ -279,7 +281,7 @@ const VerificationManagement = () => {
         if (!profile) return;
 
         const newVerifications = JSON.parse(JSON.stringify(profile.verifications));
-        const docIndex = newVerifications[categoryKey]?.documents.findIndex((d: VerificationDocument) => d.documentType === documentType);
+        const docIndex = newVerifications[categoryKey]?.documents.findIndex((d: VerificationDocument) => d.type === documentType);
 
         if (docIndex > -1) {
           newVerifications[categoryKey].documents[docIndex].status = newStatus;
@@ -556,12 +558,12 @@ const VerificationManagement = () => {
                       <TableBody>
                         {Object.entries(profile.verifications ?? {}).flatMap(([categoryKey, category]) =>
                           ((category as VerificationCategory)?.documents ?? []).map((doc: VerificationDocument) => (
-                            <TableRow key={`${categoryKey}-${doc.documentType}`}>
-                              <TableCell>{categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1)} - {doc.documentType}</TableCell>
+                            <TableRow key={`${categoryKey}-${doc.type}`}>
+                              <TableCell>{categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1)} - {doc.type}</TableCell>
                               <TableCell>
-                                {doc.fileUrl ? (
-                                  <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center">
-                                    {doc.fileName || 'View File'} <ExternalLink className="h-4 w-4 ml-1" />
+                                {doc.url ? (
+                                  <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center">
+                                    {doc.filename || 'View File'} <ExternalLink className="h-4 w-4 ml-1" />
                                   </a>
                                 ) : (
                                   <span>No file uploaded</span>
@@ -571,13 +573,13 @@ const VerificationManagement = () => {
                                 <Badge variant={getStatusBadgeVariant(doc.status)}>{doc.status}</Badge>
                               </TableCell>
                               <TableCell className="text-right space-x-2">
-                                <Button variant="outline" size="sm" className="border-green-500 text-green-500 hover:bg-green-50 hover:text-green-600" onClick={() => handleVerification(profileId, categoryKey, doc.documentType, 'verified')} disabled={doc.status === 'verified'}>
+                                <Button variant="outline" size="sm" className="border-green-500 text-green-500 hover:bg-green-50 hover:text-green-600" onClick={() => handleVerification(profileId, categoryKey, doc.type, 'verified', profileType)} disabled={doc.status === 'verified'}>
                                   <CheckCircle className="h-4 w-4 mr-1" /> Approve
                                 </Button>
-                                <Button variant="outline" size="sm" className="border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600" onClick={() => handleVerification(profileId, categoryKey, doc.documentType, 'rejected')} disabled={doc.status === 'rejected'}>
+                                <Button variant="outline" size="sm" className="border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600" onClick={() => handleVerification(profileId, categoryKey, doc.type, 'rejected', profileType)} disabled={doc.status === 'rejected'}>
                                   <XCircle className="h-4 w-4 mr-1" /> Reject
                                 </Button>
-                                <Button variant="outline" size="sm" onClick={() => handleVerification(profileId, categoryKey, doc.documentType, 'pending')} disabled={doc.status === 'pending'}>
+                                <Button variant="outline" size="sm" onClick={() => handleVerification(profileId, categoryKey, doc.type, 'pending', profileType)} disabled={doc.status === 'pending'}>
                                   <RefreshCw className="h-4 w-4 mr-1" /> Set to Pending
                                 </Button>
                               </TableCell>

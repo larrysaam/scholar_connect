@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,11 @@ import { Calendar, Clock, DollarSign, Users, TrendingUp, MessageSquare, Loader2 
 import { useAuth } from "@/hooks/useAuth";
 import { useWelcomeOverview } from "@/hooks/useWelcomeOverview";
 
-const WelcomeOverviewTab = () => {
+interface WelcomeOverviewTabProps {
+  setActiveTab?: (tab: string) => void;
+}
+
+const WelcomeOverviewTab = ({ setActiveTab }: WelcomeOverviewTabProps) => {
   const { profile } = useAuth();
   const {
     loading,
@@ -14,7 +17,26 @@ const WelcomeOverviewTab = () => {
     weeklyStats,
     todaysSchedule,
     newMessagesCount,
+    recentActivity,
   } = useWelcomeOverview();
+
+  const formatRelativeTime = (timestamp: string) => {
+    const now = new Date();
+    const activityTime = new Date(timestamp);
+    const diffInHours = Math.floor((now.getTime() - activityTime.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) {
+      const diffInMinutes = Math.floor((now.getTime() - activityTime.getTime()) / (1000 * 60));
+      return diffInMinutes < 1 ? 'Just now' : `${diffInMinutes} min ago`;
+    } else if (diffInHours < 24) {
+      return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
+    } else if (activityTime.toLocaleDateString() === now.toLocaleDateString()) {
+      return 'Today';
+    } else {
+      const diffInDays = Math.floor(diffInHours / 24);
+      return diffInDays === 1 ? 'Yesterday' : `${diffInDays} days ago`;
+    }
+  };
 
   const getWelcomeMessage = () => {
     if (!profile?.name) return "Welcome!";
@@ -169,19 +191,29 @@ const WelcomeOverviewTab = () => {
         <Card>
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button className="w-full justify-start">
-              <Calendar className="mr-2 h-4 w-4" />
-              View Calendar
-            </Button>
-            <Button variant="outline" className="w-full justify-start">
+          </CardHeader>          <CardContent className="space-y-3">            <Button 
+              variant="default" 
+              className="w-full justify-start bg-primary hover:bg-primary/90"
+              onClick={() => setActiveTab?.("messaging")}
+            >
               <MessageSquare className="mr-2 h-4 w-4" />
               Check Messages
+              {newMessagesCount > 0 && (
+                <Badge variant="secondary" className="ml-auto">
+                  {newMessagesCount} new
+                </Badge>
+              )}
             </Button>
-            <Button variant="outline" className="w-full justify-start">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start"
+              onClick={() => setActiveTab?.("payments")}
+            >
               <DollarSign className="mr-2 h-4 w-4" />
-              View Earnings
+              View Payments
+              <Badge variant="secondary" className="ml-auto">
+                {weeklyStats.earnings.toLocaleString()} XAF
+              </Badge>
             </Button>
           </CardContent>
         </Card>
@@ -189,30 +221,33 @@ const WelcomeOverviewTab = () => {
         <Card>
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
+          </CardHeader>          <CardContent>
             <div className="space-y-3">
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                <div>
-                  <p className="text-sm font-medium">New consultation request</p>
-                  <p className="text-xs text-gray-500">2 hours ago</p>
+              {recentActivity.length > 0 ? (
+                recentActivity.map((activity) => (
+                  <div key={activity.id} className="flex items-start space-x-3">
+                    <div className={`w-2 h-2 rounded-full mt-2 ${
+                      activity.color === 'blue' ? 'bg-blue-500' :
+                      activity.color === 'green' ? 'bg-green-500' :
+                      activity.color === 'orange' ? 'bg-orange-500' :
+                      'bg-gray-500'
+                    }`}></div>
+                    <div>
+                      <p className="text-sm font-medium">{activity.title}</p>
+                      {activity.description && (
+                        <p className="text-xs text-gray-600">{activity.description}</p>
+                      )}
+                      <p className="text-xs text-gray-500">
+                        {formatRelativeTime(activity.timestamp)}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-gray-500">No recent activity</p>
                 </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                <div>
-                  <p className="text-sm font-medium">Payment received</p>
-                  <p className="text-xs text-gray-500">4 hours ago</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
-                <div>
-                  <p className="text-sm font-medium">Profile viewed 5 times</p>
-                  <p className="text-xs text-gray-500">Yesterday</p>
-                </div>
-              </div>
+              )}
             </div>
           </CardContent>
         </Card>

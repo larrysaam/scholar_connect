@@ -34,7 +34,7 @@ const AidJobManagementContent = ({ activeTab, setActiveTab }: AidJobManagementCo
   const renderTabContent = () => {
     switch (activeTab) {
       case "overview":
-        return <WelcomeOverviewTab />;
+        return <WelcomeOverviewTab setActiveTab={setActiveTab} />;
       case "job-applications":
         return <AidJobApplicationsTab />;
       case "current-jobs":
@@ -52,7 +52,7 @@ const AidJobManagementContent = ({ activeTab, setActiveTab }: AidJobManagementCo
       case "settings":
         return <SettingsTab />;
       default:
-        return <WelcomeOverviewTab />;
+        return <WelcomeOverviewTab setActiveTab={setActiveTab} />;
     }
   };
 
@@ -62,7 +62,7 @@ const AidJobManagementContent = ({ activeTab, setActiveTab }: AidJobManagementCo
         <div className="mb-8">
           <Card>
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold mb-2">Welcome to ResearchWhao!</h3>
+              <h3 className="text-lg font-semibold mb-2">Welcome to ResearchWow!</h3>
               <p className="text-gray-600 mb-4">Complete your profile to start managing your jobs.</p>
               <button 
                 onClick={handleOnboardingComplete}

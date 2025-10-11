@@ -222,7 +222,7 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
       category: "system"
     });
     await trigger({
-      title: "Welcome to ResearchWhoa!",
+      title: "Welcome to ResearchWow!",
       message: "Explore features and connect with others.",
       type: "info",
       category: "system"

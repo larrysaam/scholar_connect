@@ -106,7 +106,7 @@ const ResearchAideDashboard = () => {
       case "documents":
         return <DocumentsTab />;
       case "settings":
-        return <SettingsTab />;
+        return <SettingsTab setActiveTab={handleTabChange} />;
       default:
         return <ResearchAidOverviewTab />;
     }
@@ -125,7 +125,7 @@ const ResearchAideDashboard = () => {
             <div className="mb-8">
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-2">Welcome to ResearchWhao!</h3>
+                  <h3 className="text-lg font-semibold mb-2">Welcome to ResearchWow!</h3>
                   <p className="text-gray-600 mb-4">Complete your profile to start receiving research assistance requests.</p>
                   <button 
                     onClick={handleOnboardingComplete}

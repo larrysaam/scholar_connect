@@ -82,7 +82,7 @@ const StudentSignup = () => {
 
       if (result.success) {
         toast.success('Account created successfully! Please check your email for verification.');
-        navigate('/dashboard');
+        navigate('/login');
       } else {
         console.error('Signup failed:', result.error);
         toast.error(result.error || 'An error occurred during signup');
@@ -99,7 +99,7 @@ const StudentSignup = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-2xl">
         <AuthHeader
-          title="Join ResearchWhao as a Student"
+          title="Join ResearchWow as a Student"
           subtitle="Get the Right Academic Support at Every Step of Your Research Journey. Connect with top scholars, get expert assistance, and elevate your thesis or dissertation."
         />
         

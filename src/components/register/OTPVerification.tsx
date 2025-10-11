@@ -29,9 +29,9 @@ const OTPVerification = ({
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center space-x-2">
             <div className="w-12 h-12 overflow-hidden">
-              <img src="/lovable-uploads/3e478490-867e-47d2-9e44-aaef66cf715c.png" alt="ResearchWhoa" className="w-full h-full object-contain"/>
+              <img src="/lovable-uploads/3e478490-867e-47d2-9e44-aaef66cf715c.png" alt="ResearchWow" className="w-full h-full object-contain"/>
             </div>
-            <span className="text-2xl font-bold text-blue-600">ResearchWhoa</span>
+            <span className="text-2xl font-bold text-blue-600">ResearchWow</span>
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
             Verify your email

@@ -13,7 +13,7 @@ const CallToAction = ({ onBrowseAids, onBecomeResearchAid }: CallToActionProps) 
         <div className="max-w-3xl mx-auto text-center text-white">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Get Expert Help?</h2>
           <p className="text-xl text-primary-foreground/90 mb-8">
-            Join thousands of researchers who trust ResearchWhoa for their academic support needs.
+            Join thousands of researchers who trust ResearchWow for their academic support needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 

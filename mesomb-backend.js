@@ -18,8 +18,7 @@ const secretKey = process.env.MESOMB_SECRET_KEY;
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 app.post("/api/mesomb-withdraw", async (req, res) => {
-  const { receiver, amount, service, customer } = req.body;
-  console.log("[MeSomb Withdraw] Request received", { receiver, amount, service, customer });
+  console.log("[MeSomb Withdraw] Request received", req.body);
   try {
     if (!applicationKey || !accessKey || !secretKey) {
       return res.status(500).json({ error: "MeSomb credentials not set" });
@@ -92,13 +91,18 @@ app.post("/api/mesomb-withdraw", async (req, res) => {
       products: [
         {name: 'withdrawal', category: 'researcher withdrawal', quantity: 1, amount}
       ],
-      location: {town: 'Douala', region: 'Littoral', country: 'CM'},
-    });
-    console.log("[MeSomb Withdraw] Withdrawal processed successfully");
+      location: {town: 'Douala', region: 'Littoral', country: 'CM'},    });
+    
+    const isSuccess = response.isOperationSuccess() && response.isTransactionSuccess();
+    console.log(`[MeSomb Withdraw] ${isSuccess ? 'Withdrawal processed successfully' : 'Withdrawal failed'}`);
+    
     res.json({
       operationSuccess: response.isOperationSuccess(),
       transactionSuccess: response.isTransactionSuccess(),
       raw: response,
+      message: isSuccess 
+        ? 'Withdrawal completed successfully' 
+        : 'Withdrawal failed - please try again'
     });
   } catch (err) {
     console.error("[MeSomb Withdraw] Error processing withdrawal", err);
@@ -238,6 +242,42 @@ app.post('/api/create-booking', async (req, res) => {
   } catch (err) {
     console.error('[Booking Creation] Error processing payment:', err);
     res.status(500).json({ error: err?.message || 'Payment processing failed', details: err });
+  }
+});
+
+// Email notification endpoint for successful withdrawals
+app.post('/api/send-withdrawal-notification', async (req, res) => {
+  const { userId, withdrawalId, amount, phone, operator, email, name } = req.body;
+  
+  console.log("[Email Notification] Sending withdrawal success email", { userId, withdrawalId, amount, email });
+  
+  try {    // Call Supabase Edge Function for email notification
+    const { data, error } = await supabase.functions.invoke('send-withdrawal-email', {
+      body: {
+        type: 'withdrawal_success',
+        to: email,
+        data: {
+          name,
+          amount: amount.toLocaleString(),
+          phone,
+          operator,
+          withdrawalId,
+          date: new Date().toLocaleDateString(),
+          time: new Date().toLocaleTimeString()
+        }
+      }
+    });
+
+    if (error) {
+      console.error('[Email Notification] Error sending email:', error);
+      return res.status(500).json({ error: 'Failed to send email notification' });
+    }
+
+    console.log('[Email Notification] Email sent successfully');
+    res.status(200).json({ success: true, message: 'Email notification sent' });
+  } catch (err) {
+    console.error('[Email Notification] Error:', err);
+    res.status(500).json({ error: err.message || 'Failed to send email notification' });
   }
 });
 

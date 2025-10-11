@@ -69,10 +69,10 @@ export const testCustomEmail = async (email: string, userName: string) => {
   try {
     const result = await emailNotificationService.sendCustomEmail({
       email: email,
-      subject: 'Welcome to ResearchWhoa!',
+      subject: 'Welcome to ResearchWow!',
       title: `Welcome, ${userName}!`,
       content: `
-        <p>Thank you for joining ResearchWhoa! We're excited to have you as part of our academic community.</p>
+        <p>Thank you for joining ResearchWow! We're excited to have you as part of our academic community.</p>
         <p>Here's what you can do next:</p>
         <ul>
           <li>Complete your profile for better matches</li>
@@ -142,7 +142,7 @@ export const EmailTestComponent = () => {
       email: 'test@example.com',
       subject: 'Test Email',
       title: 'Test Notification',
-      content: 'This is a test email sent from the ResearchWhoa platform.',
+      content: 'This is a test email sent from the ResearchWow platform.',
       actionUrl: '/dashboard',
       actionLabel: 'View Dashboard'
     });

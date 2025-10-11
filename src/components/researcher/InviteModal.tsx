@@ -35,11 +35,11 @@ const InviteModal = ({ userType, triggerText }: InviteModalProps) => {
   const getDefaultMessage = () => {
     switch (userType) {
       case "researcher":
-        return "I'd like to invite you to join ResearchWhoa as a researcher. Your expertise would be valuable to our academic community.";
+        return "I'd like to invite you to join ResearchWow as a researcher. Your expertise would be valuable to our academic community.";
       case "student":
-        return "I'd like to invite you to join ResearchWhoa as a student. You'll have access to expert researchers and valuable academic resources.";
+        return "I'd like to invite you to join ResearchWow as a student. You'll have access to expert researchers and valuable academic resources.";
       case "research-aid":
-        return "I'd like to invite you to join ResearchWhoa as a research aid. Your skills would help students achieve their research goals.";
+        return "I'd like to invite you to join ResearchWow as a research aid. Your skills would help students achieve their research goals.";
       default:
         return "";
     }
@@ -60,7 +60,7 @@ const InviteModal = ({ userType, triggerText }: InviteModalProps) => {
             {triggerText}
           </DialogTitle>
           <DialogDescription>
-            Send an invitation to join ResearchWhoa as a {userType.replace("-", " ")}.
+            Send an invitation to join ResearchWow as a {userType.replace("-", " ")}.
           </DialogDescription>
         </DialogHeader>
         

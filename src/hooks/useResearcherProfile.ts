@@ -126,7 +126,7 @@ export const useResearcherProfile = (researcherId: string) => {
       // Fetch extended profile info from researcher_profiles (minimal select for debug)
       const { data: profileData, error: profileError } = await supabase
         .from('researcher_profiles')
-        .select('id, user_id, title, subtitle')
+        .select('id, user_id, title, subtitle, verifications')
         .eq('user_id', researcherId)
         .single();
 

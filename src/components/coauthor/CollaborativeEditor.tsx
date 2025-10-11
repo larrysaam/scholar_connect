@@ -39,8 +39,6 @@ const CollaborativeEditor = ({
   const exportFormats = [
     { value: "pdf", label: "PDF" },
     { value: "docx", label: "Word (.docx)" },
-    { value: "latex", label: "LaTeX" },
-    { value: "scholar", label: "ResearchWhoa Submission" }
   ];
 
   const updateWordCount = (text: string) => {
@@ -105,10 +103,7 @@ const CollaborativeEditor = ({
               <FileText className="h-5 w-5" />
               Document Editor
             </CardTitle>
-            <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </Button>
+            
           </div>
         </CardHeader>
         

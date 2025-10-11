@@ -96,7 +96,7 @@ const StudentDashboard = () => {
       case "documents":
         return <DocumentsTab />;
       case "settings":
-        return <SettingsTab />;
+        return <SettingsTab  setActiveTab={handleTabChange}/>;
       case "discussion":
         return <DiscussionTab />;
       default:
@@ -118,7 +118,7 @@ const StudentDashboard = () => {
             <div className="mb-8">
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-2">Welcome to ResearchWhoa!</h3>
+                  <h3 className="text-lg font-semibold mb-2">Welcome to ResearchWow!</h3>
                   <p className="text-gray-600 mb-4">Complete your profile to start connecting with expert researchers.</p>
                   <button 
                     onClick={handleOnboardingComplete}
@@ -143,7 +143,7 @@ const StudentDashboard = () => {
             
             {/* Main content - full width on mobile, 3/4 width on tablet/desktop */}
             <div className="col-span-1 md:col-span-3">
-              <NotificationsBanner />
+              <NotificationsBanner notificationCount={unreadCount} setActiveTab={handleTabChange} />
               
               <div className="mt-4">
                 <div className="bg-white rounded-lg shadow-sm p-6">

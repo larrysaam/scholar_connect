@@ -21,8 +21,8 @@ export const enTranslations = {
       title: "Contact Information",
       email: {
         title: "Email",
-        general: "info@researchwhao.com",
-        support: "support@researchwhao.com"
+        general: "info@researchwow.com",
+        support: "support@researchwow.com"
       },
       phone: {
         title: "Phone",
@@ -53,7 +53,7 @@ export const enTranslations = {
     subtitle: "Partner with us"
   },
   home: {
-    title: "Welcome to ResearchWhao",
+    title: "Welcome to ResearchWow",
     subtitle: "Connect with experts and advance your research"
   },
   researchAids: {

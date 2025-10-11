@@ -5,9 +5,10 @@ interface ResearchWhoaLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showText?: boolean;
   className?: string;
+  color?: 'white' | 'black';
 }
 
-const ResearchWhoaLogo = ({ size = 'md', showText = true, className = '' }: ResearchWhoaLogoProps) => {
+const ResearchWhoaLogo = ({ size = 'md', showText = true, className = '', color= 'white'}: ResearchWhoaLogoProps) => {
   const sizeClasses = {
     sm: 'w-6 h-6',
     md: 'w-8 h-8', 
@@ -30,7 +31,8 @@ const ResearchWhoaLogo = ({ size = 'md', showText = true, className = '' }: Rese
       />
       {showText && (
         <span className={`font-bold text-gray-900 ${textSizeClasses[size]}`}>
-          Research<span className="text-blue-600">Whao</span>
+          {color==='white'? <span className='text-white'>Research</span> : <span className="text-black-600">Research</span>}
+          <span className="text-blue-600">Wow</span>
         </span>
       )}
     </div>

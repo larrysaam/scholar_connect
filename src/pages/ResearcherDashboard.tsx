@@ -80,7 +80,8 @@ const ResearcherDashboard = () => {  const [searchParams, setSearchParams] = use
         return <DocumentsTab />;
   
       case "settings":
-        return <SettingsTab />;      default:
+        return <SettingsTab  setActiveTab={handleTabChange}/>;      
+        default:
         return <WelcomeOverviewTab setActiveTab={handleTabChange} />;
     }
     
@@ -100,7 +101,7 @@ const ResearcherDashboard = () => {  const [searchParams, setSearchParams] = use
             <div className="mb-4 sm:mb-6 md:mb-8">
               <Card>
                 <CardContent className="p-4 sm:p-6">
-                  <h3 className="text-base sm:text-lg font-semibold mb-2">Welcome to ResearchWhao!</h3>
+                  <h3 className="text-base sm:text-lg font-semibold mb-2">Welcome to ResearchWow!</h3>
                   <p className="text-sm sm:text-base text-gray-600 mb-4">Complete your profile to start connecting with students.</p>
                   <button 
                     onClick={handleOnboardingComplete}

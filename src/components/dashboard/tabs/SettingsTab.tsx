@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, LogOut, Trash2, User, Edit, Save, X, Plus } from "lucide-react";
+import { AlertTriangle, LogOut, Trash2, User, Edit, Save, X, Plus, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useURLValidation } from "@/hooks/useURLValidation";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,7 +48,7 @@ type UserProfile = {
 type UserRole = 'student' | 'expert' | 'aid' | 'admin';
 type PayoutMethod = 'mobile_money' | 'bank_transfer' | 'paypal';
 
-const SettingsTab = () => {
+const SettingsTab = ({setActiveTab}) => {
   const { toast } = useToast();
   const { user } = useAuth();
   
@@ -65,8 +65,9 @@ const SettingsTab = () => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
   const [newExpertise, setNewExpertise] = useState("");
-  const [newLanguage, setNewLanguage] = useState("");
-  const [newResearchArea, setNewResearchArea] = useState("");
+  const [newLanguage, setNewLanguage] = useState("");  const [newResearchArea, setNewResearchArea] = useState("");  // Verification status state
+  const [isVerified, setIsVerified] = useState<boolean | null>(null);
+  const [verificationLoading, setVerificationLoading] = useState(true);
   
   // URL validation
   const { error: linkedinError, clearError: clearLinkedinError } = useURLValidation(
@@ -111,6 +112,34 @@ const SettingsTab = () => {
       // Set email notification preference from database
       if (userData.email_notifications !== null && userData.email_notifications !== undefined) {
         setEmailNotifications(userData.email_notifications);
+      }
+
+      // Fetch verification status for researchers and research aids
+      if (userData.role === 'expert' || userData.role === 'aid') {
+        setVerificationLoading(true);
+        try {
+          const tableName = userData.role === 'expert' ? 'researcher_profiles' : 'research_aid_profiles';
+          const idField = userData.role === 'expert' ? 'user_id' : 'id';
+          
+          const { data: verificationData, error: verificationError } = await supabase
+            .from(tableName)
+            .select('admin_verified')
+            .eq(idField, user.id)
+            .single();
+
+          if (verificationError && verificationError.code !== 'PGRST116') {
+            console.error('Error fetching verification status:', verificationError);
+          } else {
+            setIsVerified(verificationData?.admin_verified || false);
+          }
+        } catch (error) {
+          console.error('Error fetching verification status:', error);
+          setIsVerified(false);
+        } finally {
+          setVerificationLoading(false);
+        }
+      } else {
+        setVerificationLoading(false);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -301,6 +330,48 @@ const SettingsTab = () => {
   return (
     <div className="space-y-4 sm:space-y-6 p-2 sm:p-0">
       <h2 className="text-xl sm:text-2xl font-bold">Account Settings</h2>
+      
+      {/* Verification Badge - Only show for researchers and research aids */}
+      {(userProfile?.role === 'expert' || userProfile?.role === 'aid') && (
+        <Card className={`border-l-4 ${isVerified ? 'border-l-green-500 bg-green-50' : 'border-l-yellow-500 bg-yellow-50'}`}>
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-3">
+              {verificationLoading ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
+              ) : isVerified ? (
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              ) : (
+                <AlertCircle className="h-5 w-5 text-yellow-600" />
+              )}
+              <div className="flex-1">
+                <h3 className={`font-semibold ${isVerified ? 'text-green-800' : 'text-yellow-800'}`}>
+                  {verificationLoading ? 'Checking Verification Status...' : 
+                   isVerified ? 'Account Verified' : 'Verification Required'}
+                </h3>
+                <p className={`text-sm ${isVerified ? 'text-green-700' : 'text-yellow-700'}`}>
+                  {verificationLoading ? 'Please wait...' :
+                   isVerified ? 
+                     'Your account has been verified by our administrators.' : 
+                     'Please upload required documents for verification to access all features.'}
+                </p>
+                {!isVerified && !verificationLoading && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-2 border-yellow-600 text-yellow-700 hover:bg-yellow-100"
+                    onClick={() => {
+                      setActiveTab('verification');
+                    }}
+                  >
+                    <Clock className="h-4 w-4 mr-2" />
+                    Upload Documents
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       
       {/* User Profile Section */}
       <Card>        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">

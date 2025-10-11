@@ -283,7 +283,7 @@ const ThesisInformationTab = () => {
       </Card>
 
       {/* Research Hypothesis */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Research Hypothesis</CardTitle>
         </CardHeader>
@@ -299,7 +299,7 @@ const ThesisInformationTab = () => {
             <p className="text-gray-800">{thesisData.research_hypothesis}</p>
           )}
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Expected Outcomes */}
       <Card>

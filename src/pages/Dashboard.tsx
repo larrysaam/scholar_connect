@@ -34,6 +34,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 
 const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [tabData, setTabData] = useState({})
   const [activeTab, setActiveTab] = useState(() => searchParams.get("tab") || "overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [userName, setUserName] = useState("");
@@ -86,9 +87,11 @@ const Dashboard = () => {
     setShowOnboarding(false);
   };
 
-  const handleTabChange = (tab: string) => {
+  const handleTabChange = (tab: string, data = null) => {
     console.log("Dashboard tab change requested:", tab);
     setActiveTab(tab);
+    setTabData(data);
+
     // Update URL parameters to reflect the current tab
     setSearchParams({ tab });
   };
@@ -109,7 +112,7 @@ const Dashboard = () => {
       case "post-job":
         return <PostJobTab />;
       case "my-bookings":
-        return <MyBookingsTab />;
+        return <MyBookingsTab  setActiveTab={handleTabChange}/>;
       case "session-booking":
         return <SessionBookingTab />;
       case "performance":
@@ -123,7 +126,7 @@ const Dashboard = () => {
       case "payments":
         return <PaymentsTab />;
       case "messages":
-        return <StudentMessagesTab />;
+        return <StudentMessagesTab  TabData={tabData}/>;
       case "quality":
         return <QualityFeedbackTab />;
       case "discussion":
@@ -137,7 +140,7 @@ const Dashboard = () => {
       case "documents":
         return <DocumentsTab />;
       case "settings":
-        return <SettingsTab />;
+        return <SettingsTab setActiveTab={handleTabChange}/>;
       default:
         console.log("Unknown tab, defaulting to overview:", activeTab);
         return <StudentWelcomeOverviewTab />;
@@ -154,7 +157,8 @@ const Dashboard = () => {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 lg:mb-8 space-y-2 sm:space-y-0">
             <div className="min-w-0">
               <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 truncate">
-                Welcome, {userName || 'Student'}
+                {userName ? `Welcome, ${userName}` : 'Welcome'}
+               
               </h1>
               <p className="text-sm sm:text-base text-gray-600 mt-1">
                 Ready to advance your research journey?
@@ -167,7 +171,7 @@ const Dashboard = () => {
             <div className="mb-4 sm:mb-6 lg:mb-8">
               <Card className="border-0 shadow-md">
                 <CardContent className="p-4 sm:p-6">
-                  <h3 className="text-base sm:text-lg font-semibold mb-2">Welcome to ResearchWhao!</h3>
+                  <h3 className="text-base sm:text-lg font-semibold mb-2">Welcome to ResearchWow!</h3>
                   <p className="text-sm sm:text-base text-gray-600 mb-4">
                     Complete your profile to start connecting with researchers.
                   </p>
@@ -199,7 +203,7 @@ const Dashboard = () => {
             <div className="col-span-1 lg:col-span-3">
               {/* Notifications Banner */}
               <div className="mb-4">
-                <NotificationsBanner />
+                <NotificationsBanner  notificationCount={unreadCount} setActiveTab={handleTabChange}/>
               </div>
               
               {/* Main Content Area */}
