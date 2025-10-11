@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,29 +13,17 @@ interface Transaction {
   id: string;
   user_id: string;
   type: string;
+  description: string | null;
   amount: number;
-  method: string;
   status: string;
   created_at: string;
-  recipient_id: string;
+  updated_at: string;
+  payment_id: string | null;
   user_name: string;
-  recipient_name: string;
-}
-
-interface Payout {
-  id: string;
-  recipient_id: string;
-  amount: number;
-  method: string;
-  scheduled_date: string;
-  status: string;
-  sessions: number;
-  recipient_name: string;
 }
 
 const PaymentTransactions = () => {
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
-  const [payoutSchedule, setPayoutSchedule] = useState<Payout[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,9 +38,11 @@ const PaymentTransactions = () => {
         .order('created_at', { ascending: false })
         .limit(10);
 
+        console.log('Fetched transactions:', transactionsData);
+
       if (transactionsError) throw transactionsError;
 
-      // Fetch user and recipient names for transactions
+      // Fetch user names for transactions
       const transactionsWithNames = await Promise.all(
         (transactionsData || []).map(async (transaction) => {
           const { data: userData, error: userError } = await supabase
@@ -62,46 +51,13 @@ const PaymentTransactions = () => {
             .eq('id', transaction.user_id)
             .single();
 
-          const { data: recipientData, error: recipientError } = await supabase
-            .from('users')
-            .select('name')
-            .eq('id', transaction.recipient_id)
-            .single();
-
           return {
             ...transaction,
             user_name: userError ? 'Unknown User' : userData.name,
-            recipient_name: recipientError ? 'N/A' : recipientData.name,
           };
         })
       );
       setRecentTransactions(transactionsWithNames);
-
-      // Fetch payouts
-      const { data: payoutsData, error: payoutsError } = await supabase
-        .from('payouts')
-        .select('*')
-        .order('scheduled_date', { ascending: true })
-        .limit(10);
-
-      if (payoutsError) throw payoutsError;
-
-      // Fetch recipient names for payouts
-      const payoutsWithNames = await Promise.all(
-        (payoutsData || []).map(async (payout) => {
-          const { data: recipientData, error: recipientError } = await supabase
-            .from('users')
-            .select('name')
-            .eq('id', payout.recipient_id)
-            .single();
-
-          return {
-            ...payout,
-            recipient_name: recipientError ? 'Unknown User' : recipientData.name,
-          };
-        })
-      );
-      setPayoutSchedule(payoutsWithNames);
 
     } catch (err: any) {
       setError(err.message || 'Failed to fetch payment data.');
@@ -141,13 +97,63 @@ const PaymentTransactions = () => {
 
       {/* Payment Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* ... overview cards ... */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <div className="ml-2">
+                <p className="text-sm font-medium leading-none">Total Transactions</p>
+                <p className="text-2xl font-bold">{recentTransactions.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <div className="ml-2">
+                <p className="text-sm font-medium leading-none">Total Revenue</p>
+                <p className="text-2xl font-bold">
+                  {new Intl.NumberFormat('fr-CM', { style: 'currency', currency: 'XAF' }).format(
+                    recentTransactions.reduce((sum, t) => sum + t.amount, 0)
+                  )}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <AlertCircle className="h-4 w-4 text-muted-foreground" />
+              <div className="ml-2">
+                <p className="text-sm font-medium leading-none">Pending</p>
+                <p className="text-2xl font-bold">
+                  {recentTransactions.filter(t => t.status === 'pending').length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+              <div className="ml-2">
+                <p className="text-sm font-medium leading-none">Failed</p>
+                <p className="text-2xl font-bold">
+                  {recentTransactions.filter(t => t.status === 'failed').length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Tabs defaultValue="transactions" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="transactions">Recent Transactions</TabsTrigger>
-          <TabsTrigger value="payouts">Payout Schedule</TabsTrigger>
           <TabsTrigger value="reports">Financial Reports</TabsTrigger>
         </TabsList>
         
@@ -163,9 +169,8 @@ const PaymentTransactions = () => {
                     <TableHead>Transaction ID</TableHead>
                     <TableHead>User</TableHead>
                     <TableHead>Type</TableHead>
+                    <TableHead>Description</TableHead>
                     <TableHead>Amount</TableHead>
-                    <TableHead>Method</TableHead>
-                    <TableHead>Recipient</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Actions</TableHead>
@@ -174,12 +179,15 @@ const PaymentTransactions = () => {
                 <TableBody>
                   {recentTransactions.map((transaction) => (
                     <TableRow key={transaction.id}>
-                      <TableCell className="font-mono">{transaction.id}</TableCell>
+                      <TableCell className="font-mono">{transaction.id.slice(0, 8)}...</TableCell>
                       <TableCell>{transaction.user_name}</TableCell>
-                      <TableCell>{transaction.type}</TableCell>
-                      <TableCell className="font-semibold">{new Intl.NumberFormat('fr-CM', { style: 'currency', currency: 'XAF' }).format(transaction.amount)}</TableCell>
-                      <TableCell>{transaction.method}</TableCell>
-                      <TableCell>{transaction.recipient_name}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{transaction.type}</Badge>
+                      </TableCell>
+                      <TableCell>{transaction.description || 'N/A'}</TableCell>
+                      <TableCell className="font-semibold">
+                        {new Intl.NumberFormat('fr-CM', { style: 'currency', currency: 'XAF' }).format(transaction.amount)}
+                      </TableCell>
                       <TableCell>
                         <Badge 
                           variant={
@@ -208,53 +216,28 @@ const PaymentTransactions = () => {
           </Card>
         </TabsContent>
         
-        <TabsContent value="payouts" className="mt-6">
+        <TabsContent value="reports" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Scheduled Payouts</CardTitle>
+              <CardTitle>Financial Reports</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Payout ID</TableHead>
-                    <TableHead>Recipient</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Method</TableHead>
-                    <TableHead>Sessions</TableHead>
-                    <TableHead>Scheduled Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {payoutSchedule.map((payout) => (
-                    <TableRow key={payout.id}>
-                      <TableCell className="font-mono">{payout.id}</TableCell>
-                      <TableCell>{payout.recipient_name}</TableCell>
-                      <TableCell className="font-semibold">{new Intl.NumberFormat('fr-CM', { style: 'currency', currency: 'XAF' }).format(payout.amount)}</TableCell>
-                      <TableCell>{payout.method}</TableCell>
-                      <TableCell>{payout.sessions} sessions</TableCell>
-                      <TableCell>{new Date(payout.scheduled_date).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">{payout.status}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">Process Now</Button>
-                          <Button size="sm" variant="outline">Modify</Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="space-y-4">
+                <p className="text-muted-foreground">
+                  Financial reporting features will be available soon. This will include detailed analytics, export capabilities, and revenue tracking.
+                </p>
+                <div className="flex space-x-2">
+                  <Button variant="outline" disabled>
+                    <Download className="mr-2 h-4 w-4" />
+                    Export CSV
+                  </Button>
+                  <Button variant="outline" disabled>
+                    Generate Monthly Report
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
-        </TabsContent>
-        
-        <TabsContent value="reports" className="mt-6">
-          {/* ... reports content ... */}
         </TabsContent>
       </Tabs>
     </div>

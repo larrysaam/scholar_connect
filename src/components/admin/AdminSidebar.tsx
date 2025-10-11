@@ -39,10 +39,10 @@ const AdminSidebar = ({ activeTab, setActiveTab }: AdminSidebarProps) => {
     { id: "consultations", label: "Consultation Management", icon: Calendar },
     { id: "tasks", label: "Task Orders", icon: ClipboardList },
     { id: "payments", label: "Payments & Transactions", icon: CreditCard },
-    { id: "email-notifications", label: "Email Notifications", icon: Mail },
+    // { id: "email-notifications", label: "Email Notifications", icon: Mail },
     { id: "content", label: "Content Management", icon: FileText },
     { id: "reports", label: "Reports & Analytics", icon: TrendingUp },
-    { id: "membership", label: "Membership & VIP", icon: Crown },
+    // { id: "membership", label: "Membership & VIP", icon: Crown },
     { id: "support", label: "Support & Feedback", icon: MessageSquare },
     { id: "security", label: "Security & Compliance", icon: Shield },
     { id: "verification", label: "Verification Management", icon: CheckCircle }

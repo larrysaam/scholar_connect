@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
-const DashboardOverview = () => {
+const DashboardOverview = ({setActiveTab}) => {
   const { 
     platformMetrics, 
     systemAlerts, 
@@ -102,7 +102,9 @@ const DashboardOverview = () => {
             </p>
           </CardContent>
         </Card>
-      </div>      {/* System Alerts */}
+      </div>      
+
+      {/* System Alerts */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
@@ -149,7 +151,7 @@ const DashboardOverview = () => {
                       <Button 
                         size="sm" 
                         variant="outline"
-                        onClick={() => window.location.href = alert.actionUrl!}
+                        onClick={() => setActiveTab('verification')} 
                       >
                         View Details
                       </Button>

@@ -21,7 +21,7 @@ const AdminDashboard = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case "dashboard":
-        return <DashboardOverview />;
+        return <DashboardOverview setActiveTab={setActiveTab} />;
       case "users":
         return <UserManagement />;
       case "consultations":
@@ -47,7 +47,7 @@ const AdminDashboard = () => {
       case "platform-settings":
         return <SecurityCompliance />; // Reuse SecurityCompliance for platform settings
       default:
-        return <DashboardOverview />;
+        return <DashboardOverview setActiveTab={setActiveTab}/>;
     }
   };
 
