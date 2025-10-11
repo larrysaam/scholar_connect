@@ -82,7 +82,7 @@ const StudentSignup = () => {
 
       if (result.success) {
         toast.success('Account created successfully! Please check your email for verification.');
-        navigate('/dashboard');
+        navigate('/login');
       } else {
         console.error('Signup failed:', result.error);
         toast.error(result.error || 'An error occurred during signup');

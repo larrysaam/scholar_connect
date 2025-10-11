@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -30,6 +29,8 @@ const ResearcherSignup = () => {
     highestEducation: '',
     sex: '',
     dateOfBirth: '',
+    subtitle: '',
+    consultationPrice: '',
     linkedinAccount: '',
     researchgateAccount: '',
     academiaEduAccount: '',
@@ -62,6 +63,13 @@ const ResearcherSignup = () => {
       return;
     }
 
+    // Validate consultation price
+    const price = parseFloat(formData.consultationPrice);
+    if (!formData.consultationPrice || isNaN(price) || price <= 0) {
+      toast.error('Please enter a valid consultation price greater than 0');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -78,6 +86,8 @@ const ResearcherSignup = () => {
         highestEducation: formData.highestEducation,
         sex: formData.sex,
         dateOfBirth: formData.dateOfBirth,
+        subtitle: formData.subtitle,
+        consultationPrice: formData.consultationPrice,
         linkedinAccount: formData.linkedinAccount,
         researchgateAccount: formData.researchgateAccount,
         academiaEduAccount: formData.academiaEduAccount,
@@ -89,7 +99,7 @@ const ResearcherSignup = () => {
 
       if (result.success) {
         toast.success('Account created successfully! Please check your email for verification.');
-        navigate('/researcher-dashboard');
+        navigate('/login');
       } else {
         toast.error(result.error || 'An error occurred during signup');
       }
@@ -120,6 +130,17 @@ const ResearcherSignup = () => {
                 required
                 value={formData.fullName}
                 onChange={(value) => handleInputChange('fullName', value)}
+              />
+
+              <FormField
+                label="Title"
+                type="select"
+                value={formData.subtitle}
+                onChange={(value) => handleInputChange('subtitle', value)}
+                options={[
+                  { value: 'Dr.', label: 'Dr.' },
+                  { value: 'Prof.', label: 'Prof.' }
+                ]}
               />
 
               <FormField
@@ -231,6 +252,15 @@ const ResearcherSignup = () => {
                 <h3 className="text-xl font-semibold mb-4">Research Profile</h3>
                 <p className="text-sm text-gray-600 mb-4">This will help us verify your status as a Researcher</p>
                 
+                <FormField
+                  label="General Consultation Price (XAF per hour)"
+                  type="text"
+                  required
+                  value={formData.consultationPrice}
+                  onChange={(value) => handleInputChange('consultationPrice', value)}
+                  placeholder="10000"
+                />
+
                 <FormField
                   label="LinkedIn Account"
                   type="url"

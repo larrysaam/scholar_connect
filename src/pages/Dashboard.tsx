@@ -158,7 +158,7 @@ const Dashboard = () => {
             <div className="min-w-0">
               <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 truncate">
                 {userName ? `Welcome, ${userName}` : 'Welcome'}
-                Welcome, {userName || 'Student'}
+               
               </h1>
               <p className="text-sm sm:text-base text-gray-600 mt-1">
                 Ready to advance your research journey?
