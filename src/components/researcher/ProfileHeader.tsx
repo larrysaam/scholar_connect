@@ -118,7 +118,7 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
               </div>
               <div className="flex items-center">
                 <Users className="h-4 w-4 text-blue-500 mr-1" />
-                <span>{researcher.studentsSupervised} students supervised</span>
+                <span>{researcher.studentsSupervised} Students Supervised</span>
               </div>
               {/* Remove yearsExperience if not present */}
             </div>

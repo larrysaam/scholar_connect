@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -48,7 +48,9 @@ import {
   XCircle,
   Loader2,
   RefreshCw,
-  Search
+  Search,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { useBookingSystem } from "@/hooks/useBookingSystem";
@@ -75,20 +77,36 @@ const MyBookingsTab = ({setActiveTab}) => {
   const [rescheduleTime, setRescheduleTime] = useState("");
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [cancelReason, setCancelReason] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Filter bookings
+  const bookingsPerPage = 5;
+
+  // Filter and sort bookings
   const filteredBookings = useMemo(() => {
-    return bookings.filter(booking => {
-      const matchesSearch = searchTerm === "" || 
-        booking.service?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        booking.provider?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        booking.client_notes?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesStatus = statusFilter === "all" || booking.status === statusFilter;
-      
-      return matchesSearch && matchesStatus;
-    });
+    return bookings
+      .filter(booking => {
+        const matchesSearch = searchTerm === "" || 
+          booking.service?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          booking.provider?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          booking.client_notes?.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        const matchesStatus = statusFilter === "all" || booking.status === statusFilter;
+        
+        return matchesSearch && matchesStatus;
+      })
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
   }, [bookings, searchTerm, statusFilter]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredBookings.length / bookingsPerPage);
+  const startIndex = (currentPage - 1) * bookingsPerPage;
+  const endIndex = startIndex + bookingsPerPage;
+  const currentPageBookings = filteredBookings.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
 
   // Group bookings by status
   const bookingStats = useMemo(() => {
@@ -534,6 +552,45 @@ const MyBookingsTab = ({setActiveTab}) => {
       {/* Filters */}
       <Card>
         <CardContent className="p-4 sm:p-6">
+          {/* Quick Status Filters */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Button
+              variant={statusFilter === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setStatusFilter("all")}
+              className="text-xs sm:text-sm"
+            >
+              All
+            </Button>
+            <Button
+              variant={statusFilter === "confirmed" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setStatusFilter("confirmed")}
+              className="text-xs sm:text-sm"
+            >
+              <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              Confirmed
+            </Button>
+            <Button
+              variant={statusFilter === "completed" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setStatusFilter("completed")}
+              className="text-xs sm:text-sm"
+            >
+              <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              Completed
+            </Button>
+            <Button
+              variant={statusFilter === "cancelled" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setStatusFilter("cancelled")}
+              className="text-xs sm:text-sm"
+            >
+              <XCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              Cancelled
+            </Button>
+          </div>
+
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -564,18 +621,64 @@ const MyBookingsTab = ({setActiveTab}) => {
 
       {/* Bookings List */}
       <div className="space-y-3 sm:space-y-4">
-        {filteredBookings.length === 0 ? (
+        {currentPageBookings.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8 sm:py-12">
               <p className="text-sm sm:text-base text-gray-500">No bookings found matching your criteria.</p>
             </CardContent>
           </Card>
         ) : (
-          filteredBookings.map((booking) => (
+          currentPageBookings.map((booking) => (
             <BookingCard key={booking.id} booking={booking} />
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            Showing {startIndex + 1}-{Math.min(endIndex, filteredBookings.length)} of {filteredBookings.length} bookings
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="text-xs sm:text-sm"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+            
+            <div className="flex items-center space-x-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCurrentPage(page)}
+                  className="w-8 h-8 p-0 text-xs"
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="text-xs sm:text-sm"
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Reschedule Dialog and other modals remain the same but with responsive sizing */}
       {/* All existing Dialog components can remain as they auto-adapt to mobile */}

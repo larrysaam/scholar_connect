@@ -8,13 +8,33 @@ import ReviewsTab from "./tabs/ReviewsTab";
 import VerificationTab from "./tabs/VerificationTab";
 import ConsultationServicesDisplay from "./ConsultationServicesDisplay";
 
-import { ResearcherProfileData } from "@/hooks/useResearcherProfile";
+import { useResearcherProfile } from "@/hooks/useResearcherProfile";
+import { Loader2 } from "lucide-react";
 
 interface ProfileTabsProps {
-  researcher: ResearcherProfileData;
+  researcherId: string;
 }
 
-const ProfileTabs = ({ researcher }: ProfileTabsProps) => {
+const ProfileTabs = ({ researcherId }: ProfileTabsProps) => {
+  const { researcher, loading, error } = useResearcherProfile(researcherId);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        <span className="ml-2 text-gray-600">Loading profile data...</span>
+      </div>
+    );
+  }
+
+  if (error || !researcher) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-600">Failed to load profile data. Please try again.</p>
+      </div>
+    );
+  }
+
   return (
     <Tabs defaultValue="about" className="w-full">
       <TabsList className="mb-8 bg-gray-100 grid grid-cols-4 md:grid-cols-8 w-full">
@@ -29,7 +49,7 @@ const ProfileTabs = ({ researcher }: ProfileTabsProps) => {
       </TabsList>
       
       <TabsContent value="about" className="mt-0">
-        <AboutTab bio={researcher.bio} specialties={researcher.specialties} />
+        <AboutTab bio={researcher.bio} specialties={researcher.skills} />
       </TabsContent>
 
       <TabsContent value="verification" className="mt-0">
@@ -37,20 +57,20 @@ const ProfileTabs = ({ researcher }: ProfileTabsProps) => {
       </TabsContent>
       
       <TabsContent value="education" className="mt-0">
-        <EducationTab education={researcher.education} />
+        <EducationTab education={researcher.educational_background} />
       </TabsContent>
       
       <TabsContent value="experience" className="mt-0">
-        <ExperienceTab experience={researcher.experience} />
+        <ExperienceTab experience={researcher.work_experience} />
       </TabsContent>
       
       <TabsContent value="achievements" className="mt-0">
         <AwardsTab 
           awards={researcher.awards}
-          fellowships={researcher.fellowships}
-          grants={researcher.grants}
-          memberships={researcher.memberships}
-          supervision={researcher.supervision}
+          fellowships={researcher.scholarships}
+          grants={[]} // Not available in current data structure
+          memberships={researcher.affiliations || []}
+          supervision={[]} // Not available in current data structure
         />
       </TabsContent>
       

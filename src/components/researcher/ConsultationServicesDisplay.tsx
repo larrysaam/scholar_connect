@@ -134,7 +134,7 @@ const ConsultationServicesDisplay = ({ researcherId, researcherName }: Consultat
           </div>
 
           {/* Booking Form */}
-          <Card className="bg-blue-50 border-blue-200">
+          {/* <Card className="bg-blue-50 border-blue-200">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2 text-blue-900">
                 <Calendar className="h-5 w-5" />
@@ -196,7 +196,7 @@ const ConsultationServicesDisplay = ({ researcherId, researcherName }: Consultat
                 Book Consultation
               </Button>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
       </DialogContent>
     </Dialog>

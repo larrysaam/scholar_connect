@@ -39,6 +39,7 @@ import { format } from "date-fns";
 import { useBookingSystem } from "@/hooks/useBookingSystem";
 import { useResearcherAvailability } from "@/hooks/useResearcherAvailability";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from '@/integrations/supabase/client';
 
 interface ComprehensiveBookingModalProps {
@@ -60,6 +61,7 @@ interface PaymentMethod {
 }
 
 const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProps) => {
+  const { user } = useAuth();
   const { toast } = useToast();
   const { 
     createBooking, 
@@ -286,7 +288,12 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
       case 3:
         return challenges.length > 0;
       case 4:
-        return isBookingFree() || paymentMethod; // Skip payment validation for free bookings
+        if (isBookingFree()) return true; // Skip payment validation for free bookings
+        if (!paymentMethod) return false;
+        if (paymentMethod === 'mobile_money') {
+          return paymentDetails.phoneNumber && selectedOperator;
+        }
+        return true; // For other payment methods
       default:
         return false;
     }
@@ -308,47 +315,61 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
     const totalPrice = getTotalPrice();
     const isFree = isBookingFree();
 
-    // Create booking with appropriate pricing
-    const bookingResult = await createBooking({
-      provider_id: researcher.id,
-      service_id: selectedService,
-      academic_level: selectedAcademicLevel as any,
-      scheduled_date: format(selectedDate, 'yyyy-MM-dd'),
-      scheduled_time: selectedTime,
-      duration_minutes: service.duration_minutes,
-      base_price: isFree ? 0 : getServicePrice(),
-      addon_price: isFree ? 0 : getAddonPrice(),
-      total_price: isFree ? 0 : totalPrice,
-      currency: 'XAF',
-      client_notes: clientNotes,
-      selected_addons: selectedAddons,
-      payment_id: isFree ? 'Free' : undefined,
-      challenges
-    });    if (!bookingResult.success || !bookingResult.booking) {
-      return;
-    }
-
-    // Generate Google Meet link after booking is created
-    try {
-      const { data, error: meetError } = await supabase.functions.invoke('generate-meet-link', {
-        body: { booking_id: bookingResult.booking.id },
-      });
-      if (meetError) {
+    // Validate mobile money payment details if not free
+    if (!isFree && paymentMethod === 'mobile_money') {
+      if (!paymentDetails.phoneNumber || !selectedOperator) {
         toast({
-          title: 'Meeting Link Failed',
-          description: 'Could not create a Google Meet link. Please contact support.',
-          variant: 'destructive',
+          title: "Missing Payment Information",
+          description: "Please provide your phone number and select a mobile operator.",
+          variant: "destructive"
         });
-      } else if (data && data.meetLink) {
-        // Optionally update the booking with the meet link if not handled by the function
-        await supabase.from('service_bookings').update({ meeting_link: data.meetLink }).eq('id', bookingResult.booking.id);
+        return;
       }
-    } catch (e) {
-      console.error('Error invoking generate-meet-link function:', e);
     }
 
     if (isFree) {
-      // Handle free booking
+      // Handle free booking - create booking directly
+      const bookingResult = await createBooking({
+        provider_id: researcher.id,
+        service_id: selectedService,
+        academic_level: selectedAcademicLevel as any,
+        scheduled_date: format(selectedDate, 'yyyy-MM-dd'),
+        scheduled_time: selectedTime,
+        duration_minutes: service.duration_minutes,
+        base_price: 0,
+        addon_price: 0,
+        total_price: 0,
+        currency: 'XAF',
+        client_notes: clientNotes,
+        selected_addons: selectedAddons,
+        payment_id: 'Free',
+        challenges
+      });
+
+      if (!bookingResult.success || !bookingResult.booking) {
+        return;
+      }
+
+      // Generate Google Meet link after booking is created
+      try {
+        const { data, error: meetError } = await supabase.functions.invoke('generate-meet-link', {
+          body: { booking_id: bookingResult.booking.id },
+        });
+        if (meetError) {
+          toast({
+            title: 'Meeting Link Failed',
+            description: 'Could not create a Google Meet link. Please contact support.',
+            variant: 'destructive',
+          });
+        } else if (data && data.meetLink) {
+          // Optionally update the booking with the meet link if not handled by the function
+          await supabase.from('service_bookings').update({ meeting_link: data.meetLink }).eq('id', bookingResult.booking.id);
+        }
+      } catch (e) {
+        console.error('Error invoking generate-meet-link function:', e);
+      }
+
+      // Create transaction record for free booking
       await supabase.from('transactions').insert({
         user_id: bookingResult.booking.client_id,
         amount: 0,
@@ -358,37 +379,126 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
         payment_id: 'Free',
       });
 
-      await supabase.from('service_bookings').update({
-        payment_status: 'paid',
-        payment_id: 'Free',
-        status: 'confirmed',
-        updated_at: new Date().toISOString(),
-      }).eq('id', bookingResult.booking.id);
-
       setCurrentStep(5); // Success step
       // Reset form after a delay
       setTimeout(() => {
         resetForm();
         setIsOpen(false);
-      }, 3000);    } else {
-      // Handle paid booking - process payment
-      const paymentResult = await processPayment({
-        amount: totalPrice,
-        currency: 'XAF',
-        booking_id: bookingResult.booking.id,
-        payment_method: paymentMethod as any,
-        payment_details: paymentDetails,
-        service_id: selectedService,
-        academic_level: selectedAcademicLevel
-      });
+      }, 3000);
+    } else {
+      // Handle paid booking - process payment first
+      try {
+        const paymentResponse = await fetch('http://localhost:4000/api/mesomb-payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: totalPrice,
+            service: selectedOperator, // Use selected operator
+            payer: paymentDetails.phoneNumber,
+            description: `Consultation booking payment - ${service.title}`,
+            customer: {
+              id: user?.id,
+              phone: paymentDetails.phoneNumber
+            },
+            location: {
+              town: 'Douala',
+              region: 'Littoral',
+              country: 'CM'
+            },
+            products: [
+              {
+                name: `Consultation: ${service.title}`,
+                category: 'consultation',
+                quantity: 1,
+                amount: totalPrice
+              }
+            ]
+          }),
+        });
 
-      if (paymentResult.success) {
+        const paymentResult = await paymentResponse.json();
+
+        if (!paymentResult.operationSuccess || !paymentResult.transactionSuccess) {
+          toast({
+            title: "Payment Failed",
+            description: paymentResult.raw?.message || "Payment was not successful. Please try again.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Payment successful, now create the booking
+        const bookingResult = await createBooking({
+          provider_id: researcher.id,
+          service_id: selectedService,
+          academic_level: selectedAcademicLevel as any,
+          scheduled_date: format(selectedDate, 'yyyy-MM-dd'),
+          scheduled_time: selectedTime,
+          duration_minutes: service.duration_minutes,
+          base_price: getServicePrice(),
+          addon_price: getAddonPrice(),
+          total_price: totalPrice,
+          currency: 'XAF',
+          client_notes: clientNotes,
+          selected_addons: selectedAddons,
+          payment_id: paymentResult.raw?.transaction?.id || `mesomb_${Date.now()}`,
+          challenges
+        });
+
+        if (!bookingResult.success || !bookingResult.booking) {
+          // Payment was processed but booking creation failed
+          toast({
+            title: "Booking Error",
+            description: "Payment was successful but booking creation failed. Please contact support.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Generate Google Meet link after booking is created
+        try {
+          const { data, error: meetError } = await supabase.functions.invoke('generate-meet-link', {
+            body: { booking_id: bookingResult.booking.id },
+          });
+          if (meetError) {
+            toast({
+              title: 'Meeting Link Failed',
+              description: 'Could not create a Google Meet link. Please contact support.',
+              variant: 'destructive',
+            });
+          } else if (data && data.meetLink) {
+            // Optionally update the booking with the meet link if not handled by the function
+            await supabase.from('service_bookings').update({ meeting_link: data.meetLink }).eq('id', bookingResult.booking.id);
+          }
+        } catch (e) {
+          console.error('Error invoking generate-meet-link function:', e);
+        }
+
+        // Create transaction record for paid booking
+        await supabase.from('transactions').insert({
+          user_id: bookingResult.booking.client_id,
+          amount: totalPrice,
+          type: 'consultation',
+          description: `Consultation booking payment for ${service.title}`,
+          status: 'paid',
+          payment_id: paymentResult.raw?.transaction?.id || `mesomb_${Date.now()}`,
+        });
+
         setCurrentStep(5); // Success step
         // Reset form after a delay
         setTimeout(() => {
           resetForm();
           setIsOpen(false);
         }, 3000);
+      } catch (error) {
+        console.error('Payment error:', error);
+        toast({
+          title: "Error",
+          description: "An error occurred while processing your payment. Please try again.",
+          variant: "destructive"
+        });
       }
     }
   };
