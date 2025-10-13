@@ -75,6 +75,7 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
     getAvailableSlots: getResearcherAvailableSlots, 
     isDateAvailable 
   } = useResearcherAvailability();
+  const { profile: userProfile } = useAuth();
 
   // Helper function to format duration in a user-friendly way
   const formatDuration = (minutes: number) => {
@@ -300,6 +301,17 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
   };
   // Handle booking submission
   const handleBooking = async () => {
+     // Check if user role prevents booking
+    if (userProfile?.role === 'expert' || userProfile?.role === 'aid') {
+      toast({
+        title: "Booking Not Allowed",
+        description: "Research experts and research aids cannot book consultations. This feature is only available for students.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate form fields
     if (!selectedDate || !selectedTime || !selectedService || !selectedAcademicLevel) {
       toast({
         title: "Missing Information",

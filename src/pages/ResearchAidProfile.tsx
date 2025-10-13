@@ -95,7 +95,7 @@ const ResearchAidProfile = () => {
   const [submitting, setSubmitting] = useState(false);
   const [showBookingDialog, setShowBookingDialog] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, profile: userProfile } = useAuth();
 
   useEffect(() => {
     if (id) {
@@ -232,6 +232,16 @@ const ResearchAidProfile = () => {
       return;
     }
 
+    // Check if user role prevents booking
+    if (userProfile?.role === 'expert' || userProfile?.role === 'aid') {
+      toast({
+        title: "Booking Not Allowed",
+        description: "Research experts and research aids cannot book consultations. This feature is only available for students.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!bookingForm.project_description.trim()) {
       toast({
         title: "Missing Information",
@@ -283,7 +293,9 @@ const ResearchAidProfile = () => {
         .select()
         .single();
 
-      if (requestError) throw requestError;      // Create payment record (use valid table/fields) - FREE APPOINTMENT
+      if (requestError) throw requestError;
+
+      // Create payment record (use valid table/fields) - FREE APPOINTMENT
       await supabase.from('transactions').insert({
         user_id: user.id,
         amount: 0, // FREE appointment
@@ -294,115 +306,15 @@ const ResearchAidProfile = () => {
         payment_id: 'Free' // Set payment ID as 'Free' as requested
       });
 
-      // Send in-app notification to research aid
+      // Send notification to research aid (use valid fields)
       await supabase.from('notifications').insert({
         user_id: id,
         title: 'New Appointment Request',
-        message: `You have a new appointment request from ${user.name || user.email || 'a student'} for ${new Date(bookingForm.requested_date).toLocaleDateString()} at ${bookingForm.requested_time}`,
-        type: 'info',
-        category: 'consultation',
-        action_url: '/research-aids-dashboard?tab=appointments',
-        action_label: 'View Appointment',
-        metadata: {
-          bookingId: request.id,
-          clientId: user.id,
-          scheduledDate: bookingForm.requested_date,
-          scheduledTime: bookingForm.requested_time
-        }
+        message: `You have a new appointment request from ${user.email || 'a student'} for appointment`,
+        type: 'appointment',
+        category: 'booking',
+        action_url: '/research-aids-dashboard'
       });
-
-      // Send email notification to research aid about new appointment request
-      try {
-        const { data, error } = await supabase.functions.invoke('send-email-notification', {
-          body: {
-            to: profile.email,
-            template: 'generic',
-            templateData: {
-              subject: 'New Appointment Request - ResearchWow',
-              subtitle: 'Appointment Request Notification',
-              title: 'New Appointment Request',
-              content: `
-                <p>You have received a new appointment request!</p>
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 15px 0;">
-                  <h4 style="margin: 0 0 10px 0;">Request Details:</h4>
-                  <p style="margin: 5px 0;"><strong>Client:</strong> ${user.name || user.email}</p>
-                  <p style="margin: 5px 0;"><strong>Date:</strong> ${new Date(bookingForm.requested_date).toLocaleDateString()}</p>
-                  <p style="margin: 5px 0;"><strong>Time:</strong> ${bookingForm.requested_time}</p>
-                  <p style="margin: 5px 0;"><strong>Meeting Type:</strong> ${bookingForm.meeting_type}</p>
-                  <p style="margin: 5px 0;"><strong>Academic Level:</strong> ${bookingForm.academic_level}</p>
-                </div>
-                <div style="background: #fff3cd; padding: 15px; border-radius: 6px; margin: 15px 0;">
-                  <h4 style="margin: 0 0 10px 0;">Project Description:</h4>
-                  <p style="margin: 0;">${bookingForm.project_description}</p>
-                  ${bookingForm.specific_requirements ? `
-                    <h4 style="margin: 15px 0 10px 0;">Specific Requirements:</h4>
-                    <p style="margin: 0;">${bookingForm.specific_requirements}</p>
-                  ` : ''}
-                </div>
-                <p>Please log in to your dashboard to accept or modify this appointment request.</p>
-              `,
-              actionUrl: `${window.location.origin}/research-aids-dashboard?tab=appointments`,
-              actionLabel: 'View Appointment Request'
-            },
-            userId: id,
-            notificationType: 'consultation'
-          }
-        });
-
-        if (error) {
-          console.error('Failed to send email notification:', error);
-          // Don't fail the whole process if email fails
-        }
-      } catch (emailError) {
-        console.error('Error sending email notification:', emailError);
-        // Don't fail the whole process if email fails
-      }
-
-      // Send confirmation email to the client (student)
-      try {
-        const { data, error } = await supabase.functions.invoke('send-email-notification', {
-          body: {
-            to: user.email,
-            template: 'generic',
-            templateData: {
-              subject: 'Appointment Request Submitted - ResearchWow',
-              subtitle: 'Confirmation of Your Request',
-              title: 'Appointment Request Submitted',
-              content: `
-                <p>Your appointment request has been successfully submitted!</p>
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 15px 0;">
-                  <h4 style="margin: 0 0 10px 0;">Request Details:</h4>
-                  <p style="margin: 5px 0;"><strong>Research Aid:</strong> ${profile.name}</p>
-                  <p style="margin: 5px 0;"><strong>Date:</strong> ${new Date(bookingForm.requested_date).toLocaleDateString()}</p>
-                  <p style="margin: 5px 0;"><strong>Time:</strong> ${bookingForm.requested_time}</p>
-                  <p style="margin: 5px 0;"><strong>Meeting Type:</strong> ${bookingForm.meeting_type}</p>
-                  <p style="margin: 5px 0;"><strong>Status:</strong> Pending Confirmation</p>
-                </div>
-                <div style="background: #d1ecf1; padding: 15px; border-radius: 6px; margin: 15px 0;">
-                  <h4 style="margin: 0 0 10px 0;">What's Next?</h4>
-                  <ul style="margin: 0; padding-left: 20px;">
-                    <li>The research aid will review your request</li>
-                    <li>You'll receive an email confirmation once accepted</li>
-                    <li>Meeting details will be provided upon confirmation</li>
-                    <li>You can track the status in your dashboard</li>
-                  </ul>
-                </div>
-                <p>Thank you for using ResearchWow! We'll notify you as soon as there's an update.</p>
-              `,
-              actionUrl: `${window.location.origin}/dashboard?tab=my-bookings`,
-              actionLabel: 'View My Bookings'
-            },
-            userId: user.id,
-            notificationType: 'consultation'
-          }
-        });
-
-        if (error) {
-          console.error('Failed to send confirmation email to client:', error);
-        }
-      } catch (emailError) {
-        console.error('Error sending confirmation email to client:', emailError);
-      }
 
       toast({
         title: "Appointment Requested",

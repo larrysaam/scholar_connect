@@ -93,7 +93,7 @@ const AppointmentBooking = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   useEffect(() => {
     fetchResearchAids();
@@ -200,6 +200,16 @@ const AppointmentBooking = () => {
       toast({
         title: "Authentication Required",
         description: "Please log in to book an appointment",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if user role prevents booking
+    if (profile?.role === 'expert' || profile?.role === 'aid') {
+      toast({
+        title: "Booking Not Allowed",
+        description: "Research experts and research aids cannot book consultations. This feature is only available for students.",
         variant: "destructive"
       });
       return;

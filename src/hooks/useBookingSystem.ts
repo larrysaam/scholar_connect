@@ -58,7 +58,7 @@ export interface PaymentData {
 }
 
 export const useBookingSystem = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const [bookings, setBookings] = useState<BookingSession[]>([]);
   const [loading, setLoading] = useState(false);
@@ -69,6 +69,11 @@ export const useBookingSystem = () => {
   const createBooking = async (bookingData: BookingData): Promise<{ success: boolean; booking?: BookingSession; error?: string }> => {
     if (!user) {
       return { success: false, error: 'User not authenticated' };
+    }
+
+    // Check if user role prevents booking
+    if (profile?.role === 'expert' || profile?.role === 'aid') {
+      return { success: false, error: 'Research experts and research aids cannot book consultations. This feature is only available for students.' };
     }
 
     try {
