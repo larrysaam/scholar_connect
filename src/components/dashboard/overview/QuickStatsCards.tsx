@@ -52,7 +52,8 @@ const QuickStatsCards = ({ stats }: QuickStatsCardsProps) => {
             </div>
           </div>
         </CardContent>
-      </Card>      <Card className="hover:shadow-md transition-shadow duration-200">
+      </Card>      
+      <Card className="hover:shadow-md transition-shadow duration-200">
         <CardContent className="p-3 sm:p-4 lg:p-6">
           <div className="flex items-center space-x-2 sm:space-x-3">
             <div className="p-2 sm:p-3 bg-yellow-100 rounded-lg flex-shrink-0">

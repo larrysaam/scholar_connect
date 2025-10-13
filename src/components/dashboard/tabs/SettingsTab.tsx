@@ -22,7 +22,7 @@ type UserProfile = Database['public']['Tables']['users']['Row'] & {
 type UserRole = Database['public']['Enums']['user_role'];
 type PayoutMethod = Database['public']['Enums']['payout_method'];
 
-const SettingsTab = () => {
+const SettingsTab = ({setActiveTab}) => {
   const { toast } = useToast();
   const { user } = useAuth();
   
