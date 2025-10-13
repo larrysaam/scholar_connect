@@ -25,7 +25,6 @@ const ResearchAidsMessages = () => {
 
   const [newMessage, setNewMessage] = useState("");
   const { toast } = useToast();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasScrolledRef = useRef(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -288,7 +287,6 @@ const ResearchAidsMessages = () => {
               );
             })
           )}
-          <div ref={messagesEndRef} />
         </div>
 
         {/* Message Input */}

@@ -268,7 +268,6 @@ const StudentMessagesTab = () => {
               );
             })
           )}
-          <div ref={messagesEndRef} />
         </div>
 
         {/* Message Input */}
