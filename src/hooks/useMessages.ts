@@ -68,7 +68,14 @@ export const useMessages = () => {
       });
       setConversations(prev => prev.map(conv =>
         conv.id === msg.booking_id
-          ? { ...conv, last_message: msg.content, last_message_at: msg.created_at }
+          ? { 
+              ...conv, 
+              last_message: msg.content, 
+              last_message_at: msg.created_at,
+              unreadCount: (selectedConversation?.id !== msg.booking_id && msg.recipient_id === user.id) 
+                ? (conv.unreadCount || 0) + 1 
+                : conv.unreadCount
+            }
           : conv
       ));
     });
@@ -272,6 +279,11 @@ export const useMessages = () => {
           .from('messages')
           .update({ is_read: true })
           .in('id', unreadMessageIds);
+        
+        // Update the conversation's unreadCount to 0
+        setConversations(prev => prev.map(conv => 
+          conv.id === bookingId ? { ...conv, unreadCount: 0 } : conv
+        ));
       }
     }
     setLoadingMessages(false);
