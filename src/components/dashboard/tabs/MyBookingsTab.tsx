@@ -171,6 +171,7 @@ const MyBookingsTab = ({setActiveTab}) => {
   const handleCancel = async () => {
     if (!selectedBooking) return;
 
+    console.log('handle cancel ----')
     const success = await cancelBooking(selectedBooking.id, cancelReason);
     if (success) {
       setSelectedBooking(null);
@@ -295,80 +296,84 @@ const MyBookingsTab = ({setActiveTab}) => {
                 <Video className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Join Meeting</span>
                 <span className="sm:hidden">Join</span>
-              </Button>
-            )}            {booking.status === 'pending' && (
+              </Button>            
+              )}            
+              
+              {(booking.status === 'pending' || booking.status === 'confirmed') && (
               <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setSelectedBooking(booking)}
-                      className="w-full sm:w-auto text-xs sm:text-sm"
-                    >
-                      <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Reschedule</span>
-                      <span className="sm:hidden">Reschedule</span>
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto mx-2 sm:mx-0">
-                    <DialogHeader className="pb-3">
-                      <DialogTitle className="text-base sm:text-lg">Reschedule Booking</DialogTitle>
-                      <DialogDescription className="text-sm">
-                        Select a new date and time for your consultation
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                      <div>
-                        <Label className="text-sm font-medium">New Date</Label>
-                        <Calendar
-                          mode="single"
-                          selected={rescheduleDate}
-                          onSelect={(date) => {
-                            setRescheduleDate(date);
-                            if (date) loadAvailableSlots(date);
-                          }}
-                          disabled={(date) => date < new Date()}
-                          className="rounded-md border mx-auto"
-                        />
-                      </div>
-                      {rescheduleDate && (
-                        <div>
-                          <Label className="text-sm font-medium">Available Times</Label>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
-                            {availableSlots.map((slot) => (
-                              <Button
-                                key={slot}
-                                variant={rescheduleTime === slot ? "default" : "outline"}
-                                onClick={() => setRescheduleTime(slot)}
-                                size="sm"
-                                className="text-xs"
-                              >
-                                {slot}
-                              </Button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setSelectedBooking(null)}
-                        className="w-full sm:w-auto text-sm"
-                      >
-                        Cancel
-                      </Button>
+                {booking.status === 'pending' && (
+                  <Dialog>
+                    <DialogTrigger asChild>
                       <Button
-                        onClick={handleReschedule}
-                        disabled={!rescheduleDate || !rescheduleTime}
-                        className="w-full sm:w-auto text-sm"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setSelectedBooking(booking)}
+                        className="w-full sm:w-auto text-xs sm:text-sm"
                       >
-                        Reschedule
+                        <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">Reschedule</span>
+                        <span className="sm:hidden">Reschedule</span>
                       </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                    </DialogTrigger>
+                    <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto mx-2 sm:mx-0">
+                      <DialogHeader className="pb-3">
+                        <DialogTitle className="text-base sm:text-lg">Reschedule Booking</DialogTitle>
+                        <DialogDescription className="text-sm">
+                          Select a new date and time for your consultation
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                        <div>
+                          <Label className="text-sm font-medium">New Date</Label>
+                          <Calendar
+                            mode="single"
+                            selected={rescheduleDate}
+                            onSelect={(date) => {
+                              setRescheduleDate(date);
+                              if (date) loadAvailableSlots(date);
+                            }}
+                            disabled={(date) => date < new Date()}
+                            className="rounded-md border mx-auto"
+                          />
+                        </div>
+                        {rescheduleDate && (
+                          <div>
+                            <Label className="text-sm font-medium">Available Times</Label>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
+                              {availableSlots.map((slot) => (
+                                <Button
+                                  key={slot}
+                                  variant={rescheduleTime === slot ? "default" : "outline"}
+                                  onClick={() => setRescheduleTime(slot)}
+                                  size="sm"
+                                  className="text-xs"
+                                >
+                                  {slot}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+                        <Button
+                          variant="outline"
+                          onClick={() => setSelectedBooking(null)}
+                          className="w-full sm:w-auto text-sm"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleReschedule}
+                          disabled={!rescheduleDate || !rescheduleTime}
+                          className="w-full sm:w-auto text-sm"
+                        >
+                          Reschedule
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                )}
 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -387,7 +392,10 @@ const MyBookingsTab = ({setActiveTab}) => {
                     <AlertDialogHeader>
                       <AlertDialogTitle className="text-base sm:text-lg">Cancel Booking</AlertDialogTitle>
                       <AlertDialogDescription className="text-sm">
-                        Are you sure you want to cancel this booking? This action cannot be undone.
+                        {booking.status === 'confirmed'
+                          ? "Are you sure you want to cancel this confirmed booking? The full amount will be refunded to your wallet."
+                          : "Are you sure you want to cancel this booking? This action cannot be undone."
+                        }
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="my-4">
@@ -404,7 +412,7 @@ const MyBookingsTab = ({setActiveTab}) => {
                       />
                     </div>
                     <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
-                      <AlertDialogCancel 
+                      <AlertDialogCancel
                         onClick={() => setSelectedBooking(null)}
                         className="w-full sm:w-auto text-sm"
                       >
@@ -420,7 +428,7 @@ const MyBookingsTab = ({setActiveTab}) => {
                   </AlertDialogContent>
                 </AlertDialog>
               </div>
-            )}            {booking.status === 'completed' && !booking.has_review && (
+            )}{booking.status === 'completed' && !booking.has_review && (
               <AddReviewDialog
                 booking={booking}
                 onAddReview={handleAddReview}

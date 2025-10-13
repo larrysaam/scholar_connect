@@ -176,9 +176,10 @@ export const useBookingSystem = () => {
     } finally {
       setCreating(false);
     }
-  };
-  // Process payment for booking
+  };  // Process payment for booking
   const processPayment = async (paymentData: PaymentData & { service_id?: string; academic_level?: string }): Promise<{ success: boolean; payment_id?: string; error?: string }> => {
+    let payment_id: string | undefined;
+
     try {
       setProcessing(true);
 
@@ -216,10 +217,9 @@ export const useBookingSystem = () => {
       if (!response.ok) {
         console.error('Payment processing failed:', result);
         return { success: false, error: result.error || 'Payment processing failed' };
-      }
-
-      // Handle free consultations
+      }      // Handle free consultations
       if (result.payment_id === 'Free') {
+        payment_id = 'Free';
         // Update booking for free consultation
         const { error: updateError } = await supabase
           .from('service_bookings')
@@ -241,12 +241,13 @@ export const useBookingSystem = () => {
 
       // Handle paid consultations
       if (result.operationSuccess && result.transactionSuccess) {
+        payment_id = result.raw?.reference || `mesomb_${Date.now()}`;
         // Update booking with payment information
         const { error: updateError } = await supabase
           .from('service_bookings')
           .update({
             payment_status: 'paid',
-            payment_id: result.raw?.reference || `mesomb_${Date.now()}`,
+            payment_id: payment_id,
             status: 'confirmed',
             updated_at: new Date().toISOString()
           })
@@ -370,77 +371,71 @@ export const useBookingSystem = () => {
       setLoading(false);
     }
   };
-
   // Cancel a booking
   const cancelBooking = async (bookingId: string, reason?: string): Promise<boolean> => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to cancel a booking.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    
     try {
-      const { error } = await supabase
-        .from('service_bookings')
-        .update({
-          status: 'cancelled',
-          notes: reason,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', bookingId)
-        .eq('client_id', user?.id);
+      console.log('Cancelling booking edge function:', bookingId);
+      // Call the edge function to handle cancellation with wallet refund
+      const { data, error } = await supabase.functions.invoke('cancel-booking', {
+        body: { booking_id: bookingId, reason }
+      });
 
       if (error) {
         console.error('Error cancelling booking:', error);
         toast({
           title: "Error",
-          description: "Failed to cancel booking. Please try again.",
+          description: error.message || "Failed to cancel booking. Please try again.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      if (!data.success) {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to cancel booking. Please try again.",
           variant: "destructive"
         });
         return false;
       }
 
       // Update local state
-      setBookings(prev => 
-        prev.map(booking => 
-          booking.id === bookingId 
-            ? { ...booking, status: 'cancelled' as const, notes: reason }
+      setBookings(prev =>
+        prev.map(booking =>
+          booking.id === bookingId
+            ? {
+                ...booking,
+                status: 'cancelled' as const,
+                notes: reason,
+                payment_status: data.refund_processed ? 'refunded' : booking.payment_status
+              }
             : booking
         )
       );
 
-      // --- Notification: Notify both student and researcher of booking cancellation ---
-      // Fetch booking details for notification context
-      const { data: bookingDetails } = await supabase
-        .from('service_bookings')
-        .select(`*, provider:users!service_bookings_provider_id_fkey(name), service:consultation_services(title)`)
-        .eq('id', bookingId)
-        .single();
-      if (bookingDetails) {
-        // Notify researcher (provider)
-        await NotificationService.createNotification({
-          userId: bookingDetails.provider_id,
-          title: 'Booking Cancelled',
-          message: `A booking for '${bookingDetails.service?.title || 'Consultation'}' was cancelled by the student.`,
-          type: 'warning',
-          category: 'consultation',
-          actionUrl: '/dashboard?tab=bookings',
-          actionLabel: 'View Bookings'
-        });
-        // Notify student (client)
-        await NotificationService.createNotification({
-          userId: bookingDetails.client_id,
-          title: 'Booking Cancelled',
-          message: `You have cancelled your booking for '${bookingDetails.service?.title || 'Consultation'}'.`,
-          type: 'info',
-          category: 'consultation',
-          actionUrl: '/dashboard?tab=upcoming',
-          actionLabel: 'View Bookings'
-        });
-      }
-
       toast({
         title: "Booking Cancelled",
-        description: "Your booking has been cancelled successfully.",
+        description: data.message || "Your booking has been cancelled successfully.",
       });
 
       return true;
     } catch (error) {
       console.error('Error cancelling booking:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while cancelling the booking.",
+        variant: "destructive"
+      });
       return false;
     }
   };

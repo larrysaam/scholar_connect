@@ -9,46 +9,20 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, LogOut, Trash2, User, Edit, Save, X, Plus, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { AlertTriangle, LogOut, Trash2, User, Edit, Save, X, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useURLValidation } from "@/hooks/useURLValidation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import ProfileImage from "../ProfileImage";
-import AvailabilitySettings from "../consultation-services/AvailabilitySettings";
+import type { Database } from "@/integrations/supabase/types";
 
-type UserProfile = {
-  id: string;
-  email: string;
-  name?: string | null;
-  role?: 'student' | 'expert' | 'aid' | 'admin' | null;
+type UserProfile = Database['public']['Tables']['users']['Row'] & {
   subtitle?: string | null;
-  phone_number?: string | null;
-  country?: string | null;
-  institution?: string | null;
-  faculty?: string | null;
-  study_level?: string | null;
-  sex?: string | null;
-  date_of_birth?: string | null;
-  research_areas?: string[] | null;
-  topic_title?: string | null;
-  research_stage?: string | null;
-  languages?: string[] | null;
-  expertise?: string[] | null;
-  other_expertise?: string | null;
-  experience?: string | null;
-  linkedin_url?: string | null;
-  wallet_balance?: number | null;
-  preferred_payout_method?: 'mobile_money' | 'bank_transfer' | 'paypal' | null;
-  created_at?: string | null;
-  updated_at?: string | null;
-  email_notifications?: boolean | null;
 };
+type UserRole = Database['public']['Enums']['user_role'];
+type PayoutMethod = Database['public']['Enums']['payout_method'];
 
-type UserRole = 'student' | 'expert' | 'aid' | 'admin';
-type PayoutMethod = 'mobile_money' | 'bank_transfer' | 'paypal';
-
-const SettingsTab = ({setActiveTab}) => {
+const SettingsTab = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   
@@ -60,20 +34,14 @@ const SettingsTab = ({setActiveTab}) => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+
   // Profile states
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
   const [newExpertise, setNewExpertise] = useState("");
-  const [newLanguage, setNewLanguage] = useState("");  const [newResearchArea, setNewResearchArea] = useState("");  // Verification status state
-  const [isVerified, setIsVerified] = useState<boolean | null>(null);
-  const [verificationLoading, setVerificationLoading] = useState(true);
-  
-  // URL validation
-  const { error: linkedinError, clearError: clearLinkedinError } = useURLValidation(
-    userProfile?.linkedin_url || '', 
-    'linkedinAccount'
-  );
+  const [newLanguage, setNewLanguage] = useState("");
+  const [newResearchArea, setNewResearchArea] = useState("");
 
   // Fetch user profile on component mount
   useEffect(() => {
@@ -107,40 +75,8 @@ const SettingsTab = ({setActiveTab}) => {
       if (researcherError && researcherError.code !== 'PGRST116') {
         // PGRST116 = no rows found, ignore if not a researcher
         console.error('Error fetching researcher profile:', researcherError);
-      }      setUserProfile({ ...userData, subtitle: researcherProfile?.subtitle ?? '' });
-      
-      // Set email notification preference from database
-      if (userData.email_notifications !== null && userData.email_notifications !== undefined) {
-        setEmailNotifications(userData.email_notifications);
       }
-
-      // Fetch verification status for researchers and research aids
-      if (userData.role === 'expert' || userData.role === 'aid') {
-        setVerificationLoading(true);
-        try {
-          const tableName = userData.role === 'expert' ? 'researcher_profiles' : 'research_aid_profiles';
-          const idField = userData.role === 'expert' ? 'user_id' : 'id';
-          
-          const { data: verificationData, error: verificationError } = await supabase
-            .from(tableName)
-            .select('admin_verified')
-            .eq(idField, user.id)
-            .single();
-
-          if (verificationError && verificationError.code !== 'PGRST116') {
-            console.error('Error fetching verification status:', verificationError);
-          } else {
-            setIsVerified(verificationData?.admin_verified || false);
-          }
-        } catch (error) {
-          console.error('Error fetching verification status:', error);
-          setIsVerified(false);
-        } finally {
-          setVerificationLoading(false);
-        }
-      } else {
-        setVerificationLoading(false);
-      }
+      setUserProfile({ ...userData, subtitle: researcherProfile?.subtitle ?? '' });
     } catch (error) {
       console.error('Error fetching user profile:', error);
     } finally {
@@ -257,40 +193,20 @@ const SettingsTab = ({setActiveTab}) => {
       description: "Your password has been updated successfully"
     });
   };
-  const handleSaveSettings = async () => {
-    try {
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "User not authenticated",
-          variant: "destructive"
-        });
-        return;
-      }
 
-      // Update user's email notification preference in the database
-      const { error } = await supabase
-        .from('users')
-        .update({ 
-          email_notifications: emailNotifications,
-          // Note: SMS notifications and profile visibility would be added here when those fields exist
-        })
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Settings Saved",
-        description: "Your notification preferences have been updated successfully"
-      });
-    } catch (error: any) {
-      console.error('Error saving settings:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save settings. Please try again.",
-        variant: "destructive"
-      });
-    }
+  const handleSaveSettings = () => {
+    const settings = {
+      emailNotifications,
+      smsNotifications,
+      profileVisible
+    };
+    
+    console.log("Saving settings:", settings);
+    
+    toast({
+      title: "Settings Saved",
+      description: "Your account settings have been updated successfully"
+    });
   };
 
   const handleLogout = () => {
@@ -330,48 +246,6 @@ const SettingsTab = ({setActiveTab}) => {
   return (
     <div className="space-y-4 sm:space-y-6 p-2 sm:p-0">
       <h2 className="text-xl sm:text-2xl font-bold">Account Settings</h2>
-      
-      {/* Verification Badge - Only show for researchers and research aids */}
-      {(userProfile?.role === 'expert' || userProfile?.role === 'aid') && (
-        <Card className={`border-l-4 ${isVerified ? 'border-l-green-500 bg-green-50' : 'border-l-yellow-500 bg-yellow-50'}`}>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-3">
-              {verificationLoading ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
-              ) : isVerified ? (
-                <CheckCircle className="h-5 w-5 text-green-600" />
-              ) : (
-                <AlertCircle className="h-5 w-5 text-yellow-600" />
-              )}
-              <div className="flex-1">
-                <h3 className={`font-semibold ${isVerified ? 'text-green-800' : 'text-yellow-800'}`}>
-                  {verificationLoading ? 'Checking Verification Status...' : 
-                   isVerified ? 'Account Verified' : 'Verification Required'}
-                </h3>
-                <p className={`text-sm ${isVerified ? 'text-green-700' : 'text-yellow-700'}`}>
-                  {verificationLoading ? 'Please wait...' :
-                   isVerified ? 
-                     'Your account has been verified by our administrators.' : 
-                     'Please upload required documents for verification to access all features.'}
-                </p>
-                {!isVerified && !verificationLoading && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="mt-2 border-yellow-600 text-yellow-700 hover:bg-yellow-100"
-                    onClick={() => {
-                      setActiveTab('verification');
-                    }}
-                  >
-                    <Clock className="h-4 w-4 mr-2" />
-                    Upload Documents
-                  </Button>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
       
       {/* User Profile Section */}
       <Card>        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
@@ -540,8 +414,8 @@ const SettingsTab = ({setActiveTab}) => {
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select study level" />
-                      </SelectTrigger>                    <SelectContent>
-                        <SelectItem value="diploma">Diploma</SelectItem>
+                      </SelectTrigger>
+                      <SelectContent>
                         <SelectItem value="undergraduate">Undergraduate</SelectItem>
                         <SelectItem value="masters">Masters</SelectItem>
                         <SelectItem value="phd">PhD</SelectItem>
@@ -549,10 +423,28 @@ const SettingsTab = ({setActiveTab}) => {
                       </SelectContent>
                     </Select>
                   </div>
+                  <div>
+                    <Label htmlFor="role">Role</Label>
+                    <Select
+                      value={userProfile.role}
+                      onValueChange={(value) => handleProfileFieldChange('role', value as UserRole)}
+                      disabled={!isEditingProfile}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="student">Student</SelectItem>
+                        <SelectItem value="expert">Expert</SelectItem>
+                        <SelectItem value="aid">Research Aid</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>              </div>
 
               {/* Research Information - Only show for experts/researchers */}
-              {userProfile.role === 'student' && (
+              {userProfile.role === 'expert' && (
                 <>
                   <Separator />
                   <div className="space-y-4">
@@ -750,23 +642,14 @@ const SettingsTab = ({setActiveTab}) => {
                 </div>                {/* LinkedIn URL */}
                 <div>
                   <Label htmlFor="linkedin_url">LinkedIn Profile</Label>
-                  <div className="space-y-1">
-                    <Input
-                      id="linkedin_url"
-                      value={userProfile.linkedin_url || ""}
-                      onChange={(e) => {
-                        handleProfileFieldChange('linkedin_url', e.target.value);
-                        clearLinkedinError();
-                      }}
-                      disabled={!isEditingProfile}
-                      placeholder="https://linkedin.com/in/yourprofile"
-                      type="url"
-                      className={linkedinError ? 'border-red-500 focus-visible:ring-red-500' : ''}
-                    />
-                    {linkedinError && (
-                      <p className="text-sm text-red-500">{linkedinError}</p>
-                    )}
-                  </div>
+                  <Input
+                    id="linkedin_url"
+                    value={userProfile.linkedin_url || ""}
+                    onChange={(e) => handleProfileFieldChange('linkedin_url', e.target.value)}
+                    disabled={!isEditingProfile}
+                    placeholder="https://linkedin.com/in/yourprofile"
+                    type="url"
+                  />
                 </div>
               </div>
               </>
@@ -830,28 +713,17 @@ const SettingsTab = ({setActiveTab}) => {
         <CardHeader>
           <CardTitle>Notification Preferences</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">          <div className="flex items-center justify-between">
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
             <div>
               <Label htmlFor="email-notifications">Email Notifications</Label>
-              <p className="text-sm text-gray-600">
-                Get notified when someone replies to your discussion posts
-              </p>
+              <p className="text-sm text-gray-600">Receive notifications via email</p>
             </div>
             <Switch
               id="email-notifications"
               checked={emailNotifications}
               onCheckedChange={setEmailNotifications}
             />
-          </div>
-          
-          {/* Email notification details */}
-          <div className="bg-gray-50 p-3 rounded-lg">
-            <h4 className="text-sm font-medium text-gray-900 mb-2">Email notifications include:</h4>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>• Replies to your discussion posts</li>
-              <li>• Weekly digest of forum activity (coming soon)</li>
-              <li>• Important platform updates (coming soon)</li>
-            </ul>
           </div>
           <div className="flex items-center justify-between">
             <div>
@@ -927,10 +799,8 @@ const SettingsTab = ({setActiveTab}) => {
           >
             Change Password
           </Button>
-        </CardContent>      </Card>
-
-      {/* Availability Settings - Only show for experts/researchers */}
-      {userProfile?.role === 'expert' && <AvailabilitySettings />}
+        </CardContent>
+      </Card>
 
       <div className="flex gap-4">
         <Button onClick={handleSaveSettings} className="flex-1">

@@ -67,8 +67,9 @@ const TransactionsTab = () => {
         .from('transactions')
         .select('*')
         .eq('user_id', user.id)
-        .eq('type', 'topup')
-        .order('created_at', { ascending: false });
+        .in('type', ['topup', 'refund'])
+        .order('created_at', { ascending: false })
+        .limit(10);
 
       if (error) throw error;
       setTransactions(data || []);

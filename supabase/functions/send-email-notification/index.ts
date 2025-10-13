@@ -237,6 +237,140 @@ const emailTemplates = {
           <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchWow. All rights reserved.</p>
         </div>
       </div>
+    `  },
+
+  'booking-cancelled-researcher': {
+    subject: "Booking Cancelled - ResearchWow",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
+          <h1 style="margin: 0;">ResearchWow</h1>
+          <p style="margin: 5px 0 0 0;">Booking Update</p>
+        </div>
+        
+        <div style="padding: 30px 20px;">
+          <h2 style="color: #333; margin-bottom: 20px;">📅 Booking Cancelled</h2>
+          
+          <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+            A booking for your consultation service has been cancelled by the student.
+          </p>
+          
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #333;">Booking Details:</h3>
+            <p style="margin: 5px 0;"><strong>Service:</strong> {{serviceTitle}}</p>
+            <p style="margin: 5px 0;"><strong>Student:</strong> {{studentName}}</p>
+            {{#if refundMessage}}
+            <p style="margin: 15px 0 5px 0; color: #28a745;"><strong>Refund Status:</strong> {{refundMessage}}</p>
+            {{/if}}
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="{{dashboardUrl}}" 
+               style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              View Dashboard
+            </a>
+          </div>
+          
+          <p style="color: #666; font-size: 14px;">
+            You can now schedule this time slot for other students or adjust your availability as needed.
+          </p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
+          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchWow. All rights reserved.</p>
+        </div>
+      </div>
+    `
+  },
+
+  'booking-cancelled-student': {
+    subject: "Booking Cancelled - ResearchWow",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
+          <h1 style="margin: 0;">ResearchWow</h1>
+          <p style="margin: 5px 0 0 0;">Booking Update</p>
+        </div>
+        
+        <div style="padding: 30px 20px;">
+          <h2 style="color: #333; margin-bottom: 20px;">📅 Booking Cancelled</h2>
+          
+          <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+            Your consultation booking has been successfully cancelled.
+          </p>
+          
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #333;">Booking Details:</h3>
+            <p style="margin: 5px 0;"><strong>Service:</strong> {{serviceTitle}}</p>
+            <p style="margin: 5px 0;"><strong>Researcher:</strong> {{researcherName}}</p>
+            {{#if refundMessage}}
+            <p style="margin: 15px 0 5px 0; color: #28a745;"><strong>Refund Status:</strong> {{refundMessage}}</p>
+            {{/if}}
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="{{dashboardUrl}}" 
+               style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              View Dashboard
+            </a>
+          </div>
+          
+          <p style="color: #666; font-size: 14px;">
+            {{#if refundMessage}}
+            The refunded amount has been added back to your wallet and is available for future bookings.
+            {{else}}
+            If you have any questions about this cancellation, please contact our support team.
+            {{/if}}
+          </p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
+          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchWow. All rights reserved.</p>
+        </div>
+      </div>
+    `
+  },
+
+  'refund-processed': {
+    subject: "Refund Processed - ResearchWow",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
+          <h1 style="margin: 0;">ResearchWow</h1>
+          <p style="margin: 5px 0 0 0;">Refund Confirmation</p>
+        </div>
+        
+        <div style="padding: 30px 20px;">
+          <h2 style="color: #333; margin-bottom: 20px;">💰 Refund Processed Successfully</h2>
+          
+          <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+            Your refund has been processed and credited to your wallet.
+          </p>
+          
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #333;">Refund Details:</h3>
+            <p style="margin: 5px 0;"><strong>Service:</strong> {{serviceTitle}}</p>
+            <p style="margin: 5px 0;"><strong>Researcher:</strong> {{researcherName}}</p>
+            <p style="margin: 5px 0;"><strong>Refund Amount:</strong> {{refundAmount}} XAF</p>
+            <p style="margin: 15px 0 5px 0; color: #28a745;"><strong>Status:</strong> Credited to your wallet</p>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="{{dashboardUrl}}" 
+               style="background: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              View Wallet Balance
+            </a>
+          </div>
+          
+          <p style="color: #666; font-size: 14px;">
+            The refunded amount is now available in your wallet and can be used for future bookings.
+          </p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
+          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchWow. All rights reserved.</p>
+        </div>
+      </div>
     `
   },
 
