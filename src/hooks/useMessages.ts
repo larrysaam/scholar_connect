@@ -111,7 +111,7 @@ export const useMessages = () => {
     // Request permission on mount if not already granted
     if (window.Notification && Notification.permission === 'default') {
       Notification.requestPermission();
-    }
+    };
     // In-app notification helper (replace with your toast/alert system if needed)
     const showInAppNotification = (title: string, body: string) => {
       try {
@@ -289,6 +289,31 @@ export const useMessages = () => {
     setLoadingMessages(false);
   }, [user]);
 
+  // Mark messages as read for a conversation
+  const markMessagesAsRead = useCallback(async (bookingId: string) => {
+    if (!user) return;
+    // Get unread message IDs for this conversation
+    const { data } = await supabase
+      .from('messages')
+      .select('id')
+      .eq('booking_id', bookingId)
+      .eq('recipient_id', user.id)
+      .eq('is_read', false);
+    
+    if (data && data.length > 0) {
+      const unreadMessageIds = data.map(m => m.id);
+      await supabase
+        .from('messages')
+        .update({ is_read: true })
+        .in('id', unreadMessageIds);
+      
+      // Update the conversation's unreadCount to 0
+      setConversations(prev => prev.map(conv => 
+        conv.id === bookingId ? { ...conv, unreadCount: 0 } : conv
+      ));
+    }
+  }, [user]);
+
   // Send message (scoped to booking_id)
   const sendMessage = async (bookingId: string, content: string) => {
     if (!user || !selectedConversation) return;
@@ -353,5 +378,6 @@ export const useMessages = () => {
     loadingMessages,
     socketConnected,
     setMessages, // <-- expose setMessages for real-time updates
+    markMessagesAsRead, // <-- expose markMessagesAsRead
   };
 };

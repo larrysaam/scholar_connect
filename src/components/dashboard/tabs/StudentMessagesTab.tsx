@@ -20,7 +20,8 @@ const StudentMessagesTab = () => {
     sendMessage, 
     loadingConversations, 
     loadingMessages, 
-    fetchConversations 
+    fetchConversations,
+    markMessagesAsRead 
   } = useMessages();
 
   const [newMessage, setNewMessage] = useState("");
@@ -59,7 +60,9 @@ const StudentMessagesTab = () => {
     });
   };
 
-  const handleConversationSelect = (conversation: Conversation) => {
+  const handleConversationSelect = async (conversation: Conversation) => {
+    // Mark messages as read immediately when conversation is opened
+    await markMessagesAsRead(conversation.id);
     setSelectedConversation(conversation);
   };
 
