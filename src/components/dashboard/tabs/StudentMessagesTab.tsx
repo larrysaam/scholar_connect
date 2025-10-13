@@ -26,7 +26,8 @@ const StudentMessagesTab = () => {
 
   const [newMessage, setNewMessage] = useState("");
   const { toast } = useToast();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasScrolledRef = useRef(false);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Only auto-select first conversation on desktop (md and up)
@@ -37,7 +38,10 @@ const StudentMessagesTab = () => {
   }, [conversations, selectedConversation, setSelectedConversation]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (hasScrolledRef.current && messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
+    hasScrolledRef.current = true;
   }, [messages]);
 
   const handleSendMessage = () => {
@@ -197,6 +201,7 @@ const StudentMessagesTab = () => {
         {/* Messages */}
         <div 
           className="flex-1 overflow-y-auto p-3 md:p-4 space-y-2 md:space-y-3 bg-gray-50"
+          ref={messagesContainerRef}
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23f0f0f0' fill-opacity='0.3'%3E%3Cpath d='m0 40l40-40h-40v40zm40 0v-40h-40l40 40z'/%3E%3C/g%3E%3C/svg%3E")`,
           }}
@@ -214,6 +219,7 @@ const StudentMessagesTab = () => {
           ) : messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-500">
               <div className="text-4xl mb-4">🎉</div>
+              <p className="text-center">No messages in this conversation.</p>
               <p className="text-center">No messages in this conversation.</p>
               <p className="text-sm text-center mt-1">Start the conversation!</p>
             </div>
