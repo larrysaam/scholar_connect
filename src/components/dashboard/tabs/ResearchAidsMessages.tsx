@@ -150,18 +150,19 @@ const ResearchAidsMessages = () => {
                       <p className="text-sm text-gray-600 truncate flex-1 pr-2">
                         {conversation.last_message || "No messages yet"}
                       </p>
-                      {/* Mobile tap indicator */}
-                      <div className="md:hidden flex-shrink-0">
-                        <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </div>
-                      {/* Placeholder for unread indicator */}
-                      {/* <div className="flex-shrink-0">
-                        <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-medium">2</span>
+                      <div className="flex items-center space-x-2">
+                        {conversation.unreadCount > 0 && (
+                          <Badge variant="secondary" className="bg-blue-500 text-white text-xs px-2 py-0.5 min-w-[20px] h-5 flex items-center justify-center">
+                            {conversation.unreadCount}
+                          </Badge>
+                        )}
+                        {/* Mobile tap indicator */}
+                        <div className="md:hidden flex-shrink-0">
+                          <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
                         </div>
-                      </div> */}
+                      </div>
                     </div>
                   </div>
                 </div>

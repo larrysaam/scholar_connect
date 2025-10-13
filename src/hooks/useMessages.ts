@@ -12,6 +12,7 @@ export interface Conversation {
   avatar_url?: string; // Add avatar_url
   last_message: string;
   last_message_at: string;
+  unreadCount: number;
 }
 
 export interface Message {
@@ -232,6 +233,18 @@ export const useMessages = () => {
         conv.last_message_at = data.created_at;
       }
     }));
+
+    // Fetch unread count for each conversation
+    await Promise.all(convs.map(async conv => {
+      const { count } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('booking_id', conv.id)
+        .eq('recipient_id', user.id)
+        .eq('is_read', false);
+      conv.unreadCount = count || 0;
+    }));
+
     setConversations(convs);
     setLoadingConversations(false);
   }, [user, isResearcher, isStudent, researcherBookings, studentBookings]);
@@ -248,6 +261,18 @@ export const useMessages = () => {
     if (!error && data) {
       // Deduplicate by id
       setMessages(Array.from(new Map(data.map(m => [m.id, m])).values()));
+      
+      // Mark all messages as read where current user is the recipient
+      const unreadMessageIds = data
+        .filter(m => m.recipient_id === user.id && !m.is_read)
+        .map(m => m.id);
+      
+      if (unreadMessageIds.length > 0) {
+        await supabase
+          .from('messages')
+          .update({ is_read: true })
+          .in('id', unreadMessageIds);
+      }
     }
     setLoadingMessages(false);
   }, [user]);

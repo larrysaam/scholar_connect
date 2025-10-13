@@ -10,19 +10,7 @@ import { useMessages, Conversation, Message } from "@/hooks/useMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from 'date-fns';
 
-interface StudentMessagesTabData {
-  openChat?: boolean;
-  recipientId?: string;
-  recipientName?: string;
-  bookingId?: string;
-  consultationTitle?: string;
-}
-
-interface StudentMessagesTabProps {
-  TabData?: StudentMessagesTabData;
-}
-
-const StudentMessagesTab = ({ TabData }: StudentMessagesTabProps) => {
+const StudentMessagesTab = () => {
   const { user } = useAuth();
   const { 
     conversations, 
@@ -38,34 +26,14 @@ const StudentMessagesTab = ({ TabData }: StudentMessagesTabProps) => {
   const [newMessage, setNewMessage] = useState("");
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  // Handle navigation from MyBookingsTab
-  useEffect(() => {
-    if (TabData?.openChat && TabData?.bookingId && !selectedConversation) {
-      const targetConversation = conversations.find(conv => conv.id === TabData.bookingId);
-      console.log(" Target : ", targetConversation)
-      if (targetConversation) {
-        setSelectedConversation(targetConversation);
-      } else if (TabData.recipientId && TabData.recipientName) {
-        // Create a new conversation object if it doesn't exist
-        const newConversation: Conversation = {
-          id: TabData.bookingId,
-          other_user_id: TabData.recipientId,
-          other_user_name: TabData.recipientName,
-          last_message: '',
-          last_message_at: new Date().toISOString()
-        };
-        setSelectedConversation(newConversation);
-      }
-    }
-  }, [TabData, conversations, selectedConversation, setSelectedConversation]);
 
   useEffect(() => {
-    // Only auto-select first conversation on desktop (md and up) if no specific conversation is requested
+    // Only auto-select first conversation on desktop (md and up)
     const isDesktop = window.matchMedia('(min-width: 768px)').matches;
-    if (!selectedConversation && conversations.length > 0 && isDesktop && !TabData?.openChat) {
+    if (!selectedConversation && conversations.length > 0 && isDesktop) {
       setSelectedConversation(conversations[0]);
     }
-  }, [conversations, selectedConversation, setSelectedConversation, TabData]);
+  }, [conversations, selectedConversation, setSelectedConversation]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -165,16 +133,22 @@ const StudentMessagesTab = ({ TabData }: StudentMessagesTabProps) => {
                       <p className="text-xs text-gray-500 flex-shrink-0">
                         {formatTime(conversation.last_message_at)}
                       </p>
-                    </div>
-                    <div className="flex justify-between items-center">
+                    </div>                    <div className="flex justify-between items-center">
                       <p className="text-sm text-gray-600 truncate flex-1 pr-2">
                         {conversation.last_message || "No messages yet"}
                       </p>
-                      {/* Mobile tap indicator */}
-                      <div className="md:hidden flex-shrink-0">
-                        <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
+                      <div className="flex items-center space-x-2">
+                        {conversation.unreadCount > 0 && (
+                          <Badge variant="secondary" className="bg-blue-500 text-white text-xs px-2 py-0.5 min-w-[20px] h-5 flex items-center justify-center">
+                            {conversation.unreadCount}
+                          </Badge>
+                        )}
+                        {/* Mobile tap indicator */}
+                        <div className="md:hidden flex-shrink-0">
+                          <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
                       </div>
                     </div>
                   </div>
