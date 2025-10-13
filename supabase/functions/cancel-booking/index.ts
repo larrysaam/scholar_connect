@@ -141,12 +141,14 @@ Deno.serve(async (req) => {
             to: user.email,
             subject: 'Refund Processed - ResearchWow',
             template: 'refund-processed',
-            data: {
+            templateData: {
               studentName: user.user_metadata?.full_name || 'Student',
               serviceTitle: bookingDetails.service?.title || 'Consultation',
               refundAmount: refundAmount,
               researcherName: bookingDetails.provider.name
-            }
+            },
+            userId: user.id,
+            notificationType: 'refund_processed'
           }
         })
       } catch (refundEmailError) {
@@ -181,56 +183,88 @@ Deno.serve(async (req) => {
     }
 
     // Send notifications
-    try {
+    try { 
+
+        console.log('Sending cancellation notifications')
       // Send in-app notification to researcher
-      await supabaseAdmin
+      const researcherNotification = await supabaseAdmin
         .from('notifications')
         .insert({
           user_id: bookingDetails.provider_id,
           title: 'Booking Cancelled',
           message: `A booking for your consultation service has been cancelled by the student. ${refundProcessed ? 'The booking amount has been refunded to the student.' : ''}`,
-          type: 'booking_cancelled'
+          type: 'warning',
+          category: 'consultation'
         })
 
+      if (researcherNotification.error) {
+        console.error('Error inserting researcher notification:', researcherNotification.error)
+      } else {
+        console.log('Researcher notification inserted successfully')
+      }
+
       // Send in-app notification to student
-      await supabaseAdmin
+      const studentNotification = await supabaseAdmin
         .from('notifications')
         .insert({
           user_id: bookingDetails.client_id,
           title: 'Booking Cancelled',
           message: `Your consultation booking has been successfully cancelled. ${refundProcessed ? 'The booking amount has been refunded to your wallet.' : ''}`,
-          type: 'booking_cancelled'
+          type: 'warning',
+          category: 'consultation'
         })
 
+      if (studentNotification.error) {
+        console.error('Error inserting student notification:', studentNotification.error)
+      } else {
+        console.log('Student notification inserted successfully')
+      }
+
       // Notify researcher via email
-      await supabaseAdmin.functions.invoke('send-email-notification', {
-        body: {
-          to: bookingDetails.provider.email,
-          subject: 'Booking Cancelled',
-          template: 'booking-cancelled-researcher',
-          data: {
-            researcherName: bookingDetails.provider.name,
-            serviceTitle: bookingDetails.service?.title || 'Consultation',
-            studentName: user.user_metadata?.full_name || user.email,
-            refundMessage: refundProcessed ? 'The booking amount has been refunded to the student.' : ''
+      try {
+        console.log('Sending researcher email notification')
+        await supabaseAdmin.functions.invoke('send-email-notification', {
+          body: {
+            to: bookingDetails.provider.email,
+            subject: 'Booking Cancelled',
+            template: 'booking-cancelled-researcher',
+            templateData: {
+              researcherName: bookingDetails.provider.name,
+              serviceTitle: bookingDetails.service?.title || 'Consultation',
+              studentName: user.user_metadata?.full_name || user.email,
+              refundMessage: refundProcessed ? 'The booking amount has been refunded to the student.' : ''
+            },
+            userId: bookingDetails.provider_id,
+            notificationType: 'booking_cancelled'
           }
-        }
-      })
+        })
+        console.log('Researcher email notification sent successfully')
+      } catch (researcherEmailError) {
+        console.error('Error sending researcher email notification:', researcherEmailError)
+      }
 
       // Notify student via email
-      await supabaseAdmin.functions.invoke('send-email-notification', {
-        body: {
-          to: user.email,
-          subject: 'Booking Cancelled',
-          template: 'booking-cancelled-student',
-          data: {
-            studentName: user.user_metadata?.full_name || 'Student',
-            serviceTitle: bookingDetails.service?.title || 'Consultation',
-            refundMessage: refundProcessed ? 'The booking amount has been refunded to your wallet.' : '',
-            researcherName: bookingDetails.provider.name
+      try {
+        console.log('Sending student email notification')
+        await supabaseAdmin.functions.invoke('send-email-notification', {
+          body: {
+            to: user.email,
+            subject: 'Booking Cancelled',
+            template: 'booking-cancelled-student',
+            templateData: {
+              studentName: user.user_metadata?.full_name || 'Student',
+              serviceTitle: bookingDetails.service?.title || 'Consultation',
+              refundMessage: refundProcessed ? 'The booking amount has been refunded to your wallet.' : '',
+              researcherName: bookingDetails.provider.name
+            },
+            userId: user.id,
+            notificationType: 'booking_cancelled'
           }
-        }
-      })
+        })
+        console.log('Student email notification sent successfully')
+      } catch (studentEmailError) {
+        console.error('Error sending student email notification:', studentEmailError)
+      }
     } catch (notificationError) {
       console.error('Error sending notifications:', notificationError)
       // Don't fail the cancellation if notifications fail
