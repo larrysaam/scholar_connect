@@ -214,7 +214,7 @@ const CoAuthorWorkspace = () => {
                           </div>
                           <div className="flex items-center gap-2 text-sm text-gray-600">
                             <Users className="h-4 w-4" />
-                            <span>{project.collaborators || 1} collaborators</span>
+                            <span>{project.collaborators || 1} {(project.collaborators || 1) === 1 ? 'collaborator' : 'collaborators'}</span>
                           </div>
                           <div className="flex items-center gap-2 text-sm text-gray-500">
                             <Clock className="h-4 w-4" />
