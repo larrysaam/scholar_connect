@@ -129,7 +129,7 @@ const CoAuthorInvitationsTab = () => {
         <div className="space-y-4">
           {currentInvitations.map((inv) => (
             <Card key={inv.id} className="shadow-sm hover:shadow-md transition-shadow duration-200 border-l-4 border-l-blue-500">
-              <CardContent className="p-6">
+              <CardContent className="p-6 overflow-hidden">
                 <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
                   {/* Inviter Info */}
                   <div className="flex items-start gap-4 flex-1">
@@ -151,7 +151,7 @@ const CoAuthorInvitationsTab = () => {
                         <MessageSquare className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
                         <div className="flex-1">
                           <p className="text-sm font-medium text-gray-500 mb-1">Message</p>
-                          <p className="text-gray-700 whitespace-pre-line leading-relaxed">
+                          <p className="text-gray-700 whitespace-pre-line leading-relaxed break-words">
                             {inv.message || "No message provided"}
                           </p>
                         </div>
