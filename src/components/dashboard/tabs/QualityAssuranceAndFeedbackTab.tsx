@@ -24,7 +24,7 @@ const QualityAssuranceAndFeedbackTab = () => {
       </div>
 
       <PlatformMetricsCards metrics={platformMetrics} />
-      <RecentImprovements improvements={recentImprovements} />
+      {/* <RecentImprovements improvements={recentImprovements} /> */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <div>
           <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Recent Positive Feedback</h3>
