@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Trash2, CreditCard, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAidSettings } from "@/hooks/useAidSettings";
+import { supabase } from "@/integrations/supabase/client";
 
 const ResearchAidsSettings = () => {
   const {
@@ -130,7 +131,7 @@ const ResearchAidsSettings = () => {
     setShowFinalDialog(true);
   };
 
-  const handleFinalDeleteAccount = () => {
+  const handleFinalDeleteAccount = async () => {
     if (deleteConfirmation !== "DELETE" || !finalConfirmation) {
       toast({
         title: "Error",
@@ -140,16 +141,54 @@ const ResearchAidsSettings = () => {
       return;
     }
 
-    toast({
-      title: "Account Deletion Requested",
-      description: "Your account deletion request has been submitted. This process may take 24-48 hours.",
-      variant: "destructive"
-    });
-    
-    setDeleteConfirmation("");
-    setDeletionReason("");
-    setFinalConfirmation(false);
-    setShowFinalDialog(false);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to delete your account",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const response = await supabase.functions.invoke('delete-account', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      toast({
+        title: "Account Deleted",
+        description: "Your account has been permanently deleted. You will be redirected shortly.",
+        variant: "destructive"
+      });
+
+      // Clear local storage and redirect after a delay
+      setTimeout(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = "/";
+      }, 3000);
+
+    } catch (error: any) {
+      console.error('Error deleting account:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete account. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setDeleteConfirmation("");
+      setDeletionReason("");
+      setFinalConfirmation(false);
+      setShowFinalDialog(false);
+    }
   };
 
   const handleAddPaymentMethod = (method: any) => {
@@ -204,21 +243,11 @@ const ResearchAidsSettings = () => {
               onCheckedChange={(value) => updateSettings({ ...settings, emailNotifications: value })}
             />
           </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="sms-notifications">SMS Notifications</Label>
-              <p className="text-sm text-gray-600">Receive urgent updates via SMS</p>
-            </div>
-            <Switch
-              id="sms-notifications"
-              checked={settings.smsNotifications}
-              onCheckedChange={(value) => updateSettings({ ...settings, smsNotifications: value })}
-            />
-          </div>
+          
         </CardContent>
       </Card>
 
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Privacy Settings</CardTitle>
         </CardHeader>
@@ -235,108 +264,9 @@ const ResearchAidsSettings = () => {
             />
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Payment Methods</CardTitle>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Payment Method
-                </Button>
-              </DialogTrigger>
-              <DialogContent aria-describedby="add-payment-method-desc">
-                <DialogHeader>
-                  <DialogTitle>Add Payment Method</DialogTitle>
-                </DialogHeader>
-                <div id="add-payment-method-desc" className="space-y-4">
-                  <div>
-                    <Label>Payment Type</Label>
-                    <Select value={paymentType} onValueChange={setPaymentType}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select payment type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="mobile_money">Mobile Money</SelectItem>
-                        {/* <SelectItem value="bank_account">Bank Account</SelectItem> */}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="provider">Provider</Label>
-                    <Select value={provider} onValueChange={setProvider}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select provider" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Orange">Orange</SelectItem>
-                        <SelectItem value="MTN">MTN</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="account">Account Number</Label>
-                    <Input id="account" placeholder="Enter account number" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} />
-                  </div>
-                  <Button
-                    onClick={() => {
-                      handleAddPaymentMethod({
-                        type: paymentType,
-                        provider,
-                        number: accountNumber,
-                      });
-                      setPaymentType("");
-                      setProvider("");
-                      setAccountNumber("");
-                    }}
-                    className="w-full"
-                    disabled={!paymentType || !provider || !accountNumber}
-                  >
-                    Add Payment Method
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {paymentMethods.length === 0 && (
-              <div className="text-gray-500 text-sm">No payment methods added yet.</div>
-            )}
-            {paymentMethods.map((method) => {
-              // Extract provider and number from details if present
-              let provider = method.provider || (method.details && method.details.provider);
-              let number = method.number || (method.details && method.details.number);
-              return (
-                <div key={method.id} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <CreditCard className="h-6 w-6 text-gray-600" />
-                    <div>
-                      <p className="text-sm font-medium">{provider}</p>
-                      <p className="text-sm text-gray-600">{number}</p>
-                      {method.isDefault && (
-                        <span className="text-xs text-blue-600">Default</span>
-                      )}
-                    </div>
-                  </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => handleRemovePaymentMethod(method.id, provider)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      
 
       <Card>
         <CardHeader>
