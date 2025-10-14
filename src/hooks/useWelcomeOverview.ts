@@ -1,11 +1,14 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { useConsultationServices } from './useConsultationServices';
 import { usePayments } from './usePayments';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 export const useWelcomeOverview = () => {
+  const { user } = useAuth();
   const { bookings, loading: consultationsLoading } = useConsultationServices();
   const { earnings, loading: paymentsLoading } = usePayments();
+  const [newMessagesCount, setNewMessagesCount] = useState(0);
 
   const loading = consultationsLoading || paymentsLoading;
 
@@ -79,12 +82,38 @@ export const useWelcomeOverview = () => {
       .slice(0, 5);
   }, [bookings, earnings]);
 
+  // Fetch unread messages count
+  useEffect(() => {
+    const fetchNewMessagesCount = async () => {
+      if (!user) return;
+
+      try {
+        const { count, error } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('recipient_id', user.id)
+          .eq('is_read', false);
+
+        if (error) {
+          console.error('Error fetching unread messages count:', error);
+          return;
+        }
+
+        setNewMessagesCount(count || 0);
+      } catch (error) {
+        console.error('Error fetching unread messages count:', error);
+      }
+    };
+
+    fetchNewMessagesCount();
+  }, [user]);
+
   return {
     loading,
     upcomingConsultationsCount,
     weeklyStats,
     todaysSchedule,
-    newMessagesCount: 2, // Placeholder
+    newMessagesCount,
     recentActivity,
   };
 };
