@@ -140,11 +140,11 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
                 <span className="text-xs text-gray-500">{aid.reviewCount || 0} reviews</span>
               </div> */}
               
-              {aid.hourly_rate && (
+              {/* {aid.hourly_rate && (
                 <div className="text-sm font-semibold text-green-600">
                   {aid.hourly_rate.toLocaleString()} XAF/hr
                 </div>
-              )}
+              )} */}
             </div>
             
             {/* Action Buttons */}
