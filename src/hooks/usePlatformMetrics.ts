@@ -24,10 +24,11 @@ export const usePlatformMetrics = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch user ratings from feedback table
+        // Fetch user ratings from feedback table (excluding suggestions)
         const { data: feedback, error: feedbackError } = await supabase
           .from('feedback')
-          .select('rating');
+          .select('rating')
+          .neq('category', 'Suggestion');
 
         if (feedbackError) {
           console.error('Error fetching feedback:', feedbackError);
