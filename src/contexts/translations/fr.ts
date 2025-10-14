@@ -26,8 +26,8 @@ export const frTranslations = {
       },
       phone: {
         title: "Téléphone",
-        main: "+237 123 456 789",
-        whatsapp: "WhatsApp: +237 987 654 321"
+        main: "+237 674 511 174/+237 687 082 958",
+        whatsapp: "WhatsApp: 237 674 511 174"
       },
       address: {
         title: "Adresse",

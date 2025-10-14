@@ -25,8 +25,8 @@ const ContactInfo = () => {
           <Phone className="h-5 w-5 text-blue-600" />
           <div>
             <h4 className="font-semibold">{t("contact.info.phone.title") || "Phone"}</h4>
-            <p className="text-gray-600">{t("contact.info.phone.main") || "+237 123 456 789"}</p>
-            <p className="text-gray-600">{t("contact.info.phone.whatsapp") || "WhatsApp: +237 987 654 321"}</p>
+            <p className="text-gray-600">{t("contact.info.phone.main") || "+237 674 511 174/+237 687 082 958"}</p>
+            <p className="text-gray-600">{t("contact.info.phone.whatsapp") || "WhatsApp: +237 674 511 174"}</p>
           </div>
         </div>
         
