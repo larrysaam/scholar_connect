@@ -38,26 +38,33 @@ const StudentMessagesTab = ({ TabData }: StudentMessagesTabProps) => {
   const [newMessage, setNewMessage] = useState("");
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const hasScrolledRef = useRef(false);
   // Handle navigation from MyBookingsTab
   useEffect(() => {
-    if (TabData?.openChat && TabData?.bookingId && !selectedConversation) {
-      const targetConversation = conversations.find(conv => conv.id === TabData.bookingId);
-      console.log(" Target : ", targetConversation)
-      if (targetConversation) {
-        setSelectedConversation(targetConversation);
+    console.log("TabData : ", TabData)
+    if (TabData?.openChat && TabData?.recipientId) {
+      // Always try to open the chat for this recipient, even if a conversation is already selected
+      // First try to find existing conversation with this recipient
+      const existingConversation = conversations.find(conv => conv.other_user_id === TabData.recipientId);
+      console.log("Existing conversation found: ", existingConversation)
+      
+      if (existingConversation) {
+        setSelectedConversation(existingConversation);
       } else if (TabData.recipientId && TabData.recipientName) {
         // Create a new conversation object if it doesn't exist
         const newConversation: Conversation = {
-          id: TabData.bookingId,
+          id: TabData.bookingId || `temp_${TabData.recipientId}_${Date.now()}`, // Use bookingId if available, otherwise generate temp ID
           other_user_id: TabData.recipientId,
           other_user_name: TabData.recipientName,
           last_message: '',
-          last_message_at: new Date().toISOString()
+          last_message_at: new Date().toISOString(),
+          unreadCount: 0
         };
         setSelectedConversation(newConversation);
       }
     }
-  }, [TabData, conversations, selectedConversation, setSelectedConversation]);
+  }, [TabData, conversations, setSelectedConversation]);
 
   useEffect(() => {
     // Only auto-select first conversation on desktop (md and up) if no specific conversation is requested
@@ -68,7 +75,10 @@ const StudentMessagesTab = ({ TabData }: StudentMessagesTabProps) => {
   }, [conversations, selectedConversation, setSelectedConversation, TabData]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (hasScrolledRef.current && messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
+    hasScrolledRef.current = true;
   }, [messages]);
 
   const handleSendMessage = () => {
@@ -219,6 +229,7 @@ const StudentMessagesTab = ({ TabData }: StudentMessagesTabProps) => {
 
         {/* Messages */}
         <div 
+          ref={messagesContainerRef}
           className="flex-1 overflow-y-auto p-3 md:p-4 space-y-2 md:space-y-3 bg-gray-50"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23f0f0f0' fill-opacity='0.3'%3E%3Cpath d='m0 40l40-40h-40v40zm40 0v-40h-40l40 40z'/%3E%3C/g%3E%3C/svg%3E")`,
