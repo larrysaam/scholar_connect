@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -48,16 +48,14 @@ import {
   XCircle,
   Loader2,
   RefreshCw,
-  Search,
-  ChevronLeft,
-  ChevronRight
+  Search
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { useBookingSystem } from "@/hooks/useBookingSystem";
 import { AddReviewDialog } from "./AddReviewDialog";
 import { Booking } from "@/types/bookings";
 
-const MyBookingsTab = ({setActiveTab}) => {
+const MyBookingsTab = ({setActiveTab, setTabData}) => {
   const navigate = useNavigate();
   const {
     bookings,
@@ -77,36 +75,20 @@ const MyBookingsTab = ({setActiveTab}) => {
   const [rescheduleTime, setRescheduleTime] = useState("");
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [cancelReason, setCancelReason] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
 
-  const bookingsPerPage = 5;
-
-  // Filter and sort bookings
+  // Filter bookings
   const filteredBookings = useMemo(() => {
-    return bookings
-      .filter(booking => {
-        const matchesSearch = searchTerm === "" || 
-          booking.service?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          booking.provider?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          booking.client_notes?.toLowerCase().includes(searchTerm.toLowerCase());
-        
-        const matchesStatus = statusFilter === "all" || booking.status === statusFilter;
-        
-        return matchesSearch && matchesStatus;
-      })
-      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+    return bookings.filter(booking => {
+      const matchesSearch = searchTerm === "" || 
+        booking.service?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        booking.provider?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        booking.client_notes?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = statusFilter === "all" || booking.status === statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    });
   }, [bookings, searchTerm, statusFilter]);
-
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredBookings.length / bookingsPerPage);
-  const startIndex = (currentPage - 1) * bookingsPerPage;
-  const endIndex = startIndex + bookingsPerPage;
-  const currentPageBookings = filteredBookings.slice(startIndex, endIndex);
-
-  // Reset to first page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, statusFilter]);
 
   // Group bookings by status
   const bookingStats = useMemo(() => {
@@ -171,7 +153,6 @@ const MyBookingsTab = ({setActiveTab}) => {
   const handleCancel = async () => {
     if (!selectedBooking) return;
 
-    console.log('handle cancel ----')
     const success = await cancelBooking(selectedBooking.id, cancelReason);
     if (success) {
       setSelectedBooking(null);
@@ -296,84 +277,80 @@ const MyBookingsTab = ({setActiveTab}) => {
                 <Video className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Join Meeting</span>
                 <span className="sm:hidden">Join</span>
-              </Button>            
-              )}            
-              
-              {(booking.status === 'pending' || booking.status === 'confirmed') && (
+              </Button>
+            )}            {booking.status === 'pending' && (
               <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-                {booking.status === 'pending' && (
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setSelectedBooking(booking)}
-                        className="w-full sm:w-auto text-xs sm:text-sm"
-                      >
-                        <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                        <span className="hidden sm:inline">Reschedule</span>
-                        <span className="sm:hidden">Reschedule</span>
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto mx-2 sm:mx-0">
-                      <DialogHeader className="pb-3">
-                        <DialogTitle className="text-base sm:text-lg">Reschedule Booking</DialogTitle>
-                        <DialogDescription className="text-sm">
-                          Select a new date and time for your consultation
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                        <div>
-                          <Label className="text-sm font-medium">New Date</Label>
-                          <Calendar
-                            mode="single"
-                            selected={rescheduleDate}
-                            onSelect={(date) => {
-                              setRescheduleDate(date);
-                              if (date) loadAvailableSlots(date);
-                            }}
-                            disabled={(date) => date < new Date()}
-                            className="rounded-md border mx-auto"
-                          />
-                        </div>
-                        {rescheduleDate && (
-                          <div>
-                            <Label className="text-sm font-medium">Available Times</Label>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
-                              {availableSlots.map((slot) => (
-                                <Button
-                                  key={slot}
-                                  variant={rescheduleTime === slot ? "default" : "outline"}
-                                  onClick={() => setRescheduleTime(slot)}
-                                  size="sm"
-                                  className="text-xs"
-                                >
-                                  {slot}
-                                </Button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setSelectedBooking(booking)}
+                      className="w-full sm:w-auto text-xs sm:text-sm"
+                    >
+                      <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">Reschedule</span>
+                      <span className="sm:hidden">Reschedule</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto mx-2 sm:mx-0">
+                    <DialogHeader className="pb-3">
+                      <DialogTitle className="text-base sm:text-lg">Reschedule Booking</DialogTitle>
+                      <DialogDescription className="text-sm">
+                        Select a new date and time for your consultation
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                      <div>
+                        <Label className="text-sm font-medium">New Date</Label>
+                        <Calendar
+                          mode="single"
+                          selected={rescheduleDate}
+                          onSelect={(date) => {
+                            setRescheduleDate(date);
+                            if (date) loadAvailableSlots(date);
+                          }}
+                          disabled={(date) => date < new Date()}
+                          className="rounded-md border mx-auto"
+                        />
                       </div>
-                      <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
-                        <Button
-                          variant="outline"
-                          onClick={() => setSelectedBooking(null)}
-                          className="w-full sm:w-auto text-sm"
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={handleReschedule}
-                          disabled={!rescheduleDate || !rescheduleTime}
-                          className="w-full sm:w-auto text-sm"
-                        >
-                          Reschedule
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                )}
+                      {rescheduleDate && (
+                        <div>
+                          <Label className="text-sm font-medium">Available Times</Label>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
+                            {availableSlots.map((slot) => (
+                              <Button
+                                key={slot}
+                                variant={rescheduleTime === slot ? "default" : "outline"}
+                                onClick={() => setRescheduleTime(slot)}
+                                size="sm"
+                                className="text-xs"
+                              >
+                                {slot}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setSelectedBooking(null)}
+                        className="w-full sm:w-auto text-sm"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleReschedule}
+                        disabled={!rescheduleDate || !rescheduleTime}
+                        className="w-full sm:w-auto text-sm"
+                      >
+                        Reschedule
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -392,10 +369,7 @@ const MyBookingsTab = ({setActiveTab}) => {
                     <AlertDialogHeader>
                       <AlertDialogTitle className="text-base sm:text-lg">Cancel Booking</AlertDialogTitle>
                       <AlertDialogDescription className="text-sm">
-                        {booking.status === 'confirmed'
-                          ? "Are you sure you want to cancel this confirmed booking? The full amount will be refunded to your wallet."
-                          : "Are you sure you want to cancel this booking? This action cannot be undone."
-                        }
+                        Are you sure you want to cancel this booking? This action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="my-4">
@@ -412,7 +386,7 @@ const MyBookingsTab = ({setActiveTab}) => {
                       />
                     </div>
                     <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
-                      <AlertDialogCancel
+                      <AlertDialogCancel 
                         onClick={() => setSelectedBooking(null)}
                         className="w-full sm:w-auto text-sm"
                       >
@@ -428,7 +402,7 @@ const MyBookingsTab = ({setActiveTab}) => {
                   </AlertDialogContent>
                 </AlertDialog>
               </div>
-            )}{booking.status === 'completed' && !booking.has_review && (
+            )}            {booking.status === 'completed' && !booking.has_review && (
               <AddReviewDialog
                 booking={booking}
                 onAddReview={handleAddReview}
@@ -461,13 +435,7 @@ const MyBookingsTab = ({setActiveTab}) => {
               size="sm" 
               variant="outline"
               className="w-full sm:w-auto text-xs sm:text-sm"
-              onClick={() => setActiveTab('messages', {
-                openChat: true,
-                recipientId: booking.provider_id,
-                recipientName: booking.provider?.name,
-                bookingId: booking.id,
-                consultationTitle: booking.service?.title
-              })}
+              onClick={() => setActiveTab('messages') && setTabData({ providerId: booking.provider_id, providerName: booking.provider?.name })}
             >
               <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Message</span>
@@ -560,45 +528,6 @@ const MyBookingsTab = ({setActiveTab}) => {
       {/* Filters */}
       <Card>
         <CardContent className="p-4 sm:p-6">
-          {/* Quick Status Filters */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            <Button
-              variant={statusFilter === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setStatusFilter("all")}
-              className="text-xs sm:text-sm"
-            >
-              All
-            </Button>
-            <Button
-              variant={statusFilter === "confirmed" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setStatusFilter("confirmed")}
-              className="text-xs sm:text-sm"
-            >
-              <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Confirmed
-            </Button>
-            <Button
-              variant={statusFilter === "completed" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setStatusFilter("completed")}
-              className="text-xs sm:text-sm"
-            >
-              <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Completed
-            </Button>
-            <Button
-              variant={statusFilter === "cancelled" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setStatusFilter("cancelled")}
-              className="text-xs sm:text-sm"
-            >
-              <XCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Cancelled
-            </Button>
-          </div>
-
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -629,64 +558,18 @@ const MyBookingsTab = ({setActiveTab}) => {
 
       {/* Bookings List */}
       <div className="space-y-3 sm:space-y-4">
-        {currentPageBookings.length === 0 ? (
+        {filteredBookings.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8 sm:py-12">
               <p className="text-sm sm:text-base text-gray-500">No bookings found matching your criteria.</p>
             </CardContent>
           </Card>
         ) : (
-          currentPageBookings.map((booking) => (
+          filteredBookings.map((booking) => (
             <BookingCard key={booking.id} booking={booking} />
           ))
         )}
       </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            Showing {startIndex + 1}-{Math.min(endIndex, filteredBookings.length)} of {filteredBookings.length} bookings
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="text-xs sm:text-sm"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Previous
-            </Button>
-            
-            <div className="flex items-center space-x-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setCurrentPage(page)}
-                  className="w-8 h-8 p-0 text-xs"
-                >
-                  {page}
-                </Button>
-              ))}
-            </div>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="text-xs sm:text-sm"
-            >
-              Next
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* Reschedule Dialog and other modals remain the same but with responsive sizing */}
       {/* All existing Dialog components can remain as they auto-adapt to mobile */}

@@ -112,7 +112,7 @@ const Dashboard = () => {
       case "post-job":
         return <PostJobTab />;
       case "my-bookings":
-        return <MyBookingsTab  setActiveTab={handleTabChange}/>;
+        return <MyBookingsTab  setActiveTab={handleTabChange} setTabData={setTabData} />;
       case "session-booking":
         return <SessionBookingTab />;
       case "performance":
