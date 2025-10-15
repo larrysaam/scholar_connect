@@ -332,7 +332,132 @@ app.post('/api/send-withdrawal-notification', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`MeSomb payment backend running on port ${PORT}`);
-});
+// Job payment endpoint for posting jobs
+app.post('/api/job-payment', async (req, res) => {
+  console.log("[Job Payment] Request received", req.body);
+  try {
+    if (!applicationKey || !accessKey || !secretKey) {
+      return res.status(500).json({ error: 'MeSomb credentials are not set in environment variables' });
+    }
+
+    const {
+      amount,
+      service,
+      payer,
+      country = 'CM',
+      currency = 'XAF',
+      jobData,
+      userId,
+      customer
+    } = req.body;
+
+    console.log("[Job Payment] Processing payment for job posting:", { amount, service, payer, userId });
+
+    // Process payment through MeSomb
+    const client = new PaymentOperation({ applicationKey, accessKey, secretKey });
+
+    const response = await client.makeCollect({
+      payer,
+      amount,
+      service,
+      country,
+      currency,
+      description: `Payment for job posting: ${jobData.title}`,
+      customer,
+      location: { town: 'Douala', region: 'Littoral', country: 'CM' },
+      products: [{
+        name: `Job Posting: ${jobData.title}`,
+        category: 'job_posting',
+        quantity: 1,
+        amount
+      }],
+    });
+
+    const isSuccess = response.isOperationSuccess() && response.isTransactionSuccess();
+    console.log(`[Job Payment] Payment ${isSuccess ? 'successful' : 'failed'}`);
+
+    if (!isSuccess) {
+      return res.status(400).json({
+        operationSuccess: false,
+        transactionSuccess: false,
+        error: 'Payment failed',
+        raw: response
+      });
+    }
+
+    // Payment successful, create the job via edge function
+    try {
+      // Validate jobData before sending
+      if (!jobData || !jobData.title || !jobData.description || !userId) {
+        console.error('[Job Payment] Invalid job data provided');
+        return res.status(400).json({
+          operationSuccess: true,
+          transactionSuccess: true,
+          paymentSuccess: true,
+          jobCreationError: 'Invalid job data provided',
+          raw: response
+        });
+      }
+
+      const { data: jobResult, error: jobError } = await supabase.functions.invoke('create-job', {
+        body: {
+          jobData,
+          userId
+        }
+      });
+
+      if (jobError) {
+        console.error('[Job Payment] Edge function error:', jobError);
+        return res.status(500).json({
+          operationSuccess: true,
+          transactionSuccess: true,
+          paymentSuccess: true,
+          jobCreationError: `Edge function error: ${jobError.message || 'Unknown error'}`,
+          raw: response
+        });
+      }
+
+      if (!jobResult?.success) {
+        console.error('[Job Payment] Job creation failed:', jobResult);
+        return res.status(500).json({
+          operationSuccess: true,
+          transactionSuccess: true,
+          paymentSuccess: true,
+          jobCreationError: jobResult?.error || 'Job creation failed',
+          raw: response
+        });
+      }
+
+      // Insert transaction record into the transactions table
+      const { error: transactionError } = await supabase
+        .from('transactions')
+        .insert([
+          {
+            user_id: userId,
+            amount,
+            currency,
+            description: `Payment for job posting: ${jobData.title}`,
+            status: 'completed',
+            created_at: new Date().toISOString()
+          }
+        ]);
+
+      if (transactionError) {
+        console.error('[Job Payment] Failed to insert transaction record:', transactionError);
+        return res.status(500).json({
+          operationSuccess: true,
+          transactionSuccess: true,
+          paymentSuccess: true,
+          jobCreated: true,
+          job: jobResult.job,
+          transactionError: 'Failed to record transaction',
+          raw: response
+        });
+      }
+
+      console.log('[Job Payment] Job created successfully after payment');
+      res.status(200).json({
+        operationSuccess: true,
+        transactionSuccess: true,
+        paymentSuccess: true,
+        jobCreated: true,

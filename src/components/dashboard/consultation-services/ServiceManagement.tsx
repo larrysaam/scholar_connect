@@ -157,7 +157,7 @@ const ServiceManagement = ({
             <DialogTrigger asChild>
               <Button onClick={resetForm} className="w-full sm:w-auto text-sm py-2 px-3 sm:px-4">
                 <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                Create Service
+                Paid Service
               </Button>
             </DialogTrigger><DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto mx-2 sm:mx-0">
             <DialogHeader className="pb-4">

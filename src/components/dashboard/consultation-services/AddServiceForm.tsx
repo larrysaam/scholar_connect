@@ -19,7 +19,7 @@ interface AddOn {
 }
 
 export interface ServiceFormData {
-  category: "General Consultation" | "Chapter Review" | "Full Thesis Cycle Support" | "Full Thesis Review" | "Free Consultation";
+  category: "General Consultation" | "Chapter Review" | "Full Thesis Cycle Support" | "Full Thesis Review";
   academicLevelPrices: AcademicLevelPrice[];
   description: string;
   addOns: AddOn[];
