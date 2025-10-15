@@ -32,14 +32,14 @@ const StudentMessagesTab = ({ TabData }: StudentMessagesTabProps) => {
     sendMessage, 
     loadingConversations, 
     loadingMessages, 
-    fetchConversations 
+    fetchConversations,
+    markMessagesAsRead
   } = useMessages();
 
   const [newMessage, setNewMessage] = useState("");
   const { toast } = useToast();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const hasScrolledRef = useRef(false);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   // Handle navigation from MyBookingsTab
   useEffect(() => {
     console.log("TabData : ", TabData)
@@ -83,6 +83,15 @@ const StudentMessagesTab = ({ TabData }: StudentMessagesTabProps) => {
 
   const handleSendMessage = () => {
     if (newMessage.trim() && selectedConversation) {
+      if (selectedConversation.id.startsWith('temp_')) {
+        toast({
+          title: "Error",
+          description: "Cannot send message to this conversation yet. Please try again later.",
+          variant: "destructive"
+        });
+        return;
+      }
+      console.log("Sending message:", newMessage, "to conversation:", selectedConversation.id);
       sendMessage(selectedConversation.id, newMessage);
       setNewMessage("");
     } else if (!selectedConversation) {
@@ -101,8 +110,9 @@ const StudentMessagesTab = ({ TabData }: StudentMessagesTabProps) => {
     });
   };
 
-  const handleConversationSelect = (conversation: Conversation) => {
+  const handleConversationSelect = async (conversation: Conversation) => {
     setSelectedConversation(conversation);
+    await markMessagesAsRead(conversation.id);
   };
 
   const formatTime = (dateString: string) => {
@@ -172,9 +182,16 @@ const StudentMessagesTab = ({ TabData }: StudentMessagesTabProps) => {
                       <p className="text-base md:text-sm font-medium text-gray-900 truncate">
                         {conversation.other_user_name}
                       </p>
-                      <p className="text-xs text-gray-500 flex-shrink-0">
-                        {formatTime(conversation.last_message_at)}
-                      </p>
+                      <div className="flex items-center space-x-1 flex-shrink-0">
+                        <p className="text-xs text-gray-500">
+                          {formatTime(conversation.last_message_at)}
+                        </p>
+                        {conversation.unreadCount > 0 && (
+                          <Badge variant="destructive" className="text-xs px-1.5 py-0.5">
+                            {conversation.unreadCount}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <p className="text-sm text-gray-600 truncate flex-1 pr-2">
@@ -296,7 +313,6 @@ const StudentMessagesTab = ({ TabData }: StudentMessagesTabProps) => {
               );
             })
           )}
-          <div ref={messagesEndRef} />
         </div>
 
         {/* Message Input */}
