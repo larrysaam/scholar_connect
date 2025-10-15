@@ -18,7 +18,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { jobData, userId } = await req.json()
+    const { jobData, userId, paymentData } = await req.json()
 
     // Validate required fields
     if (!jobData.title || !jobData.description || !jobData.category || !jobData.budget) {
@@ -44,6 +44,30 @@ serve(async (req) => {
     }
 
     console.log('Job created successfully:', data.id)
+
+    // Save transaction record if payment data is provided
+    if (paymentData) {
+      const { data: transactionData, error: transactionError } = await supabaseClient
+        .from('transactions')
+        .insert({
+          user_id: userId,
+          type: 'withdrawal', // Job posting payment is a withdrawal from user's balance
+          description: paymentData.description || `Payment for job posting: ${jobData.title}`,
+          amount: paymentData.amount,
+          status: 'completed',
+          payment_id: paymentData.payment_id
+        })
+        .select()
+        .single()
+
+      if (transactionError) {
+        console.error('Error creating transaction:', transactionError)
+        // Don't fail the job creation if transaction logging fails
+        console.warn('Job created but transaction logging failed')
+      } else {
+        console.log('Transaction recorded successfully:', transactionData.id)
+      }
+    }
 
     return new Response(
       JSON.stringify({ success: true, job: data }),

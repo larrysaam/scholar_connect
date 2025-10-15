@@ -402,7 +402,14 @@ app.post('/api/job-payment', async (req, res) => {
       const { data: jobResult, error: jobError } = await supabase.functions.invoke('create-job', {
         body: {
           jobData,
-          userId
+          userId,
+          paymentData: {
+            amount,
+            payment_id: response.transaction_id || response.transactionId,
+            service,
+            payer,
+            description: `Payment for job posting: ${jobData.title}`
+          }
         }
       });
 
@@ -428,36 +435,32 @@ app.post('/api/job-payment', async (req, res) => {
         });
       }
 
-      // Insert transaction record into the transactions table
-      const { error: transactionError } = await supabase
-        .from('transactions')
-        .insert([
-          {
-            user_id: userId,
-            amount,
-            currency,
-            description: `Payment for job posting: ${jobData.title}`,
-            status: 'completed',
-            created_at: new Date().toISOString()
-          }
-        ]);
-
-      if (transactionError) {
-        console.error('[Job Payment] Failed to insert transaction record:', transactionError);
-        return res.status(500).json({
-          operationSuccess: true,
-          transactionSuccess: true,
-          paymentSuccess: true,
-          jobCreated: true,
-          job: jobResult.job,
-          transactionError: 'Failed to record transaction',
-          raw: response
-        });
-      }
-
       console.log('[Job Payment] Job created successfully after payment');
       res.status(200).json({
         operationSuccess: true,
         transactionSuccess: true,
         paymentSuccess: true,
         jobCreated: true,
+        job: jobResult.job,
+        raw: response
+      });
+    } catch (jobCreateError) {
+      console.error('[Job Payment] Error calling create-job function:', jobCreateError);
+      res.status(500).json({
+        operationSuccess: true,
+        transactionSuccess: true,
+        paymentSuccess: true,
+        jobCreationError: 'Failed to create job after successful payment',
+        raw: response
+      });
+    }
+  } catch (err) {
+    console.error('[Job Payment] Error processing payment:', err);
+    res.status(500).json({ error: err?.message || 'Payment processing failed', details: err });
+  }
+});
+
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`MeSomb payment backend running on port ${PORT}`);
+});
