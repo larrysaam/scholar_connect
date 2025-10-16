@@ -226,217 +226,221 @@ const JobManagement = () => {
 
                   {/* Actions */}
                   <div className="flex flex-col gap-2 min-w-[120px]">
-                    {/* Status Actions */}
-                    <div className="flex gap-1">
-                      {job.status === 'active' && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleStatusChange(job.id, 'paused')}
-                              className="flex-1"
-                            >
-                              <Pause className="h-3 w-3" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Pause Job</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                      {job.status === 'paused' && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleStatusChange(job.id, 'active')}
-                              className="flex-1"
-                            >
-                              <Play className="h-3 w-3" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Resume Job</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                      {(job.status === 'active' || job.status === 'paused') && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleStatusChange(job.id, 'completed')}
-                              className="flex-1"
-                            >
-                              <CheckCircle className="h-3 w-3" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Mark as Completed</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                    </div>
+                    {job.status !== 'closed' && job.status !== 'completed' && job.status !== 'cancelled' && (
+                      <>
+                        {/* Status Actions */}
+                        <div className="flex gap-1">
+                          {job.status === 'active' && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleStatusChange(job.id, 'paused')}
+                                  className="flex-1"
+                                >
+                                  <Pause className="h-3 w-3" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Pause Job</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                          {job.status === 'paused' && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleStatusChange(job.id, 'active')}
+                                  className="flex-1"
+                                >
+                                  <Play className="h-3 w-3" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Resume Job</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                          {(job.status === 'active' || job.status === 'paused') && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleStatusChange(job.id, 'completed')}
+                                  className="flex-1"
+                                >
+                                  <CheckCircle className="h-3 w-3" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Mark as Completed</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
 
-                    {/* Edit/Delete Actions */}
-                    <div className="flex gap-1">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleEditJob(job)}
-                                className="flex-1"
-                              >
-                                <Edit className="h-3 w-3" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Edit Job</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle>Edit Job</DialogTitle>
-                            <DialogDescription>
-                              Update your job posting details
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <div>
-                              <Label htmlFor="edit-title">Job Title</Label>
-                              <Input
-                                id="edit-title"
-                                value={editFormData.title || ""}
-                                onChange={(e) => setEditFormData(prev => ({ ...prev, title: e.target.value }))}
-                                placeholder="Enter job title"
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="edit-category">Category</Label>
-                              <Select
-                                value={editFormData.category || ""}
-                                onValueChange={(value) => setEditFormData(prev => ({ ...prev, category: value }))}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select category" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="data-analysis">Data Analysis</SelectItem>
-                                  <SelectItem value="research-writing">Research Writing</SelectItem>
-                                  <SelectItem value="literature-review">Literature Review</SelectItem>
-                                  <SelectItem value="statistical-analysis">Statistical Analysis</SelectItem>
-                                  <SelectItem value="survey-design">Survey Design</SelectItem>
-                                  <SelectItem value="transcription">Transcription</SelectItem>
-                                  <SelectItem value="translation">Translation</SelectItem>
-                                  <SelectItem value="other">Other</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div>
-                              <Label htmlFor="edit-budget">Budget (XAF)</Label>
-                              <Input
-                                id="edit-budget"
-                                type="number"
-                                value={editFormData.budget || ""}
-                                onChange={(e) => setEditFormData(prev => ({ ...prev, budget: parseFloat(e.target.value) || 0 }))}
-                                placeholder="Enter budget amount"
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="edit-description">Description</Label>
-                              <Textarea
-                                id="edit-description"
-                                value={editFormData.description || ""}
-                                onChange={(e) => setEditFormData(prev => ({ ...prev, description: e.target.value }))}
-                                placeholder="Describe your job requirements"
-                                rows={4}
-                              />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <Label htmlFor="edit-location">Location</Label>
-                                <Input
-                                  id="edit-location"
-                                  value={editFormData.location || ""}
-                                  onChange={(e) => setEditFormData(prev => ({ ...prev, location: e.target.value }))}
-                                  placeholder="e.g., Remote, Yaoundé"
-                                />
+                        {/* Edit/Delete Actions */}
+                        <div className="flex gap-1">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleEditJob(job)}
+                                    className="flex-1"
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Edit Job</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle>Edit Job</DialogTitle>
+                                <DialogDescription>
+                                  Update your job posting details
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div>
+                                  <Label htmlFor="edit-title">Job Title</Label>
+                                  <Input
+                                    id="edit-title"
+                                    value={editFormData.title || ""}
+                                    onChange={(e) => setEditFormData(prev => ({ ...prev, title: e.target.value }))}
+                                    placeholder="Enter job title"
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="edit-category">Category</Label>
+                                  <Select
+                                    value={editFormData.category || ""}
+                                    onValueChange={(value) => setEditFormData(prev => ({ ...prev, category: value }))}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="data-analysis">Data Analysis</SelectItem>
+                                      <SelectItem value="research-writing">Research Writing</SelectItem>
+                                      <SelectItem value="literature-review">Literature Review</SelectItem>
+                                      <SelectItem value="statistical-analysis">Statistical Analysis</SelectItem>
+                                      <SelectItem value="survey-design">Survey Design</SelectItem>
+                                      <SelectItem value="transcription">Transcription</SelectItem>
+                                      <SelectItem value="translation">Translation</SelectItem>
+                                      <SelectItem value="other">Other</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <Label htmlFor="edit-budget">Budget (XAF)</Label>
+                                  <Input
+                                    id="edit-budget"
+                                    type="number"
+                                    value={editFormData.budget || ""}
+                                    onChange={(e) => setEditFormData(prev => ({ ...prev, budget: parseFloat(e.target.value) || 0 }))}
+                                    placeholder="Enter budget amount"
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="edit-description">Description</Label>
+                                  <Textarea
+                                    id="edit-description"
+                                    value={editFormData.description || ""}
+                                    onChange={(e) => setEditFormData(prev => ({ ...prev, description: e.target.value }))}
+                                    placeholder="Describe your job requirements"
+                                    rows={4}
+                                  />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <Label htmlFor="edit-location">Location</Label>
+                                    <Input
+                                      id="edit-location"
+                                      value={editFormData.location || ""}
+                                      onChange={(e) => setEditFormData(prev => ({ ...prev, location: e.target.value }))}
+                                      placeholder="e.g., Remote, Yaoundé"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="edit-duration">Duration</Label>
+                                    <Input
+                                      id="edit-duration"
+                                      value={editFormData.duration || ""}
+                                      onChange={(e) => setEditFormData(prev => ({ ...prev, duration: e.target.value }))}
+                                      placeholder="e.g., 2 weeks"
+                                    />
+                                  </div>
+                                </div>
+                                <div>
+                                  <Label htmlFor="edit-deadline">Deadline</Label>
+                                  <Input
+                                    id="edit-deadline"
+                                    type="date"
+                                    value={editFormData.deadline || ""}
+                                    onChange={(e) => setEditFormData(prev => ({ ...prev, deadline: e.target.value }))}
+                                  />
+                                </div>
                               </div>
-                              <div>
-                                <Label htmlFor="edit-duration">Duration</Label>
-                                <Input
-                                  id="edit-duration"
-                                  value={editFormData.duration || ""}
-                                  onChange={(e) => setEditFormData(prev => ({ ...prev, duration: e.target.value }))}
-                                  placeholder="e.g., 2 weeks"
-                                />
-                              </div>
-                            </div>
-                            <div>
-                              <Label htmlFor="edit-deadline">Deadline</Label>
-                              <Input
-                                id="edit-deadline"
-                                type="date"
-                                value={editFormData.deadline || ""}
-                                onChange={(e) => setEditFormData(prev => ({ ...prev, deadline: e.target.value }))}
-                              />
-                            </div>
-                          </div>
-                          <DialogFooter>
-                            <Button
-                              onClick={handleUpdateJob}
-                              disabled={updating}
-                            >
-                              {updating ? "Updating..." : "Update Job"}
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
+                              <DialogFooter>
+                                <Button
+                                  onClick={handleUpdateJob}
+                                  disabled={updating}
+                                >
+                                  {updating ? "Updating..." : "Update Job"}
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
 
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="flex-1 text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Delete Job</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Job</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete this job? This action cannot be undone.
-                              All applications for this job will also be deleted.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteJob(job.id)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Delete Job
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="flex-1 text-red-600 hover:text-red-700"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Delete Job</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Job</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this job? This action cannot be undone.
+                                  All applications for this job will also be deleted.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteJob(job.id)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Delete Job
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </CardContent>
