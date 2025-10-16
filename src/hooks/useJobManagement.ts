@@ -678,7 +678,7 @@ export const useJobManagement = () => {
         userId: applicantId,
         title: 'You have been hired!',
         message: `You have been confirmed for the job: "${jobTitle}". A new service and booking have been created.`,
-        type: 'job_invitation', // Use a valid notification type
+        type: 'info', // Use a valid notification type
         actionUrl: `/dashboard?tab=bookings`,
         actionLabel: 'View Booking'
       });
@@ -861,6 +861,44 @@ export const useJobManagement = () => {
     }
   };
 
+  // Fetch applicant statistics (completed jobs and bookings)
+  const fetchApplicantStats = useCallback(async (applicantId: string) => {
+    try {
+      // Fetch completed jobs count
+      const { data: completedJobs, error: jobsError } = await supabase
+        .from('job_applications')
+        .select('id')
+        .eq('applicant_id', applicantId)
+        .eq('status', 'accepted');
+
+      // Fetch completed bookings count
+      const { data: completedBookings, error: bookingsError } = await supabase
+        .from('service_bookings')
+        .select('id')
+        .eq('provider_id', applicantId)
+        .eq('status', 'completed');
+
+      if (jobsError) {
+        console.error('Error fetching completed jobs:', jobsError);
+      }
+
+      if (bookingsError) {
+        console.error('Error fetching completed bookings:', bookingsError);
+      }
+
+      return {
+        completedJobsCount: completedJobs?.length || 0,
+        completedBookingsCount: completedBookings?.length || 0
+      };
+    } catch (error) {
+      console.error('Error fetching applicant stats:', error);
+      return {
+        completedJobsCount: 0,
+        completedBookingsCount: 0
+      };
+    }
+  }, []);
+
   return {
     jobs,
     loading,
@@ -878,6 +916,7 @@ export const useJobManagement = () => {
     confirmJobRequest,
     applyForJob,
     handleUploadDeliverableForJobApplication,
-    handleDeleteDeliverableForJobApplication
+    handleDeleteDeliverableForJobApplication,
+    fetchApplicantStats
   };
 };

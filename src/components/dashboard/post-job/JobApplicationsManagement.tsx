@@ -21,7 +21,8 @@ const JobApplicationsManagement = () => {
     confirmJobApplication,
     handleUploadDeliverableForJobApplication,
     handleDeleteDeliverableForJobApplication,
-    loading,
+    fetchApplicantStats,
+    loading
   } = useJobManagement();
   const { toast } = useToast();
 
@@ -56,6 +57,10 @@ const JobApplicationsManagement = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false); // New state for upload modal
   const [fileToUpload, setFileToUpload] = useState<File | null>(null); // New state for file
   const [selectedJobIdForUpload, setSelectedJobIdForUpload] = useState<string | null>(null); // New state for job ID
+
+  const [isAidDetailsModalOpen, setIsAidDetailsModalOpen] = useState(false); // State for aid details modal
+  const [selectedAidForDetails, setSelectedAidForDetails] = useState<JobApplication | null>(null); // State for selected aid details
+  const [applicantStats, setApplicantStats] = useState<{completedJobsCount: number, completedBookingsCount: number} | null>(null); // State for applicant statistics
 
   useEffect(() => {
     const loadData = async () => {
@@ -166,6 +171,17 @@ const JobApplicationsManagement = () => {
     await handleDeleteDeliverableForJobApplication(jobId, fileUrl);
   };
 
+  const handleViewAidDetails = async (application: JobApplication) => {
+    setSelectedAidForDetails(application);
+    setIsAidDetailsModalOpen(true);
+    
+    // Fetch applicant statistics
+    if (application.applicant_id) {
+      const stats = await fetchApplicantStats(application.applicant_id);
+      setApplicantStats(stats);
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading job applications...</div>;
   }
@@ -212,6 +228,14 @@ const JobApplicationsManagement = () => {
                             className={application.status === "accepted" ? "bg-green-500" : application.status === "rejected" ? "bg-red-500" : "bg-yellow-500"}>
                             {application.status}
                           </Badge>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleViewAidDetails(application)}
+                          >
+                            <Info className="h-4 w-4 mr-1" />
+                            View Aid Details
+                          </Button>
                           {job.status !== "closed" && application.status === "pending" && (
                             <Dialog>
                               <DialogTrigger asChild>
@@ -343,6 +367,126 @@ const JobApplicationsManagement = () => {
           <DialogFooter>
             <Button type="submit" onClick={handleSubmitUpload} disabled={!fileToUpload || loading}>
               <Upload className="h-4 w-4 mr-2" /> Upload
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Aid Details Modal */}
+      <Dialog open={isAidDetailsModalOpen} onOpenChange={setIsAidDetailsModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Researcher Aid Details</DialogTitle>
+            <DialogDescription>
+              Detailed information about the applicant for this job.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedAidForDetails && (
+            <div className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src="/placeholder-avatar.jpg" alt={selectedAidForDetails.applicant?.name || 'Unknown Applicant'} />
+                  <AvatarFallback className="text-lg">
+                    {selectedAidForDetails.applicant?.name ? selectedAidForDetails.applicant.name.split(' ').map(n => n[0]).join('') : '?'}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="text-lg font-semibold">{selectedAidForDetails.applicant?.name || 'Unknown Applicant'}</h3>
+                  <p className="text-sm text-gray-500">Applied on: {new Date(selectedAidForDetails.created_at).toLocaleDateString()}</p>
+                  <Badge
+                    className={selectedAidForDetails.status === "accepted" ? "bg-green-500" : selectedAidForDetails.status === "rejected" ? "bg-red-500" : "bg-yellow-500"}
+                  >
+                    {selectedAidForDetails.status}
+                  </Badge>
+                </div>
+              </div>
+
+              {selectedAidForDetails.cover_letter && (
+                <div>
+                  <h4 className="font-medium mb-2">Cover Letter</h4>
+                  <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-md">
+                    "{selectedAidForDetails.cover_letter}"
+                  </p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium mb-2">Contact Information</h4>
+                  <div className="space-y-1 text-sm">
+                    <p><strong>Email:</strong> {selectedAidForDetails.applicant?.email || 'Not provided'}</p>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-2">Application Details</h4>
+                  <div className="space-y-1 text-sm">
+                    <p><strong>Application ID:</strong> {selectedAidForDetails.id}</p>
+                    <p><strong>Applied:</strong> {new Date(selectedAidForDetails.created_at).toLocaleString()}</p>
+                  </div>
+                </div>
+              </div>
+
+              {selectedAidForDetails.applicant?.expertise && selectedAidForDetails.applicant.expertise.length > 0 && (
+                <div>
+                  <h4 className="font-medium mb-2">Expertise</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedAidForDetails.applicant.expertise.map((skill, index) => (
+                      <Badge key={index} variant="secondary">{skill}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedAidForDetails.applicant?.experience && (
+                <div>
+                  <h4 className="font-medium mb-2">Experience</h4>
+                  <p className="text-sm text-gray-700">{selectedAidForDetails.applicant.experience}</p>
+                </div>
+              )}
+
+              {selectedAidForDetails.proposed_budget && (
+                <div>
+                  <h4 className="font-medium mb-2">Proposed Budget</h4>
+                  <p className="text-sm text-gray-700">{selectedAidForDetails.proposed_budget} XAF</p>
+                </div>
+              )}
+
+              {selectedAidForDetails.estimated_duration && (
+                <div>
+                  <h4 className="font-medium mb-2">Estimated Duration</h4>
+                  <p className="text-sm text-gray-700">{selectedAidForDetails.estimated_duration}</p>
+                </div>
+              )}
+
+              {/* Applicant Statistics */}
+              {applicantStats && (
+                <div>
+                  <h4 className="font-medium mb-2">Track Record</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-blue-50 p-3 rounded-lg">
+                      <p className="text-sm font-medium text-blue-800">Completed Jobs</p>
+                      <p className="text-2xl font-bold text-blue-600">{applicantStats.completedJobsCount}</p>
+                    </div>
+                    <div className="bg-green-50 p-3 rounded-lg">
+                      <p className="text-sm font-medium text-green-800">Completed Bookings</p>
+                      <p className="text-2xl font-bold text-green-600">{applicantStats.completedBookingsCount}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Additional applicant information can be added here */}
+              <div>
+                <h4 className="font-medium mb-2">Additional Information</h4>
+                <p className="text-sm text-gray-600">
+                  More detailed profile information can be displayed here when available from the user's profile.
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAidDetailsModalOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
