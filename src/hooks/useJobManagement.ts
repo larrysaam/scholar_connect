@@ -695,6 +695,47 @@ export const useJobManagement = () => {
         actionLabel: 'View Booking'
       });
 
+      // --- Step 9: Send email notification ---
+      try {
+        // Get applicant email and user name
+        const { data: applicant, error: applicantError } = await supabase
+          .from('users')
+          .select('email, name')
+          .eq('id', applicantId)
+          .single();
+
+        const { data: client, error: clientError } = await supabase
+          .from('users')
+          .select('name')
+          .eq('id', user.id)
+          .single();
+
+        if (!applicantError && applicant && !clientError && client) {
+          const { error: emailError } = await supabase.functions.invoke('send-email-notification', {
+            body: {
+              to: applicant.email,
+              template: 'job_application_accepted',
+              templateData: {
+                jobTitle: jobTitle,
+                clientName: client.name || 'Client',
+                budget: jobBudget,
+                currency: jobCurrency,
+                startDate: 'To be determined',
+                dashboardUrl: `${window.location.origin}/dashboard?tab=my-jobs`
+              }
+            }
+          });
+
+          if (emailError) {
+            console.error('Error sending email notification:', emailError);
+            toast({ title: "Warning", description: "Job confirmed, but failed to send email notification.", variant: "default" });
+          }
+        }
+      } catch (emailError) {
+        console.error('Error sending email notification:', emailError);
+        toast({ title: "Warning", description: "Job confirmed, but failed to send email notification.", variant: "default" });
+      }
+
       toast({ title: "Success", description: "Job confirmed and booking created successfully!" });
       return {success: true, bookingId: booking.id, meetLink: meetLink };
 
