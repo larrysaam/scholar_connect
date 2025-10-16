@@ -565,7 +565,19 @@ export const useJobManagement = () => {
         return {success: false};
       }
 
-      // --- Step 2: Update job status to 'closed' ---
+      // --- Step 1.5: Cancel other pending applications for the same job ---
+      const { error: cancelError } = await supabase
+        .from('job_applications')
+        .update({ status: 'cancelled' })
+        .eq('job_id', jobId)
+        .neq('id', applicationId)
+        .eq('status', 'pending');
+
+      if (cancelError) {
+        console.error('Error cancelling other applications:', cancelError);
+        toast({ title: "Warning", description: "Application accepted, but failed to cancel other applications.", variant: "default" });
+        // Continue with the process as the main action succeeded
+      }
       const { error: updateJobError } = await supabase
         .from('jobs')
         .update({ status: 'closed' })
