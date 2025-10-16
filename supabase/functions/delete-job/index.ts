@@ -111,7 +111,7 @@ serve(async (req) => {
         type: 'refund',
         description: `Refund for deleted job: ${job.title}`,
         amount: refundAmount,
-        status: 'completed',
+        status: 'refund',
         payment_id: transaction?.payment_id || null
       })
 
