@@ -33,6 +33,7 @@ const JobManagement = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<CreateJobData>>({});
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   // Filter jobs based on search and status
   const filteredJobs = jobs.filter(job => {
@@ -57,6 +58,7 @@ const JobManagement = () => {
       urgency: job.urgency,
       deadline: job.deadline ? new Date(job.deadline).toISOString().split('T')[0] : ""
     });
+    setEditDialogOpen(true);
   };
 
   const handleUpdateJob = async () => {
@@ -66,6 +68,7 @@ const JobManagement = () => {
     if (success) {
       setEditingJob(null);
       setEditFormData({});
+      setEditDialogOpen(false);
     }
   };
 
@@ -285,7 +288,13 @@ const JobManagement = () => {
 
                         {/* Edit/Delete Actions */}
                         <div className="flex gap-1">
-                          <Dialog>
+                          <Dialog open={editDialogOpen} onOpenChange={(open) => {
+                          setEditDialogOpen(open);
+                          if (!open) {
+                            setEditingJob(null);
+                            setEditFormData({});
+                          }
+                        }}>
                             <DialogTrigger asChild>
                               <Tooltip>
                                 <TooltipTrigger asChild>
