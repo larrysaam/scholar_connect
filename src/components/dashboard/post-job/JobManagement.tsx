@@ -412,9 +412,9 @@ const JobManagement = () => {
                           </Dialog>
 
                           <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <AlertDialogTrigger asChild>
                                   <Button
                                     size="sm"
                                     variant="outline"
@@ -422,12 +422,12 @@ const JobManagement = () => {
                                   >
                                     <Trash2 className="h-3 w-3" />
                                   </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Delete Job</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </AlertDialogTrigger>
+                                </AlertDialogTrigger>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Delete Job</p>
+                              </TooltipContent>
+                            </Tooltip>
                             <AlertDialogContent>
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Delete Job</AlertDialogTitle>

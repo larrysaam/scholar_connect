@@ -1,14 +1,16 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { status: 200, headers: corsHeaders })
   }
 
   try {
@@ -35,6 +37,13 @@ serve(async (req) => {
     if (jobError || !job) {
       throw new Error('Job not found or access denied')
     }
+
+    // Get user email for notifications
+    const { data: userData, error: userError } = await supabaseClient.auth.admin.getUserById(userId)
+    if (userError || !userData?.user?.email) {
+      console.warn('Could not fetch user email for notifications')
+    }
+    const userEmail = userData?.user?.email
 
     // Find the transaction for this job payment
     const { data: transaction, error: transactionError } = await supabaseClient
@@ -110,6 +119,32 @@ serve(async (req) => {
       console.error('Error creating refund transaction:', refundTransactionError)
       // Don't fail the deletion if transaction logging fails
       console.warn('Job deleted and wallet updated but refund transaction logging failed')
+    }
+
+    // Send email notification for refund
+    if (userEmail) {
+      try {
+        const { error: emailError } = await supabaseClient.functions.invoke('send-email-notification', {
+          body: {
+            to: userEmail,
+            subject: 'Refund Processed - ResearchWow',
+            template: 'refund-processed',
+            templateData: {
+              serviceTitle: job.title,
+              researcherName: 'N/A',
+              refundAmount: refundAmount.toLocaleString(),
+              dashboardUrl: `${Deno.env.get('FRONTEND_URL') || 'http://localhost:8080'}/dashboard?tab=wallet`
+            },
+            userId: userId,
+            notificationType: 'refund_processed'
+          }
+        })
+        if (emailError) {
+          console.error('Error sending refund email:', emailError)
+        }
+      } catch (emailErr) {
+        console.error('Failed to send refund email:', emailErr)
+      }
     }
 
     // Delete job applications first (due to foreign key constraints)
