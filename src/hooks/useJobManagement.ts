@@ -250,11 +250,9 @@ export const useJobManagement = () => {
     if (!user) return false;
 
     try {
-      const { error } = await supabase
-        .from('jobs')
-        .delete()
-        .eq('id', jobId)
-        .eq('user_id', user.id);
+      const { data, error } = await supabase.functions.invoke('delete-job', {
+        body: { jobId, userId: user.id }
+      });
 
       if (error) {
         console.error('Error deleting job:', error);
@@ -266,14 +264,30 @@ export const useJobManagement = () => {
         return false;
       }
 
+      if (!data.success) {
+        console.error('Job deletion failed:', data.error);
+        toast({
+          title: "Error",
+          description: data.error || "Failed to delete job",
+          variant: "destructive"
+        });
+        return false;
+      }
+
       setJobs(prev => prev.filter(job => job.id !== jobId));
       toast({
         title: "Success",
-        description: "Job deleted successfully!"
+        description: `Job deleted successfully! Refunded ${data.refundAmount} XAF to your wallet.`,
+        variant: "default"
       });
       return true;
     } catch (error) {
       console.error('Error deleting job:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete job",
+        variant: "destructive"
+      });
       return false;
     }
   };
