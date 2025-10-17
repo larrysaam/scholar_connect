@@ -27,7 +27,6 @@ export interface ResearchAid {
   hourly_rate?: number; // Add hourly_rate
   isAvailable?: boolean; // Add isAvailable
   admin_verified?: boolean; // Add admin verification status
-  acceptedJobsCount?: number; // Add accepted jobs count
 }
 
 const FindResearchAidTab = () => {
@@ -70,30 +69,7 @@ const FindResearchAidTab = () => {
           profiles.map((p: any) => [p.id, p])
         );
 
-        // 4. Fetch accepted jobs count for each aid
-        const acceptedJobsCounts = await Promise.all(
-          userIds.map(async (userId: string) => {
-            const { count, error: countError } = await supabase
-              .from('job_applications')
-              .select('*', { count: 'exact', head: true })
-              .eq('applicant_id', userId)
-              .eq('status', 'accepted');
-            
-            if (countError) {
-              console.error(`Error fetching accepted jobs count for user ${userId}:`, countError);
-              return { userId, count: 0 };
-            }
-            
-            return { userId, count: count || 0 };
-          })
-        );
-
-        // 5. Create a map of userId to accepted jobs count
-        const acceptedJobsMap = Object.fromEntries(
-          acceptedJobsCounts.map(({ userId, count }) => [userId, count])
-        );
-
-        // 6. Merge data and filter for available aids
+        // 4. Merge data and filter for available aids
         const mappedAids: ResearchAid[] = users.map((user: any) => {
           const profile = profileMap[user.id];
           return {
@@ -110,7 +86,6 @@ const FindResearchAidTab = () => {
             experience: user.experience || 'N/A',
             isAvailable: profile?.availability?.isAvailable ?? false,
             admin_verified: profile?.admin_verified ?? false,
-            acceptedJobsCount: acceptedJobsMap[user.id] || 0,
           };
         }).filter(aid => aid.isAvailable);
 

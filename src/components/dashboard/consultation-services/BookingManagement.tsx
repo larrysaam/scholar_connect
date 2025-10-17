@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,9 @@ import {
   XCircle,
   AlertCircle,
   Eye,
-  Edit
+  Edit,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { ServiceBooking } from "@/hooks/useConsultationServices";
 import { ConsultationService } from "@/types/consultations";
@@ -39,6 +41,8 @@ const BookingManagement = ({
   const [selectedBooking, setSelectedBooking] = useState<ServiceBooking | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   // Filter bookings
   const filteredBookings = bookings.filter(booking => {
@@ -48,6 +52,41 @@ const BookingManagement = ({
       booking.notes?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesSearch;
   });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentBookings = filteredBookings.slice(startIndex, endIndex);
+
+  // Calculate visible page numbers (show 3 pages centered around current page)
+  const getVisiblePages = () => {
+    const pages = [];
+    const start = Math.max(1, currentPage - 1);
+    const end = Math.min(totalPages, currentPage + 1);
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    
+    // If we have less than 3 pages, fill with adjacent pages
+    while (pages.length < 3 && pages.length < totalPages) {
+      if (pages[0] > 1) {
+        pages.unshift(pages[0] - 1);
+      } else if (pages[pages.length - 1] < totalPages) {
+        pages.push(pages[pages.length - 1] + 1);
+      } else {
+        break;
+      }
+    }
+    
+    return pages;
+  };
+
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, searchTerm]);
 
   // Group bookings by status
   const pendingBookings = bookings.filter(b => b.status === 'pending');
@@ -326,7 +365,7 @@ const BookingManagement = ({
 
       {/* Bookings List */}
       <div className="space-y-3 sm:space-y-4">
-        {filteredBookings.length === 0 ? (
+        {currentBookings.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8 sm:py-12 px-4">
               <Calendar className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
@@ -340,7 +379,7 @@ const BookingManagement = ({
             </CardContent>
           </Card>
         ) : (
-          filteredBookings.map((booking) => (
+          currentBookings.map((booking) => (
             <Card key={booking.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-3 sm:p-4 md:p-6">
                 <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-start sm:justify-between">
@@ -448,6 +487,52 @@ const BookingManagement = ({
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-6">
+          <div className="text-sm text-gray-600">
+            Showing {startIndex + 1}-{Math.min(endIndex, filteredBookings.length)} of {filteredBookings.length} bookings
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="text-xs sm:text-sm"
+            >
+              <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+              Previous
+            </Button>
+            
+            <div className="flex items-center gap-1">
+              {getVisiblePages().map(page => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCurrentPage(page)}
+                  className="w-8 h-8 p-0 text-xs"
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="text-xs sm:text-sm"
+            >
+              Next
+              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

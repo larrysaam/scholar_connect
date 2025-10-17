@@ -1,27 +1,13 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, Users, TrendingUp, Award } from "lucide-react";
-import { usePlatformMetrics } from "@/hooks/usePlatformMetrics";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { PlatformMetrics } from "@/types/qualityFeedback";
 
-const PlatformMetricsCards = () => {
-  const { metrics, loading, error } = usePlatformMetrics();
+interface PlatformMetricsCardsProps {
+  metrics: PlatformMetrics;
+}
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-8">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-8 text-red-600">
-        Error loading platform metrics: {error}
-      </div>
-    );
-  }
-
+const PlatformMetricsCards = ({ metrics }: PlatformMetricsCardsProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
       <Card>
@@ -35,7 +21,7 @@ const PlatformMetricsCards = () => {
           </div>
         </CardContent>
       </Card>
-
+      
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center space-x-2">
@@ -47,7 +33,7 @@ const PlatformMetricsCards = () => {
           </div>
         </CardContent>
       </Card>
-
+      
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center space-x-2">
@@ -59,7 +45,7 @@ const PlatformMetricsCards = () => {
           </div>
         </CardContent>
       </Card>
-
+      
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center space-x-2">

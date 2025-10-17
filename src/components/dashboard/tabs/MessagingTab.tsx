@@ -3,7 +3,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useMessages, Conversation, Message } from "@/hooks/useMessages";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, Send, Paperclip, MoreVertical, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -19,14 +18,12 @@ const MessagingTab = () => {
     sendMessage, 
     loadingConversations, 
     loadingMessages, 
-    fetchConversations,
-    markMessagesAsRead 
+    fetchConversations 
   } = useMessages();
 
   const [newMessage, setNewMessage] = useState("");
   const { toast } = useToast();
-  const hasScrolledRef = useRef(false);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchConversations();
@@ -41,10 +38,7 @@ const MessagingTab = () => {
   }, [conversations, selectedConversation, setSelectedConversation]);
 
   useEffect(() => {
-    if (hasScrolledRef.current && messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-    }
-    hasScrolledRef.current = true;
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSendMessage = () => {
@@ -67,9 +61,7 @@ const MessagingTab = () => {
     });
   };
 
-  const handleConversationSelect = async (conversation: Conversation) => {
-    // Mark messages as read immediately when conversation is opened
-    await markMessagesAsRead(conversation.id);
+  const handleConversationSelect = (conversation: Conversation) => {
     setSelectedConversation(conversation);
   };
 
@@ -150,18 +142,11 @@ const MessagingTab = () => {
                       <p className="text-sm text-gray-600 truncate flex-1 pr-2">
                         {conversation.last_message || "No messages yet"}
                       </p>
-                      <div className="flex items-center space-x-2">
-                        {conversation.unreadCount > 0 && (
-                          <Badge variant="secondary" className="bg-blue-500 text-white text-xs px-2 py-0.5 min-w-[20px] h-5 flex items-center justify-center">
-                            {conversation.unreadCount}
-                          </Badge>
-                        )}
-                        {/* Mobile tap indicator */}
-                        <div className="md:hidden flex-shrink-0">
-                          <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </div>
+                      {/* Mobile tap indicator */}
+                      <div className="md:hidden flex-shrink-0">
+                        <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
                       </div>
                     </div>
                   </div>
@@ -204,7 +189,6 @@ const MessagingTab = () => {
           </Button>
         </div>        {/* Messages */}        <div 
           className="flex-1 overflow-y-auto p-3 md:p-4 space-y-2 md:space-y-3 bg-gray-50"
-          ref={messagesContainerRef}
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23f0f0f0' fill-opacity='0.3'%3E%3Cpath d='m0 40l40-40h-40v40zm40 0v-40h-40l40 40z'/%3E%3C/g%3E%3C/svg%3E")`,
           }}
@@ -270,6 +254,7 @@ const MessagingTab = () => {
               );
             })
           )}
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Message Input */}

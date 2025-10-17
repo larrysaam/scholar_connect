@@ -1,6 +1,6 @@
+
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import GetStartedModal from "@/components/GetStartedModal";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const AboutUs = () => {
@@ -104,11 +104,9 @@ const AboutUs = () => {
                   Be part of a growing community of researchers, students, and academic professionals working together to advance knowledge and create impact.
                 </p>
                 <div className="space-x-4">
-                  <GetStartedModal>
-                    <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
-                      Get Started
-                    </button>
-                  </GetStartedModal>
+                  <a href="/register" className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
+                    Get Started
+                  </a>
                   <a href="/contact" className="border border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors">
                     Contact Us
                   </a>

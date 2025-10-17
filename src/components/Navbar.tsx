@@ -31,7 +31,7 @@ import {
   Briefcase
 } from "lucide-react";
 
-const Navbar = ({setActiveTab, activeTab}: {setActiveTab?: any; activeTab?: any}) => {
+const Navbar = ({setActiveTab, activeTab}) => {
   const { user, profile, signOut } = useAuth();
   const { unreadCount } = useNotifications(); // Use the hook to get unreadCount
   const { t } = useLanguage();
@@ -248,7 +248,7 @@ const Navbar = ({setActiveTab, activeTab}: {setActiveTab?: any; activeTab?: any}
             className="flex items-center"
             state={{ fromNavigation: true }}
           >
-            <ResearchWhoaLogo size="lg" showText={true} color='black'/>
+            <ResearchWhoaLogo size="lg" showText={true} />
           </Link>
 
           

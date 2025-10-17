@@ -18,7 +18,8 @@ const secretKey = process.env.MESOMB_SECRET_KEY;
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 app.post("/api/mesomb-withdraw", async (req, res) => {
-  console.log("[MeSomb Withdraw] Request received", req.body);
+  const { receiver, amount, service, customer } = req.body;
+  console.log("[MeSomb Withdraw] Request received", { receiver, amount, service, customer });
   try {
     if (!applicationKey || !accessKey || !secretKey) {
       return res.status(500).json({ error: "MeSomb credentials not set" });
@@ -91,18 +92,13 @@ app.post("/api/mesomb-withdraw", async (req, res) => {
       products: [
         {name: 'withdrawal', category: 'researcher withdrawal', quantity: 1, amount}
       ],
-      location: {town: 'Douala', region: 'Littoral', country: 'CM'},    });
-    
-    const isSuccess = response.isOperationSuccess() && response.isTransactionSuccess();
-    console.log(`[MeSomb Withdraw] ${isSuccess ? 'Withdrawal processed successfully' : 'Withdrawal failed'}`);
-    
+      location: {town: 'Douala', region: 'Littoral', country: 'CM'},
+    });
+    console.log("[MeSomb Withdraw] Withdrawal processed successfully");
     res.json({
       operationSuccess: response.isOperationSuccess(),
       transactionSuccess: response.isTransactionSuccess(),
       raw: response,
-      message: isSuccess 
-        ? 'Withdrawal completed successfully' 
-        : 'Withdrawal failed - please try again'
     });
   } catch (err) {
     console.error("[MeSomb Withdraw] Error processing withdrawal", err);
@@ -140,57 +136,6 @@ app.post('/api/mesomb-payment', async (req, res) => {
       raw: response,
     });
   } catch (err) {
-    res.status(500).json({ error: err?.message || 'Payment failed', details: err });
-  }
-});
-
-// Payment endpoint for deposits/top-ups
-app.post("/api/mesomb-topup", async (req, res) => {
-  console.log("[MeSomb Payment] Request received", req.body);
-  try {
-    if (!applicationKey || !accessKey || !secretKey) {
-      return res.status(500).json({ error: "MeSomb credentials not set" });
-    }
-
-    const {
-      amount,
-      service,
-      payer,
-      country = 'CM',
-      currency = 'XAF',
-      description,
-      customer,
-      location,
-      products
-    } = req.body;
-
-    console.log("Processing payment:", { amount, service, payer, customer });
-
-    const client = new PaymentOperation({ applicationKey, accessKey, secretKey });
-
-    // Use makeCollect to collect payment from customer
-    const response = await client.makeCollect({
-      amount,
-      service,
-      payer,
-      country,
-      currency,
-      description,
-      customer,
-      location: location || { town: 'Douala', region: 'Littoral', country: 'CM' },
-      products: products || [{ name: 'Wallet Top-up', category: 'deposit', quantity: 1, amount }],
-    });
-
-    const isSuccess = response.isOperationSuccess() && response.isTransactionSuccess();
-    console.log(`[MeSomb Payment] ${isSuccess ? 'Payment processed successfully' : 'Payment failed'}`);
-
-    res.json({
-      operationSuccess: response.isOperationSuccess(),
-      transactionSuccess: response.isTransactionSuccess(),
-      raw: response,
-    });
-  } catch (err) {
-    console.error('[MeSomb Payment] Error:', err);
     res.status(500).json({ error: err?.message || 'Payment failed', details: err });
   }
 });
@@ -292,170 +237,6 @@ app.post('/api/create-booking', async (req, res) => {
     });
   } catch (err) {
     console.error('[Booking Creation] Error processing payment:', err);
-    res.status(500).json({ error: err?.message || 'Payment processing failed', details: err });
-  }
-});
-
-// Email notification endpoint for successful withdrawals
-app.post('/api/send-withdrawal-notification', async (req, res) => {
-  const { userId, withdrawalId, amount, phone, operator, email, name } = req.body;
-  
-  console.log("[Email Notification] Sending withdrawal success email", { userId, withdrawalId, amount, email });
-  
-  try {    // Call Supabase Edge Function for email notification
-    const { data, error } = await supabase.functions.invoke('send-withdrawal-email', {
-      body: {
-        type: 'withdrawal_success',
-        to: email,
-        data: {
-          name,
-          amount: amount.toLocaleString(),
-          phone,
-          operator,
-          withdrawalId,
-          date: new Date().toLocaleDateString(),
-          time: new Date().toLocaleTimeString()
-        }
-      }
-    });
-
-    if (error) {
-      console.error('[Email Notification] Error sending email:', error);
-      return res.status(500).json({ error: 'Failed to send email notification' });
-    }
-
-    console.log('[Email Notification] Email sent successfully');
-    res.status(200).json({ success: true, message: 'Email notification sent' });
-  } catch (err) {
-    console.error('[Email Notification] Error:', err);
-    res.status(500).json({ error: err.message || 'Failed to send email notification' });
-  }
-});
-
-// Job payment endpoint for posting jobs
-app.post('/api/job-payment', async (req, res) => {
-  console.log("[Job Payment] Request received", req.body);
-  try {
-    if (!applicationKey || !accessKey || !secretKey) {
-      return res.status(500).json({ error: 'MeSomb credentials are not set in environment variables' });
-    }
-
-    const {
-      amount,
-      service,
-      payer,
-      country = 'CM',
-      currency = 'XAF',
-      jobData,
-      userId,
-      customer
-    } = req.body;
-
-    console.log("[Job Payment] Processing payment for job posting:", { amount, service, payer, userId });
-
-    // Process payment through MeSomb
-    const client = new PaymentOperation({ applicationKey, accessKey, secretKey });
-
-    const response = await client.makeCollect({
-      payer,
-      amount,
-      service,
-      country,
-      currency,
-      description: `Payment for job posting: ${jobData.title}`,
-      customer,
-      location: { town: 'Douala', region: 'Littoral', country: 'CM' },
-      products: [{
-        name: `Job Posting: ${jobData.title}`,
-        category: 'job_posting',
-        quantity: 1,
-        amount
-      }],
-    });
-
-    const isSuccess = response.isOperationSuccess() && response.isTransactionSuccess();
-    console.log(`[Job Payment] Payment ${isSuccess ? 'successful' : 'failed'}`);
-
-    if (!isSuccess) {
-      return res.status(400).json({
-        operationSuccess: false,
-        transactionSuccess: false,
-        error: 'Payment failed',
-        raw: response
-      });
-    }
-
-    // Payment successful, create the job via edge function
-    try {
-      // Validate jobData before sending
-      if (!jobData || !jobData.title || !jobData.description || !userId) {
-        console.error('[Job Payment] Invalid job data provided');
-        return res.status(400).json({
-          operationSuccess: true,
-          transactionSuccess: true,
-          paymentSuccess: true,
-          jobCreationError: 'Invalid job data provided',
-          raw: response
-        });
-      }
-
-      const { data: jobResult, error: jobError } = await supabase.functions.invoke('create-job', {
-        body: {
-          jobData,
-          userId,
-          paymentData: {
-            amount,
-            payment_id: response.transaction_id || response.transactionId,
-            service,
-            payer,
-            description: `Payment for job posting: ${jobData.title}`
-          }
-        }
-      });
-
-      if (jobError) {
-        console.error('[Job Payment] Edge function error:', jobError);
-        return res.status(500).json({
-          operationSuccess: true,
-          transactionSuccess: true,
-          paymentSuccess: true,
-          jobCreationError: `Edge function error: ${jobError.message || 'Unknown error'}`,
-          raw: response
-        });
-      }
-
-      if (!jobResult?.success) {
-        console.error('[Job Payment] Job creation failed:', jobResult);
-        return res.status(500).json({
-          operationSuccess: true,
-          transactionSuccess: true,
-          paymentSuccess: true,
-          jobCreationError: jobResult?.error || 'Job creation failed',
-          raw: response
-        });
-      }
-
-      console.log('[Job Payment] Job created successfully after payment');
-      res.status(200).json({
-        operationSuccess: true,
-        transactionSuccess: true,
-        paymentSuccess: true,
-        jobCreated: true,
-        job: jobResult.job,
-        raw: response
-      });
-    } catch (jobCreateError) {
-      console.error('[Job Payment] Error calling create-job function:', jobCreateError);
-      res.status(500).json({
-        operationSuccess: true,
-        transactionSuccess: true,
-        paymentSuccess: true,
-        jobCreationError: 'Failed to create job after successful payment',
-        raw: response
-      });
-    }
-  } catch (err) {
-    console.error('[Job Payment] Error processing payment:', err);
     res.status(500).json({ error: err?.message || 'Payment processing failed', details: err });
   }
 });

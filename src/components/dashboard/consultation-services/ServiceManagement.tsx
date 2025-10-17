@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,9 @@ import {
   DollarSign, 
   Clock, 
   BookOpen,
-  Loader2
+  Loader2,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { CreateServiceData } from "@/hooks/useConsultationServices";
 import { ConsultationService } from "@/types/consultations";
@@ -48,6 +50,8 @@ const ServiceManagement = ({
     pricing: [{ academic_level: 'Undergraduate', price: 0, currency: 'XAF' }],
     addons: []
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   // Helper function to format duration in a user-friendly way
   const formatDuration = (minutes: number) => {
@@ -66,7 +70,9 @@ const ServiceManagement = ({
     } else {
       return `${minutes} minute${minutes > 1 ? 's' : ''}`;
     }
-  };const resetForm = () => {
+  };
+  
+  const resetForm = () => {
     setFormData({
       category: 'General Consultation',
       title: '',
@@ -76,6 +82,41 @@ const ServiceManagement = ({
       addons: []
     });
   };
+
+  // Pagination logic
+  const totalPages = Math.ceil(services.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentServices = services.slice(startIndex, endIndex);
+
+  // Calculate visible page numbers (show 3 pages centered around current page)
+  const getVisiblePages = () => {
+    const pages = [];
+    const start = Math.max(1, currentPage - 1);
+    const end = Math.min(totalPages, currentPage + 1);
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    
+    // If we have less than 3 pages, fill with adjacent pages
+    while (pages.length < 3 && pages.length < totalPages) {
+      if (pages[0] > 1) {
+        pages.unshift(pages[0] - 1);
+      } else if (pages[pages.length - 1] < totalPages) {
+        pages.push(pages[pages.length - 1] + 1);
+      } else {
+        break;
+      }
+    }
+    
+    return pages;
+  };
+
+  // Reset to first page when services change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [services.length]);
 
   const createFreeConsultationService = () => {
     setFormData({
@@ -222,7 +263,7 @@ const ServiceManagement = ({
               </div>
             </CardContent>
           </Card>        ) : (
-          services.map((service) => (
+          currentServices.map((service) => (
             <Card key={service.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-3 sm:p-4 md:p-6">
                 <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-start sm:justify-between">
@@ -415,6 +456,52 @@ const ServiceManagement = ({
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-6">
+          <div className="text-sm text-gray-600">
+            Showing {startIndex + 1}-{Math.min(endIndex, services.length)} of {services.length} services
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="text-xs sm:text-sm"
+            >
+              <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+              Previous
+            </Button>
+            
+            <div className="flex items-center gap-1">
+              {getVisiblePages().map(page => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCurrentPage(page)}
+                  className="w-8 h-8 p-0 text-xs"
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="text-xs sm:text-sm"
+            >
+              Next
+              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
