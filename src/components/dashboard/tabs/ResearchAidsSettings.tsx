@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Trash2, CreditCard, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAidSettings } from "@/hooks/useAidSettings";
+import { supabase } from "@/integrations/supabase/client";
 
 const ResearchAidsSettings = () => {
   const {
@@ -130,7 +131,7 @@ const ResearchAidsSettings = () => {
     setShowFinalDialog(true);
   };
 
-  const handleFinalDeleteAccount = () => {
+  const handleFinalDeleteAccount = async () => {
     if (deleteConfirmation !== "DELETE" || !finalConfirmation) {
       toast({
         title: "Error",
@@ -140,16 +141,54 @@ const ResearchAidsSettings = () => {
       return;
     }
 
-    toast({
-      title: "Account Deletion Requested",
-      description: "Your account deletion request has been submitted. This process may take 24-48 hours.",
-      variant: "destructive"
-    });
-    
-    setDeleteConfirmation("");
-    setDeletionReason("");
-    setFinalConfirmation(false);
-    setShowFinalDialog(false);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to delete your account",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const response = await supabase.functions.invoke('delete-account', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      toast({
+        title: "Account Deleted",
+        description: "Your account has been permanently deleted. You will be redirected shortly.",
+        variant: "destructive"
+      });
+
+      // Clear local storage and redirect after a delay
+      setTimeout(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = "/";
+      }, 3000);
+
+    } catch (error: any) {
+      console.error('Error deleting account:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete account. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setDeleteConfirmation("");
+      setDeletionReason("");
+      setFinalConfirmation(false);
+      setShowFinalDialog(false);
+    }
   };
 
   const handleAddPaymentMethod = (method: any) => {

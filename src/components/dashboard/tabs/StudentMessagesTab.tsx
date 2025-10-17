@@ -10,7 +10,19 @@ import { useMessages, Conversation, Message } from "@/hooks/useMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from 'date-fns';
 
-const StudentMessagesTab = () => {
+interface StudentMessagesTabData {
+  openChat?: boolean;
+  recipientId?: string;
+  recipientName?: string;
+  bookingId?: string;
+  consultationTitle?: string;
+}
+
+interface StudentMessagesTabProps {
+  TabData?: StudentMessagesTabData;
+}
+
+const StudentMessagesTab = ({ TabData }: StudentMessagesTabProps) => {
   const { user } = useAuth();
   const { 
     conversations, 
@@ -20,27 +32,66 @@ const StudentMessagesTab = () => {
     sendMessage, 
     loadingConversations, 
     loadingMessages, 
-    fetchConversations 
+    fetchConversations,
+    markMessagesAsRead
   } = useMessages();
 
   const [newMessage, setNewMessage] = useState("");
   const { toast } = useToast();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasScrolledRef = useRef(false);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  // Handle navigation from MyBookingsTab
+  useEffect(() => {
+    console.log("TabData : ", TabData)
+    if (TabData?.openChat && TabData?.recipientId) {
+      // Always try to open the chat for this recipient, even if a conversation is already selected
+      // First try to find existing conversation with this recipient
+      const existingConversation = conversations.find(conv => conv.other_user_id === TabData.recipientId);
+      console.log("Existing conversation found: ", existingConversation)
+      
+      if (existingConversation) {
+        setSelectedConversation(existingConversation);
+      } else if (TabData.recipientId && TabData.recipientName) {
+        // Create a new conversation object if it doesn't exist
+        const newConversation: Conversation = {
+          id: TabData.bookingId || `temp_${TabData.recipientId}_${Date.now()}`, // Use bookingId if available, otherwise generate temp ID
+          other_user_id: TabData.recipientId,
+          other_user_name: TabData.recipientName,
+          last_message: '',
+          last_message_at: new Date().toISOString(),
+          unreadCount: 0
+        };
+        setSelectedConversation(newConversation);
+      }
+    }
+  }, [TabData, conversations, setSelectedConversation]);
 
   useEffect(() => {
-    // Only auto-select first conversation on desktop (md and up)
+    // Only auto-select first conversation on desktop (md and up) if no specific conversation is requested
     const isDesktop = window.matchMedia('(min-width: 768px)').matches;
-    if (!selectedConversation && conversations.length > 0 && isDesktop) {
+    if (!selectedConversation && conversations.length > 0 && isDesktop && !TabData?.openChat) {
       setSelectedConversation(conversations[0]);
     }
-  }, [conversations, selectedConversation, setSelectedConversation]);
+  }, [conversations, selectedConversation, setSelectedConversation, TabData]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (hasScrolledRef.current && messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
+    hasScrolledRef.current = true;
   }, [messages]);
 
   const handleSendMessage = () => {
     if (newMessage.trim() && selectedConversation) {
+      if (selectedConversation.id.startsWith('temp_')) {
+        toast({
+          title: "Error",
+          description: "Cannot send message to this conversation yet. Please try again later.",
+          variant: "destructive"
+        });
+        return;
+      }
+      console.log("Sending message:", newMessage, "to conversation:", selectedConversation.id);
       sendMessage(selectedConversation.id, newMessage);
       setNewMessage("");
     } else if (!selectedConversation) {
@@ -59,8 +110,9 @@ const StudentMessagesTab = () => {
     });
   };
 
-  const handleConversationSelect = (conversation: Conversation) => {
+  const handleConversationSelect = async (conversation: Conversation) => {
     setSelectedConversation(conversation);
+    await markMessagesAsRead(conversation.id);
   };
 
   const formatTime = (dateString: string) => {
@@ -130,9 +182,16 @@ const StudentMessagesTab = () => {
                       <p className="text-base md:text-sm font-medium text-gray-900 truncate">
                         {conversation.other_user_name}
                       </p>
-                      <p className="text-xs text-gray-500 flex-shrink-0">
-                        {formatTime(conversation.last_message_at)}
-                      </p>
+                      <div className="flex items-center space-x-1 flex-shrink-0">
+                        <p className="text-xs text-gray-500">
+                          {formatTime(conversation.last_message_at)}
+                        </p>
+                        {conversation.unreadCount > 0 && (
+                          <Badge variant="destructive" className="text-xs px-1.5 py-0.5">
+                            {conversation.unreadCount}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <p className="text-sm text-gray-600 truncate flex-1 pr-2">
@@ -187,6 +246,7 @@ const StudentMessagesTab = () => {
 
         {/* Messages */}
         <div 
+          ref={messagesContainerRef}
           className="flex-1 overflow-y-auto p-3 md:p-4 space-y-2 md:space-y-3 bg-gray-50"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23f0f0f0' fill-opacity='0.3'%3E%3Cpath d='m0 40l40-40h-40v40zm40 0v-40h-40l40 40z'/%3E%3C/g%3E%3C/svg%3E")`,
@@ -253,7 +313,6 @@ const StudentMessagesTab = () => {
               );
             })
           )}
-          <div ref={messagesEndRef} />
         </div>
 
         {/* Message Input */}

@@ -22,7 +22,7 @@ type UserProfile = Database['public']['Tables']['users']['Row'] & {
 type UserRole = Database['public']['Enums']['user_role'];
 type PayoutMethod = Database['public']['Enums']['payout_method'];
 
-const SettingsTab = () => {
+const SettingsTab = ({setActiveTab}) => {
   const { toast } = useToast();
   const { user } = useAuth();
   
@@ -224,7 +224,7 @@ const SettingsTab = () => {
     }, 1000);
   };
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     if (deleteConfirmation !== "DELETE") {
       toast({
         title: "Error",
@@ -234,15 +234,53 @@ const SettingsTab = () => {
       return;
     }
 
-    toast({
-      title: "Account Deletion Requested",
-      description: "Your account deletion request has been submitted. You will receive a confirmation email.",
-      variant: "destructive"
-    });
-    
-    console.log("Account deletion requested");
-    setDeleteConfirmation("");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to delete your account",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const response = await supabase.functions.invoke('delete-account', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      toast({
+        title: "Account Deleted",
+        description: "Your account has been permanently deleted. You will be redirected shortly.",
+        variant: "destructive"
+      });
+
+      // Clear local storage and redirect after a delay
+      setTimeout(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = "/";
+      }, 3000);
+
+    } catch (error: any) {
+      console.error('Error deleting account:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete account. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setDeleteConfirmation("");
+    }
   };
+
   return (
     <div className="space-y-4 sm:space-y-6 p-2 sm:p-0">
       <h2 className="text-xl sm:text-2xl font-bold">Account Settings</h2>

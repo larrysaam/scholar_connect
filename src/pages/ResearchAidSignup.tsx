@@ -36,7 +36,8 @@ const ResearchAidSignup = () => {
     preferredLanguage: '',
     password: '',
     confirmPassword: '',
-    agreeToTerms: false
+    agreeToTerms: false,
+    subtitle: ''
   });
 
   const { validateFormData, validationErrors, clearValidationErrors } = useSecurityValidation();
@@ -89,7 +90,8 @@ const ResearchAidSignup = () => {
             researchgateAccount: formData.researchgateAccount,
             academiaEduAccount: formData.academiaEduAccount,
             orcidId: formData.orcidId,
-            preferredLanguage: formData.preferredLanguage
+            preferredLanguage: formData.preferredLanguage,
+            subtitle: formData.subtitle
           }
         }
       });
@@ -126,37 +128,29 @@ const ResearchAidSignup = () => {
           const { error: researchAidProfileError } = await supabase
             .from('research_aid_profiles')
             .insert({
-              user_id: data.user.id,
-              title: '', // Default or derive from highestEducation
-              department: '',
-              years_experience: 0,
-              students_supervised: 0,
-              hourly_rate: 0,
-              response_time: 'Usually responds within 24 hours',
-              is_online: false,
-              online_status: 'offline',
+              id: data.user.id,
               bio: '',
-              research_interests: formData.fieldsOfExpertise.split(',').map(item => item.trim()),
-              specialties: [],
-              education: [], // Initialize as empty JSONB array
-              experience: [],
-              publications: [],
-              awards: [],
-              fellowships: [],
-              grants: [],
-              memberships: [],
-              supervision: [],
-              available_times: [],
-              verifications: {
-                academic: 'pending',
-                publication: 'pending',
-                institutional: 'pending'
-              },
+              expertise: formData.fieldsOfExpertise.split(',').map(item => item.trim()),
+              hourly_rate: 0,
+              availability: {"isAvailable": true},
               rating: 0.0,
-              total_reviews: 0,
-              profile_visibility: 'public',
-              show_contact_info: true,
-              show_hourly_rate: true,
+              total_consultations_completed: 0,
+              is_verified: false,
+              verifications: {},
+              title: formData.subtitle || '',
+              job_title: '',
+              location: formData.country === 'other' ? formData.otherCountry : formData.country,
+              education_summary: '',
+              skills: [],
+              educational_background: [],
+              work_experience: [],
+              awards: [],
+              publications: [],
+              scholarships: [],
+              affiliations: [],
+              admin_verified: false,
+              admin_verified_at: null,
+              admin_verified_by: null,
             });
 
           if (researchAidProfileError) {
@@ -181,7 +175,7 @@ const ResearchAidSignup = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-2xl">
         <AuthHeader
-          title="Join ResearchWhoa as a Research Aid"
+          title="Join ResearchWow as a Research Aid"
           subtitle="Give Students the Right Academic Support at Every Step of their Research Journey. Connect with students at all academic levels, give expert assistance, and elevate their thesis or dissertation."
         />
         
@@ -215,6 +209,17 @@ const ResearchAidSignup = () => {
                 required
                 value={formData.fullName}
                 onChange={(value) => handleInputChange('fullName', value)}
+              />
+
+              <FormField
+                label="Title"
+                type="select"
+                value={formData.subtitle}
+                onChange={(value) => handleInputChange('subtitle', value)}
+                options={[
+                  { value: 'Dr.', label: 'Dr.' },
+                  { value: 'Prof.', label: 'Prof.' }
+                ]}
               />
 
               <FormField
@@ -309,33 +314,39 @@ const ResearchAidSignup = () => {
               <div className="border-t pt-6">
                 <h3 className="text-xl font-semibold mb-4">Research Profile</h3>
                 <p className="text-sm text-gray-600 mb-4">This will help us verify your status</p>
-                
-                <FormField
+                  <FormField
                   label="LinkedIn Account"
+                  type="url"
                   value={formData.linkedinAccount}
                   onChange={(value) => handleInputChange('linkedinAccount', value)}
                   placeholder="https://linkedin.com/in/yourprofile"
+                  validateURL={true}
+                  fieldName="linkedinAccount"
                 />
 
                 <FormField
                   label="ResearchGate"
+                  type="url"
                   value={formData.researchgateAccount}
                   onChange={(value) => handleInputChange('researchgateAccount', value)}
                   placeholder="https://researchgate.net/profile/yourprofile"
+                  validateURL={true}
+                  fieldName="researchgateAccount"
                 />
 
                 <FormField
                   label="Academia.edu"
+                  type="url"
                   value={formData.academiaEduAccount}
                   onChange={(value) => handleInputChange('academiaEduAccount', value)}
                   placeholder="https://institution.academia.edu/yourprofile"
-                />
-
-                <FormField
+                  validateURL={true}
+                  fieldName="academiaEduAccount"
+                />                <FormField
                   label="ORCID ID"
+                  type="orcid"
                   value={formData.orcidId}
                   onChange={(value) => handleInputChange('orcidId', value)}
-                  placeholder="0000-0000-0000-0000"
                 />
 
                 <FormField

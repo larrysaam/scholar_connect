@@ -1,9 +1,9 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, MessageSquare, ThumbsUp, UserPlus } from "lucide-react";
 import InviteModal from "@/components/researcher/InviteModal";
+import PlatformMetricsCards from "@/components/dashboard/quality/PlatformMetricsCards";
 
 const ResearchAidQualityTab = () => {
   return (
@@ -14,6 +14,12 @@ const ResearchAidQualityTab = () => {
           <InviteModal userType="research-aid" triggerText="Invite a Research Aid" />
         </div>
         <p className="text-gray-600 mb-6">Help us improve ResearchWow by sharing your feedback.</p>
+
+        {/* Platform Metrics */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-4">Platform Performance</h3>
+          <PlatformMetricsCards />
+        </div>
         
         <Card className="mb-6">
           <CardHeader>
@@ -59,12 +65,6 @@ const ResearchAidQualityTab = () => {
           
           <Card>
             <CardHeader>
-              <CardTitle className="text-base flex items-center">
-                <ThumbsUp className="mr-2 h-4 w-4" />
-                Platform Stats
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm">Total Projects</span>

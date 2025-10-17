@@ -411,7 +411,7 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
         <TabsContent value="notifications" className="mt-6">
           {/* Search and Filters */}
       <Card>
-        <CardContent className="p-3 sm:p-4">
+        <CardContent className="p-3 sm:p-4 overflow-hidden">
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -493,7 +493,7 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
               key={notification.id} 
               className={`${!notification.is_read ? 'border-l-4 border-l-blue-500 bg-blue-50' : ''} hover:shadow-md transition-shadow`}
             >
-              <CardContent className="p-3 sm:p-4">
+              <CardContent className="p-3 sm:p-4 overflow-hidden">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-2">
@@ -508,7 +508,7 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
                         <Badge className="bg-blue-600 text-xs">New</Badge>
                       )}
                     </div>
-                    <p className="text-gray-700 text-xs sm:text-sm mb-2">{notification.message}</p>
+                    <p className="text-gray-700 text-xs sm:text-sm mb-2 break-words">{notification.message}</p>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs text-gray-500">
                       <span>{formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}</span>
                       <span className="hidden sm:inline">{formatDate(notification.created_at)}</span>

@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin, Award, MessageCircle, Eye, Calendar } from "lucide-react";
+import { Star, MapPin, Award, MessageCircle, Eye, Calendar, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -23,6 +23,7 @@ interface ResearchAid {
   responseTime?: string;
   featured?: boolean;
   admin_verified?: boolean; // Add admin verification status
+  acceptedJobsCount?: number;
 }
 
 interface ResearchAidCardProps {
@@ -117,21 +118,33 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
               )}
             </div>
             
+            {/* Job Stats */}
+            <div className="flex justify-between items-center mt-2">
+              <div className="flex items-center text-xs text-gray-600">
+                <Award className="h-3 w-3 mr-1 text-green-500" />
+                <span>{aid.completedJobs || 0} Done</span>
+              </div>
+              <div className="flex items-center text-xs text-gray-600">
+                <CheckCircle className="h-3 w-3 mr-1 text-purple-500" />
+                <span>{aid.acceptedJobsCount || 0} Accepted</span>
+              </div>
+            </div>
+            
             {/* Stats & Price */}
             <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-              <div className="flex items-center space-x-2">
+              {/* <div className="flex items-center space-x-2">
                 <div className="flex items-center bg-yellow-50 px-2 py-1 rounded">
                   <Star className="h-3 w-3 text-yellow-500 fill-current mr-1" />
                   <span className="text-xs font-medium text-yellow-700">{(aid.rating || 0).toFixed(1)}</span>
                 </div>
                 <span className="text-xs text-gray-500">{aid.reviewCount || 0} reviews</span>
-              </div>
+              </div> */}
               
-              {aid.hourly_rate && (
+              {/* {aid.hourly_rate && (
                 <div className="text-sm font-semibold text-green-600">
                   {aid.hourly_rate.toLocaleString()} XAF/hr
                 </div>
-              )}
+              )} */}
             </div>
             
             {/* Action Buttons */}
@@ -145,7 +158,7 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
                 <Eye className="h-3 w-3 mr-1" />
                 View
               </Button>
-              <Button 
+              {/* <Button 
                 size="sm" 
                 variant="outline"
                 onClick={() => setShowMessage(true)}
@@ -153,7 +166,7 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
               >
                 <MessageCircle className="h-3 w-3 mr-1" />
                 Message
-              </Button>
+              </Button> */}
               <Button 
                 size="sm" 
                 className="bg-green-600 hover:bg-green-700 text-white flex-1"
@@ -202,7 +215,7 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
             </div>
             
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="p-3 bg-yellow-50 rounded-lg text-center border border-yellow-200">
                 <Star className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
                 <div className="font-bold text-gray-900">{(aid.rating || 0).toFixed(1)}/5</div>
@@ -213,6 +226,12 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
                 <Award className="h-8 w-8 text-green-500 mx-auto mb-2" />
                 <div className="font-bold text-gray-900">{aid.completedJobs || 0}</div>
                 <div className="text-sm text-gray-600">Jobs Done</div>
+              </div>
+              
+              <div className="p-3 bg-purple-50 rounded-lg text-center border border-purple-200">
+                <CheckCircle className="h-8 w-8 text-purple-500 mx-auto mb-2" />
+                <div className="font-bold text-gray-900">{aid.acceptedJobsCount || 0}</div>
+                <div className="text-sm text-gray-600">Jobs Accepted</div>
               </div>
               
               <div className="p-3 bg-blue-50 rounded-lg text-center border border-blue-200">
