@@ -24,6 +24,7 @@ import ServiceCard from "../consultation-services/ServiceCard";
 import AddServiceForm from "../consultation-services/AddServiceForm";
 import ServiceManagement from "../consultation-services/ServiceManagement";
 import BookingManagement from "../consultation-services/BookingManagement";
+import AvailabilitySettings from "../consultation-services/AvailabilitySettings";
 
 const ConsultationServicesTab = () => {
   const {
@@ -142,7 +143,7 @@ const ConsultationServicesTab = () => {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-auto p-1">
+        <TabsList className="grid w-full grid-cols-4 h-auto p-1">
           <TabsTrigger 
             value="services" 
             className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5 px-1 sm:px-3 data-[state=active]:bg-white data-[state=active]:shadow-sm"
@@ -169,6 +170,13 @@ const ConsultationServicesTab = () => {
           >
             <Users className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
             <span className="font-medium">Analytics</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="availability" 
+            className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5 px-1 sm:px-3 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+          >
+            <Settings className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="font-medium">Availability</span>
           </TabsTrigger>
         </TabsList>
 
@@ -306,6 +314,10 @@ const ConsultationServicesTab = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="availability" className="space-y-3 sm:space-y-4 md:space-y-6 mt-3 sm:mt-4 md:mt-6">
+          <AvailabilitySettings />
         </TabsContent>
       </Tabs>
     </div>
