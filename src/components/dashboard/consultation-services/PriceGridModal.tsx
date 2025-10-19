@@ -46,11 +46,11 @@ const PriceGridModal = ({ category, className, variant = "outline", showIcon = t
         };
       case "Full Thesis Review":
         return {
-          title: "Full Thesis Review (Complete Manuscript)",
+          title: "Expert Complete Thesis Review",
           data: [
-            { rank: "Professor / Professor Emeritus / Emerita/Research Director", undergraduate: "70,000 – 100,000", masters: "130,000 – 180,000", phd: "200,000 – 300,000" },
-            { rank: "Associate Professor", undergraduate: "60,000 – 90,000", masters: "120,000 – 170,000", phd: "180,000 – 280,000" },
-            { rank: "Senior Lecturer / Senior Research Officer", undergraduate: "50,000 – 80,000", masters: "100,000 – 150,000", phd: "160,000 – 240,000" },
+            { rank: "Professor / Professor Emeritus / Emerita", undergraduate: "75,000 – 100,000", masters: "120,000 – 180,000", phd: "200,000 – 300,000" },
+            { rank: "Associate Professor", undergraduate: "60,000 – 90,000", masters: "100,000 – 160,000", phd: "180,000 – 250,000" },
+            { rank: "Senior Lecturer / Senior Research Officer", undergraduate: "50,000 – 75,000", masters: "90,000 – 140,000", phd: "150,000 – 220,000" },
             { rank: "Lecturer / PhD Holder / Research Officer", undergraduate: "40,000 – 60,000", masters: "70,000 – 120,000", phd: "120,000 – 180,000" }
           ],
           includes: [
@@ -71,10 +71,10 @@ const PriceGridModal = ({ category, className, variant = "outline", showIcon = t
         return {
           title: "Chapter Review (Per Chapter)",
           data: [
-            { rank: "Professor / Professor Emeritus / Emerita/Research Director", undergraduate: "25,000 – 35,000", masters: "45,000 – 65,000", phd: "75,000 – 100,000" },
-            { rank: "Associate Professor", undergraduate: "20,000 – 30,000", masters: "40,000 – 60,000", phd: "70,000 – 95,000" },
-            { rank: "Senior Lecturer / Senior Research Officer", undergraduate: "15,000 – 25,000", masters: "35,000 – 55,000", phd: "65,000 – 90,000" },
-            { rank: "Lecturer / PhD Holder / Research Officer", undergraduate: "10,000 – 20,000", masters: "30,000 – 50,000", phd: "60,000 – 85,000" }
+            { rank: "Professor / Professor Emeritus / Emerita", undergraduate: "20,000 – 25,000", masters: "25,000 – 30,000", phd: "30,000 – 35,000" },
+            { rank: "Associate Professor", undergraduate: "18,000 – 22,000", masters: "22,000 – 28,000", phd: "25,000 – 30,000" },
+            { rank: "Senior Lecturer / Senior Research Officer", undergraduate: "15,000 – 20,000", masters: "20,000 – 25,000", phd: "22,000 – 27,000" },
+            { rank: "Lecturer / PhD Holder / Research Officer", undergraduate: "10,000 – 15,000", masters: "15,000 – 20,000", phd: "18,000 – 22,000" }
           ],
           includes: [
             "Detailed chapter analysis",
