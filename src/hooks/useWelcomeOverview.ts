@@ -5,12 +5,52 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
 export const useWelcomeOverview = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { bookings, loading: consultationsLoading } = useConsultationServices();
   const { earnings, loading: paymentsLoading } = usePayments();
   const [newMessagesCount, setNewMessagesCount] = useState(0);
+  const [userRating, setUserRating] = useState<number | null>(null);
 
   const loading = consultationsLoading || paymentsLoading;
+
+  // Fetch user rating from profile
+  useEffect(() => {
+    const fetchUserRating = async () => {
+      if (!user || !profile?.role) return;
+
+      try {
+        let rating = null;
+
+        if (profile.role === 'expert') {
+          const { data, error } = await supabase
+            .from('researcher_profiles')
+            .select('rating')
+            .eq('user_id', user.id)
+            .single();
+
+          if (!error && data) {
+            rating = data.rating;
+          }
+        } else if (profile.role === 'aid') {
+          const { data, error } = await supabase
+            .from('research_aid_profiles')
+            .select('rating')
+            .eq('id', user.id)
+            .single();
+
+          if (!error && data) {
+            rating = data.rating;
+          }
+        }
+
+        setUserRating(rating);
+      } catch (error) {
+        console.error('Error fetching user rating:', error);
+      }
+    };
+
+    fetchUserRating();
+  }, [user, profile?.role]);
 
   const upcomingConsultationsCount = useMemo(() => {
     return bookings.filter(b => b.status === 'confirmed' && new Date(b.scheduled_date) > new Date()).length;
@@ -30,9 +70,9 @@ export const useWelcomeOverview = () => {
       consultations: consultationsThisWeek.length,
       earnings: totalEarningsThisWeek,
       hours: totalHoursThisWeek.toFixed(1),
-      rating: 4.8, // Placeholder
+      rating: userRating !== null ? userRating.toFixed(1) : 'N/A',
     };
-  }, [bookings, earnings]);
+  }, [bookings, earnings, userRating]);
 
   const todaysSchedule = useMemo(() => {
     const today = new Date().toLocaleDateString();
