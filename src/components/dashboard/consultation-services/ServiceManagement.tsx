@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +49,9 @@ const ServiceManagement = ({
     pricing: [{ academic_level: 'Undergraduate', price: 0, currency: 'XAF' }],
     addons: []
   });
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const servicesPerPage = 5;
 
   // Helper function to format duration in a user-friendly way
   const formatDuration = (minutes: number) => {
@@ -66,7 +70,9 @@ const ServiceManagement = ({
     } else {
       return `${minutes} minute${minutes > 1 ? 's' : ''}`;
     }
-  };const resetForm = () => {
+  };
+
+  const resetForm = () => {
     setFormData({
       category: 'General Consultation',
       title: '',
@@ -137,6 +143,13 @@ const ServiceManagement = ({
   const handleFormDataChange = (newFormData: CreateServiceData) => {
     setFormData(newFormData);
   };
+
+  // Pagination calculations
+  const totalPages = Math.ceil(services.length / servicesPerPage);
+  const startIndex = (currentPage - 1) * servicesPerPage;
+  const endIndex = startIndex + servicesPerPage;
+  const currentPageServices = services.slice(startIndex, endIndex);
+
   return (
     <div className="space-y-4 sm:space-y-6 p-2 sm:p-4 md:p-0">
       {/* Header */}
@@ -198,7 +211,7 @@ const ServiceManagement = ({
       
       {/* Services List */}
       <div className="space-y-3 sm:space-y-4">
-        {services.length === 0 ? (
+        {currentPageServices.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8 sm:py-12 px-4">
               <BookOpen className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
@@ -222,7 +235,7 @@ const ServiceManagement = ({
               </div>
             </CardContent>
           </Card>        ) : (
-          services.map((service) => (
+          currentPageServices.map((service) => (
             <Card key={service.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-3 sm:p-4 md:p-6">
                 <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-start sm:justify-between">
@@ -415,6 +428,38 @@ const ServiceManagement = ({
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            Showing {startIndex + 1}-{Math.min(endIndex, services.length)} of {services.length} services
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+            <span className="text-sm text-gray-600">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

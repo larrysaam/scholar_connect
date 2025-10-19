@@ -11,13 +11,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Star } from "lucide-react";
+import { Star, Loader2 } from "lucide-react";
 
 import { Booking } from "@/types/bookings";
 
 interface AddReviewDialogProps {
   booking: Booking;
-  onAddReview: (bookingId: string, providerId: string, rating: number, comment: string) => void;
+  onAddReview: (bookingId: string, providerId: string, rating: number, comment: string) => Promise<boolean>;
   children: React.ReactNode;
 }
 
@@ -25,12 +25,20 @@ export const AddReviewDialog = ({ booking, onAddReview, children }: AddReviewDia
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = () => {
-    onAddReview(booking.id, booking.provider_id, rating, comment);
-    setIsOpen(false);
-    setRating(0);
-    setComment("");
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const success = await onAddReview(booking.id, booking.provider_id, rating, comment);
+      if (success) {
+        setIsOpen(false);
+        setRating(0);
+        setComment("");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -79,14 +87,12 @@ export const AddReviewDialog = ({ booking, onAddReview, children }: AddReviewDia
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
-            Cancel
-          </Button>
           <Button
             onClick={handleSubmit}
-            disabled={rating === 0}
+            disabled={rating === 0 || isSubmitting}
           >
-            Submit Review
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSubmitting ? "Submitting..." : "Submit Review"}
           </Button>
         </DialogFooter>
       </DialogContent>

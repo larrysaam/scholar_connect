@@ -554,34 +554,42 @@ export const useBookingSystem = () => {
   // Add review after completed booking
   const addBookingReview = async (
     bookingId: string, 
-    researcherId: string, 
+    providerId: string, 
     rating: number, 
     comment: string
   ): Promise<boolean> => {
     try {
-      // Step 1: Insert the review
-      const { error: reviewError } = await supabase
-        .from('researcher_reviews')
-        .insert({
-          booking_id: bookingId,
-          researcher_id: researcherId,
-          reviewer_id: user?.id,
-          rating,
-          comment,
-          service_type: 'consultation'
+      // Call the database function to add the review
+      const { data, error } = await supabase
+        .rpc('add_provider_review', {
+          p_provider_id: providerId,
+          p_reviewer_id: user?.id,
+          p_booking_id: bookingId,
+          p_rating: rating,
+          p_comment: comment
         });
 
-      if (reviewError) {
-        console.error('Error adding review:', reviewError);
+      if (error) {
+        console.error('Error adding review:', error);
         toast({
           title: "Error",
-          description: "Failed to add review. You may have already reviewed this consultation.",
+          description: "Failed to add review. Please try again.",
           variant: "destructive"
         });
         return false;
       }
 
-      // Step 2: Update the booking to mark it as reviewed
+      if (!data) {
+        console.error('No profile found for provider');
+        toast({
+          title: "Error",
+          description: "Provider profile not found.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      // Update the booking to mark it as reviewed
       const { error: updateError } = await supabase
         .from('service_bookings')
         .update({ has_review: true })
@@ -632,7 +640,7 @@ export const useBookingSystem = () => {
         description: "Thank you for your feedback!",
       });
 
-      // Step 3: Refresh bookings to get the updated has_review status
+      // Refresh bookings to get the updated has_review status
       fetchUserBookings();
 
       return true;

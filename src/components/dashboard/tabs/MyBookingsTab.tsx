@@ -56,6 +56,9 @@ import { format, formatDistanceToNow } from "date-fns";
 import { useBookingSystem } from "@/hooks/useBookingSystem";
 import { AddReviewDialog } from "./AddReviewDialog";
 import { Booking } from "@/types/bookings";
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 const MyBookingsTab = ({setActiveTab, setTabData}) => {
   const navigate = useNavigate();
@@ -65,10 +68,12 @@ const MyBookingsTab = ({setActiveTab, setTabData}) => {
     cancelBooking,
     rescheduleBooking,
     joinMeeting,
-    addBookingReview,
     getAvailableSlots,
-    fetchUserBookings
+    fetchUserBookings,
+    addBookingReview
   } = useBookingSystem();
+  const { toast } = useToast();
+  const { user } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -176,20 +181,6 @@ const MyBookingsTab = ({setActiveTab, setTabData}) => {
     if (success) {
       setSelectedBooking(null);
       setCancelReason("");
-    }
-  };
-
-  // Handle add review
-  const handleAddReview = async (bookingId: string, providerId: string, rating: number, comment: string) => {
-    const success = await addBookingReview(
-      bookingId,
-      providerId,
-      rating,
-      comment
-    );
-
-    if (success) {
-      setSelectedBooking(null);
     }
   };
 
@@ -428,10 +419,10 @@ const MyBookingsTab = ({setActiveTab, setTabData}) => {
                   </AlertDialogContent>
                 </AlertDialog>
               </div>
-            )}{booking.status === 'completed' && !booking.has_review && (
+            )}{booking.status === 'completed' && (
               <AddReviewDialog
                 booking={booking}
-                onAddReview={handleAddReview}
+                onAddReview={addBookingReview}
               >
                 <Button
                   size="sm"
@@ -445,18 +436,6 @@ const MyBookingsTab = ({setActiveTab, setTabData}) => {
               </AddReviewDialog>
             )}
 
-            {booking.status === 'completed' && booking.has_review && (
-              <Button
-                size="sm"
-                variant="outline"
-                disabled
-                className="w-full sm:w-auto text-xs sm:text-sm"
-              >
-                <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 text-yellow-400 fill-yellow-400" />
-                <span className="hidden sm:inline">Reviewed</span>
-                <span className="sm:hidden">Reviewed</span>
-              </Button>
-            )}            
             <Button 
               size="sm" 
               variant="outline"
