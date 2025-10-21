@@ -685,7 +685,7 @@ const ConsultationManagement = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle className="text-sm">Average Rating</CardTitle>
           </CardHeader>
@@ -697,7 +697,7 @@ const ConsultationManagement = () => {
               Based on {stats.totalReviews} reviews this week
             </p>
           </CardContent>
-        </Card>
+        </Card> */}
 
         <Card>
           <CardHeader>

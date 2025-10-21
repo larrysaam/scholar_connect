@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CreditCard, TrendingUp, AlertCircle, Download, AlertTriangle } from "lucide-react";
+import { CreditCard, TrendingUp, AlertCircle, Download, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -23,22 +23,48 @@ interface Transaction {
 }
 
 const PaymentTransactions = () => {
-  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [failedCount, setFailedCount] = useState(0);
+  const transactionsPerPage = 10;
 
   const fetchData = async () => {
     try {
       setLoading(true);
 
-      // Fetch transactions
+      // Get total count and overview statistics
+      const { data: allTransactions, error: allError, count } = await supabase
+        .from('transactions')
+        .select('amount, status', { count: 'exact' });
+
+      if (allError) throw allError;
+
+      // Calculate overview statistics
+      const totalRevenueCalc = (allTransactions || []).reduce((sum, t) => sum + t.amount, 0);
+      const pendingCountCalc = (allTransactions || []).filter(t => t.status === 'pending').length;
+      const failedCountCalc = (allTransactions || []).filter(t => t.status === 'failed').length;
+
+      setTotalCount(count || 0);
+      setTotalRevenue(totalRevenueCalc);
+      setPendingCount(pendingCountCalc);
+      setFailedCount(failedCountCalc);
+
+      // Fetch paginated transactions with user names
+      const from = (currentPage - 1) * transactionsPerPage;
+      const to = from + transactionsPerPage - 1;
+      
       const { data: transactionsData, error: transactionsError } = await supabase
         .from('transactions')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(10);
+        .range(from, to);
 
-        console.log('Fetched transactions:', transactionsData);
+      console.log('Fetched transactions:', transactionsData);
 
       if (transactionsError) throw transactionsError;
 
@@ -57,7 +83,7 @@ const PaymentTransactions = () => {
           };
         })
       );
-      setRecentTransactions(transactionsWithNames);
+      setTransactions(transactionsWithNames);
 
     } catch (err: any) {
       setError(err.message || 'Failed to fetch payment data.');
@@ -69,7 +95,7 @@ const PaymentTransactions = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [currentPage]);
 
   if (loading) {
     return <Skeleton className="h-96 w-full" />;
@@ -103,7 +129,7 @@ const PaymentTransactions = () => {
               <CreditCard className="h-4 w-4 text-muted-foreground" />
               <div className="ml-2">
                 <p className="text-sm font-medium leading-none">Total Transactions</p>
-                <p className="text-2xl font-bold">{recentTransactions.length}</p>
+                <p className="text-2xl font-bold">{totalCount}</p>
               </div>
             </div>
           </CardContent>
@@ -115,9 +141,7 @@ const PaymentTransactions = () => {
               <div className="ml-2">
                 <p className="text-sm font-medium leading-none">Total Revenue</p>
                 <p className="text-2xl font-bold">
-                  {new Intl.NumberFormat('fr-CM', { style: 'currency', currency: 'XAF' }).format(
-                    recentTransactions.reduce((sum, t) => sum + t.amount, 0)
-                  )}
+                  {new Intl.NumberFormat('fr-CM', { style: 'currency', currency: 'XAF' }).format(totalRevenue)}
                 </p>
               </div>
             </div>
@@ -129,9 +153,7 @@ const PaymentTransactions = () => {
               <AlertCircle className="h-4 w-4 text-muted-foreground" />
               <div className="ml-2">
                 <p className="text-sm font-medium leading-none">Pending</p>
-                <p className="text-2xl font-bold">
-                  {recentTransactions.filter(t => t.status === 'pending').length}
-                </p>
+                <p className="text-2xl font-bold">{pendingCount}</p>
               </div>
             </div>
           </CardContent>
@@ -142,9 +164,7 @@ const PaymentTransactions = () => {
               <AlertTriangle className="h-4 w-4 text-muted-foreground" />
               <div className="ml-2">
                 <p className="text-sm font-medium leading-none">Failed</p>
-                <p className="text-2xl font-bold">
-                  {recentTransactions.filter(t => t.status === 'failed').length}
-                </p>
+                <p className="text-2xl font-bold">{failedCount}</p>
               </div>
             </div>
           </CardContent>
@@ -173,11 +193,11 @@ const PaymentTransactions = () => {
                     <TableHead>Amount</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Date</TableHead>
-                    <TableHead>Actions</TableHead>
+                    {/* <TableHead>Actions</TableHead> */}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {recentTransactions.map((transaction) => (
+                  {transactions.map((transaction) => (
                     <TableRow key={transaction.id}>
                       <TableCell className="font-mono">{transaction.id.slice(0, 8)}...</TableCell>
                       <TableCell>{transaction.user_name}</TableCell>
@@ -200,18 +220,41 @@ const PaymentTransactions = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>{new Date(transaction.created_at).toLocaleString()}</TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <div className="flex space-x-2">
                           <Button size="sm" variant="outline">View</Button>
                           {transaction.status === "failed" && (
                             <Button size="sm" variant="outline">Retry</Button>
                           )}
                         </div>
-                      </TableCell>
+                      </TableCell> */}
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              <div className="flex justify-between items-center mt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                <span>
+                  Page {currentPage} of {Math.ceil(totalCount / transactionsPerPage)}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((prev) => prev + 1)}
+                  disabled={currentPage === Math.ceil(totalCount / transactionsPerPage)}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
