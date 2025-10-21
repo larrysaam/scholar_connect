@@ -87,7 +87,7 @@ const FindResearcherTab = () => {
                   <h3 className="font-bold text-base sm:text-lg text-gray-900 truncate">
                     {displayName}
                   </h3>
-                  <p className="text-sm text-blue-600 font-medium">{researcher.title}</p>
+                  {/* <p className="text-sm text-blue-600 font-medium">{researcher.title}</p> */}
                   <div className="flex items-center space-x-1 text-gray-500 mt-1">
                     <BookOpen className="h-3 w-3 flex-shrink-0" />
                     <span className="text-xs font-medium truncate">{researcher.institution}</span>
