@@ -10,7 +10,6 @@ import AwardsRecognitionsSection from "@/components/dashboard/profile/AwardsReco
 import PublicationsSectionProfile from "@/components/dashboard/profile/PublicationsSectionProfile";
 import ScholarshipsFellowshipsSection from "@/components/dashboard/profile/ScholarshipsFellowshipsSection";
 import ProfessionalAffiliationsSection from "@/components/dashboard/profile/ProfessionalAffiliationsSection";
-import LanguagesSection from "@/components/dashboard/profile/LanguagesSection";
 import StudentSupervisionSummary from "@/components/dashboard/profile/StudentSupervisionSummary";
 import StudentSupervisionDetails from "@/components/dashboard/profile/StudentSupervisionDetails";
 import AccountStatisticsSection from "@/components/dashboard/profile/AccountStatisticsSection";
@@ -30,48 +29,93 @@ const ProfileTab = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true);
-      const user = supabase.auth.user?.();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setLoading(false);
         return;
       }
       const { data, error } = await supabase
-        .from('profiles')
+        .from('researcher_profiles')
         .select('*')
         .eq('user_id', user.id)
         .single();
-      if (data) setFormData({ ...defaultProfileFormData, ...data });
+      if (data) {
+        // Transform the data to match ProfileFormData structure
+        const transformedData = {
+          ...defaultProfileFormData,
+          ...data,
+          education: data.education || defaultProfileFormData.education,
+          experience: data.experience || defaultProfileFormData.experience,
+          publications: data.publications || defaultProfileFormData.publications,
+          awards: data.awards || defaultProfileFormData.awards,
+          fellowships: data.fellowships || defaultProfileFormData.fellowships,
+          memberships: data.memberships || defaultProfileFormData.memberships,
+          supervision: data.supervision || defaultProfileFormData.supervision,
+          supervisionDetails: data.supervision_details || defaultProfileFormData.supervisionDetails,
+        };
+        setFormData(transformedData);
+      }
       setLoading(false);
     };
     fetchProfile();
   }, []);
 
   const handleSaveProfile = async () => {
-    if (!formData.name || !formData.email) {
-      toast({
-        title: "Error",
-        description: "Name and email are required fields",
-        variant: "destructive"
-      });
-      return;
-    }
-    if (formData.email && !formData.email.includes('@')) {
-      toast({
-        title: "Error",
-        description: "Please enter a valid email address",
-        variant: "destructive"
-      });
-      return;
-    }
     setSaving(true);
-    const user = supabase.auth.user?.();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       setSaving(false);
       return;
     }
-    const { error } = await supabase
-      .from('profiles')
-      .upsert({ ...formData, user_id: user.id });
+    
+    // Transform formData back to researcher_profiles format
+    const profileData = {
+      user_id: user.id,
+      title: formData.title || null,
+      subtitle: formData.subtitle || null,
+      department: formData.department || null,
+      years_experience: formData.years_experience || 0,
+      students_supervised: formData.students_supervised || 0,
+      hourly_rate: formData.hourly_rate || 0,
+      response_time: formData.response_time || 'Usually responds within 24 hours',
+      bio: formData.bio || null,
+      research_interests: formData.research_interests || [],
+      specialties: formData.specialties || [],
+      education: formData.education || [],
+      experience: formData.experience || [],
+      publications: formData.publications || [],
+      awards: formData.awards || [],
+      fellowships: formData.fellowships || [],
+      memberships: formData.memberships || [],
+      supervision: formData.supervision || [],
+      updated_at: new Date().toISOString(),
+    };
+
+    console.log('Profile data to save:', profileData);
+
+    // Check if profile exists
+    const { data: existingProfile } = await supabase
+      .from('researcher_profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    let error;
+    if (existingProfile) {
+      // Update existing profile
+      const { error: updateError } = await supabase
+        .from('researcher_profiles')
+        .update(profileData)
+        .eq('user_id', user.id);
+      error = updateError;
+    } else {
+      // Insert new profile
+      const { error: insertError } = await supabase
+        .from('researcher_profiles')
+        .insert(profileData);
+      error = insertError;
+    }
+    
     setSaving(false);
     if (!error) {
       toast({
@@ -115,7 +159,7 @@ const ProfileTab = () => {
       />
 
       <EducationalBackgroundSection
-        education={formData.educationalBackground}
+        education={formData.education}
         isEditing={isEditing}
         onAdd={handlers.handleAddEducation}
         onUpdate={handlers.handleUpdateEducation}
@@ -123,7 +167,7 @@ const ProfileTab = () => {
       />
 
       <WorkExperienceSection
-        workExperience={formData.workExperience}
+        workExperience={formData.experience}
         isEditing={isEditing}
         onAdd={handlers.handleAddWorkExperience}
         onUpdate={handlers.handleUpdateWorkExperience}
@@ -147,7 +191,7 @@ const ProfileTab = () => {
       />
 
       <ScholarshipsFellowshipsSection
-        scholarships={formData.scholarships}
+        scholarships={formData.fellowships}
         isEditing={isEditing}
         onAdd={handlers.handleAddScholarship}
         onUpdate={handlers.handleUpdateScholarship}
@@ -155,19 +199,11 @@ const ProfileTab = () => {
       />
 
       <ProfessionalAffiliationsSection
-        affiliations={formData.affiliations}
+        affiliations={formData.memberships}
         isEditing={isEditing}
         onAdd={handlers.handleAddAffiliation}
         onUpdate={handlers.handleUpdateAffiliation}
         onRemove={handlers.handleRemoveAffiliation}
-      />
-
-      <LanguagesSection
-        languages={formData.languages}
-        isEditing={isEditing}
-        onAdd={handlers.handleAddLanguage}
-        onUpdate={handlers.handleUpdateLanguage}
-        onRemove={handlers.handleRemoveLanguage}
       />
 
       <StudentSupervisionSummary

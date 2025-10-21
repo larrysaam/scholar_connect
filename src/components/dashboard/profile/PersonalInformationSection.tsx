@@ -1,4 +1,3 @@
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,14 +7,15 @@ import { User } from "lucide-react";
 interface PersonalInformationSectionProps {
   formData: {
     title: string;
-    subtitle: string; // Added this line
-    name: string;
-    email: string;
-    phone: string;
-    location: string;
+    subtitle: string;
+    department: string;
+    years_experience: number;
+    students_supervised: number;
+    hourly_rate: number;
+    response_time: string;
   };
   isEditing: boolean;
-  onInputChange: (field: string, value: string) => void;
+  onInputChange: (field: string, value: string | number) => void;
 }
 
 const PersonalInformationSection = ({ formData, isEditing, onInputChange }: PersonalInformationSectionProps) => {
@@ -24,7 +24,7 @@ const PersonalInformationSection = ({ formData, isEditing, onInputChange }: Pers
       <CardHeader>
         <CardTitle className="flex items-center">
           <User className="h-5 w-5 mr-2" />
-          Personal Information
+          Professional Information
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -49,7 +49,7 @@ const PersonalInformationSection = ({ formData, isEditing, onInputChange }: Pers
               </SelectContent>
             </Select>
           </div>
-          <div> {/* New div for subtitle */}
+          <div>
             <Label htmlFor="subtitle">Subtitle</Label>
             <Select
               value={formData.subtitle}
@@ -65,44 +65,71 @@ const PersonalInformationSection = ({ formData, isEditing, onInputChange }: Pers
               </SelectContent>
             </Select>
           </div>
-          <div className="md:col-span-2">
-            <Label htmlFor="name">Full Name</Label>
+          <div>
+            <Label htmlFor="department">Department</Label>
             <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => onInputChange("name", e.target.value)}
+              id="department"
+              value={formData.department}
+              onChange={(e) => onInputChange("department", e.target.value)}
               disabled={!isEditing}
+              placeholder="e.g. Computer Science"
             />
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="years_experience">Years of Experience</Label>
             <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => onInputChange("email", e.target.value)}
+              id="years_experience"
+              type="number"
+              value={formData.years_experience}
+              onChange={(e) => onInputChange("years_experience", parseInt(e.target.value) || 0)}
               disabled={!isEditing}
+              min="0"
             />
           </div>
           <div>
-            <Label htmlFor="phone">Phone Number</Label>
+            <Label htmlFor="students_supervised">Students Supervised</Label>
             <Input
-              id="phone"
-              value={formData.phone}
-              onChange={(e) => onInputChange("phone", e.target.value)}
+              id="students_supervised"
+              type="number"
+              value={formData.students_supervised}
+              onChange={(e) => onInputChange("students_supervised", parseInt(e.target.value) || 0)}
               disabled={!isEditing}
+              min="0"
             />
           </div>
           <div>
-            <Label htmlFor="location">Location</Label>
+            <Label htmlFor="hourly_rate">Hourly Rate (XAF)</Label>
             <Input
-              id="location"
-              value={formData.location}
-              onChange={(e) => onInputChange("location", e.target.value)}
+              id="hourly_rate"
+              type="number"
+              value={formData.hourly_rate}
+              onChange={(e) => onInputChange("hourly_rate", parseFloat(e.target.value) || 0)}
               disabled={!isEditing}
+              min="0"
+              step="0.01"
             />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-4">
+          <div>
+            <Label htmlFor="response_time">Response Time</Label>
+            <Select
+              value={formData.response_time}
+              onValueChange={(value) => onInputChange("response_time", value)}
+              disabled={!isEditing}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select response time" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Usually responds within 1 hour">Usually responds within 1 hour</SelectItem>
+                <SelectItem value="Usually responds within 24 hours">Usually responds within 24 hours</SelectItem>
+                <SelectItem value="Usually responds within 3 days">Usually responds within 3 days</SelectItem>
+                <SelectItem value="Usually responds within 1 week">Usually responds within 1 week</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </CardContent>

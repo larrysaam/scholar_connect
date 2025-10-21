@@ -1,5 +1,4 @@
-
-import { ProfileFormData, EducationEntry, WorkExperienceEntry, AwardEntry, PublicationEntry, ScholarshipEntry, SupervisionEntry, SupervisionDetailEntry } from "./ProfileFormData";
+import { ProfileFormData, EducationEntry, WorkExperienceEntry, AwardEntry, PublicationEntry, FellowshipEntry, SupervisionEntry, SupervisionDetailEntry } from "./ProfileFormData";
 
 export interface ProfileFormHandlers {
   handleInputChange: (field: string, value: string) => void;
@@ -25,7 +24,7 @@ export interface ProfileFormHandlers {
   handleUpdatePublication: (index: number, field: string, value: string) => void;
   handleRemovePublication: (index: number) => void;
   
-  // Scholarships handlers
+  // Fellowships handlers
   handleAddScholarship: () => void;
   handleUpdateScholarship: (index: number, field: string, value: string) => void;
   handleRemoveScholarship: (index: number) => void;
@@ -68,14 +67,14 @@ export const createProfileFormHandlers = (
     handleAddEducation: () => {
       setFormData(prev => ({
         ...prev,
-        educationalBackground: [...prev.educationalBackground, { degree: "", institution: "", year: "" }]
+        education: [...prev.education, { degree: "", institution: "", year: "" }]
       }));
     },
 
     handleUpdateEducation: (index: number, field: string, value: string) => {
       setFormData(prev => ({
         ...prev,
-        educationalBackground: prev.educationalBackground.map((edu, i) =>
+        education: prev.education.map((edu, i) =>
           i === index ? { ...edu, [field]: value } : edu
         )
       }));
@@ -84,7 +83,7 @@ export const createProfileFormHandlers = (
     handleRemoveEducation: (index: number) => {
       setFormData(prev => ({
         ...prev,
-        educationalBackground: prev.educationalBackground.filter((_, i) => i !== index)
+        education: prev.education.filter((_, i) => i !== index)
       }));
     },
 
@@ -92,14 +91,14 @@ export const createProfileFormHandlers = (
     handleAddWorkExperience: () => {
       setFormData(prev => ({
         ...prev,
-        workExperience: [...prev.workExperience, { position: "", company: "", period: "" }]
+        experience: [...prev.experience, { position: "", company: "", period: "" }]
       }));
     },
 
     handleUpdateWorkExperience: (index: number, field: string, value: string) => {
       setFormData(prev => ({
         ...prev,
-        workExperience: prev.workExperience.map((exp, i) =>
+        experience: prev.experience.map((exp, i) =>
           i === index ? { ...exp, [field]: value } : exp
         )
       }));
@@ -108,7 +107,7 @@ export const createProfileFormHandlers = (
     handleRemoveWorkExperience: (index: number) => {
       setFormData(prev => ({
         ...prev,
-        workExperience: prev.workExperience.filter((_, i) => i !== index)
+        experience: prev.experience.filter((_, i) => i !== index)
       }));
     },
 
@@ -160,19 +159,19 @@ export const createProfileFormHandlers = (
       }));
     },
 
-    // Scholarships handlers
+    // Fellowships handlers
     handleAddScholarship: () => {
       setFormData(prev => ({
         ...prev,
-        scholarships: [...prev.scholarships, { title: "", organization: "", period: "" }]
+        fellowships: [...prev.fellowships, { title: "", organization: "", period: "" }]
       }));
     },
 
     handleUpdateScholarship: (index: number, field: string, value: string) => {
       setFormData(prev => ({
         ...prev,
-        scholarships: prev.scholarships.map((scholarship, i) =>
-          i === index ? { ...scholarship, [field]: value } : scholarship
+        fellowships: prev.fellowships.map((fellowship, i) =>
+          i === index ? { ...fellowship, [field]: value } : fellowship
         )
       }));
     },
@@ -180,7 +179,7 @@ export const createProfileFormHandlers = (
     handleRemoveScholarship: (index: number) => {
       setFormData(prev => ({
         ...prev,
-        scholarships: prev.scholarships.filter((_, i) => i !== index)
+        fellowships: prev.fellowships.filter((_, i) => i !== index)
       }));
     },
 
@@ -188,14 +187,14 @@ export const createProfileFormHandlers = (
     handleAddAffiliation: () => {
       setFormData(prev => ({
         ...prev,
-        affiliations: [...prev.affiliations, ""]
+        memberships: [...prev.memberships, ""]
       }));
     },
 
     handleUpdateAffiliation: (index: number, value: string) => {
       setFormData(prev => ({
         ...prev,
-        affiliations: prev.affiliations.map((aff, i) =>
+        memberships: prev.memberships.map((aff, i) =>
           i === index ? value : aff
         )
       }));
@@ -204,7 +203,7 @@ export const createProfileFormHandlers = (
     handleRemoveAffiliation: (index: number) => {
       setFormData(prev => ({
         ...prev,
-        affiliations: prev.affiliations.filter((_, i) => i !== index)
+        memberships: prev.memberships.filter((_, i) => i !== index)
       }));
     },
 

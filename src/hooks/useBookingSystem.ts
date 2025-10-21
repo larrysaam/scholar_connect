@@ -589,22 +589,6 @@ export const useBookingSystem = () => {
         return false;
       }
 
-      // Update the booking to mark it as reviewed
-      const { error: updateError } = await supabase
-        .from('service_bookings')
-        .update({ has_review: true })
-        .eq('id', bookingId);
-
-      if (updateError) {
-        console.error('Error updating booking review status:', updateError);
-        // The review was still added, so we don't return false, but we should log this
-        toast({
-          title: "Warning",
-          description: "Your review was submitted, but there was an issue updating the booking status.",
-          variant: "default"
-        });
-      }
-
       // --- Notification: Notify both student and researcher of review submission ---
       // Fetch booking details for notification context
       const { data: bookingDetails } = await supabase

@@ -1,4 +1,3 @@
-
 export interface EducationEntry {
   degree: string;
   institution: string;
@@ -23,7 +22,7 @@ export interface PublicationEntry {
   year: string;
 }
 
-export interface ScholarshipEntry {
+export interface FellowshipEntry {
   title: string;
   organization: string;
   period: string;
@@ -44,18 +43,20 @@ export interface SupervisionDetailEntry {
 export interface ProfileFormData {
   title: string;
   subtitle: string;
-  name: string;
-  email: string;
-  phone: string;
-  location: string;
+  department: string;
+  years_experience: number;
+  students_supervised: number;
+  hourly_rate: number;
+  response_time: string;
   bio: string;
-  educationalBackground: EducationEntry[];
-  workExperience: WorkExperienceEntry[];
-  awards: AwardEntry[];
+  research_interests: string[];
+  specialties: string[];
+  education: EducationEntry[];
+  experience: WorkExperienceEntry[];
   publications: PublicationEntry[];
-  scholarships: ScholarshipEntry[];
-  affiliations: string[];
-  languages: string[];
+  awards: AwardEntry[];
+  fellowships: FellowshipEntry[];
+  memberships: string[];
   supervision: SupervisionEntry[];
   supervisionDetails: SupervisionDetailEntry[];
 }
@@ -63,16 +64,19 @@ export interface ProfileFormData {
 export const defaultProfileFormData: ProfileFormData = {
   title: "Dr.",
   subtitle: "Dr.",
-  name: "John Researcher",
-  email: "john.researcher@university.cm",
-  phone: "+237 6XX XXX XXX",
-  location: "Yaoundé, Cameroon",
+  department: "Computer Science",
+  years_experience: 10,
+  students_supervised: 25,
+  hourly_rate: 50,
+  response_time: "Usually responds within 24 hours",
   bio: "Specialized in artificial intelligence and machine learning with over 10 years of research experience in healthcare applications.",
-  educationalBackground: [
+  research_interests: ["Artificial Intelligence", "Machine Learning", "Healthcare Analytics"],
+  specialties: ["Data Mining", "Neural Networks", "Computer Vision"],
+  education: [
     { degree: "PhD in Computer Science", institution: "University of Yaoundé I", year: "2015" },
     { degree: "MSc in Information Systems", institution: "University of Buea", year: "2010" }
   ],
-  workExperience: [
+  experience: [
     { position: "Associate Professor", company: "University of Yaoundé I", period: "2018-Present" },
     { position: "Assistant Professor", company: "University of Buea", period: "2015-2018" }
   ],
@@ -84,16 +88,15 @@ export const defaultProfileFormData: ProfileFormData = {
     { title: "AI in Healthcare: A Comprehensive Review", journal: "Nature AI", year: "2023" },
     { title: "Machine Learning Applications in Medical Diagnosis", journal: "IEEE Transactions", year: "2022" }
   ],
-  scholarships: [
+  fellowships: [
     { title: "Government Research Fellowship", organization: "Ministry of Higher Education", period: "2020-2023" },
     { title: "UNESCO Research Grant", organization: "UNESCO", period: "2019-2020" }
   ],
-  affiliations: [
+  memberships: [
     "IEEE Computer Society",
     "Association for Computing Machinery",
     "Cameroon Computer Science Association"
   ],
-  languages: ["English", "French", "Spanish"],
   supervision: [
     { level: "PhD", count: 5 },
     { level: "Master's", count: 12 },

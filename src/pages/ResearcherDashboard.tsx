@@ -76,6 +76,8 @@ const ResearcherDashboard = () => {  const [searchParams, setSearchParams] = use
         return <NotificationsTab setActiveTab={handleTabChange} />;
       case "co-author-invitations":
         return <CoAuthorInvitationsTab />;
+      case "profile":
+        return <ProfileTab />;
       case "documents":
         return <DocumentsTab />;
   
@@ -115,7 +117,8 @@ const ResearcherDashboard = () => {  const [searchParams, setSearchParams] = use
           )}            
           <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 md:gap-6">
             {/* Responsive Sidebar - hidden on mobile, visible on tablet/desktop */}
-            <div className="hidden lg:block lg:col-span-1">                <ResponsiveDashboardSidebar 
+            <div className="hidden lg:block lg:col-span-1">                
+              <ResponsiveDashboardSidebar 
                 activeTab={activeTab} 
                 setActiveTab={handleTabChange}
                 userRole="researcher"
@@ -139,7 +142,7 @@ const ResearcherDashboard = () => {  const [searchParams, setSearchParams] = use
         </div>
       </main>
       
-      <IntelligentChatAssistant userType="researcher" currentTab={activeTab} />
+      {/* <IntelligentChatAssistant userType="researcher" currentTab={activeTab} /> */}
       
       <Footer />
     </div>

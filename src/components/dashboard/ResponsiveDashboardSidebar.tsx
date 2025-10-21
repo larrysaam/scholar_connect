@@ -74,8 +74,9 @@ const ResponsiveDashboardSidebar = ({
     { id: "notifications", label: "Notifications", icon: Bell, badge: notificationCount },
     { id: "thesis-information", label: "Thesis Information", icon: BookOpen },
     { id: "documents", label: "Documents", icon: FileText },
-    { id: "settings", label: "Account Settings", icon: Settings },
     { id: "co-author-workspace", label: "Co-Author Workspace", icon: Users },
+    { id: "settings", label: "Account Settings", icon: Settings },
+
   ];
 
   const researcherMenuItems = [
@@ -90,9 +91,10 @@ const ResponsiveDashboardSidebar = ({
     { id: "verification", label: "Verification", icon: Shield },    { id: "discussion", label: "Discussion Board", icon: MessageSquare },
     { id: "notifications", label: "Notifications", icon: Bell, badge: notificationCount },
     { id: "co-author-invitations", label: "Co-author Invitations", icon: UserPlus, badge: coAuthorInvitationsCount },
-    { id: "documents", label: "Documents", icon: FileText },
-    { id: "settings", label: "Account Settings", icon: Settings },
     { id: "co-author-workspace", label: "Co-Author Workspace", icon: Users },
+    { id: "documents", label: "Documents", icon: FileText },
+    { id: "profile", label: "Profile Information", icon: User },
+    { id: "settings", label: "Account Settings", icon: Settings },
   ];
 
   const researchAideMenuItems = [

@@ -92,7 +92,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole, notificationCount
     // sudo disabled for now
     { id: "co-author-invitations", label: "Co-author Invitations", icon: UserPlus, badge: coAuthorInvitationsCount },
     { id: "documents", label: "Documents", icon: FileText },
-    // { id: "profile", label: "Profile Information", icon: User },
+    { id: "profile", label: "Profile Information", icon: User },
     { id: "settings", label: "Account Settings", icon: Settings },
     { id: "co-author-workspace", label: "Co-Author Workspace", icon: Users },
   ];
