@@ -8,6 +8,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CreditCard, TrendingUp, AlertCircle, Download, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+
+// Extend jsPDF type to include autoTable
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
 
 interface Transaction {
   id: string;
@@ -21,6 +30,126 @@ interface Transaction {
   payment_id: string | null;
   user_name: string;
 }
+
+// PDF Generation Function
+const generatePaymentReport = (
+  transactions: Transaction[],
+  totalCount: number,
+  totalRevenue: number,
+  pendingCount: number,
+  failedCount: number
+) => {
+  const doc = new jsPDF();
+
+  // Title
+  doc.setFontSize(20);
+  doc.text('Payment Transactions Report', 20, 20);
+
+  // Report Date
+  doc.setFontSize(12);
+  doc.text(`Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 20, 35);
+
+  // Summary Statistics
+  doc.setFontSize(16);
+  doc.text('Summary Statistics', 20, 55);
+
+  doc.setFontSize(12);
+  doc.text(`Total Transactions: ${totalCount}`, 20, 70);
+  doc.text(`Total Revenue: ${new Intl.NumberFormat('fr-CM', { style: 'currency', currency: 'XAF' }).format(totalRevenue)}`, 20, 80);
+  doc.text(`Pending Transactions: ${pendingCount}`, 20, 90);
+  doc.text(`Failed Transactions: ${failedCount}`, 20, 100);
+
+  // Transactions Table
+  const tableData = transactions.map(transaction => [
+    transaction.id.slice(0, 8) + '...',
+    transaction.user_name,
+    transaction.type,
+    transaction.description || 'N/A',
+    new Intl.NumberFormat('fr-CM', { style: 'currency', currency: 'XAF' }).format(transaction.amount),
+    transaction.status,
+    new Date(transaction.created_at).toLocaleDateString()
+  ]);
+
+  doc.autoTable({
+    head: [['ID', 'User', 'Type', 'Description', 'Amount', 'Status', 'Date']],
+    body: tableData,
+    startY: 120,
+    styles: { fontSize: 8 },
+    headStyles: { fillColor: [41, 128, 185] },
+    alternateRowStyles: { fillColor: [245, 245, 245] }
+  });
+
+  // Footer
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(10);
+    doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width - 30, doc.internal.pageSize.height - 10);
+  }
+
+  // Save the PDF
+  doc.save(`payment-report-${new Date().toISOString().split('T')[0]}.pdf`);
+};
+
+// CSV Export Function
+const exportTransactionsToCSV = async () => {
+  try {
+    // Fetch all transactions for export (not just paginated ones)
+    const { data: allTransactions, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    // Fetch user names for all transactions
+    const transactionsWithNames = await Promise.all(
+      (allTransactions || []).map(async (transaction) => {
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('name')
+          .eq('id', transaction.user_id)
+          .single();
+
+        return {
+          ...transaction,
+          user_name: userError ? 'Unknown User' : userData.name,
+        };
+      })
+    );
+
+    // Create CSV content
+    const headers = ['Transaction ID', 'User', 'Type', 'Description', 'Amount', 'Status', 'Date', 'Payment ID'];
+    const csvContent = [
+      headers.join(','),
+      ...transactionsWithNames.map(transaction => [
+        `"${transaction.id}"`,
+        `"${transaction.user_name}"`,
+        `"${transaction.type}"`,
+        `"${transaction.description || 'N/A'}"`,
+        transaction.amount,
+        `"${transaction.status}"`,
+        `"${new Date(transaction.created_at).toLocaleString()}"`,
+        `"${transaction.payment_id || 'N/A'}"`
+      ].join(','))
+    ].join('\n');
+
+    // Create and download CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `transactions-export-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+  } catch (error) {
+    console.error('Error exporting CSV:', error);
+    alert('Failed to export CSV. Please try again.');
+  }
+};
 
 const PaymentTransactions = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -115,10 +244,16 @@ const PaymentTransactions = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Payment & Transactions</h2>
-        <Button>
-          <Download className="mr-2 h-4 w-4" />
-          Generate Report
-        </Button>
+        <div className="flex space-x-2">
+          {/* <Button onClick={() => generatePaymentReport(transactions, totalCount, totalRevenue, pendingCount, failedCount)}>
+            <Download className="mr-2 h-4 w-4" />
+            Generate Report
+          </Button> */}
+          <Button onClick={exportTransactionsToCSV}>
+            <Download className="mr-2 h-4 w-4" />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Payment Overview */}
@@ -267,14 +402,14 @@ const PaymentTransactions = () => {
             <CardContent>
               <div className="space-y-4">
                 <p className="text-muted-foreground">
-                  Financial reporting features will be available soon. This will include detailed analytics, export capabilities, and revenue tracking.
+                  Export your transaction data in CSV format or generate a comprehensive PDF report with statistics and transaction details.
                 </p>
                 <div className="flex space-x-2">
-                  <Button variant="outline" disabled>
+                  <Button variant="outline" onClick={exportTransactionsToCSV}>
                     <Download className="mr-2 h-4 w-4" />
                     Export CSV
                   </Button>
-                  <Button variant="outline" disabled>
+                  <Button variant="outline" onClick={() => generatePaymentReport(transactions, totalCount, totalRevenue, pendingCount, failedCount)}>
                     Generate Monthly Report
                   </Button>
                 </div>
