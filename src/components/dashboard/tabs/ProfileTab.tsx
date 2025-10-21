@@ -15,6 +15,7 @@ import StudentSupervisionDetails from "@/components/dashboard/profile/StudentSup
 import AccountStatisticsSection from "@/components/dashboard/profile/AccountStatisticsSection";
 import { ProfileFormData, defaultProfileFormData } from "@/components/dashboard/profile/ProfileFormData";
 import { createProfileFormHandlers } from "@/components/dashboard/profile/ProfileFormHandlers";
+import { useUserStatistics } from "@/hooks/useUserStatistics";
 
 const ProfileTab = () => {
   const { toast } = useToast();
@@ -24,6 +25,7 @@ const ProfileTab = () => {
   const [saving, setSaving] = useState(false);
 
   const handlers = createProfileFormHandlers(formData, setFormData);
+  const userStatistics = useUserStatistics();
 
   // Fetch real profile data on mount
   useEffect(() => {
@@ -222,7 +224,12 @@ const ProfileTab = () => {
         onRemove={handlers.handleRemoveSupervisionDetail}
       />
 
-      <AccountStatisticsSection />
+      <AccountStatisticsSection
+        totalConsultations={userStatistics.totalConsultations}
+        averageRating={userStatistics.averageRating}
+        memberSince={userStatistics.memberSince}
+        loading={userStatistics.loading}
+      />
     </div>
   );
 };

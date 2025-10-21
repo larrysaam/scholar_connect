@@ -29,7 +29,7 @@ const PersonalInformationSection = ({ formData, isEditing, onInputChange }: Pers
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
+          {/* <div>
             <Label htmlFor="title">Title</Label>
             <Select
               value={formData.title}
@@ -48,7 +48,7 @@ const PersonalInformationSection = ({ formData, isEditing, onInputChange }: Pers
                 <SelectItem value="Eng.">Eng.</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
           <div>
             <Label htmlFor="subtitle">Subtitle</Label>
             <Select
@@ -76,7 +76,7 @@ const PersonalInformationSection = ({ formData, isEditing, onInputChange }: Pers
             />
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="years_experience">Years of Experience</Label>
             <Input
@@ -111,7 +111,7 @@ const PersonalInformationSection = ({ formData, isEditing, onInputChange }: Pers
               step="0.01"
             />
           </div>
-        </div>
+        </div> */}
         <div className="grid grid-cols-1 gap-4">
           <div>
             <Label htmlFor="response_time">Response Time</Label>
