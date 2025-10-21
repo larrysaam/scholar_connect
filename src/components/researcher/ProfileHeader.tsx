@@ -112,9 +112,22 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
             {/* Stats */}
             <div className="flex flex-wrap gap-4 text-sm">
               <div className="flex items-center">
-                <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                <div className="flex items-center mr-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-4 w-4 ${
+                        i < Math.floor(researcher.rating)
+                          ? 'text-yellow-500 fill-yellow-500'
+                          : i < researcher.rating
+                          ? 'text-yellow-500 fill-yellow-500 opacity-50'
+                          : 'text-gray-300'
+                      }`}
+                    />
+                  ))}
+                </div>
                 <span className="font-medium">{researcher.rating}</span>
-                {/* Remove totalReviews if not present */}
+                <span className="text-gray-500 ml-1">({researcher.total_reviews} reviews)</span>
               </div>
               <div className="flex items-center">
                 <Users className="h-4 w-4 text-blue-500 mr-1" />

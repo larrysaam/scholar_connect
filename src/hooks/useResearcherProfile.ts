@@ -65,6 +65,7 @@ export interface ResearcherProfileData {
   hourly_rate: number;
   availability?: any; // maps to availability jsonb
   rating: number;
+  total_reviews: number;
   total_consultations_completed: number;
   is_verified: boolean;
   created_at: string;
@@ -126,7 +127,7 @@ export const useResearcherProfile = (researcherId: string) => {
       // Fetch extended profile info from researcher_profiles (minimal select for debug)
       const { data: profileData, error: profileError } = await supabase
         .from('researcher_profiles')
-        .select('id, user_id, title, subtitle, verifications')
+        .select('id, user_id, title, subtitle, verifications, rating, total_reviews')
         .eq('user_id', researcherId)
         .single();
 
@@ -146,8 +147,10 @@ export const useResearcherProfile = (researcherId: string) => {
               title: 'Research Expert',
               subtitle: 'Dr.',
               location: '',
+              rating: 0,
+              total_reviews: 0,
             })
-            .select('id, user_id, title, subtitle, location')
+            .select('id, user_id, title, subtitle, location, rating, total_reviews')
             .single();
           if (createError) {
             console.error('Error creating profile:', createError);
@@ -214,6 +217,7 @@ export const useResearcherProfile = (researcherId: string) => {
         hourly_rate: safeProfile?.hourly_rate || 0,
         availability: safeProfile?.available_times || [],
         rating: safeProfile?.rating || 0,
+        total_reviews: safeProfile?.total_reviews || 0,
         total_consultations_completed: safeProfile?.students_supervised || 0,
         is_verified: false, // Not in schema, set default
         created_at: safeProfile?.created_at || new Date().toISOString(),

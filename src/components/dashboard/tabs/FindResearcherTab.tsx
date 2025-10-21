@@ -138,15 +138,23 @@ const FindResearcherTab = () => {
               <div className="flex items-center space-x-3">
                 {/* Rating */}
                 <div className="flex items-center space-x-1 bg-yellow-50 px-2 py-1 rounded-full">
-                  <Star className="h-3 w-3 text-yellow-500 fill-current" />
+                  <div className="flex items-center mr-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-3 w-3 ${
+                          i < Math.floor(researcher.rating)
+                            ? 'text-yellow-500 fill-yellow-500'
+                            : i < researcher.rating
+                            ? 'text-yellow-500 fill-yellow-500 opacity-50'
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
                   <span className="text-xs font-bold text-yellow-700">{researcher.rating}</span>
                   <span className="text-xs text-yellow-600">({researcher.reviewCount})</span>
                 </div>
-                
-                {/* Rate */}
-                {/* <div className="text-xs sm:text-sm font-bold text-green-600">
-                  {researcher.hourlyRate.toLocaleString()} XAF/hr
-                </div> */}
               </div>
               
               {/* Action Button */}
