@@ -248,19 +248,13 @@ export const useReportsAnalytics = (): ReportsAnalyticsData => {
       return [];
     }
 
-    // Get researcher ratings
-    const { data: ratingsData } = await supabase
-      .from('researcher_reviews')
-      .select('researcher_id, rating')
-      .gte('created_at', thirtyDaysAgo.toISOString());
-
     // Group by researcher and calculate metrics
     const researcherStats = new Map<string, {
       id: string;
       name: string;
       sessions: number;
       earnings: number;
-      ratings: number[];
+      rating: number;
     }>();
 
     (bookingsData || []).forEach(booking => {
@@ -271,7 +265,7 @@ export const useReportsAnalytics = (): ReportsAnalyticsData => {
         name: booking.users?.name || 'Unknown Researcher',
         sessions: 0,
         earnings: 0,
-        ratings: []
+        rating: 0
       };
 
       current.sessions += 1;
@@ -279,11 +273,18 @@ export const useReportsAnalytics = (): ReportsAnalyticsData => {
       researcherStats.set(booking.provider_id, current);
     });
 
+    // Get researcher ratings from profiles
+    const researcherIds = Array.from(researcherStats.keys());
+    const { data: ratingsData } = await supabase
+      .from('researcher_profiles')
+      .select('user_id, rating')
+      .in('user_id', researcherIds);
+
     // Add ratings
-    (ratingsData || []).forEach(review => {
-      const researcher = researcherStats.get(review.researcher_id);
+    (ratingsData || []).forEach(profile => {
+      const researcher = researcherStats.get(profile.user_id);
       if (researcher) {
-        researcher.ratings.push(review.rating);
+        researcher.rating = profile.rating || 0;
       }
     });
 
@@ -293,9 +294,7 @@ export const useReportsAnalytics = (): ReportsAnalyticsData => {
         id: researcher.id,
         name: researcher.name,
         sessions: researcher.sessions,
-        rating: researcher.ratings.length > 0 
-          ? Math.round((researcher.ratings.reduce((sum, r) => sum + r, 0) / researcher.ratings.length) * 10) / 10
-          : 0,
+        rating: researcher.rating,
         earnings: `${researcher.earnings.toLocaleString()} XAF`,
         rawEarnings: researcher.earnings
       }))
@@ -342,6 +341,7 @@ export const useReportsAnalytics = (): ReportsAnalyticsData => {
       name: string;
       tasks: number;
       earnings: number;
+      rating: number;
     }>();
 
     // Add booking earnings
@@ -352,7 +352,8 @@ export const useReportsAnalytics = (): ReportsAnalyticsData => {
         id: booking.provider_id,
         name: booking.users?.name || 'Unknown Research Aid',
         tasks: 0,
-        earnings: 0
+        earnings: 0,
+        rating: 0
       };
 
       current.tasks += 1;
@@ -368,7 +369,8 @@ export const useReportsAnalytics = (): ReportsAnalyticsData => {
         id: application.applicant_id,
         name: application.users?.name || 'Unknown Research Aid',
         tasks: 0,
-        earnings: 0
+        earnings: 0,
+        rating: 0
       };
 
       current.tasks += 1;
@@ -378,36 +380,31 @@ export const useReportsAnalytics = (): ReportsAnalyticsData => {
       aidStats.set(application.applicant_id, current);
     });
 
-    // Get ratings for research aids (assuming they can be reviewed through researcher_reviews)
+    // Get ratings for research aids from research_aid_profiles
     const aidIds = Array.from(aidStats.keys());
     const { data: ratingsData } = await supabase
-      .from('researcher_reviews')
-      .select('researcher_id, rating')
-      .in('researcher_id', aidIds)
-      .gte('created_at', thirtyDaysAgo.toISOString());
+      .from('research_aid_profiles')
+      .select('user_id, rating')
+      .in('user_id', aidIds);
 
-    const ratingsByAid = new Map<string, number[]>();
-    (ratingsData || []).forEach(review => {
-      const ratings = ratingsByAid.get(review.researcher_id) || [];
-      ratings.push(review.rating);
-      ratingsByAid.set(review.researcher_id, ratings);
+    // Add ratings
+    (ratingsData || []).forEach(profile => {
+      const aid = aidStats.get(profile.user_id);
+      if (aid) {
+        aid.rating = profile.rating || 0;
+      }
     });
 
     // Convert to array and sort by earnings
     const aids = Array.from(aidStats.values())
-      .map(aid => {
-        const ratings = ratingsByAid.get(aid.id) || [];
-        return {
-          id: aid.id,
-          name: aid.name,
-          tasks: aid.tasks,
-          rating: ratings.length > 0 
-            ? Math.round((ratings.reduce((sum, r) => sum + r, 0) / ratings.length) * 10) / 10
-            : 4.5, // Default rating if no reviews
-          earnings: `${aid.earnings.toLocaleString()} XAF`,
-          rawEarnings: aid.earnings
-        };
-      })
+      .map(aid => ({
+        id: aid.id,
+        name: aid.name,
+        tasks: aid.tasks,
+        rating: aid.rating,
+        earnings: `${aid.earnings.toLocaleString()} XAF`,
+        rawEarnings: aid.earnings
+      }))
       .sort((a, b) => b.rawEarnings - a.rawEarnings)
       .slice(0, 5);
 

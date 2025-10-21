@@ -44,7 +44,7 @@ const AdminSidebar = ({ activeTab, setActiveTab }: AdminSidebarProps) => {
     { id: "reports", label: "Reports & Analytics", icon: TrendingUp },
     // { id: "membership", label: "Membership & VIP", icon: Crown },
     { id: "support", label: "Support & Feedback", icon: MessageSquare },
-    { id: "security", label: "Security & Compliance", icon: Shield },
+    // { id: "security", label: "Security & Compliance", icon: Shield },
     { id: "verification", label: "Verification Management", icon: CheckCircle }
   ];
 

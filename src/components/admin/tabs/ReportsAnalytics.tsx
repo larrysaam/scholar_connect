@@ -154,7 +154,7 @@ const ReportsAnalytics = () => {
           </div>
         </CardContent>
       </Card>      {/* User Journey Drop-off Points */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
             <MessageSquare className="mr-2 h-5 w-5" />
@@ -182,10 +182,10 @@ const ReportsAnalytics = () => {
             )}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Quick Report Generation */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Generate Custom Reports</CardTitle>
         </CardHeader>
@@ -217,7 +217,7 @@ const ReportsAnalytics = () => {
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 };
