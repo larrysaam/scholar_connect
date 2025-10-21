@@ -50,11 +50,13 @@ export const useResearchers = () => {
         .from('users')
         .select(`
           *,
-          researcher_profiles!researcher_profiles_user_id_fkey(*),
+          researcher_profiles!researcher_profiles_user_id_fkey(id, user_id, title, subtitle, admin_verified, rating, total_reviews),
           consultation_services!consultation_services_user_id_fkey(*, pricing:service_pricing(*))
         `)
         .eq('role', 'expert')
         .order('created_at', { ascending: false });
+
+        console.log("Dataa: ", data)
 
       if (error) {
         console.error('Error fetching researchers:', error);
@@ -70,9 +72,17 @@ export const useResearchers = () => {
       // Transform database data to match the component interface
       const transformedResearchers: Researcher[] = (data || []).map(user => {
         console.log('Processing user:', user.id, user.name, 'Profile data:', user.researcher_profiles);
-        const profile = Array.isArray(user.researcher_profiles) && user.researcher_profiles.length > 0 ? user.researcher_profiles[0] : undefined;
+        let profile;
+        if (Array.isArray(user.researcher_profiles) && user.researcher_profiles.length > 0) {
+          profile = user.researcher_profiles[0];
+        } else if (user.researcher_profiles && typeof user.researcher_profiles === 'object') {
+          profile = user.researcher_profiles;
+        } else {
+          profile = undefined;
+        }
+       
         let subtitle = profile?.subtitle;
-        console.log('Initial subtitle:', subtitle);
+     
 
         // Try to find a non-empty subtitle from all profiles
         if (!subtitle && Array.isArray(user.researcher_profiles)) {
@@ -121,7 +131,7 @@ export const useResearchers = () => {
           created_at: user.created_at,
           updated_at: user.updated_at,
           // Computed fields for compatibility with existing component
-          title: (profile && profile.title) || user.experience || 'Research Expert',
+          title: (profile && profile.title) || '',
           subtitle: subtitle || '', // Will be derived from profile title if not explicitly set
           field: user.expertise?.[0] || 'General Research',
           specializations: user.expertise || ['Research Guidance'],
@@ -131,7 +141,7 @@ export const useResearchers = () => {
           location: user.country || 'Location not specified',
           imageUrl: (user.avatar_url) ? user.avatar_url : '/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png',
           featured: Math.random() > 0.7, // 30% chance of being featured
-          admin_verified: (profile && typeof profile.admin_verified === 'boolean') ? profile.admin_verified : false
+          admin_verified: profile?.admin_verified ?? false
         };
 
         // Log transformed researcher data for debugging
@@ -191,13 +201,12 @@ export const useResearchers = () => {
           const found = data.researcher_profiles.find(p => p.subtitle && p.subtitle.trim() !== '');
           if (found) subtitle = found.subtitle;
         }
-        console.log('Fetched researcher profile:', profile);
-        console.log('Profile title:', profile.title);
-        console.log('Profile subtitle:', subtitle);
+      } else if (data.researcher_profiles && typeof data.researcher_profiles === 'object') {
+        profile = data.researcher_profiles;
+        subtitle = profile?.subtitle;
       } else {
         profile = undefined;
         subtitle = '';
-        console.log('No profile found for user:', data.id, data.name);
       }
 
       // Transform single researcher data
@@ -218,7 +227,7 @@ export const useResearchers = () => {
         phone_number: data.phone_number,
         created_at: data.created_at,
         updated_at: data.updated_at,
-        title: (profile && profile.title) || data.experience || 'Research Expert',
+        title: (profile && profile.title) || 'Research Expert',
         subtitle: subtitle || '',
         field: data.expertise?.[0] || 'General Research',
         specializations: data.expertise || ['Research Guidance'],
@@ -228,7 +237,7 @@ export const useResearchers = () => {
         location: data.country || 'Location not specified',
         imageUrl: data.avatar_url || '/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png',
         featured: Math.random() > 0.7,
-        admin_verified: (profile && typeof profile.admin_verified === 'boolean') ? profile.admin_verified : false
+        admin_verified: profile?.admin_verified ?? false
       };
 
       // Log the transformed researcher data
