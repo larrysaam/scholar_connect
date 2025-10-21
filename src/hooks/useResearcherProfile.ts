@@ -127,7 +127,7 @@ export const useResearcherProfile = (researcherId: string) => {
       // Fetch extended profile info from researcher_profiles (minimal select for debug)
       const { data: profileData, error: profileError } = await supabase
         .from('researcher_profiles')
-        .select('id, user_id, title, subtitle, verifications, rating, total_reviews')
+        .select('id, user_id, title, subtitle, verifications, rating, total_reviews, reviews, bio, specialties, education, experience, publications, awards, fellowships, memberships, availability')
         .eq('user_id', researcherId)
         .single();
 
@@ -149,8 +149,9 @@ export const useResearcherProfile = (researcherId: string) => {
               location: '',
               rating: 0,
               total_reviews: 0,
+              reviews: [],
             })
-            .select('id, user_id, title, subtitle, location, rating, total_reviews')
+            .select('id, user_id, title, subtitle, location, rating, total_reviews, reviews')
             .single();
           if (createError) {
             console.error('Error creating profile:', createError);
@@ -162,24 +163,40 @@ export const useResearcherProfile = (researcherId: string) => {
         }
       }
 
-      // Fetch reviews (assuming reviews are still desired)
-      const { data: reviewsData, error: reviewsError } = await supabase
-        .from('researcher_reviews')
-        .select(`
-          id,
-          rating,
-          comment,
-          created_at,
-          service_type,
-          collaboration_type,
-          reviewer:users!reviewer_id(name)
-        `)
-        .eq('researcher_id', researcherId)
-        .eq('is_public', true)
-        .order('created_at', { ascending: false });
+      // Fetch reviews from researcher_profiles.reviews jsonb and get reviewer names
+      let reviewsWithNames: ResearcherReview[] = [];
+      if (profile?.reviews && Array.isArray(profile.reviews) && profile.reviews.length > 0) {
+        // Extract unique reviewer_ids from reviews
+        const reviewerIds = [...new Set(profile.reviews.map((review: any) => review.reviewer_id).filter(Boolean))];
+        
+        // Fetch reviewer names
+        const { data: reviewersData, error: reviewersError } = await supabase
+          .from('users')
+          .select('id, name')
+          .in('id', reviewerIds);
 
-      if (reviewsError) {
-        console.error('Error fetching reviews:', reviewsError);
+        if (reviewersError) {
+          console.error('Error fetching reviewer names:', reviewersError);
+        }
+
+        // Create a map of reviewer_id to name
+        const reviewerMap = new Map();
+        if (reviewersData) {
+          reviewersData.forEach(reviewer => {
+            reviewerMap.set(reviewer.id, reviewer.name || 'Anonymous');
+          });
+        }
+
+        // Transform reviews to include reviewer names
+        reviewsWithNames = profile.reviews.map((review: any, index: number) => ({
+          id: review.booking_id || `review-${index}`,
+          reviewer_name: reviewerMap.get(review.reviewer_id) || 'Anonymous',
+          rating: review.rating || 0,
+          comment: review.comment || '',
+          created_at: review.created_at || new Date().toISOString(),
+          service_type: undefined,
+          collaboration_type: undefined
+        }));
       }
 
       // Fetch number of students supervised (bookings count)
@@ -236,15 +253,7 @@ export const useResearcherProfile = (researcherId: string) => {
         affiliations: safeProfile?.memberships || [],
 
         // Reviews
-        reviews: (reviewsData || []).map(review => ({
-          id: review.id,
-          reviewer_name: review.reviewer?.name || 'Anonymous',
-          rating: review.rating,
-          comment: review.comment || '',
-          created_at: review.created_at,
-          service_type: review.service_type,
-          collaboration_type: review.collaboration_type
-        })),
+        reviews: reviewsWithNames,
         
         // Computed fields for compatibility
         imageUrl: userData.avatar_url || '/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png',
@@ -301,12 +310,12 @@ export const useResearcherProfile = (researcherId: string) => {
 
     try {
       const { error } = await supabase
-        .from('research_aid_profiles')
+        .from('researcher_profiles')
         .update({
           ...dbUpdates,
           updated_at: new Date().toISOString()
         })
-        .eq('id', researcherId);
+        .eq('user_id', researcher.id);
 
       if (error) {
         console.error('Error updating profile:', error);
@@ -332,42 +341,6 @@ export const useResearcherProfile = (researcherId: string) => {
     }
   };
 
-  const addReview = async (rating: number, comment: string, serviceType?: string) => {
-    try {
-      const { error } = await supabase
-        .from('researcher_reviews')
-        .insert({
-          researcher_id: researcherId,
-          reviewer_id: (await supabase.auth.getUser()).data.user?.id,
-          rating,
-          comment,
-          service_type: serviceType
-        });
-
-      if (error) {
-        console.error('Error adding review:', error);
-        toast({
-          title: "Error",
-          description: "Failed to add review. Please try again.",
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      // Refresh the profile data to get updated reviews and rating
-      await fetchResearcherProfile();
-      
-      toast({
-        title: "Success",
-        description: "Review added successfully!"
-      });
-      return true;
-    } catch (error) {
-      console.error('Error adding review:', error);
-      return false;
-    }
-  };
-
   useEffect(() => {
     if (researcherId) {
       fetchResearcherProfile();
@@ -379,7 +352,6 @@ export const useResearcherProfile = (researcherId: string) => {
     loading,
     error,
     updateProfile,
-    addReview,
     refetch: fetchResearcherProfile
   };
 };

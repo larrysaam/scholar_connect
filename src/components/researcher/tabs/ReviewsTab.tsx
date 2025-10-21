@@ -1,13 +1,8 @@
-
-interface Review {
-  name: string;
-  rating: number;
-  comment: string;
-}
+import { ResearcherReview } from "@/hooks/useResearcherProfile";
 
 interface ReviewsTabProps {
   rating: number;
-  reviews: Review[];
+  reviews: ResearcherReview[];
 }
 
 const ReviewsTab = ({ rating, reviews }: ReviewsTabProps) => {
@@ -37,7 +32,7 @@ const ReviewsTab = ({ rating, reviews }: ReviewsTabProps) => {
         {reviews.map((review, index) => (
           <div key={index} className="border-b pb-6 last:border-b-0 last:pb-0">
             <div className="flex justify-between mb-2">
-              <h3 className="font-medium">{review.name}</h3>
+              <h3 className="font-medium">{review.reviewer_name}</h3>
               <div className="flex items-center">
                 {Array(5).fill(0).map((_, i) => (
                   <svg 
