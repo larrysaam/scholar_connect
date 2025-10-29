@@ -155,6 +155,13 @@ const FindResearcherTab = () => {
                   <span className="text-xs font-bold text-yellow-700">{researcher.rating}</span>
                   <span className="text-xs text-yellow-600">({researcher.reviewCount})</span>
                 </div>
+                
+                {/* Price */}
+                <div className="flex items-center space-x-1 bg-green-50 px-2 py-1 rounded-full">
+                  <span className="text-xs font-bold text-green-700">
+                    {researcher.hourlyRate > 0 ? `${researcher.hourlyRate.toLocaleString()} XAF/hr` : 'Contact for pricing'}
+                  </span>
+                </div>
               </div>
               
               {/* Action Button */}
