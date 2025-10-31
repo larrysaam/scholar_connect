@@ -28,9 +28,10 @@ const ADDON_OPTIONS = [
 interface ServiceFormProps {
   formData: CreateServiceData;
   onFormDataChange: (data: CreateServiceData) => void;
+  serviceType?: 'free' | 'paid';
 }
 
-const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange }) => {
+const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange, serviceType = 'paid' }) => {
   const updateFormData = (updates: Partial<CreateServiceData>) => {
     onFormDataChange({ ...formData, ...updates });
   };
@@ -122,6 +123,11 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
   };
 
   const getDurationOptions = () => {
+    // For free services, only show 1 hour option
+    if (serviceType === 'free') {
+      return [{ value: '1', label: '1 hour' }];
+    }
+
     switch (formData.category) {
       case 'General Consultation':
       case 'Free Consultation':
@@ -151,6 +157,22 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
         ];
       default:
         return [{ value: '1', label: '1 hour' }];
+    }
+  };
+
+  const getCategoryOptions = () => {
+    const allCategories = [
+      { value: 'General Consultation', label: 'General Consultation' },
+      { value: 'Chapter Review', label: 'Chapter Review' },
+      { value: 'Full Thesis Cycle Support', label: 'Full Thesis Cycle Support' },
+      { value: 'Full Thesis Review', label: 'Full Thesis Review' },
+      { value: 'Free Consultation', label: 'Free Consultation' }
+    ];
+
+    if (serviceType === 'free') {
+      return allCategories.filter(cat => cat.value === 'Free Consultation');
+    } else {
+      return allCategories.filter(cat => cat.value !== 'Free Consultation');
     }
   };
 
@@ -219,11 +241,11 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange })
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="General Consultation">General Consultation</SelectItem>
-              <SelectItem value="Chapter Review">Chapter Review</SelectItem>
-              <SelectItem value="Full Thesis Cycle Support">Full Thesis Cycle Support</SelectItem>
-              <SelectItem value="Full Thesis Review">Full Thesis Review</SelectItem>
-              <SelectItem value="Free Consultation">Free Consultation</SelectItem>
+              {getCategoryOptions().map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>        <div>

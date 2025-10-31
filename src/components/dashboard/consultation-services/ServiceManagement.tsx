@@ -38,9 +38,9 @@ const ServiceManagement = ({
   onUpdateService,
   onToggleStatus,
   onDeleteService
-}: ServiceManagementProps) => {
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
+}: ServiceManagementProps) => {  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingService, setEditingService] = useState<ConsultationService | null>(null);
+  const [serviceType, setServiceType] = useState<'free' | 'paid'>('paid');
   const [formData, setFormData] = useState<CreateServiceData>({
     category: 'General Consultation',
     title: '',
@@ -71,8 +71,8 @@ const ServiceManagement = ({
       return `${minutes} minute${minutes > 1 ? 's' : ''}`;
     }
   };
-
   const resetForm = () => {
+    setServiceType('paid');
     setFormData({
       category: 'General Consultation',
       title: '',
@@ -82,8 +82,8 @@ const ServiceManagement = ({
       addons: []
     });
   };
-
   const createFreeConsultationService = () => {
+    setServiceType('free');
     setFormData({
       category: 'Free Consultation',
       title: 'Free Consultation Session',
@@ -107,9 +107,9 @@ const ServiceManagement = ({
       resetForm();
     }
   };
-
   const handleEditService = (service: ConsultationService) => {
     setEditingService(service);
+    setServiceType(service.category === 'Free Consultation' ? 'free' : 'paid');
     setFormData({
       category: service.category,
       title: service.title,
@@ -178,11 +178,11 @@ const ServiceManagement = ({
               <DialogDescription className="text-xs sm:text-sm">
                 Set up a new consultation service with pricing and add-ons
               </DialogDescription>
-            </DialogHeader>
-            <ServiceForm 
+            </DialogHeader>            <ServiceForm 
               formData={formData} 
               onFormDataChange={handleFormDataChange}
-            />            <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 pt-4">
+              serviceType={serviceType}
+            /><DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 pt-4">
               <Button 
                 variant="outline" 
                 onClick={() => setShowCreateDialog(false)}
@@ -362,6 +362,7 @@ const ServiceManagement = ({
                           </DialogHeader>                          <ServiceForm 
                             formData={formData} 
                             onFormDataChange={handleFormDataChange}
+                            serviceType={serviceType}
                           />
                           <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 pt-4">
                             <Button 
