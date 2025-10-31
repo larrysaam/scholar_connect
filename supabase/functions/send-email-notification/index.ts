@@ -19,11 +19,11 @@ interface EmailRequest {
 // Email templates
 const emailTemplates = {
   consultation_confirmed: {
-    subject: "Consultation Booking Confirmed - ResearchWow",
+    subject: "Consultation Booking Confirmed - ResearchTandem",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
-          <h1 style="margin: 0;">ResearchWow</h1>
+          <h1 style="margin: 0;">ResearchTandem</h1>
           <p style="margin: 5px 0 0 0;">Your Academic Success Partner</p>
         </div>
         
@@ -58,18 +58,18 @@ const emailTemplates = {
         </div>
         
         <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchWow. All rights reserved.</p>
+          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchTandem. All rights reserved.</p>
         </div>
       </div>
     `
   },
 
   payment_received: {
-    subject: "Payment Confirmation - ResearchWow",
+    subject: "Payment Confirmation - ResearchTandem",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
-          <h1 style="margin: 0;">ResearchWow</h1>
+          <h1 style="margin: 0;">ResearchTandem</h1>
           <p style="margin: 5px 0 0 0;">Payment Confirmation</p>
         </div>
         
@@ -97,18 +97,18 @@ const emailTemplates = {
         </div>
         
         <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchWow. All rights reserved.</p>
+          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchTandem. All rights reserved.</p>
         </div>
       </div>
     `
   },
 
   job_application_accepted: {
-    subject: "Job Application Accepted - ResearchWow",
+    subject: "Job Application Accepted - ResearchTandem",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
-          <h1 style="margin: 0;">ResearchWow</h1>
+          <h1 style="margin: 0;">ResearchTandem</h1>
           <p style="margin: 5px 0 0 0;">Job Application Update</p>
         </div>
         
@@ -140,18 +140,18 @@ const emailTemplates = {
         </div>
         
         <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchWow. All rights reserved.</p>
+          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchTandem. All rights reserved.</p>
         </div>
       </div>
     `
   },
 
   coauthor_invitation: {
-    subject: "Collaboration Invitation - ResearchWow",
+    subject: "Collaboration Invitation - ResearchTandem",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
-          <h1 style="margin: 0;">ResearchWow</h1>
+          <h1 style="margin: 0;">ResearchTandem</h1>
           <p style="margin: 5px 0 0 0;">Collaboration Opportunity</p>
         </div>
         
@@ -184,18 +184,18 @@ const emailTemplates = {
         </div>
         
         <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchWow. All rights reserved.</p>
+          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchTandem. All rights reserved.</p>
         </div>
       </div>
     `
   },
 
   booking_reminder: {
-    subject: "Upcoming Consultation Reminder - ResearchWow",
+    subject: "Upcoming Consultation Reminder - ResearchTandem",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
-          <h1 style="margin: 0;">ResearchWow</h1>
+          <h1 style="margin: 0;">ResearchTandem</h1>
           <p style="margin: 5px 0 0 0;">Consultation Reminder</p>
         </div>
         
@@ -234,17 +234,17 @@ const emailTemplates = {
         </div>
         
         <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchWow. All rights reserved.</p>
+          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchTandem. All rights reserved.</p>
         </div>
       </div>
     `  },
 
   'booking-cancelled-researcher': {
-    subject: "Booking Cancelled - ResearchWow",
+    subject: "Booking Cancelled - ResearchTandem",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
-          <h1 style="margin: 0;">ResearchWow</h1>
+          <h1 style="margin: 0;">ResearchTandem</h1>
           <p style="margin: 5px 0 0 0;">Booking Update</p>
         </div>
         
@@ -277,18 +277,18 @@ const emailTemplates = {
         </div>
         
         <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchWow. All rights reserved.</p>
+          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchTandem. All rights reserved.</p>
         </div>
       </div>
     `
   },
 
   'booking-cancelled-student': {
-    subject: "Booking Cancelled - ResearchWow",
+    subject: "Booking Cancelled - ResearchTandem",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
-          <h1 style="margin: 0;">ResearchWow</h1>
+          <h1 style="margin: 0;">ResearchTandem</h1>
           <p style="margin: 5px 0 0 0;">Booking Update</p>
         </div>
         
@@ -325,18 +325,18 @@ const emailTemplates = {
         </div>
         
         <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchWow. All rights reserved.</p>
+          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchTandem. All rights reserved.</p>
         </div>
       </div>
     `
   },
 
   'refund-processed': {
-    subject: "Refund Processed - ResearchWow",
+    subject: "Refund Processed - ResearchTandem",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
-          <h1 style="margin: 0;">ResearchWow</h1>
+          <h1 style="margin: 0;">ResearchTandem</h1>
           <p style="margin: 5px 0 0 0;">Refund Confirmation</p>
         </div>
         
@@ -368,18 +368,18 @@ const emailTemplates = {
         </div>
         
         <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchWow. All rights reserved.</p>
+          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchTandem. All rights reserved.</p>
         </div>
       </div>
     `
   },
 
   generic: {
-    subject: "{{subject}} - ResearchWow",
+    subject: "{{subject}} - ResearchTandem",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
-          <h1 style="margin: 0;">ResearchWow</h1>
+          <h1 style="margin: 0;">ResearchTandem</h1>
           <p style="margin: 5px 0 0 0;">{{subtitle}}</p>
         </div>
         
@@ -401,7 +401,7 @@ const emailTemplates = {
         </div>
         
         <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchWow. All rights reserved.</p>
+          <p style="margin: 0; color: #666; font-size: 14px;">© 2024 ResearchTandem. All rights reserved.</p>
         </div>
       </div>
     `
@@ -487,7 +487,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: 'ResearchWow <notifications@ResearchWow.com>',
+        from: 'ResearchTandem <notifications@ResearchTandem.com>',
         to: [to],
         subject: emailSubject,
         html: emailHtml,

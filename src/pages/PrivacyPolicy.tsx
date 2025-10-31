@@ -48,7 +48,7 @@ const PrivacyPolicy = () => {
                   <div className="border-l-4 border-blue-500 pl-6 mb-12">
                     <h2 className="text-2xl font-bold text-gray-900 mb-4">Introduction</h2>
                     <p className="text-gray-700 leading-relaxed">
-                      ResearchWow ("ResearchWow", "we", "us" or "our") is committed to protecting your privacy and personal data. This Privacy Policy explains what information we collect, why we collect it, how we use it, how we share it, and the choices you have. By using ResearchWow you agree to the terms of this policy.
+                      ResearchTandem ("ResearchTandem", "we", "us" or "our") is committed to protecting your privacy and personal data. This Privacy Policy explains what information we collect, why we collect it, how we use it, how we share it, and the choices you have. By using ResearchTandem you agree to the terms of this policy.
                     </p>
                   </div>
 
@@ -118,7 +118,7 @@ const PrivacyPolicy = () => {
                   <div className="border-l-4 border-indigo-500 pl-6 mb-12">
                     <h2 className="text-2xl font-bold text-gray-900 mb-4">5. International transfers</h2>
                     <p className="text-gray-700 leading-relaxed">
-                      ResearchWow is based in Cameroon and may transfer data to other countries. Where required by law, we will safeguard transfers using appropriate mechanisms (e.g., standard contractual clauses, adequacy decisions) and will notify users as necessary.
+                      ResearchTandem is based in Cameroon and may transfer data to other countries. Where required by law, we will safeguard transfers using appropriate mechanisms (e.g., standard contractual clauses, adequacy decisions) and will notify users as necessary.
                     </p>
                   </div>
 
@@ -153,14 +153,14 @@ const PrivacyPolicy = () => {
                       </ul>
                     </div>
                     <p className="text-gray-700 leading-relaxed mt-4 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
-                      <strong>Contact:</strong> To exercise rights, contact privacy@researchwow.com. We will verify identity before fulfilling sensitive requests.
+                      <strong>Contact:</strong> To exercise rights, contact privacy@ResearchTandem.com. We will verify identity before fulfilling sensitive requests.
                     </p>
                   </div>
 
                   <div className="border-l-4 border-pink-500 pl-6 mb-12">
                     <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Children</h2>
                     <p className="text-gray-700 leading-relaxed">
-                      ResearchWow is not intended for children under 16. We do not knowingly collect data from minors. If we learn we have collected a child's data we will delete it. Parents/guardians should contact us if they believe their child's data was collected.
+                      ResearchTandem is not intended for children under 16. We do not knowingly collect data from minors. If we learn we have collected a child's data we will delete it. Parents/guardians should contact us if they believe their child's data was collected.
                     </p>
                   </div>
 
@@ -196,14 +196,14 @@ const PrivacyPolicy = () => {
                     <h2 className="text-2xl font-bold text-gray-900 mb-4">13. Contact us</h2>
                     <div className="bg-rose-50 rounded-xl p-6 border-l-4 border-rose-500">
                       <p className="text-gray-700 leading-relaxed mb-4">
-                        <strong>Privacy email:</strong> privacy@researchwow.com<br />
-                        <strong>Support:</strong> support@researchwow.com<br />
+                        <strong>Privacy email:</strong> privacy@ResearchTandem.com<br />
+                        <strong>Support:</strong> support@ResearchTandem.com<br />
                         <strong>Phone:</strong> +237 674 511 174 / +237 687 082 958<br />
                         <strong>Address:</strong> Yaounde, Cameroon
                       </p>
                     </div>
                     <p className="text-gray-700 leading-relaxed mt-4 bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
-                      <strong>Confirmation:</strong> By using ResearchWow you confirm you have read and understood this Privacy Policy.
+                      <strong>Confirmation:</strong> By using ResearchTandem you confirm you have read and understood this Privacy Policy.
                     </p>
                   </div>
                 </div>
@@ -218,7 +218,7 @@ const PrivacyPolicy = () => {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <a
-                      href="mailto:privacy@researchwow.com"
+                      href="mailto:privacy@ResearchTandem.com"
                       className="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold hover:bg-blue-50 transition-colors"
                     >
                       Contact Privacy Team

@@ -19,12 +19,12 @@ const FAQ = () => {
       section: "About the Platform",
       items: [
         {
-          question: "What is ResearchWow?",
-          answer: "ResearchWow is an online platform that connects students with verified PhD-level research experts for one-on-one virtual consultations and Research Aids for task-based thesis support. It's designed to support academic writing, research design, data analysis, and more."
+          question: "What is ResearchTandem?",
+          answer: "ResearchTandem is an online platform that connects students with verified PhD-level research experts for one-on-one virtual consultations and Research Aids for task-based thesis support. It's designed to support academic writing, research design, data analysis, and more."
         },
         {
           question: "Who are the experts on the platform?",
-          answer: "All experts are PhD holders with proven research experience. They are carefully vetted and verified before being listed on ResearchWow."
+          answer: "All experts are PhD holders with proven research experience. They are carefully vetted and verified before being listed on ResearchTandem."
         },
         {
           question: "Can I choose my own expert?",
@@ -62,7 +62,7 @@ const FAQ = () => {
         },
         {
           question: "Is there a subscription or hidden fee?",
-          answer: "No subscription is required. ResearchWow charges a flat 15 percent commission per session, already included in the expert's rate."
+          answer: "No subscription is required. ResearchTandem charges a flat 15 percent commission per session, already included in the expert's rate."
         }
       ]
     },
@@ -70,7 +70,7 @@ const FAQ = () => {
       section: "Account & Booking",
       items: [
         {
-          question: "Do I need to create an account to use ResearchWow?",
+          question: "Do I need to create an account to use ResearchTandem?",
           answer: "Yes. Creating an account helps us tailor recommendations, manage bookings, and ensure secure transactions."
         },
         {
@@ -91,12 +91,12 @@ const FAQ = () => {
           answer: "If you're unable to connect or experience a platform error, our support team will reschedule your session at no extra cost."
         },
         {
-          question: "Is ResearchWow available in other countries?",
-          answer: "Yes. ResearchWow is accessible globally, but payment options may vary outside Cameroon."
+          question: "Is ResearchTandem available in other countries?",
+          answer: "Yes. ResearchTandem is accessible globally, but payment options may vary outside Cameroon."
         },
         {
           question: "How do I contact support?",
-          answer: "You can email us at support@ResearchWow.com or use the in-platform chat for help."
+          answer: "You can email us at support@ResearchTandem.com or use the in-platform chat for help."
         }
       ]
     },
@@ -142,7 +142,7 @@ const FAQ = () => {
                 Frequently Asked Questions
               </h1>
               <p className="text-xl md:text-2xl text-blue-100 mb-8">
-                Find answers to common questions about ResearchWow
+                Find answers to common questions about ResearchTandem
               </p>
               <div className="flex justify-center">
                 <div className="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3">
@@ -175,10 +175,10 @@ const FAQ = () => {
                 </div>
               </div>
 
-              {/* How ResearchWow Works */}
+              {/* How ResearchTandem Works */}
               <div className="mb-16">
                 <div className="text-center mb-12">
-                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">How ResearchWow Works</h2>
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">How ResearchTandem Works</h2>
                   <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                     Get started with our simple 6-step process to connect with expert researchers
                   </p>
@@ -186,7 +186,7 @@ const FAQ = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[
-                    { title: "Sign up & verify", desc: "Create your account and verify your email to get started with ResearchWow.", icon: "M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" },
+                    { title: "Sign up & verify", desc: "Create your account and verify your email to get started with ResearchTandem.", icon: "M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" },
                     { title: "Find an expert", desc: "Browse expert profiles based on your research topic, expertise, and reviews.", icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" },
                     { title: "Book & pay", desc: "Select a convenient time slot and complete secure payment to confirm.", icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" },
                     { title: "Attend session", desc: "Join your personalized virtual consultation with the expert.", icon: "M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" },
@@ -268,7 +268,7 @@ const FAQ = () => {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <a
-                      href="mailto:support@ResearchWow.com"
+                      href="mailto:support@ResearchTandem.com"
                       className="inline-flex items-center px-6 py-3 bg-white text-blue-600 font-semibold rounded-xl hover:bg-blue-50 transition-colors shadow-lg"
                     >
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -31,8 +31,8 @@ const ResearchWhoaLogo = ({ size = 'md', showText = true, className = '', color=
       />
       {showText && (
         <span className={`font-bold text-gray-900 ${textSizeClasses[size]}`}>
-          {color==='white'? <span className='text-white'>Research</span> : <span className="text-black-600">Research</span>}
-          <span className="text-blue-600">Wow</span>
+          {color==='white'? <span className='text-white'>Research</span> : <span className="text-black-600">Tandem</span>}
+          <span className="text-blue-600">Tandem</span>
         </span>
       )}
     </div>

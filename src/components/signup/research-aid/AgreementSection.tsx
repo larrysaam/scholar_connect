@@ -24,7 +24,7 @@ const AgreementSection = ({ agreedToTerms, onInputChange, onSubmit, isLoading }:
           required 
         />
         <Label htmlFor="terms" className="text-sm">
-          I agree to the Terms & privacy and understand that ResearchWow does not guarantee work but provides a visibility platform. *
+          I agree to the Terms & privacy and understand that ResearchTandem does not guarantee work but provides a visibility platform. *
         </Label>
       </div>
       

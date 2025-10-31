@@ -20,7 +20,7 @@ const GetStartedModal = ({ children }: GetStartedModalProps) => {
       </DialogTrigger>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-center mb-2">Join ResearchWow</DialogTitle>
+          <DialogTitle className="text-2xl text-center mb-2">Join ResearchTandem</DialogTitle>
           <p className="text-center text-gray-600">Choose how you'd like to get started</p>
         </DialogHeader>
         

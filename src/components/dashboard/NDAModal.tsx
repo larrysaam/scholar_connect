@@ -39,7 +39,7 @@ const NDAModal = ({ isOpen, onClose, onAccept }: NDAModalProps) => {
       <DialogContent className="max-w-4xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
-            Non-Disclosure Agreement (NDA) - ResearchWow Platform
+            Non-Disclosure Agreement (NDA) - ResearchTandem Platform
           </DialogTitle>
         </DialogHeader>
 
@@ -48,7 +48,7 @@ const NDAModal = ({ isOpen, onClose, onAccept }: NDAModalProps) => {
             <section>
               <h3 className="font-semibold text-base mb-2">1. PURPOSE AND SCOPE</h3>
               <p className="text-gray-700 leading-relaxed">
-                This Non-Disclosure Agreement ("Agreement") is entered into by and between ResearchWow 
+                This Non-Disclosure Agreement ("Agreement") is entered into by and between ResearchTandem 
                 ("Platform") and the Research Aid ("Recipient") to protect confidential and proprietary 
                 information shared through the platform during research collaboration services.
               </p>

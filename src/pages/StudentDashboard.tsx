@@ -118,7 +118,7 @@ const StudentDashboard = () => {
             <div className="mb-8">
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-2">Welcome to ResearchWow!</h3>
+                  <h3 className="text-lg font-semibold mb-2">Welcome to ResearchTandem!</h3>
                   <p className="text-gray-600 mb-4">Complete your profile to start connecting with expert researchers.</p>
                   <button 
                     onClick={handleOnboardingComplete}

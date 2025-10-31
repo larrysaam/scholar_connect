@@ -139,7 +139,7 @@ Deno.serve(async (req) => {
         await supabaseAdmin.functions.invoke('send-email-notification', {
           body: {
             to: user.email,
-            subject: 'Refund Processed - ResearchWow',
+            subject: 'Refund Processed - ResearchTandem',
             template: 'refund-processed',
             templateData: {
               studentName: user.user_metadata?.full_name || 'Student',

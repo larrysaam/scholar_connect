@@ -78,7 +78,7 @@ const SuggestionBox = () => {
       <CardContent>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="suggestion-text">How can we improve ResearchWow?</Label>
+            <Label htmlFor="suggestion-text">How can we improve ResearchTandem?</Label>
             <Textarea
               id="suggestion-text"
               placeholder="Share your ideas for new features, improvements, or any changes you'd like to see..."

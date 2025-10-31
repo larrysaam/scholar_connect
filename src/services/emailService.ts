@@ -73,7 +73,7 @@ export class EmailService {
     matchedJobs: JobMatch[]
   ): WeeklyEmailSummary {
     const content = `
-      <h2>Your Weekly ResearchWow Summary</h2>
+      <h2>Your Weekly ResearchTandem Summary</h2>
       
       <h3>📊 Activity Summary</h3>
       <ul>
@@ -112,7 +112,7 @@ export class EmailService {
       ` : '<p>No new notifications this week.</p>'}
 
       <p>
-        <a href="https://ResearchWow.com/research-aids-dashboard">Visit your dashboard</a> to see all updates and apply for jobs.
+        <a href="https://ResearchTandem.com/research-aids-dashboard">Visit your dashboard</a> to see all updates and apply for jobs.
       </p>
     `;
 

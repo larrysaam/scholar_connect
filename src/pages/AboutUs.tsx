@@ -15,7 +15,7 @@ const AboutUs = () => {
         <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
           <div className="container mx-auto px-4 md:px-6">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">About ResearchWow</h1>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">About ResearchTandem</h1>
               <p className="text-xl text-blue-100">
                 Empowering academic collaboration and research excellence across Africa
               </p>
@@ -29,7 +29,7 @@ const AboutUs = () => {
             <div className="max-w-4xl mx-auto">
               <h2 className="text-2xl md:text-3xl font-semibold mb-6">Who We Are</h2>
               <p className="text-lg text-gray-700 mb-8">
-                ResearchWow is a revolutionary platform designed to bridge the gap between students, researchers, and academic experts across Africa and beyond. We facilitate meaningful collaborations that drive research excellence and academic success.
+                ResearchTandem is a revolutionary platform designed to bridge the gap between students, researchers, and academic experts across Africa and beyond. We facilitate meaningful collaborations that drive research excellence and academic success.
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
@@ -50,7 +50,7 @@ const AboutUs = () => {
               
               <h2 className="text-2xl md:text-3xl font-semibold mb-6">What We Offer</h2>
               <p className="text-lg text-gray-700 mb-12">
-                ResearchWow provides a comprehensive platform where students can connect with experienced researchers and research aids for guidance, collaboration, and support throughout their academic journey. From research ideation to publication, we're here to help.
+                ResearchTandem provides a comprehensive platform where students can connect with experienced researchers and research aids for guidance, collaboration, and support throughout their academic journey. From research ideation to publication, we're here to help.
               </p>
               
               <h2 className="text-2xl md:text-3xl font-semibold mb-6">Our Core Values</h2>

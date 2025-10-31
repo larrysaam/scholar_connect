@@ -46,12 +46,12 @@ const TermsOfService = () => {
 
                 <div className="prose prose-lg max-w-none">
                   <p className="text-gray-700 leading-relaxed mb-8 text-center font-medium">
-                    Welcome to ResearchWow – a platform that connects students with researchers and research aids for thesis and academic support. By using ResearchWow, you agree to the following Terms and Conditions. Please read them carefully.
+                    Welcome to ResearchTandem – a platform that connects students with researchers and research aids for thesis and academic support. By using ResearchTandem, you agree to the following Terms and Conditions. Please read them carefully.
                   </p>
 
                   <div className="space-y-12">
                     <div className="border-l-4 border-blue-500 pl-6">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Who Can Use ResearchWow</h2>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Who Can Use ResearchTandem</h2>
                       <ul className="list-disc list-inside space-y-2 text-gray-700">
                         <li><strong>Students:</strong> Must be at least 16 years old.</li>
                         <li><strong>Researchers:</strong> Must hold a PhD (or equivalent) and provide verifiable proof of qualifications.</li>
@@ -60,14 +60,14 @@ const TermsOfService = () => {
                     </div>
 
                     <div className="border-l-4 border-purple-500 pl-6">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-4">2. What ResearchWow Provides</h2>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-4">2. What ResearchTandem Provides</h2>
                       <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4">
                         <li>A safe space to book consultations with verified researchers.</li>
                         <li>Access to research aids for specific tasks that support, but do not replace, your own academic work.</li>
                         <li>Online sessions via video/audio calls or task submissions through the platform.</li>
                       </ul>
                       <p className="text-gray-700 leading-relaxed bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
-                        <strong>Important:</strong> ResearchWow does not allow ghostwriting or unethical academic assistance. Our role is to support learning, not to replace it.
+                        <strong>Important:</strong> ResearchTandem does not allow ghostwriting or unethical academic assistance. Our role is to support learning, not to replace it.
                       </p>
                     </div>
 
@@ -77,7 +77,7 @@ const TermsOfService = () => {
                         <li>All bookings are prepaid through our secure system (Mobile Money, Orange Money, debit/credit card).</li>
                         <li>Payments are held in escrow until the service is delivered.</li>
                         <li>Researchers and Aids set their own rates within platform guidelines.</li>
-                        <li>ResearchWow charges a 15% service fee on each transaction.</li>
+                        <li>ResearchTandem charges a 15% service fee on each transaction.</li>
                         <li>Experts are paid within 2–3 working days after service completion.</li>
                         <li>Taxes are the responsibility of the experts receiving payment.</li>
                       </ul>
@@ -101,7 +101,7 @@ const TermsOfService = () => {
                           <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">
                             <li>Be respectful and professional.</li>
                             <li>Do not request unethical help (e.g., "write my thesis").</li>
-                            <li>Keep all communication within ResearchWow.</li>
+                            <li>Keep all communication within ResearchTandem.</li>
                           </ul>
                         </div>
                         <div>
@@ -117,7 +117,7 @@ const TermsOfService = () => {
                           <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">
                             <li>Deliver tasks on time and to agreed standards.</li>
                             <li>Maintain accuracy and confidentiality.</li>
-                            <li>Do not subcontract or share student work outside ResearchWow.</li>
+                            <li>Do not subcontract or share student work outside ResearchTandem.</li>
                           </ul>
                         </div>
                       </div>
@@ -136,7 +136,7 @@ const TermsOfService = () => {
                       <h2 className="text-2xl font-bold text-gray-900 mb-4">7. Dispute Resolution</h2>
                       <ul className="list-disc list-inside space-y-2 text-gray-700">
                         <li>If you are unhappy with a service, you can raise a complaint within 48 hours of delivery.</li>
-                        <li>ResearchWow will review evidence from both sides and make a final decision (refund, partial refund, or release of funds).</li>
+                        <li>ResearchTandem will review evidence from both sides and make a final decision (refund, partial refund, or release of funds).</li>
                         <li>Our decision will be binding to keep the system fair.</li>
                       </ul>
                     </div>
@@ -144,7 +144,7 @@ const TermsOfService = () => {
                     <div className="border-l-4 border-pink-500 pl-6">
                       <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Integrity & Fair Use</h2>
                       <p className="text-gray-700 leading-relaxed">
-                        ResearchWow is for learning support only. Misuse (plagiarism, academic dishonesty, or bypassing the platform to pay experts directly) may lead to suspension or termination.
+                        ResearchTandem is for learning support only. Misuse (plagiarism, academic dishonesty, or bypassing the platform to pay experts directly) may lead to suspension or termination.
                       </p>
                     </div>
 
@@ -159,7 +159,7 @@ const TermsOfService = () => {
 
                     <div className="border-l-4 border-gray-500 pl-6">
                       <h2 className="text-2xl font-bold text-gray-900 mb-4">10. Liability</h2>
-                      <p className="text-gray-700 leading-relaxed mb-4">ResearchWow is not responsible for:</p>
+                      <p className="text-gray-700 leading-relaxed mb-4">ResearchTandem is not responsible for:</p>
                       <ul className="list-disc list-inside space-y-2 text-gray-700">
                         <li>The academic outcome of your work (grades, thesis acceptance, defense results).</li>
                         <li>Internet or technical failures during sessions.</li>
@@ -178,7 +178,7 @@ const TermsOfService = () => {
                       <h2 className="text-2xl font-bold text-gray-900 mb-4">12. Contact Us</h2>
                       <p className="text-gray-700 leading-relaxed">
                         For questions or support:<br />
-                        Email: support@ResearchWow.com<br />
+                        Email: support@ResearchTandem.com<br />
                         Tel: +237 674 511 174 / +237 687 082 958
                       </p>
                     </div>
@@ -186,12 +186,12 @@ const TermsOfService = () => {
 
                   {/* Pricing Policy Annex */}
                   <div className="mt-16 pt-12 border-t-2 border-gray-200">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">ResearchWow Pricing Policy Annex</h2>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">ResearchTandem Pricing Policy Annex</h2>
                     <p className="text-sm text-gray-600 mb-8 text-center">
                       Effective Date: October 1, 2025
                     </p>
                     <p className="text-gray-700 leading-relaxed mb-8 text-center font-medium">
-                      This Pricing Policy explains how fees are set and charged on ResearchWow. It applies to all students, researchers, and research aids using the platform.
+                      This Pricing Policy explains how fees are set and charged on ResearchTandem. It applies to all students, researchers, and research aids using the platform.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -201,7 +201,7 @@ const TermsOfService = () => {
                           <li><strong>Transparency:</strong> Students always see the price before booking.</li>
                           <li><strong>Flexibility:</strong> Researchers and Aids set their own rates within platform-approved ranges.</li>
                           <li><strong>Security:</strong> Payments are prepaid and released only after the service is completed.</li>
-                          <li><strong>Platform Fee:</strong> ResearchWow charges a 15% commission on each successful transaction.</li>
+                          <li><strong>Platform Fee:</strong> ResearchTandem charges a 15% commission on each successful transaction.</li>
                           <li><strong>Currency:</strong> All prices are listed in Central African CFA francs (XAF).</li>
                         </ul>
                       </div>
@@ -245,7 +245,7 @@ const TermsOfService = () => {
 
                     <div className="mt-8 text-center">
                       <p className="text-gray-600 text-sm">
-                        This Pricing Policy may be updated from time to time. The latest version will always be available on the ResearchWow platform.
+                        This Pricing Policy may be updated from time to time. The latest version will always be available on the ResearchTandem platform.
                       </p>
                     </div>
                   </div>
@@ -261,7 +261,7 @@ const TermsOfService = () => {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <a
-                      href="mailto:support@ResearchWow.com"
+                      href="mailto:support@ResearchTandem.com"
                       className="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold hover:bg-blue-50 transition-colors"
                     >
                       Email Support

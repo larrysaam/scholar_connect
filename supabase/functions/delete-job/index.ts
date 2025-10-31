@@ -127,7 +127,7 @@ serve(async (req) => {
         const { error: emailError } = await supabaseClient.functions.invoke('send-email-notification', {
           body: {
             to: userEmail,
-            subject: 'Refund Processed - ResearchWow',
+            subject: 'Refund Processed - ResearchTandem',
             template: 'refund-processed',
             templateData: {
               serviceTitle: job.title,

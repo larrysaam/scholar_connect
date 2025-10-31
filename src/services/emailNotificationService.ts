@@ -391,7 +391,7 @@ class EmailNotificationService {
   // Send welcome email to new users
   async sendWelcomeEmail(userId: string, userEmail: string, userName: string): Promise<boolean> {
     const content = `
-      <p>Welcome to ResearchWow, ${userName}!</p>
+      <p>Welcome to ResearchTandem, ${userName}!</p>
       <p>We're excited to have you join our community of researchers, students, and academics.</p>
       <p>Here's what you can do next:</p>
       <ul>
@@ -408,7 +408,7 @@ class EmailNotificationService {
       email: userEmail,
       template: 'generic',
       templateData: {
-        subject: 'Welcome to ResearchWow!',
+        subject: 'Welcome to ResearchTandem!',
         subtitle: 'Your Academic Success Partner',
         title: `Welcome, ${userName}!`,
         content: content,

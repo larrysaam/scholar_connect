@@ -222,7 +222,7 @@ const Partnerships = () => {
                   </CardHeader>
                   <CardContent>
                     <p className="text-gray-600 mb-6">
-                      Join us in revolutionizing academic research and education across Africa. ResearchWow represents a significant opportunity to impact education while generating sustainable returns.
+                      Join us in revolutionizing academic research and education across Africa. ResearchTandem represents a significant opportunity to impact education while generating sustainable returns.
                     </p>
                     <div className="grid md:grid-cols-2 gap-6 mb-8">
                       <div>
@@ -278,7 +278,7 @@ const Partnerships = () => {
                   </CardHeader>
                   <CardContent>
                     <p className="text-gray-600 mb-6">
-                      Partner with ResearchWow to advance education and research capacity across Africa. We welcome collaboration with NGOs, development agencies, and international educational organizations.
+                      Partner with ResearchTandem to advance education and research capacity across Africa. We welcome collaboration with NGOs, development agencies, and international educational organizations.
                     </p>
                     <div className="grid md:grid-cols-2 gap-6 mb-8">
                       <div>

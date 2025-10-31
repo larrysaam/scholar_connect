@@ -11,7 +11,7 @@ const SecurityCompliance = () => {
     {
       id: 1,
       name: "Admin User",
-      email: "admin@ResearchWow.com",
+      email: "admin@ResearchTandem.com",
       role: "Super Admin",
       lastLogin: "2024-01-20 08:30",
       status: "active",
@@ -20,7 +20,7 @@ const SecurityCompliance = () => {
     {
       id: 2,
       name: "Operations Manager",
-      email: "ops@ResearchWow.com",
+      email: "ops@ResearchTandem.com",
       role: "Ops Manager",
       lastLogin: "2024-01-20 09:15",
       status: "active",
@@ -29,7 +29,7 @@ const SecurityCompliance = () => {
     {
       id: 3,
       name: "Content Manager",
-      email: "content@ResearchWow.com",
+      email: "content@ResearchTandem.com",
       role: "Content Manager",
       lastLogin: "2024-01-19 16:45",
       status: "active",
@@ -50,7 +50,7 @@ const SecurityCompliance = () => {
     {
       id: 2,
       timestamp: "2024-01-20 12:15",
-      user: "admin@ResearchWow.com",
+      user: "admin@ResearchTandem.com",
       action: "Admin login from new location",
       ipAddress: "10.0.0.1",
       severity: "medium",

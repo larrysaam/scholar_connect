@@ -317,7 +317,7 @@ const TransactionsTab = () => {
             <DialogHeader>
               <DialogTitle>Add Funds to Wallet</DialogTitle>
               <DialogDescription>
-                Deposit money into your ResearchWow wallet using mobile money
+                Deposit money into your ResearchTandem wallet using mobile money
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">

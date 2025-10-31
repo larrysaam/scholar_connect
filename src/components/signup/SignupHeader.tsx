@@ -12,10 +12,10 @@ const SignupHeader = ({ title, subtitle }: SignupHeaderProps) => {
       <Link to="/" className="inline-flex items-center space-x-2">
         <img 
           src="/lovable-uploads/3e478490-867e-47d2-9e44-aaef66cf715c.png" 
-          alt="ResearchWow" 
+          alt="ResearchTandem" 
           className="w-8 h-8"
         />
-        <span className="text-xl font-bold text-blue-600">ResearchWow</span>
+        <span className="text-xl font-bold text-blue-600">ResearchTandem</span>
       </Link>
       <h2 className="mt-6 text-3xl font-bold text-gray-900">
         {title}

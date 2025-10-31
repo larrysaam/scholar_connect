@@ -137,7 +137,7 @@ const Login = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-md">
         <AuthHeader
-          title="Welcome to ResearchWow"
+          title="Welcome to ResearchTandem"
           subtitle="Sign in to your account to continue your research journey"
         />
         

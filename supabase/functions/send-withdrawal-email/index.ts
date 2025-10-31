@@ -21,7 +21,7 @@ serve(async (req) => {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Withdrawal Successful - ResearchWow</title>
+          <title>Withdrawal Successful - ResearchTandem</title>
           <style>
             body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
             .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
@@ -48,7 +48,7 @@ serve(async (req) => {
         <body>
           <div class="container">
             <div class="header">
-              <h1>ResearchWow</h1>
+              <h1>ResearchTandem</h1>
               <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Withdrawal Successful</p>
             </div>
             
@@ -111,7 +111,7 @@ serve(async (req) => {
             </div>
             
             <div class="footer">
-              <p><strong>ResearchWow</strong></p>
+              <p><strong>ResearchTandem</strong></p>
               <p>Connecting Researchers and Students Worldwide</p>
               <p style="font-size: 12px; opacity: 0.8;">
                 This is an automated email. Please do not reply to this message.
@@ -123,7 +123,7 @@ serve(async (req) => {
       `
 
       const emailText = `
-Withdrawal Successful - ResearchWow
+Withdrawal Successful - ResearchTandem
 
 Hello ${data.name},
 
@@ -142,7 +142,7 @@ You should receive the funds in your mobile money account within a few minutes. 
 Keep this email as a record of your withdrawal transaction.
 
 Best regards,
-ResearchWow Team
+ResearchTandem Team
       `
 
       // Send email using your preferred email service
@@ -154,9 +154,9 @@ ResearchWow Team
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'ResearchWow <noreply@ResearchWow.com>',
+          from: 'ResearchTandem <noreply@ResearchTandem.com>',
           to: [to],
-          subject: 'Withdrawal Successful - ResearchWow',
+          subject: 'Withdrawal Successful - ResearchTandem',
           html: emailHTML,
           text: emailText,
         }),
