@@ -83,7 +83,7 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
                     <h3 className="font-semibold text-gray-900 truncate">
                       {aid.name}
                     </h3>
-                    <p className="text-sm text-blue-600 truncate">{aid.title}</p>
+                    {/* <p className="text-sm text-blue-600 truncate">{aid.title}</p> */}
                     <div className="flex items-center text-gray-500 mt-1">
                       <MapPin className="h-3 w-3 mr-1" />
                       <span className="text-xs truncate">{aid.location || 'Location not set'}</span>
@@ -201,7 +201,7 @@ const ResearchAidCard = ({ aid }: ResearchAidCardProps) => {
               />
               <div className="flex-1">
                 <h3 className="text-lg font-bold text-gray-900">{aid.name}</h3>
-                <p className="text-blue-600 font-medium">{aid.title}</p>
+                {/* <p className="text-blue-600 font-medium">{aid.title}</p> */}
                 <div className="flex items-center text-gray-600 mt-1">
                   <MapPin className="h-4 w-4 mr-1" />
                   <span className="text-sm">{aid.location || 'Location not set'}</span>
