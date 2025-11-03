@@ -1,0 +1,346 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
+
+export interface Researcher {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  institution: string;
+  faculty?: string;
+  study_level?: string;
+  experience?: string;
+  expertise?: string[];
+  other_expertise?: string;
+  languages?: string[];
+  linkedin_url?: string;
+  country?: string;
+  phone_number?: string;
+  created_at: string;
+  updated_at: string;
+  // Profile fields
+  subtitle?: string;
+  // Computed fields
+  title: string;
+  field: string;
+  specializations: string[];
+  rating: number;
+  reviewCount: number;
+  hourlyRate: number;
+  location: string;
+  imageUrl: string;
+  featured: boolean;
+  // Verification status
+  admin_verified?: boolean;
+}
+
+export const useResearchers = () => {
+  const { toast } = useToast();
+  const [researchers, setResearchers] = useState<Researcher[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchResearchers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data, error } = await supabase
+        .from('users')
+        .select(`
+          *,
+          researcher_profiles!researcher_profiles_user_id_fkey(id, user_id, title, subtitle, admin_verified, rating, total_reviews),
+          consultation_services!consultation_services_user_id_fkey(*, pricing:service_pricing(*))
+        `)
+        .eq('role', 'expert')
+        .order('created_at', { ascending: false });
+
+        console.log("Dataa: ", data)
+
+      if (error) {
+        console.error('Error fetching researchers:', error);
+        setError('Failed to load researchers');
+        toast({
+          title: "Error",
+          description: "Failed to load researchers. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Transform database data to match the component interface
+      const transformedResearchers: Researcher[] = (data || []).map(user => {
+        console.log('Processing user:', user.id, user.name, 'Profile data:', user.researcher_profiles);
+        let profile;
+        if (Array.isArray(user.researcher_profiles) && user.researcher_profiles.length > 0) {
+          profile = user.researcher_profiles[0];
+        } else if (user.researcher_profiles && typeof user.researcher_profiles === 'object') {
+          profile = user.researcher_profiles;
+        } else {
+          profile = undefined;
+        }
+       
+        let subtitle = profile?.subtitle;
+     
+
+        // Try to find a non-empty subtitle from all profiles
+        if (!subtitle && Array.isArray(user.researcher_profiles)) {
+          const found = user.researcher_profiles.find(p => p.subtitle && p.subtitle.trim() !== '');
+          if (found) {
+            subtitle = found.subtitle;
+            console.log('Found alternate subtitle:', subtitle);
+          }
+        }
+
+        // If still no subtitle, derive it from title or academic qualification
+        if (!subtitle) {
+          if (profile?.title) {
+            if (profile.title.toLowerCase().includes('professor')) subtitle = 'Prof.';
+            else if (profile.title.toLowerCase().includes('doctor') || profile.title.toLowerCase().includes('phd')) subtitle = 'Dr.';
+            console.log('Derived subtitle from title:', subtitle);
+          }
+        }
+
+        // Find the minimum price from all their services
+        let minPrice = 0;
+        if (Array.isArray(user.consultation_services) && user.consultation_services.length > 0) {
+          const allPrices = user.consultation_services.flatMap(service =>
+            Array.isArray(service.pricing) ? service.pricing.map(p => p.price) : []
+          );
+          if (allPrices.length > 0) {
+            minPrice = Math.min(...allPrices.filter(p => typeof p === 'number'));
+          }
+        }
+
+        const transformedUser = {
+          id: user.id,
+          name: user.name || 'Unknown Researcher',
+          email: user.email,
+          role: user.role,
+          institution: user.institution || 'Institution not specified',
+          faculty: user.faculty,
+          study_level: user.study_level,
+          experience: user.experience,
+          expertise: user.expertise || [],
+          other_expertise: user.other_expertise,
+          languages: user.languages || ['English'],
+          linkedin_url: user.linkedin_url,
+          country: user.country || 'Location not specified',
+          phone_number: user.phone_number,
+          created_at: user.created_at,
+          updated_at: user.updated_at,
+          // Computed fields for compatibility with existing component
+          title: (profile && profile.title) || '',
+          subtitle: subtitle || '', // Will be derived from profile title if not explicitly set
+          field: user.expertise?.[0] || 'General Research',
+          specializations: user.expertise || ['Research Guidance'],
+          rating: (profile && typeof profile.rating === 'number') ? profile.rating : 0,
+          reviewCount: (profile && typeof profile.total_reviews === 'number') ? profile.total_reviews : 0,
+          hourlyRate: minPrice,
+          location: user.country || 'Location not specified',
+          imageUrl: (user.avatar_url) ? user.avatar_url : '/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png',
+          featured: Math.random() > 0.7, // 30% chance of being featured
+          admin_verified: profile?.admin_verified ?? false
+        };
+
+        // Log transformed researcher data for debugging
+        console.log('Transformed researcher:', { 
+          name: transformedUser.name,
+          title: transformedUser.title,
+          subtitle: transformedUser.subtitle
+        });
+
+        return transformedUser;
+      });
+
+      console.log('Transformed researchers:', transformedResearchers);
+
+      setResearchers(transformedResearchers);
+    } catch (error) {
+      console.error('Error fetching researchers:', error);
+      setError('An unexpected error occurred');
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while loading researchers.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getResearcherById = async (id: string): Promise<Researcher | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select(`
+          *,
+          researcher_profiles!researcher_profiles_user_id_fkey(*)
+        `)
+        .eq('id', id)
+        .eq('role', 'expert')
+        .single();
+
+      console.log('Fetched researcher data:', data);
+
+      if (error) {
+        console.error('Error fetching researcher:', error);
+        return null;
+      }
+
+      if (!data) return null;
+
+      // Get profile data
+      let profile;
+      let subtitle;
+      if (Array.isArray(data.researcher_profiles) && data.researcher_profiles.length > 0) {
+        profile = data.researcher_profiles[0];
+        subtitle = profile?.subtitle;
+        if (!subtitle) {
+          const found = data.researcher_profiles.find(p => p.subtitle && p.subtitle.trim() !== '');
+          if (found) subtitle = found.subtitle;
+        }
+      } else if (data.researcher_profiles && typeof data.researcher_profiles === 'object') {
+        profile = data.researcher_profiles;
+        subtitle = profile?.subtitle;
+      } else {
+        profile = undefined;
+        subtitle = '';
+      }
+
+      // Transform single researcher data
+      const researcher: Researcher = {
+        id: data.id,
+        name: data.name || 'Unknown Researcher',
+        email: data.email,
+        role: data.role,
+        institution: data.institution || 'Institution not specified',
+        faculty: data.faculty,
+        study_level: data.study_level,
+        experience: data.experience,
+        expertise: data.expertise || [],
+        other_expertise: data.other_expertise,
+        languages: data.languages || ['English'],
+        linkedin_url: data.linkedin_url,
+        country: data.country || 'Location not specified',
+        phone_number: data.phone_number,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        title: (profile && profile.title) || 'Research Expert',
+        subtitle: subtitle || '',
+        field: data.expertise?.[0] || 'General Research',
+        specializations: data.expertise || ['Research Guidance'],
+        rating: (profile && typeof profile.rating === 'number') ? profile.rating : 4.5,
+        reviewCount: (profile && typeof profile.total_reviews === 'number') ? profile.total_reviews : Math.floor(Math.random() * 50) + 5,
+        hourlyRate: Math.floor(Math.random() * 10000) + 10000,
+        location: data.country || 'Location not specified',
+        imageUrl: data.avatar_url || '/lovable-uploads/35d6300d-047f-404d-913c-ec65831f7973.png',
+        featured: Math.random() > 0.7,
+        admin_verified: profile?.admin_verified ?? false
+      };
+
+      // Log the transformed researcher data
+      console.log('Processed researcher:', {
+        name: researcher.name,
+        title: researcher.title,
+        subtitle: researcher.subtitle
+      });
+
+      return researcher;
+    } catch (error) {
+      console.error('Error fetching researcher by ID:', error);
+      return null;
+    }
+  };
+
+  const searchResearchers = (
+    query: string,
+    field?: string,
+    language?: string,
+    priceRange?: string
+  ): Researcher[] => {
+    return researchers.filter(researcher => {
+      // Search query filter
+      const matchesSearch = query === "" || 
+        researcher.name.toLowerCase().includes(query.toLowerCase()) ||
+        researcher.field.toLowerCase().includes(query.toLowerCase()) ||
+        researcher.institution.toLowerCase().includes(query.toLowerCase()) ||
+        researcher.specializations.some(spec => 
+          spec.toLowerCase().includes(query.toLowerCase())
+        ) ||
+        (researcher.other_expertise && 
+          researcher.other_expertise.toLowerCase().includes(query.toLowerCase())
+        );
+      
+      // Field filter
+      const matchesField = !field || field === "all" || 
+        researcher.field === field ||
+        researcher.specializations.includes(field) ||
+        (researcher.expertise && researcher.expertise.includes(field));
+      
+      // Language filter
+      const matchesLanguage = !language || language === "all" ||
+        (researcher.languages && researcher.languages.some(lang => 
+          lang.toLowerCase().includes(language.toLowerCase())
+        ));
+      
+      // Price range filter
+      const matchesPriceRange = !priceRange || priceRange === "all" || (() => {
+        const rate = researcher.hourlyRate;
+        switch (priceRange) {
+          case "0-5000": return rate <= 5000;
+          case "5000-10000": return rate > 5000 && rate <= 10000;
+          case "10000-15000": return rate > 10000 && rate <= 15000;
+          case "15000-20000": return rate > 15000 && rate <= 20000;
+          case "20000+": return rate > 20000;
+          default: return true;
+        }
+      })();
+      
+      return matchesSearch && matchesField && matchesLanguage && matchesPriceRange;
+    });
+  };
+
+  const getFeaturedResearchers = (): Researcher[] => {
+    return researchers.filter(researcher => researcher.featured);
+  };
+
+  const getUniqueFields = (): string[] => {
+    const fields = new Set<string>();
+    researchers.forEach(researcher => {
+      if (researcher.field) fields.add(researcher.field);
+      researcher.specializations.forEach(spec => fields.add(spec));
+      if (researcher.expertise) {
+        researcher.expertise.forEach(exp => fields.add(exp));
+      }
+    });
+    return Array.from(fields).sort();
+  };
+
+  const getUniqueLanguages = (): string[] => {
+    const languages = new Set<string>();
+    researchers.forEach(researcher => {
+      if (researcher.languages) {
+        researcher.languages.forEach(lang => languages.add(lang));
+      }
+    });
+    return Array.from(languages).sort();
+  };
+
+  useEffect(() => {
+    fetchResearchers();
+  }, []);
+
+  return {
+    researchers,
+    loading,
+    error,
+    fetchResearchers,
+    getResearcherById,
+    searchResearchers,
+    getFeaturedResearchers,
+    getUniqueFields,
+    getUniqueLanguages
+  };
+};

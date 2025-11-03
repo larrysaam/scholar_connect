@@ -1,0 +1,93 @@
+
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { X } from "lucide-react";
+
+interface LanguageSelectorProps {
+  availableLanguages: string[];
+  selectedLanguages: string[];
+  onLanguageToggle: (language: string) => void;
+  onRemoveLanguage: (language: string) => void;
+  showOtherLanguage: boolean;
+  setShowOtherLanguage: (show: boolean) => void;
+  formData: any;
+  onInputChange: (field: string, value: string) => void;
+}
+
+const LanguageSelector = ({ 
+  availableLanguages, 
+  selectedLanguages, 
+  onLanguageToggle, 
+  onRemoveLanguage,
+  showOtherLanguage,
+  setShowOtherLanguage,
+  formData,
+  onInputChange
+}: LanguageSelectorProps) => {
+  
+  const handleLanguageToggle = (language: string) => {
+    if (language === "Other") {
+      setShowOtherLanguage(!selectedLanguages.includes(language));
+    }
+    onLanguageToggle(language);
+  };
+
+  return (
+    <div className="space-y-2">
+      <Label>Preferred Languages (You can choose more than one) *</Label>
+      <div className="border rounded-lg p-4 space-y-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {availableLanguages.map((language) => (
+            <div key={language} className="flex items-center space-x-2">
+              <Checkbox 
+                id={language}
+                checked={selectedLanguages.includes(language)}
+                onCheckedChange={() => handleLanguageToggle(language)}
+              />
+              <Label htmlFor={language} className="cursor-pointer text-sm">
+                {language}
+              </Label>
+            </div>
+          ))}
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="other-language"
+              checked={selectedLanguages.includes("Other")}
+              onCheckedChange={() => handleLanguageToggle("Other")}
+            />
+            <Label htmlFor="other-language" className="cursor-pointer text-sm">
+              Other
+            </Label>
+          </div>
+        </div>
+        
+        {showOtherLanguage && selectedLanguages.includes("Other") && (
+          <Input 
+            placeholder="Specify other language"
+            value={formData.customLanguage}
+            onChange={(e) => onInputChange("customLanguage", e.target.value)}
+            className="mt-2"
+          />
+        )}
+        
+        {selectedLanguages.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t">
+            {selectedLanguages.map((language) => (
+              <Badge key={language} variant="secondary" className="flex items-center gap-1">
+                {language}
+                <X 
+                  className="h-3 w-3 cursor-pointer" 
+                  onClick={() => onRemoveLanguage(language)}
+                />
+              </Badge>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default LanguageSelector;

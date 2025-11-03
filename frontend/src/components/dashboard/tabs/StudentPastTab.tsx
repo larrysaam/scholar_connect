@@ -1,0 +1,181 @@
+import { useState, useEffect, useMemo } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import PastConsultationCard from "../consultation/PastConsultationCard";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+// This interface matches the props expected by PastConsultationCard
+export interface PastConsultation {
+  id: string;
+  researcher: { id: string; name: string; field: string; imageUrl: string; };
+  date: string;
+  time: string;
+  topic: string;
+  status: "completed";
+  rating: number;
+  reviewText?: string;
+  hasRecording: boolean;
+  hasAINotes: boolean;
+}
+
+const ITEMS_PER_PAGE = 5;
+
+const StudentPastTab = () => {
+  const { user } = useAuth();
+  const [consultations, setConsultations] = useState<PastConsultation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [uploadedResources, setUploadedResources] = useState<{[key: string]: string[]}>({});
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchPastConsultations = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Fetch completed consultations/appointments for the student
+        const { data, error } = await supabase
+          .from('service_bookings')
+          .select(`
+            id, status, scheduled_date, scheduled_time, project_description, meeting_link,
+            provider:users!service_bookings_provider_id_fkey(id, name, topic_title, avatar_url),
+            service:consultation_services(title),
+            researcher_reviews(rating, comment)
+          `)
+          .eq('client_id', user.id)
+          .eq('status', 'completed')
+          .order('scheduled_date', { ascending: false });
+
+        if (error) throw error;
+
+        // Map to PastConsultation[]
+        const mappedConsultations: PastConsultation[] = (data || []).map((c: any) => ({
+          id: c.id,
+          researcher: {
+            id: c.provider?.id || 'N/A',
+            name: c.provider?.name || 'N/A',
+            field: c.provider?.topic_title || 'Researcher',
+            imageUrl: c.provider?.avatar_url || '/placeholder.svg',
+          },
+          date: c.scheduled_date,
+          time: c.scheduled_time,
+          topic: c.project_description || c.service?.title || 'No topic provided',
+          status: 'completed',
+          rating: c.researcher_reviews?.[0]?.rating || 0,
+          reviewText: c.researcher_reviews?.[0]?.comment || undefined,
+          hasRecording: !!c.meeting_link, // If meeting_link exists, assume recording is possible
+          hasAINotes: false, // Set to false or fetch if available
+        }));
+
+        setConsultations(mappedConsultations);
+      } catch (err: any) {
+        setError(err.message);
+        console.error('Error fetching past consultations:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPastConsultations();
+  }, [user]);
+
+  const paginatedConsultations = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return consultations.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [consultations, currentPage]);
+
+  const totalPages = Math.ceil(consultations.length / ITEMS_PER_PAGE);
+
+  // Handlers remain the same, but would need real logic
+  const handleViewRecording = (consultationId: string) => console.log("Viewing recording for:", consultationId);
+  const handleViewAINotes = (consultationId: string) => console.log("Viewing AI notes for:", consultationId);
+  const handleUploadResources = (consultationId: string) => console.log("Uploading resources for:", consultationId);
+  const handleSendMessage = (consultationId: string, message: string) => console.log("Sending message for:", consultationId, message);
+  const handleOpenChat = (researcherId: string, consultationId: string) => console.log("Opening chat for:", consultationId);
+  const handleFollowUpSession = (consultationId: string) => console.log("Booking follow-up for:", consultationId);
+
+  if (loading) {
+    return (
+        <div className="space-y-4">
+            <Skeleton className="h-12 w-1/3" />
+            <Skeleton className="h-56 w-full" />
+            <Skeleton className="h-56 w-full" />
+        </div>
+    );
+  }
+
+  if (error) {
+    return <Alert variant="destructive"><AlertTriangle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>;
+  }
+
+  return (
+    <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-bold truncate">Past Consultations</h2>
+      </div>
+      
+      {paginatedConsultations.length > 0 ? (
+        <>
+          <div className="space-y-3 sm:space-y-6 max-w-full">
+            {paginatedConsultations.map((consultation) => (
+              <div key={consultation.id} className="overflow-hidden">
+                <PastConsultationCard
+                  consultation={consultation}
+                  uploadedResources={uploadedResources[consultation.id] || []}
+                  userRole="student"
+                  onViewRecording={handleViewRecording}
+                  onViewAINotes={handleViewAINotes}
+                  onUploadResources={handleUploadResources}
+                  onSendMessage={handleSendMessage}
+                  onOpenChat={handleOpenChat}
+                  onFollowUpSession={handleFollowUpSession}
+                />
+              </div>
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row justify-center sm:justify-end items-center gap-2 sm:gap-0 mt-4 sm:mt-6">
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="text-xs sm:text-sm px-3 sm:px-4"
+                >
+                  Previous
+                </Button>
+                <span className="text-xs sm:text-sm text-gray-600 px-2">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="text-xs sm:text-sm px-3 sm:px-4"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <Card>
+            <CardContent className="text-center py-8 sm:py-12">
+                <p className="text-sm sm:text-base text-gray-500">No past consultations available.</p>
+            </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+export default StudentPastTab;

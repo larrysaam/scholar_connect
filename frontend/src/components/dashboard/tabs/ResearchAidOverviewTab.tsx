@@ -1,0 +1,233 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Star, TrendingUp, MessageSquare, Clock, DollarSign } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL!,
+  import.meta.env.VITE_SUPABASE_ANON_KEY!
+);
+
+const ResearchAidOverviewTab = () => {
+  const [isAvailable, setIsAvailable] = useState(true);
+  const [pendingAppointments, setPendingAppointments] = useState(0);
+  const { profile } = useAuth();
+  const { toast } = useToast();
+
+  // Fetch real availability and pending appointments from Supabase
+  useEffect(() => {
+    const fetchAvailabilityAndPending = async () => {
+      if (!profile?.id) return;
+      // Fetch availability
+      const { data, error } = await supabase
+        .from("research_aid_profiles")
+        .select("availability")
+        .eq("id", profile.id)
+        .single();
+      if (!error && data && data.availability && typeof data.availability === "object" && "isAvailable" in data.availability) {
+        setIsAvailable(!!data.availability.isAvailable);
+      }
+      // Fetch pending appointments count
+      const { count, error: countError } = await supabase
+        .from("service_bookings")
+        .select('id', { count: 'exact', head: true })
+        .eq("provider_id", profile.id)
+        .eq("status", "pending");
+      if (!countError && typeof count === 'number') {
+        setPendingAppointments(count);
+      }
+    };
+    fetchAvailabilityAndPending();
+  }, [profile?.id]);
+
+  // Handler to update availability in DB
+  const handleAvailabilityChange = async (checked: boolean) => {
+    setIsAvailable(checked);
+    if (!profile?.id) return;
+    const { error } = await supabase
+      .from("research_aid_profiles")
+      .update({ availability: { isAvailable: checked } })
+      .eq("id", profile.id);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const getWelcomeMessage = () => {
+    if (!profile?.name) return "Welcome!";
+    
+    const nameParts = profile.name.split(' ');
+    const lastName = nameParts[nameParts.length - 1];
+    
+    // Check for academic rank first (Professor takes precedence)
+    if (profile.academic_rank && 
+        (profile.academic_rank.includes('Professor') || 
+         profile.academic_rank.includes('Prof'))) {
+      return `Welcome, Prof. ${lastName}!`;
+    }
+    
+    // Check for PhD/Postdoc in level_of_study or highest_education
+    const hasPhD = profile.level_of_study?.toLowerCase().includes('phd') ||
+                   profile.level_of_study?.toLowerCase().includes('postdoc') ||
+                   profile.highest_education?.toLowerCase().includes('phd') ||
+                   profile.highest_education?.toLowerCase().includes('postdoc');
+    
+    if (hasPhD) {
+      return `Welcome, Dr. ${lastName}!`;
+    }
+    
+    return `Welcome, ${lastName}!`;
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Welcome Message */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">{getWelcomeMessage()}</h2>
+              <p className="text-gray-600 mt-1">
+                You have <span className="font-semibold text-orange-600">{pendingAppointments} pending appointment{pendingAppointments === 1 ? '' : 's'}</span>.
+              </p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <span className="text-sm font-medium">Available</span>
+              <Switch
+                checked={isAvailable}
+                onCheckedChange={handleAvailabilityChange}
+                className="data-[state=checked]:bg-green-600"
+              />
+              {/* <Badge variant={isAvailable ? "default" : "secondary"} className={isAvailable ? "bg-green-600" : ""}>
+                {isAvailable ? "Online" : "Offline"}
+              </Badge> */}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Profile Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={profile?.avatar_url || "/placeholder-avatar.jpg"} alt={profile?.name || "Research Aid"} />
+              <AvatarFallback>{profile?.name ? profile.name.split(' ').map(n => n[0]).join('') : 'RA'}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="text-lg font-semibold">{profile?.name || 'Research Aid'}</h3>
+              <p className="text-sm text-gray-600">{profile?.title || 'Academic Editor & Statistician'}</p>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center">
+              <div className="flex items-center justify-center space-x-1 mb-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
+                ))}
+              </div>
+              <p className="text-sm text-gray-600">4.9 Rating</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-gray-900">47</p>
+              <p className="text-sm text-gray-600">Total Jobs Completed</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-green-600">98%</p>
+              <p className="text-sm text-gray-600">Success Rate</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Weekly Snapshot */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Clock className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Jobs in Progress</p>
+                <p className="text-xl font-bold">5</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <MessageSquare className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">New Messages</p>
+                <p className="text-xl font-bold">12</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-yellow-100 rounded-lg">
+                <DollarSign className="h-5 w-5 text-yellow-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">This Week Earnings</p>
+                <p className="text-xl font-bold">15,750 XAF</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Profile Views</p>
+                <p className="text-xl font-bold">28</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Button className="w-full">
+              View Job Requests
+            </Button>
+            <Button variant="outline" className="w-full">
+              Check Messages
+            </Button>
+            <Button variant="outline" className="w-full">
+              Update Profile
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default ResearchAidOverviewTab;

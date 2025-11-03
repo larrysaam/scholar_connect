@@ -1,0 +1,452 @@
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { MessageSquare, ThumbsUp, Reply, Heart, Trash2, Send, Search, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useDiscussions } from "@/hooks/useDiscussions";
+import { NewDiscussionModal } from "../discussion/NewDiscussionModal";
+
+const DiscussionTab = () => {
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const { 
+    posts, 
+    loading, 
+    createPost, 
+    toggleLike, 
+    fetchReplies, 
+    createReply, 
+    deletePost, 
+    deleteReply 
+  } = useDiscussions();
+  // Form states
+  const [replyText, setReplyText] = useState("");
+  const [activeReply, setActiveReply] = useState<string | null>(null);
+  const [replies, setReplies] = useState<Record<string, any[]>>({});
+  const [showReplies, setShowReplies] = useState<Record<string, boolean>>({});
+  // Search and filter states
+  const [searchCategory, setSearchCategory] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  // Optimistic like state for instant UI feedback
+  const [optimisticLikes, setOptimisticLikes] = useState<Record<string, boolean>>({});
+
+  // Categories for discussion posts
+  const categories = [
+  "Dedication",
+  "Acknowledgement",
+  "Table of Contents",
+  "Title",
+  "Abstract",
+  "Introduction",
+  "Problem Statement",
+  "Objectives",
+  "Research Questions",
+  "Hypotheses",
+  "Literature Review",
+  "Theoretical Framework",
+  "Conceptual Framework",
+  "Methodology",
+  "Data Analysis",
+  "Results",
+  "Discussion",
+  "Conclusion",
+  "References",
+  "Annexes",
+  "General Discussions"
+]
+  // Filter posts based on search criteria
+  const filteredPosts = posts.filter(post => {
+    const matchesCategory = searchCategory === "all" || post.category === searchCategory;
+    const matchesQuery = !searchQuery || 
+      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.author.name.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return matchesCategory && matchesQuery;
+  });
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchCategory("all");
+    setSearchQuery("");
+  };
+  // Handle new post creation
+  const handleNewPost = async (title: string, content: string, category: string) => {
+    await createPost(title, content, category);
+  };
+
+  // Handle like toggle
+  const handleLike = async (postId: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to like posts",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const post = posts.find(p => p.id === postId);
+    const alreadyLiked = (typeof optimisticLikes[postId] === 'boolean' ? optimisticLikes[postId] : post?.user_has_liked);
+
+    // Optimistically update UI
+    setOptimisticLikes(prev => ({
+      ...prev,
+      [postId]: !alreadyLiked
+    }));
+
+    // Toggle like in DB (add if not liked, remove if already liked)
+    await toggleLike(postId);
+  };
+
+  // Handle reply creation
+  const handleReply = async (postId: string) => {
+    if (!replyText.trim()) {
+      toast({
+        title: "Empty Reply",
+        description: "Please write a reply before posting",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!user) {
+      toast({
+        title: "Authentication Required", 
+        description: "Please log in to reply to posts",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    await createReply(postId, replyText);
+    setReplyText("");
+    setActiveReply(null);
+    
+    // Refresh replies for this post
+    handleViewReplies(postId);
+  };
+
+  // Handle viewing replies for a post
+  const handleViewReplies = async (postId: string) => {
+    if (showReplies[postId]) {
+      // Hide replies
+      setShowReplies(prev => ({ ...prev, [postId]: false }));
+    } else {
+      // Load and show replies
+      const postReplies = await fetchReplies(postId);
+      setReplies(prev => ({ ...prev, [postId]: postReplies }));
+      setShowReplies(prev => ({ ...prev, [postId]: true }));
+    }
+  };
+
+  // Handle post deletion
+  const handleDeletePost = async (postId: string) => {
+    if (confirm("Are you sure you want to delete this post?")) {
+      await deletePost(postId);
+    }
+  };
+
+  // Handle reply deletion
+  const handleDeleteReply = async (replyId: string, postId: string) => {
+    if (confirm("Are you sure you want to delete this reply?")) {
+      await deleteReply(replyId, postId);
+      // Refresh replies
+      handleViewReplies(postId);
+    }
+  };
+
+  // Format timestamp
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInHours = diffInMs / (1000 * 60 * 60);
+    const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+    if (diffInHours < 1) {
+      const minutes = Math.floor(diffInMs / (1000 * 60));
+      return `${minutes} minutes ago`;
+    } else if (diffInHours < 24) {
+      const hours = Math.floor(diffInHours);
+      return `${hours} hours ago`;
+    } else if (diffInDays < 7) {
+      const days = Math.floor(diffInDays);
+      return `${days} days ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading discussions...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Discussion Forum</h2>
+        <Badge variant="secondary">{filteredPosts.length} of {posts.length} Discussions</Badge>
+      </div>
+
+      {/* Search and Filter Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Search className="h-5 w-5 mr-2" />
+            Search & Filter Discussions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Search by text */}
+            <div className="space-y-2">
+              <Label htmlFor="search-query">Search by keyword</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  id="search-query"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search titles, content, or authors..."
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            {/* Filter by category */}
+            <div className="space-y-2">
+              <Label htmlFor="search-category">Filter by category</Label>              <Select value={searchCategory} onValueChange={setSearchCategory}>                <SelectTrigger id="search-category">
+                  <SelectValue placeholder="All categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All categories</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Clear filters */}
+            <div className="space-y-2">
+              <Label>&nbsp;</Label>
+              <Button 
+                variant="outline" 
+                onClick={clearFilters}
+                className="w-full"
+                disabled={searchCategory === "all" && !searchQuery}
+              >
+                <X className="h-4 w-4 mr-2" />
+                Clear Filters
+              </Button>
+            </div>
+          </div>
+        </CardContent>      </Card>
+
+      {/* Email Notification Info */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-start space-x-3">
+          <div className="flex-shrink-0">
+            <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
+              <MessageSquare className="w-4 h-4 text-blue-600" />
+            </div>
+          </div>
+          <div className="flex-1">
+            <h4 className="text-sm font-medium text-blue-900">Stay Connected</h4>
+            <p className="text-sm text-blue-700 mt-1">
+              Get email notifications when someone replies to your discussions! You can manage your notification preferences in 
+              <span className="font-medium"> Settings</span>.
+            </p>
+          </div>
+        </div>
+      </div>      {/* New Discussion Button */}
+      <div className="flex justify-end">
+        <NewDiscussionModal onCreatePost={handleNewPost} categories={categories} />
+      </div>{/* No Posts Message */}
+      {filteredPosts.length === 0 && posts.length > 0 && (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Search className="h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No matching discussions</h3>
+            <p className="text-gray-500 text-center max-w-md">
+              Try adjusting your search criteria or clear the filters to see all discussions.
+            </p>
+            <Button 
+              variant="outline" 
+              onClick={clearFilters}
+              className="mt-4"
+            >
+              Clear Filters
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* No Posts at all Message */}
+      {posts.length === 0 && (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <MessageSquare className="h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No discussions yet</h3>
+            <p className="text-gray-500 text-center max-w-md">
+              Be the first to start a discussion! Share your research questions, insights, or collaborate with other scholars.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Discussion Posts */}
+      <div className="space-y-4">
+        {filteredPosts.map((post) => (
+          <Card key={post.id}>
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0">
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    <AvatarImage src={post.author.avatar_url} />
+                    <AvatarFallback>
+                      {post.author.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h4 className="font-semibold break-words max-w-[200px] sm:max-w-none">{post.title}</h4>
+                    <p className="text-sm text-gray-600">
+                      by {post.author.name} • {post.author.role} • {formatTimestamp(post.created_at)}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2 mt-2 sm:mt-0">
+                  <Badge variant="outline">{post.category}</Badge>
+                  {user && user.id === post.author.id && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeletePost(post.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-gray-700 break-words max-w-full">{post.content}</p>
+              
+              <div className="flex flex-wrap items-center gap-2 sm:space-x-4 sm:gap-0">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => handleLike(post.id)}
+                  className={((typeof optimisticLikes[post.id] === 'boolean' ? optimisticLikes[post.id] : post.user_has_liked) ? "text-blue-600" : "")}
+                >
+                  <ThumbsUp className={((typeof optimisticLikes[post.id] === 'boolean' ? optimisticLikes[post.id] : post.user_has_liked) ? "h-4 w-4 mr-1 text-blue-600" : "h-4 w-4 mr-1")}/>
+                  {post.likes_count}
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setActiveReply(activeReply === post.id ? null : post.id)}
+                >
+                  <Reply className="h-4 w-4 mr-1" />
+                  Reply
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleViewReplies(post.id)}
+                >
+                  <MessageSquare className="h-4 w-4 mr-1" />
+                  {showReplies[post.id] ? 'Hide Replies' : `See Replies`}
+                </Button>
+              </div>              {/* Reply Form */}
+              {activeReply === post.id && (
+                <div className="border-t pt-4 space-y-3">
+                  <Textarea
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    placeholder="Write your reply..."
+                    rows={3}
+                  />
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => handleReply(post.id)}>
+                        <Send className="h-4 w-4 mr-1" />
+                        Post Reply
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => setActiveReply(null)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                    {user?.id !== post.author.id && (
+                      <p className="text-xs text-gray-500">
+                        📧 {post.author.name} will be notified of your reply
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Replies Display */}
+              {showReplies[post.id] && replies[post.id] && (
+                <div className="border-t pt-4 space-y-4">
+                  <h5 className="font-medium text-gray-900">Replies</h5>
+                  {replies[post.id].map((reply) => (
+                    <div key={reply.id} className="flex space-x-3 bg-gray-50 p-4 rounded-lg">
+                      <Avatar className="flex-shrink-0">
+                        <AvatarImage src={reply.author.avatar_url} />
+                        <AvatarFallback>
+                          {reply.author.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-sm">{reply.author.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {reply.author.role} • {formatTimestamp(reply.created_at)}
+                            </p>
+                          </div>
+                          {user && user.id === reply.author.id && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteReply(reply.id, post.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                        <p className="text-gray-700 mt-2">{reply.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default DiscussionTab;
