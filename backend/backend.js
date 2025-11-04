@@ -69,12 +69,31 @@ io.on('connection', (socket) => {
 });
 // --- end socket setup ---
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Scholar Consult Connect Backend API',
+    status: 'running',
+    version: '1.0.0',
+    endpoints: [
+      'POST /api/mesomb-withdraw',
+      'POST /api/mesomb-payment',
+      'POST /api/mesomb-topup',
+      'POST /api/create-booking',
+      'POST /api/send-withdrawal-notification',
+      'POST /api/job-payment'
+    ]
+  });
+});
+
 // --- MeSomb API Routes ---
 
 app.post("/api/mesomb-withdraw", async (req, res) => {
   console.log("[MeSomb Withdraw] Request received", req.body);
+  console.log(applicationKey, accessKey, secretKey);
   try {
     if (!applicationKey || !accessKey || !secretKey) {
+      
       return res.status(500).json({ error: "MeSomb credentials not set" });
     }
     const { receiver, amount, service, customer, currency = "XAF", country = "CM" } = req.body;
@@ -105,9 +124,14 @@ app.post("/api/mesomb-withdraw", async (req, res) => {
      console.log("All Earnings: ", allEarnings);
 
     // Calculate total earnings from all completed earnings (if earnings array is available)
-    const totalEarnings = allEarnings.reduce((sum, earning) =>
-    earning.status === "completed" ? sum + earning.total_price : sum, 0
-  );
+    const totalEarnings = allEarnings.reduce((sum, earning) => {
+      if (earning.status === "completed" && earning.total_price) {
+        return sum + earning.total_price;
+      } else if (earning.status === "accepted" && earning.jobs && earning.jobs.budget) {
+        return sum + earning.jobs.budget;
+      }
+      return sum;
+    }, 0);
 
     // Fetch withdrawals for this user
     const { data: withdrawals, error: withdrawalsError } = await supabase
@@ -140,6 +164,7 @@ app.post("/api/mesomb-withdraw", async (req, res) => {
       service,
       country,
       currency,
+      nonce: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       // customer must include at least phone or email
       customer: { id: customer, phone: receiver },
       products: [
