@@ -9,6 +9,8 @@ interface AuthContextType {
   profile: any | null;
   session: Session | null;
   loading: boolean;
+  showTermsModal: boolean;
+  setShowTermsModal: (show: boolean) => void;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -23,12 +25,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<any | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showTermsModal, setShowTermsModal] = useState(false);
   const { toast } = useToast();
   
   // Session timeout refs
   const timeoutRef = useRef<NodeJS.Timeout>();
   const warningRef = useRef<NodeJS.Timeout>();
-
   const fetchProfile = async (userId: string) => {
     try {
       const { data: profileData, error: profileError } = await supabase
@@ -45,6 +47,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!profileData) {
         console.warn(`No profile found for user ID: ${userId}`);
         return null;
+      }
+
+      // Check if user needs to accept terms
+      if (!profileData.terms_accepted && profileData.role && 
+          ['student', 'expert', 'aid'].includes(profileData.role)) {
+        setShowTermsModal(true);
       }
 
       return {
@@ -232,12 +240,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (warningRef.current) clearTimeout(warningRef.current);
     }
   }, [user, resetSessionTimeout]);
-
   const value = {
     user,
     profile,
     session,
     loading,
+    showTermsModal,
+    setShowTermsModal,
     signOut,
     refreshProfile,
   };

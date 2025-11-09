@@ -5,9 +5,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { AuthProvider } from "@/hooks/useAuth";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import TermsAndConditionsModal from "@/components/TermsAndConditionsModal";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,110 @@ const StudentAppointmentsPage = lazy(() => import("./pages/StudentAppointmentsPa
 // Research Aid Profile page
 const ResearchAidProfile = lazy(() => import("./pages/ResearchAidProfile"));
 
+const AppContent = () => {
+  const { showTermsModal, setShowTermsModal, profile, refreshProfile } = useAuth();
+
+  const handleTermsAccept = async () => {
+    setShowTermsModal(false);
+    await refreshProfile();
+  };
+
+  return (
+    <>
+      <BrowserRouter>
+        <Suspense fallback={<LoadingSpinner size="lg" />}>
+          <Routes>
+            {/* Public routes - accessible without authentication */}
+            <Route path="/" element={<Index />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/partnerships" element={<Partnerships />} />
+            <Route path="/blogs" element={<Blogs />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
+            
+            {/* Authentication routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/student-signup" element={<StudentSignup />} />
+            <Route path="/researcher-signup" element={<ResearcherSignup />} />
+            <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/signup" element={<AdminSignup />} />
+            
+            {/* Protected routes - require authentication */}
+            <Route path="/researchers" element={
+              <ProtectedRoute>
+                <Researchers />
+              </ProtectedRoute>
+            } />
+            <Route path="/research-aids" element={
+              <ProtectedRoute>
+                <ResearchAides />
+              </ProtectedRoute>
+            } />
+            <Route path="/researcher/:id" element={
+              <ProtectedRoute>
+                <ResearcherProfile />
+              </ProtectedRoute>
+            } />
+            <Route path="/research-aids/:id" element={
+              <ProtectedRoute>
+                <ResearchAidProfile />
+              </ProtectedRoute>
+            } />
+            <Route path="/workspace/:projectId" element={
+              <ProtectedRoute>
+                <ProjectWorkspace />
+              </ProtectedRoute>
+            } />
+            
+            {/* Dashboard routes - require authentication and specific roles */}
+            <Route path="/dashboard" element={
+              <ProtectedRoute requiredRole="student">
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/researcher-dashboard" element={
+              <ProtectedRoute requiredRole="expert">
+                <ResearcherDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/research-aids-dashboard" element={
+              <ProtectedRoute requiredRole="aid">
+                <ResearchAidsDashboard />
+              </ProtectedRoute>
+            } />
+            
+            {/* Student appointment routes */}
+            <Route path="/appointments" element={
+              <ProtectedRoute requiredRole="student">
+                <StudentAppointmentsPage />
+              </ProtectedRoute>
+            } />
+
+            {/* Admin route */}
+            <Route path="/admin" element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+      
+      {/* Terms and Conditions Modal */}
+      <TermsAndConditionsModal
+        isOpen={showTermsModal}
+        onAccept={handleTermsAccept}
+        userRole={profile?.role || ''}
+      />
+    </>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
@@ -58,84 +163,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
-            <Suspense fallback={<LoadingSpinner size="lg" />}>
-              <Routes>
-                {/* Public routes - accessible without authentication */}
-                <Route path="/" element={<Index />} />
-                <Route path="/about" element={<AboutUs />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/how-it-works" element={<HowItWorks />} />
-                <Route path="/partnerships" element={<Partnerships />} />
-                <Route path="/blogs" element={<Blogs />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                <Route path="/terms-of-service" element={<TermsOfService />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
-                
-                {/* Authentication routes */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/student-signup" element={<StudentSignup />} />
-                <Route path="/researcher-signup" element={<ResearcherSignup />} />
-                <Route path="/research-aid-signup" element={<ResearchAidSignup />} />
-                <Route path="/admin/login" element={<AdminLogin />} />
-                <Route path="/admin/signup" element={<AdminSignup />} />
-                
-                {/* Protected routes - require authentication */}
-                <Route path="/researchers" element={
-                  <ProtectedRoute>
-                    <Researchers />
-                  </ProtectedRoute>
-                } />
-                <Route path="/research-aids" element={
-                  <ProtectedRoute>
-                    <ResearchAides />
-                  </ProtectedRoute>
-                } />
-                <Route path="/researcher/:id" element={
-                  <ProtectedRoute>
-                    <ResearcherProfile />
-                  </ProtectedRoute>
-                } />
-                <Route path="/research-aids/:id" element={
-                  <ProtectedRoute>
-                    <ResearchAidProfile />
-                  </ProtectedRoute>
-                } />                <Route path="/workspace/:projectId" element={
-                  <ProtectedRoute>
-                    <ProjectWorkspace />
-                  </ProtectedRoute>
-                } />
-                  {/* Dashboard routes - require authentication and specific roles */}
-                <Route path="/dashboard" element={
-                  <ProtectedRoute requiredRole="student">
-                    <Dashboard />
-                  </ProtectedRoute>
-                } />                <Route path="/researcher-dashboard" element={
-                  <ProtectedRoute requiredRole="expert">
-                    <ResearcherDashboard />
-                  </ProtectedRoute>
-                } />
-                <Route path="/research-aids-dashboard" element={
-                  <ProtectedRoute requiredRole="aid">
-                    <ResearchAidsDashboard />
-                  </ProtectedRoute>
-                } />                {/* Student appointment routes */}
-                <Route path="/appointments" element={
-                  <ProtectedRoute requiredRole="student">
-                    <StudentAppointmentsPage />
-                  </ProtectedRoute>
-                } />
-
-                {/* Admin route */}
-                <Route path="/admin" element={
-                  <ProtectedRoute requiredRole="admin">
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                } />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
+          <AppContent />
         </TooltipProvider>
       </AuthProvider>
     </LanguageProvider>
