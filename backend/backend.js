@@ -24,6 +24,19 @@ const secretKey = process.env.MESOMB_SECRET_KEY;
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
+// --- Helper Functions ---
+/**
+ * Calculate 15% service fee for any transaction amount
+ * @param {number} baseAmount - The base transaction amount
+ * @returns {object} - Object containing serviceFee and totalAmount
+ */
+const calculateServiceFee = (baseAmount) => {
+  const serviceFeeRate = 0.15; // 15%
+  const serviceFee = Math.round(baseAmount * serviceFeeRate);
+  const totalAmount = baseAmount + serviceFee;
+  return { serviceFee, totalAmount };
+};
+
 // --- Socket.IO setup ---
 io.on('connection', (socket) => {
   const userId = socket.handshake.query.userId;
@@ -191,34 +204,69 @@ app.post("/api/mesomb-withdraw", async (req, res) => {
 
 
 app.post('/api/mesomb-payment', async (req, res) => {
-  if (!applicationKey || !accessKey || !secretKey) {
-    return res.status(500).json({ error: 'MeSomb credentials are not set in environment variables' });
-  }
-  const { amount, service, payer, country = 'CM', currency = 'XAF', description = '', customer, location, products } = req.body;
+  console.log("[MeSomb Payment] Request received", req.body);
   try {
+    if (!applicationKey || !accessKey || !secretKey) {
+      return res.status(500).json({ error: 'MeSomb credentials are not set in environment variables' });
+    }
+
+    const { amount, service, payer, country = 'CM', currency = 'XAF', description = '', customer, location, products } = req.body;
+
+    // Calculate 15% service fee using helper function
+    const { serviceFee, totalAmount } = calculateServiceFee(amount);
+
+    console.log("[MeSomb Payment] Processing payment:", { 
+      baseAmount: amount, 
+      serviceFee, 
+      totalAmount, 
+      service, 
+      payer, 
+      customer 
+    });
+
     const client = new PaymentOperation({ applicationKey, accessKey, secretKey });
+    
     // Ensure location is always an object and location.town is always set
     const safeLocation = {
       ...(location || {}),
       town: location?.town && location.town.trim() ? location.town : 'Douala',
     };
-    const response = await client.makeCollect({
+
+    // Add service fee to products array
+    const enhancedProducts = [
+      ...(products || []),
+      {
+        name: 'Platform Service Fee',
+        category: 'service_fee',
+        quantity: 1,
+        amount: serviceFee
+      }
+    ];    const response = await client.makeCollect({
       payer,
-      amount,
+      amount: totalAmount, // Charge total amount including service fee
       service,
       country,
       currency,
-      description,
+      nonce: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      description: `${description} (includes 15% service fee)`,
       customer,
       location: safeLocation,
-      products,
+      products: enhancedProducts,
     });
+
+    const isSuccess = response.isOperationSuccess() && response.isTransactionSuccess();
+    console.log(`[MeSomb Payment] ${isSuccess ? 'Payment processed successfully' : 'Payment failed'}`);
+
     res.status(200).json({
       operationSuccess: response.isOperationSuccess(),
       transactionSuccess: response.isTransactionSuccess(),
+      baseAmount: amount,
+      serviceFee: serviceFee,
+      totalAmount: totalAmount,
       raw: response,
     });
   } catch (err) {
+    console.error('[MeSomb Payment] Error:', err);
     res.status(500).json({ error: err?.message || 'Payment failed', details: err });
   }
 });
@@ -229,9 +277,7 @@ app.post("/api/mesomb-topup", async (req, res) => {
   try {
     if (!applicationKey || !accessKey || !secretKey) {
       return res.status(500).json({ error: "MeSomb credentials not set" });
-    }
-
-    const {
+    }    const {
       amount,
       service,
       payer,
@@ -243,29 +289,54 @@ app.post("/api/mesomb-topup", async (req, res) => {
       products
     } = req.body;
 
-    console.log("Processing payment:", { amount, service, payer, customer });
+    // Calculate 15% service fee using helper function
+    const { serviceFee, totalAmount } = calculateServiceFee(amount);
+
+    console.log("Processing payment:", { 
+      baseAmount: amount, 
+      serviceFee, 
+      totalAmount, 
+      service, 
+      payer, 
+      customer 
+    });
 
     const client = new PaymentOperation({ applicationKey, accessKey, secretKey });
 
-    // Use makeCollect to collect payment from customer
+    // Use makeCollect to collect payment from customer (including service fee)
     const response = await client.makeCollect({
-      amount,
+      amount: totalAmount,
       service,
       payer,
       country,
       currency,
-      description,
+      nonce: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      description: `${description || 'Wallet Top-up'} (includes 15% service fee)`,
       customer,
       location: location || { town: 'Douala', region: 'Littoral', country: 'CM' },
-      products: products || [{ name: 'Wallet Top-up', category: 'deposit', quantity: 1, amount }],
+      products: products || [
+        { 
+          name: 'Wallet Top-up', 
+          category: 'deposit', 
+          quantity: 1, 
+          amount: amount 
+        },
+        { 
+          name: 'Service Fee', 
+          category: 'fee', 
+          quantity: 1, 
+          amount: serviceFee 
+        }
+      ],
     });
 
     const isSuccess = response.isOperationSuccess() && response.isTransactionSuccess();
-    console.log(`[MeSomb Payment] ${isSuccess ? 'Payment processed successfully' : 'Payment failed'}`);
-
-    res.json({
+    console.log(`[MeSomb Payment] ${isSuccess ? 'Payment processed successfully' : 'Payment failed'}`);    res.json({
       operationSuccess: response.isOperationSuccess(),
       transactionSuccess: response.isTransactionSuccess(),
+      baseAmount: amount,
+      serviceFee: serviceFee,
+      totalAmount: totalAmount,
       raw: response,
     });
   } catch (err) {
@@ -328,7 +399,14 @@ app.post('/api/create-booking', async (req, res) => {
         transactionSuccess: true,
         message: 'Free consultation booking created successfully'
       });
-    }
+    }    // Calculate 15% service fee for paid consultations
+    const { serviceFee, totalAmount } = calculateServiceFee(expectedAmount);
+
+    console.log('[Booking Creation] Payment calculation:', {
+      servicePrice: expectedAmount,
+      serviceFee: serviceFee,
+      totalAmount: totalAmount
+    });
 
     // Process payment through MeSomb for paid consultations
     const client = new PaymentOperation({ applicationKey, accessKey, secretKey });
@@ -341,11 +419,12 @@ app.post('/api/create-booking', async (req, res) => {
 
     const response = await client.makeCollect({
       payer,
-      amount: expectedAmount,
+      amount: totalAmount,
       service,
       country,
       currency: pricing.currency,
-      description: `Payment for ${serviceData.title} - ${academic_level}`,
+      nonce: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      description: `Payment for ${serviceData.title} - ${academic_level} (includes 15% service fee)`,
       customer,
       location: safeLocation,
       products: products || [
@@ -354,6 +433,12 @@ app.post('/api/create-booking', async (req, res) => {
           category: serviceData.category,
           quantity: 1,
           amount: expectedAmount
+        },
+        {
+          name: 'Service Fee',
+          category: 'fee',
+          quantity: 1,
+          amount: serviceFee
         }
       ],
     });
@@ -362,6 +447,9 @@ app.post('/api/create-booking', async (req, res) => {
     res.status(200).json({
       operationSuccess: response.isOperationSuccess(),
       transactionSuccess: response.isTransactionSuccess(),
+      servicePrice: expectedAmount,
+      serviceFee: serviceFee,
+      totalAmount: totalAmount,
       raw: response,
     });
   } catch (err) {
@@ -424,28 +512,45 @@ app.post('/api/job-payment', async (req, res) => {
       jobData,
       userId,
       customer
-    } = req.body;
+    } = req.body;    // Calculate 15% service fee using helper function
+    const { serviceFee, totalAmount } = calculateServiceFee(amount);
 
-    console.log("[Job Payment] Processing payment for job posting:", { amount, service, payer, userId });
+    console.log("[Job Payment] Processing payment for job posting:", { 
+      baseAmount: amount, 
+      serviceFee, 
+      totalAmount, 
+      service, 
+      payer, 
+      userId 
+    });
 
     // Process payment through MeSomb
     const client = new PaymentOperation({ applicationKey, accessKey, secretKey });
 
     const response = await client.makeCollect({
       payer,
-      amount,
+      amount: totalAmount,
       service,
       country,
       currency,
-      description: `Payment for job posting: ${jobData.title}`,
+      nonce: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      description: `Payment for job posting: ${jobData.title} (includes 15% service fee)`,
       customer,
       location: { town: 'Douala', region: 'Littoral', country: 'CM' },
-      products: [{
-        name: `Job Posting: ${jobData.title}`,
-        category: 'job_posting',
-        quantity: 1,
-        amount
-      }],
+      products: [
+        {
+          name: `Job Posting: ${jobData.title}`,
+          category: 'job_posting',
+          quantity: 1,
+          amount: amount
+        },
+        {
+          name: 'Service Fee',
+          category: 'fee',
+          quantity: 1,
+          amount: serviceFee
+        }
+      ],
     });
 
     const isSuccess = response.isOperationSuccess() && response.isTransactionSuccess();
@@ -472,13 +577,14 @@ app.post('/api/job-payment', async (req, res) => {
       if (jobCreateError) {
         console.error('[Job Payment] Error creating job post:', jobCreateError);
         return res.status(500).json({ error: 'Payment successful but job creation failed' });
-      }
-
-      console.log('[Job Payment] Job created successfully');
+      }      console.log('[Job Payment] Job created successfully');
       res.status(200).json({
         operationSuccess: true,
         transactionSuccess: true,
         jobCreated: true,
+        baseAmount: amount,
+        serviceFee: serviceFee,
+        totalAmount: totalAmount,
         jobData: jobCreateData,
         raw: response
       });

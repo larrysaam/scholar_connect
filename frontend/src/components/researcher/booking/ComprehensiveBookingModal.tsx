@@ -221,11 +221,23 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
       const addon = service.addons.find(a => a.id === addonId);
       return total + (addon ? addon.price : 0);
     }, 0);
-  };
-  // Calculate total price
+  };  // Calculate total price
   const getTotalPrice = () => {
     return getServicePrice() + getAddonPrice();
   };
+  
+  // Calculate 15% service fee
+  const getServiceFee = () => {
+    const baseAmount = getTotalPrice();
+    if (baseAmount === 0) return 0;
+    return Math.round(baseAmount * 0.15);
+  };
+  
+  // Calculate total amount including service fee
+  const getTotalAmountWithFee = () => {
+    return getTotalPrice() + getServiceFee();
+  };
+  
   // Check if booking is free
   const isBookingFree = () => {
     return getTotalPrice() === 0;
@@ -404,9 +416,8 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            amount: totalPrice,
+          },          body: JSON.stringify({
+            amount: totalPrice, // Base amount - backend will add 15% service fee
             service: selectedOperator, // Use selected operator
             payer: paymentDetails.phoneNumber,
             description: `Consultation booking payment - ${service.title}`,
@@ -424,13 +435,18 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
                 name: `Consultation: ${service.title}`,
                 category: 'consultation',
                 quantity: 1,
-                amount: totalPrice
+                amount: totalPrice // Base service amount
               }
             ]
           }),
-        });
+        });        const paymentResult = await paymentResponse.json();
 
-        const paymentResult = await paymentResponse.json();
+        // Log payment details including service fee
+        console.log('Payment processed:', {
+          baseAmount: paymentResult.baseAmount,
+          serviceFee: paymentResult.serviceFee,
+          totalAmount: paymentResult.totalAmount
+        });
 
         if (!paymentResult.operationSuccess || !paymentResult.transactionSuccess) {
           toast({
@@ -842,18 +858,45 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
                     <span>
                       {selectedDate && format(selectedDate, 'PPP')} at {selectedTime}
                     </span>
-                  </div>
-                  <Separator />
+                  </div>                  <Separator />
+                  {!isBookingFree() && (
+                    <>
+                      <div className="flex justify-between">
+                        <span>Service Fee:</span>
+                        <span>{getServicePrice().toLocaleString()} XAF</span>
+                      </div>
+                      {getAddonPrice() > 0 && (
+                        <div className="flex justify-between">
+                          <span>Add-ons:</span>
+                          <span>{getAddonPrice().toLocaleString()} XAF</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span>Subtotal:</span>
+                        <span>{getTotalPrice().toLocaleString()} XAF</span>
+                      </div>
+                      <div className="flex justify-between text-orange-600">
+                        <span>Platform Fee (15%):</span>
+                        <span>+{getServiceFee().toLocaleString()} XAF</span>
+                      </div>
+                      <Separator />
+                    </>
+                  )}
                   <div className="flex justify-between font-medium text-base">
-                    <span>Total Fee:</span>
+                    <span>Total Amount:</span>
                     <span className={`font-bold text-lg ${isBookingFree() ? 'text-green-600' : 'text-blue-600'}`}>
-                      {isBookingFree() ? 'FREE' : `${getTotalPrice().toLocaleString()} XAF`}
+                      {isBookingFree() ? 'FREE' : `${getTotalAmountWithFee().toLocaleString()} XAF`}
                     </span>
                   </div>
                   {isBookingFree() && (
                     <div className="text-sm text-green-700 mt-2">
                       <CreditCard className="h-4 w-4 inline mr-1" />
                       No payment required - this consultation is completely free!
+                    </div>
+                  )}
+                  {!isBookingFree() && (
+                    <div className="text-xs text-gray-600 mt-2">
+                      * Platform fee helps maintain and improve our services
                     </div>
                   )}
                 </div>
