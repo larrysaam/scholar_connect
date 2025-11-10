@@ -113,7 +113,6 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
   const [paymentMethod, setPaymentMethod] = useState<string>("");
   const [paymentDetails, setPaymentDetails] = useState<any>({});
   const [selectedOperator, setSelectedOperator] = useState<string>("");
-
   // Available slots
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -123,6 +122,11 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
     // Add state for researcher availability
   const [researcherAvailability, setResearcherAvailability] = useState<any>(null);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  
+  // Booking cooldown state
+  const [lastBookingAttempt, setLastBookingAttempt] = useState<number>(0);
+  const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+  const COOLDOWN_DURATION = 20000; // 20 seconds in milliseconds
   // Fetch all active services for this researcher on open
   useEffect(() => {
     if (!isOpen) return;
@@ -271,8 +275,33 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
           setLoadingSlots(false);
           setAvailableSlots([]);
         });
+    }  }, [selectedDate, researcher.id, getResearcherAvailableSlots]);
+
+  // Cooldown timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (cooldownRemaining > 0) {
+      interval = setInterval(() => {
+        const remaining = Math.max(0, COOLDOWN_DURATION - (Date.now() - lastBookingAttempt));
+        setCooldownRemaining(remaining);
+        
+        if (remaining <= 0) {
+          clearInterval(interval);
+        }
+      }, 1000);
     }
-  }, [selectedDate, researcher.id, getResearcherAvailableSlots]);
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [lastBookingAttempt, cooldownRemaining, COOLDOWN_DURATION]);
+
+  // Check if booking is in cooldown
+  const isInCooldown = () => {
+    const timeSinceLastAttempt = Date.now() - lastBookingAttempt;
+    return timeSinceLastAttempt < COOLDOWN_DURATION;
+  };
 
   // Handle challenge toggle
   const handleChallengeToggle = (challenge: string) => {
@@ -310,9 +339,24 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
       default:
         return false;
     }
-  };
-  // Handle booking submission
+  };  // Handle booking submission
   const handleBooking = async () => {
+    // Check if booking is in cooldown
+    if (isInCooldown()) {
+      const remainingSeconds = Math.ceil(cooldownRemaining / 1000);
+      toast({
+        title: "Please Wait",
+        description: `Please wait ${remainingSeconds} more seconds before attempting another booking.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Set cooldown
+    const now = Date.now();
+    setLastBookingAttempt(now);
+    setCooldownRemaining(COOLDOWN_DURATION);
+
      // Check if user role prevents booking
     if (userProfile?.role === 'expert' || userProfile?.role === 'aid') {
       toast({
@@ -530,7 +574,6 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
       }
     }
   };
-
   // Reset form
   const resetForm = () => {
     setCurrentStep(1);
@@ -543,6 +586,9 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
     setChallenges([]);
     setPaymentMethod("");
     setPaymentDetails({});
+    // Reset cooldown when closing modal
+    setLastBookingAttempt(0);
+    setCooldownRemaining(0);
   };
 
   // Render step content
@@ -893,10 +939,22 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
                       <CreditCard className="h-4 w-4 inline mr-1" />
                       No payment required - this consultation is completely free!
                     </div>
-                  )}
-                  {!isBookingFree() && (
+                  )}                  {!isBookingFree() && (
                     <div className="text-xs text-gray-600 mt-2">
                       * Platform fee helps maintain and improve our services
+                    </div>
+                  )}
+                  {isInCooldown() && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mt-3">
+                      <div className="flex items-center text-yellow-800">
+                        <Clock className="h-4 w-4 mr-2" />
+                        <span className="text-sm font-medium">
+                          Booking cooldown: {Math.ceil(cooldownRemaining / 1000)} seconds remaining
+                        </span>
+                      </div>
+                      <p className="text-xs text-yellow-700 mt-1">
+                        This prevents duplicate bookings. Please wait before trying again.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -945,9 +1003,15 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
     'Enter Details',
     isBookingFree() ? 'Review & Book' : 'Review & Pay'
   ];
-
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      setIsOpen(open);
+      if (!open) {
+        // Reset cooldown when modal is closed
+        setLastBookingAttempt(0);
+        setCooldownRemaining(0);
+      }
+    }}>
       <DialogTrigger asChild>
         <Button className="w-full">
           <CalendarIcon className="h-4 w-4 mr-2" />
@@ -1013,15 +1077,20 @@ const ComprehensiveBookingModal = ({ researcher }: ComprehensiveBookingModalProp
                 disabled={!isStepValid(currentStep) || researcherServices.length === 0}
               >
                 Next
-              </Button>
-            ) : (              <Button
+              </Button>            ) : (              
+              <Button
                 onClick={handleBooking}
-                disabled={!isStepValid(currentStep) || creating || processing}
+                disabled={!isStepValid(currentStep) || creating || processing || isInCooldown()}
               >
                 {creating || processing ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     {creating ? 'Booking Consultation...' : 'Processing...'}
+                  </>
+                ) : isInCooldown() ? (
+                  <>
+                    <Clock className="h-4 w-4 mr-2" />
+                    Wait {Math.ceil(cooldownRemaining / 1000)}s
                   </>
                 ) : (
                   <>
