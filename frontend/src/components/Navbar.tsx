@@ -142,13 +142,17 @@ const Navbar = ({setActiveTab, activeTab}: {setActiveTab?: any; activeTab?: any}
         return studentMenuItems;
     }
   };
-
-
   const handleMenuClick = (itemId: string) => {
     console.log("Sidebar menu item clicked:", itemId);
     setIsMobileMenuOpen(false);
-    setActiveTab(itemId);
-  };  // Sidebar content component
+    if (setActiveTab) {
+      setActiveTab(itemId);
+    } else {
+      // Navigate to dashboard with the tab parameter when setActiveTab is not available
+      const dashboardUrl = getDashboardLink();
+      navigate(`${dashboardUrl}?tab=${itemId}`);
+    }
+  };// Sidebar content component
 
   const handleSidebarTabClick = (tabId: string) => {
     const dashboardUrl = getDashboardLink();
@@ -249,11 +253,10 @@ const Navbar = ({setActiveTab, activeTab}: {setActiveTab?: any; activeTab?: any}
             className="flex items-center"
             state={{ fromNavigation: true }}
           >
-            <ResearchWhoaLogo size="lg" showText={true} color='black'/>
-          </Link>
+            <ResearchWhoaLogo size="lg" showText={true} color='black'/>          </Link>
 
               <div className="flex items-center space-x-4">
-            <PWAInstaller />
+            {/* PWAInstaller now only shows in mobile hamburger menu */}
             <LanguageToggle />
             {/* Desktop Sign Out button for authenticated users */}
             {user && (
@@ -279,7 +282,7 @@ const Navbar = ({setActiveTab, activeTab}: {setActiveTab?: any; activeTab?: any}
               <SheetContent side="right" className="w-[320px] p-0 overflow-y-auto">
                 <div className="p-6">
                   <div className="mb-6">
-                    <ResearchWhoaLogo size="sm" showText={true} />
+                    <ResearchWhoaLogo size="sm" showText={true} color='black' />
                   </div>
                   
                  
@@ -290,9 +293,9 @@ const Navbar = ({setActiveTab, activeTab}: {setActiveTab?: any; activeTab?: any}
 
                       {/* Dashboard Sidebar Menu Items */}
                       <div className="space-y-1">
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                        {/* <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
                           {t("title")}
-                        </h3>
+                        </h3> */}
                         
                         {getSidebarMenuItems().map((item) => (
                           <Button
@@ -302,7 +305,7 @@ const Navbar = ({setActiveTab, activeTab}: {setActiveTab?: any; activeTab?: any}
                             onClick={() => handleMenuClick(item.id)}
                           >
                             <item.icon className="mr-3 h-4 w-4 flex-shrink-0" />
-                            <span className="flex-1 text-left truncate">{item.label}</span>
+                            <span className="flex-1 text-left truncate capitalize">{item.label}</span>
                             {item.badge && item.badge > 0 && (
                               <Badge variant="secondary" className="ml-auto text-xs">
                                 {item.badge}
@@ -313,8 +316,9 @@ const Navbar = ({setActiveTab, activeTab}: {setActiveTab?: any; activeTab?: any}
                       </div>
                     </>
                   )}
-                </div>                 {/* PWA Install and Sign In/Get Started buttons */}
-                  <div className="space-y-3 mb-6 pb-4 border-b">
+                </div>                 
+                {/* PWA Install and Sign In/Get Started buttons */}
+                  <div className="space-y-3 mb-6 pb-4 border-b flex justify-center">
                     <PWAInstaller />
                   </div>
                   {!user ? (
@@ -333,7 +337,7 @@ const Navbar = ({setActiveTab, activeTab}: {setActiveTab?: any; activeTab?: any}
                     <div className="space-y-3 mb-6 pb-4 border-b">
                       <Link to={getDashboardLink()} onClick={() => setIsMobileMenuOpen(false)}>
                         <Button variant="outline" className="w-full">
-                          {t("navigation.goToDashboard")}
+                          Dashboard
                         </Button>
                       </Link>
                       <Button 
@@ -344,7 +348,7 @@ const Navbar = ({setActiveTab, activeTab}: {setActiveTab?: any; activeTab?: any}
                         variant="ghost" 
                         className="w-full"
                       >
-                        {t("signOut")}
+                        SignOut
                       </Button>
                     </div>
                   )}
