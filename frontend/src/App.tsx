@@ -9,6 +9,9 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import TermsAndConditionsModal from "@/components/TermsAndConditionsModal";
+import { PWAInstaller } from "@/components/PWAInstaller";
+import { PWAUpdateNotifier } from "@/components/PWAUpdateNotifier";
+import OfflineIndicator from "@/components/OfflineIndicator";
 
 const queryClient = new QueryClient();
 
@@ -145,13 +148,16 @@ const AppContent = () => {
           </Routes>
         </Suspense>
       </BrowserRouter>
-      
-      {/* Terms and Conditions Modal */}
+        {/* Terms and Conditions Modal */}
       <TermsAndConditionsModal
         isOpen={showTermsModal}
         onAccept={handleTermsAccept}
         userRole={profile?.role || ''}
       />
+      
+      {/* PWA Components */}
+      <PWAUpdateNotifier />
+      <OfflineIndicator />
     </>
   );
 };

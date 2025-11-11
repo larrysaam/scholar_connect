@@ -8,6 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageToggle from './LanguageToggle';
 import GetStartedModal from './GetStartedModal';
 import ResearchWhoaLogo from './ResearchWhoaLogo';
+import { PWAInstaller } from './PWAInstaller';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { 
   Menu,
@@ -251,9 +252,8 @@ const Navbar = ({setActiveTab, activeTab}: {setActiveTab?: any; activeTab?: any}
             <ResearchWhoaLogo size="lg" showText={true} color='black'/>
           </Link>
 
-          
-
-          <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-4">
+            <PWAInstaller />
             <LanguageToggle />
             {/* Desktop Sign Out button for authenticated users */}
             {user && (
@@ -313,8 +313,10 @@ const Navbar = ({setActiveTab, activeTab}: {setActiveTab?: any; activeTab?: any}
                       </div>
                     </>
                   )}
-                </div>
-                 {/* Sign In and Get Started buttons */}
+                </div>                 {/* PWA Install and Sign In/Get Started buttons */}
+                  <div className="space-y-3 mb-6 pb-4 border-b">
+                    <PWAInstaller />
+                  </div>
                   {!user ? (
                     <div className="space-y-3 mb-6 pb-4 border-b">
                       <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
@@ -322,8 +324,7 @@ const Navbar = ({setActiveTab, activeTab}: {setActiveTab?: any; activeTab?: any}
                           {t("SignIn")}
                         </Button>
                       </Link>
-                      <GetStartedModal>
-                        <Button className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                      <GetStartedModal>                        <Button className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
                           {t("GetStarted")}
                         </Button>
                       </GetStartedModal>
