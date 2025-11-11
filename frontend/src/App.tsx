@@ -55,6 +55,12 @@ const StudentAppointmentsPage = lazy(() => import("./pages/StudentAppointmentsPa
 // Research Aid Profile page
 const ResearchAidProfile = lazy(() => import("./pages/ResearchAidProfile"));
 
+// Offline page
+const OfflinePage = lazy(() => import("./pages/OfflinePage"));
+
+// PWA Test Dashboard
+const PWATestDashboard = lazy(() => import("./components/PWATestDashboard"));
+
 const AppContent = () => {
   const { showTermsModal, setShowTermsModal, profile, refreshProfile } = useAuth();
 
@@ -79,6 +85,12 @@ const AppContent = () => {
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/co-author-workspace" element={<CoAuthorWorkspace />} />
+            
+            {/* Offline route */}
+            <Route path="/offline" element={<OfflinePage />} />
+            
+            {/* PWA Test Dashboard - for development/testing */}
+            <Route path="/pwa-test" element={<PWATestDashboard />} />
             
             {/* Authentication routes */}
             <Route path="/login" element={<Login />} />
@@ -144,20 +156,20 @@ const AppContent = () => {
               <ProtectedRoute requiredRole="admin">
                 <AdminDashboard />
               </ProtectedRoute>
-            } />
-          </Routes>
+            } />          </Routes>
+          
+          {/* PWA Components - Inside Router context */}
+          <PWAUpdateNotifier />
+          <OfflineIndicator />
         </Suspense>
       </BrowserRouter>
-        {/* Terms and Conditions Modal */}
+      
+      {/* Terms and Conditions Modal */}
       <TermsAndConditionsModal
         isOpen={showTermsModal}
         onAccept={handleTermsAccept}
         userRole={profile?.role || ''}
       />
-      
-      {/* PWA Components */}
-      <PWAUpdateNotifier />
-      <OfflineIndicator />
     </>
   );
 };

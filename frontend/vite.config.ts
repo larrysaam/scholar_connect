@@ -71,19 +71,76 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,json,webp,woff}'],
+        // Precache all app shell components and critical routes
+        additionalManifestEntries: [
+          { url: '/', revision: null },
+          { url: '/dashboard', revision: null },
+          { url: '/researchers', revision: null },
+          { url: '/appointments', revision: null },
+          { url: '/profile', revision: null },
+          { url: '/offline', revision: null },
+          { url: '/login', revision: null },
+          { url: '/signup', revision: null }
+        ],
+        // Skip waiting to ensure immediate updates
+        skipWaiting: true,
+        clientsClaim: true,
+        // Increase cache size limits
+        maximumFileSizeToCacheInBytes: 5000000, // 5MB
         runtimeCaching: [
+          // App shell - Network first for fresh content, cache for offline
           {
-            urlPattern: /^https:\/\/api\.supabase\.io\/.*/i,
+            urlPattern: /^\/(?:(dashboard|researchers|profile|appointments|jobs|login|signup|offline)(?:\/.*)?)?$/,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'supabase-api-cache',
+              cacheName: 'app-shell-cache',
+              networkTimeoutSeconds: 3,
               expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 // 24 hours
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
               }
             }
           },
+          // API calls - Network first with offline fallback
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/v1\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'supabase-api-cache',
+              networkTimeoutSeconds: 5,
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 2 // 2 hours
+              }
+            }
+          },
+          // Supabase Auth - Cache for offline access
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/auth\/v1\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'supabase-auth-cache',
+              networkTimeoutSeconds: 3,
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 // 1 hour
+              }
+            }
+          },
+          // Static assets - Cache first
+          {
+            urlPattern: /\.(?:js|css|html)$/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'static-assets-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              }
+            }
+          },
+          // Google Fonts
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'StaleWhileRevalidate',
@@ -95,18 +152,23 @@ export default defineConfig(({ mode }) => ({
               }
             }
           },
+          // Images and icons
           {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif)$/,
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'images-cache',
               expiration: {
-                maxEntries: 100,
+                maxEntries: 200,
                 maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
               }
             }
           }
-        ]
+        ],
+        // Offline fallback
+        navigateFallback: '/offline',
+        navigateFallbackAllowlist: [/^(?!\/__).*/],
+        navigateFallbackDenylist: [/^\/__.*$/]
       },
       devOptions: {
         enabled: true
