@@ -11,10 +11,9 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
-    react(),
-    VitePWA({
+    react(),    VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.svg', 'pwa-icon.svg'],
+      includeAssets: ['favicon.ico', 'researchwahoo.jpg'],
       manifest: {
         name: 'ResearchWow - Academic Consultation Platform',
         short_name: 'ResearchWow',
@@ -27,28 +26,27 @@ export default defineConfig(({ mode }) => ({
         start_url: '/',
         id: '/',
         lang: 'en',
-        dir: 'ltr',
-        icons: [
+        dir: 'ltr',        icons: [
           {
-            src: 'pwa-icon.svg',
+            src: 'researchwahoo.jpg',
             sizes: '192x192',
-            type: 'image/svg+xml'
+            type: 'image/jpeg'
           },
           {
-            src: 'pwa-icon.svg',
+            src: 'researchwahoo.jpg',
             sizes: '512x512',
-            type: 'image/svg+xml'
+            type: 'image/jpeg'
           },
           {
-            src: 'pwa-icon.svg',
+            src: 'researchwahoo.jpg',
             sizes: '512x512',
-            type: 'image/svg+xml',
+            type: 'image/jpeg',
             purpose: 'any'
           },
           {
-            src: 'pwa-icon.svg',
+            src: 'researchwahoo.jpg',
             sizes: '512x512',
-            type: 'image/svg+xml',
+            type: 'image/jpeg',
             purpose: 'maskable'
           }
         ],
@@ -58,15 +56,14 @@ export default defineConfig(({ mode }) => ({
             name: 'Find Researchers',
             short_name: 'Researchers',
             description: 'Browse and connect with verified researchers',
-            url: '/researchers',
-            icons: [{ src: 'pwa-icon.svg', sizes: '192x192' }]
+            url: '/researchers',            icons: [{ src: 'researchwahoo.jpg', sizes: '192x192' }]
           },
           {
             name: 'My Dashboard',
             short_name: 'Dashboard',
             description: 'Access your personalized dashboard',
             url: '/dashboard',
-            icons: [{ src: 'pwa-icon.svg', sizes: '192x192' }]
+            icons: [{ src: 'researchwahoo.jpg', sizes: '192x192' }]
           }
         ]
       },
