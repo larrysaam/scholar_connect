@@ -327,8 +327,8 @@ const Navbar = ({setActiveTab, activeTab}: {setActiveTab?: any; activeTab?: any}
                         <Button variant="outline" className="w-full">
                           {t("SignIn")}
                         </Button>
-                      </Link>
-                      <GetStartedModal>                        <Button className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                      </Link>                      <GetStartedModal>
+                        <Button className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
                           {t("GetStarted")}
                         </Button>
                       </GetStartedModal>

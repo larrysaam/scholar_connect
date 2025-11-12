@@ -15,8 +15,8 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'researchwahoo.jpg'],
       manifest: {
-        name: 'ResearchWow - Academic Consultation Platform',
-        short_name: 'ResearchWow',
+        name: 'Research Tandem - Academic Consultation Platform',
+        short_name: 'Research Tandem',
         description: 'Connect students with researchers and research aids for thesis and academic support',
         theme_color: '#2563eb',
         background_color: '#ffffff',
