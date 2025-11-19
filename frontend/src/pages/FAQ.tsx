@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackToDashboard from "@/components/BackToDashboard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
 
@@ -135,8 +136,8 @@ const FAQ = () => {
             <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full animate-pulse"></div>
             <div className="absolute top-20 right-20 w-16 h-16 bg-white/10 rounded-full animate-bounce"></div>
             <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-white/10 rounded-full animate-ping"></div>
-          </div>
-          <div className="container mx-auto px-4 md:px-6 relative z-10">
+          </div>          <div className="container mx-auto px-4 md:px-6 relative z-10">
+            <BackToDashboard className="mb-6" />
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 animate-pulse">
                 Frequently Asked Questions
