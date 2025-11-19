@@ -114,19 +114,34 @@ const Researchers = () => {
       // Get researcher IDs for consultation counts
       const researcherIds = (allData || []).map(r => r.id);
       console.log('Total researchers found:', researcherIds.length);
-      
+        // Fetch ratings directly from researcher_profiles table for accuracy
+      const { data: profileRatings, error: profileRatingsError } = await supabase
+        .from('researcher_profiles')
+        .select('user_id, rating, total_reviews')
+        .in('user_id', researcherIds);
+
       // Fetch consultation counts for all researchers
       const { data: consultationCounts, error: consultationError } = await supabase
         .from('service_bookings')
         .select('provider_id, client_id')
         .in('provider_id', researcherIds)
-        .in('status', ['confirmed', 'completed']);
+        .in('status', ['confirmed', 'completed']);      if (profileRatingsError) {
+        console.warn('Error fetching profile ratings:', profileRatingsError);
+      }
 
       if (consultationError) {
         console.error('Error fetching consultation counts:', consultationError);
-      }
+      }      console.log('Total consultation records:', consultationCounts?.length || 0);
+      console.log('Profile ratings data:', profileRatings);
 
-      console.log('Total consultation records:', consultationCounts?.length || 0);
+      // Create a map of direct profile ratings for cross-reference
+      const directRatingsMap = new Map<string, { rating: number; reviews: number }>();
+      (profileRatings || []).forEach(rating => {
+        directRatingsMap.set(rating.user_id, {
+          rating: rating.rating || 0,
+          reviews: rating.total_reviews || 0
+        });
+      });
 
       // Calculate unique students supervised per researcher
       const studentsSupervisionMap = new Map<string, Set<string>>();
@@ -158,30 +173,46 @@ const Researchers = () => {
           publication: 'pending',
           institutional: 'pending'
         } as const;        
+          const studentsSupervised = studentsSupervisionMap.get(r.id)?.size || 0;
+          // Safely access profile data with null checks
+        const profileData = Array.isArray(profile) && profile.length > 0 ? profile[0] : null;
+        console.log("Profile data for researcher:", r.name, "profileData:", profileData);
+          // Get ratings from researcher_profiles table (primary source)
+        const profileRating = profileData?.rating;
+        const profileReviews = profileData?.total_reviews;
         
-        const studentsSupervised = studentsSupervisionMap.get(r.id)?.size || 0;
-        console.log("subtitle : ", profile[0]?.subtitle);
-          return {
+        // Get direct ratings as fallback
+        const directRating = directRatingsMap.get(r.id);
+        const finalRating = typeof profileRating === 'number' ? profileRating : (directRating?.rating || 0);
+        const finalReviews = typeof profileReviews === 'number' ? profileReviews : (directRating?.reviews || 0);
+        
+        console.log(`Rating data for ${r.name}:`);
+        console.log(`  - Profile Rating: ${profileRating}`);
+        console.log(`  - Direct Rating: ${directRating?.rating || 'N/A'}`);
+        console.log(`  - Final Rating: ${finalRating}`);
+        console.log(`  - Total Reviews: ${finalReviews}`);
+        
+        return {
           id: r.id,
           name: r.name || '',
           email: r.email || '',
-          title: profile[0]?.title || '',
-          subtitle: profile[0]?.subtitle || '',
+          title: profileData?.title || '',
+          subtitle: profileData?.subtitle || '',
           institution: r.institution || '',
-          field: profile?.department || '',
-          department: profile?.department || '',
-          specialties: Array.isArray(profile[0]?.specialties) ? profile[0]?.specialties : [],
-          researchInterests: Array.isArray(profile[0]?.research_interests) ? profile[0]?.research_interests : [],
-          hourlyRate: typeof profile[0]?.hourly_rate === 'number' ? profile[0]?.hourly_rate : 0,
-          rating: typeof profile[0]?.rating === 'number' ? profile[0]?.rating : 0,
-          reviews: typeof profile[0]?.total_reviews === 'number' ? profile[0]?.total_reviews : 0,
+          field: profileData?.department || '',
+          department: profileData?.department || '',
+          specialties: Array.isArray(profileData?.specialties) ? profileData.specialties : [],
+          researchInterests: Array.isArray(profileData?.research_interests) ? profileData.research_interests : [],
+          hourlyRate: typeof profileData?.hourly_rate === 'number' ? profileData.hourly_rate : 0,          rating: typeof finalRating === 'number' && !isNaN(finalRating) ? 
+                  Math.min(Math.max(finalRating, 0), 5) : 0, // Ensure rating is between 0 and 5
+          reviews: typeof finalReviews === 'number' && !isNaN(finalReviews) ? finalReviews : 0,
           studentsSupervised,
-          onlineStatus: profile?.online_status || 'offline',
-          bio: profile?.bio || '',
+          onlineStatus: profileData?.online_status || 'offline',
+          bio: profileData?.bio || '',
           imageUrl: r.avatar_url || '/default-avatar.png',
           verifications: {
             ...defaultVerifications,
-            ...(profile?.verification_status || {})
+            ...(profileData?.verifications || {})
           }
         };
       });
