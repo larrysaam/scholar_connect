@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthActions } from '@/hooks/auth/useAuthActions';
 import AuthHeader from '@/components/auth/AuthHeader';
 import FormField from '@/components/auth/FormField';
+import PasswordCriteria from '@/components/auth/PasswordCriteria';
 import { countries, cameroonAfricaUniversities, fieldsOfStudy, studyLevels, countryCodes, academicRanks, languages } from '@/data/authData';
 
 const ResearcherSignup = () => {
@@ -310,14 +311,15 @@ const ResearcherSignup = () => {
 
               <div className="border-t pt-6">
                 <h3 className="text-xl font-semibold mb-4">Create an Account</h3>
-                
-                <FormField
+                  <FormField
                   label="Password"
                   type="password"
                   required
                   value={formData.password}
                   onChange={(value) => handleInputChange('password', value)}
                 />
+                
+                <PasswordCriteria password={formData.password} />
 
                 <FormField
                   label="Confirm Password"
