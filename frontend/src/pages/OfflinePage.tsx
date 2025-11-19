@@ -49,7 +49,7 @@ export const OfflinePage = () => {
             </div>
             <CardTitle className="text-orange-800">You're Offline</CardTitle>
             <CardDescription className="text-orange-700">
-              Don't worry! You can still use cached features of ResearchWow while offline.
+              Don't worry! You can still use cached features of ResearchTandem while offline.
             </CardDescription>
           </CardHeader>
         </Card>

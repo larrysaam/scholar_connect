@@ -47,7 +47,7 @@ export const PWAInstaller = () => {
       setDeferredPrompt(null);
       toast({
         title: "App Installed!",
-        description: "ResearchWow has been successfully installed on your device.",
+        description: "ResearchTandem has been successfully installed on your device.",
       });
     };
 
@@ -73,7 +73,7 @@ export const PWAInstaller = () => {
       if (choiceResult.outcome === 'accepted') {
         toast({
           title: "Installing...",
-          description: "ResearchWow is being installed on your device.",
+          description: "ResearchTandem is being installed on your device.",
         });
       }
       
@@ -97,7 +97,7 @@ export const PWAInstaller = () => {
         browser: 'Chrome',
         steps: [
           'Click the three dots menu in the top right',
-          'Select "Install ResearchWow"',
+          'Select "Install ResearchTandem"',
           'Click "Install" in the confirmation dialog'
         ]
       };
@@ -124,7 +124,7 @@ export const PWAInstaller = () => {
         browser: 'Edge',
         steps: [
           'Click the three dots menu',
-          'Select "Apps" > "Install ResearchWow"',
+          'Select "Apps" > "Install ResearchTandem"',
           'Click "Install" to confirm'
         ]
       };
@@ -166,7 +166,7 @@ export const PWAInstaller = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Download className="h-5 w-5 text-blue-600" />
-              Install ResearchWow
+              Install ResearchTandem
             </DialogTitle>
             <DialogDescription>
               Get the full app experience with offline access and native performance
@@ -223,7 +223,7 @@ export const PWAInstaller = () => {
                   setShowInstallDialog(false);
                   toast({
                     title: "Installation Guide",
-                    description: "Follow the steps above to install ResearchWow on your device.",
+                    description: "Follow the steps above to install ResearchTandem on your device.",
                   });
                 }}
               >

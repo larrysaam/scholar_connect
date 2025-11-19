@@ -24,7 +24,7 @@ export const PWAUpdateNotifier = () => {
       setShowUpdateNotification(false);
       toast({
         title: "App Updated!",
-        description: "ResearchWow has been updated to the latest version.",
+        description: "ResearchTandem has been updated to the latest version.",
       });
     };
 
@@ -105,7 +105,7 @@ export const PWAUpdateNotifier = () => {
         <AlertDescription className="flex items-center justify-between">
           <div className="pr-2">
             <p className="font-medium text-blue-900">New version available!</p>
-            <p className="text-sm text-blue-700">Update ResearchWow for the latest features and improvements.</p>
+            <p className="text-sm text-blue-700">Update ResearchTandem for the latest features and improvements.</p>
           </div>
           <div className="flex gap-2 flex-shrink-0">
             <Button
