@@ -114,6 +114,9 @@ const AboutUs = () => {
                     Contact Us
                   </a>
                 </div>
+                <div className="mt-8 text-lg font-semibold text-white">
+                  Dr. Emmanuel E. E. OBEN<br />Founder and Project Lead
+                </div>
               </div>
             </div>
           </div>

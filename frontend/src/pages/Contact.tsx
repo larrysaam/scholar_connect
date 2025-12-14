@@ -33,7 +33,7 @@ const Contact = () => {
             </div>
           </div>
 
-          <ContactFAQs />
+          {/* <ContactFAQs /> */}
         </div>
       </main>
       
