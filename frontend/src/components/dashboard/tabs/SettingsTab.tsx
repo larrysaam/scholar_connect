@@ -419,8 +419,8 @@ const SettingsTab = ({setActiveTab}) => {
               </div>
 
               {/* Academic Information */}
-              <Separator />
-              <div className="space-y-4">
+              {/* <Separator /> */}
+              {/* <div className="space-y-4">
                 <h4 className="text-lg font-semibold">Academic Information</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -479,10 +479,11 @@ const SettingsTab = ({setActiveTab}) => {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>              </div>
+                </div>              
+              </div> */}
 
               {/* Research Information - Only show for experts/researchers */}
-              {userProfile.role === 'expert' && (
+              {userProfile.role === 'student' && (
                 <>
                   <Separator />
                   <div className="space-y-4">
