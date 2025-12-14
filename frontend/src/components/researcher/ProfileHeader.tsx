@@ -100,7 +100,7 @@ const ProfileHeader = ({ researcher }: ProfileHeaderProps) => {
           <div className="flex-grow space-y-4">
             <div>
               <h1 className="text-2xl font-bold">{researcher.name}</h1>
-              <p className="text-lg text-gray-600">{researcher.title}</p>
+              
               {/* Use affiliations if available, fallback to empty string */}
               <p className="text-gray-600">{Array.isArray(researcher.affiliations) ? researcher.affiliations.join(', ') : ''}</p>
               <div className="flex items-center text-gray-500 mt-1">
