@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import ProfileHeader from "@/components/researcher/ProfileHeader";
 import ProfileTabs from "@/components/researcher/ProfileTabs";
 import { useResearcherProfile } from "@/hooks/useResearcherProfile";
+import BackToDashboard from '@/components/BackToDashboard';
 
 const ResearcherProfile = () => {
   const { id } = useParams();
@@ -121,6 +122,9 @@ const ResearcherProfile = () => {
       <Navbar />
       
       <main className="flex-grow">
+        <div className="container mx-auto px-4 pt-6">
+          <BackToDashboard />
+        </div>
         <ProfileHeader researcher={transformedResearcher} />
         
         <div className="container mx-auto px-4 py-8">
