@@ -220,10 +220,10 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange, s
     });
   };
 
-  const updateAddon = (index: number, field: keyof ServiceAddon, value: any) => {
+  const updateAddon = (index: number, updates: Partial<ServiceAddon>) => {
     updateFormData({
-      addons: formData.addons?.map((item, i) => 
-        i === index ? { ...item, [field]: value } : item
+      addons: formData.addons?.map((item, i) =>
+        i === index ? { ...item, ...updates } : item
       ) || []
     });
   };
@@ -379,7 +379,7 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange, s
       {formData.category !== 'Free Consultation' && (
         <div>
           <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4">
-            <Label className="text-sm font-medium">Add-ons (Optional)</Label>
+            <Label className="text-sm font-medium">Add-ons (Optional</Label>
             <Button type="button" onClick={addAddon} size="sm" variant="outline" className="w-full sm:w-auto text-xs sm:text-sm">
               <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
               Add Add-on
@@ -391,12 +391,14 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange, s
               <div key={`addon-${index}`} className="p-3 border rounded-lg space-y-3">
                 <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center gap-2 sm:gap-3">
                   <Select
-                    value={addon.name}
+                    value={addon.name ?? ''}
                     onValueChange={(value) => {
                       const selectedAddon = ADDON_OPTIONS.find(opt => opt.name === value);
-                      updateAddon(index, 'name', value);
                       if (selectedAddon) {
-                        updateAddon(index, 'description', selectedAddon.description);
+                        updateAddon(index, { 
+                          name: selectedAddon.name, 
+                          description: selectedAddon.description 
+                        });
                       }
                     }}
                   >
@@ -415,7 +417,7 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ formData, onFormDataChange, s
                     <Input
                       type="number"
                       value={addon.price}
-                      onChange={(e) => updateAddon(index, 'price', parseFloat(e.target.value) || 0)}
+                      onChange={(e) => updateAddon(index, { price: parseFloat(e.target.value) || 0 })}
                       placeholder="Price"
                       className="w-24 sm:w-32 text-xs sm:text-sm"
                     />
