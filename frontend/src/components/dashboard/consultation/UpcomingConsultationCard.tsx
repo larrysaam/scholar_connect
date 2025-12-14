@@ -191,8 +191,25 @@ const UpcomingConsultationCard = memo(({
                 )}
                 <span>Join Meeting</span>
               </Button>
-              
+
+
               <Button 
+              variant="outline" 
+              onClick={() => onUploadDocument(consultation.id)}
+              disabled={isUploading}
+              className="group flex items-center gap-2 px-4 py-2 border-2 border-teal-200 text-teal-700 hover:bg-teal-50 hover:border-teal-400 transition-all duration-200 font-medium"
+            >
+              {isUploading ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <div className="p-1 bg-teal-100 rounded-full group-hover:bg-teal-200 transition-colors">
+                  <Upload className="h-3 w-3" />
+                </div>
+              )}
+              <span className="text-sm">Upload Document</span>
+            </Button>
+              
+              {/* <Button 
                 variant="outline" 
                 onClick={() => onLiveDocumentReview(consultation.id)}
                 className="group flex items-center gap-2 px-4 py-2 border-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-400 transition-all duration-200 font-medium"
@@ -201,9 +218,9 @@ const UpcomingConsultationCard = memo(({
                   <FileText className="h-3 w-3" />
                 </div>
                 <span className="text-sm">Live Review</span>
-              </Button>
+              </Button> */}
               
-              <Button 
+              {/* <Button 
                 variant="outline" 
                 onClick={() => onViewRecording(consultation.id)}
                 disabled={isRecordingLoading}
@@ -217,9 +234,9 @@ const UpcomingConsultationCard = memo(({
                   </div>
                 )}
                 <span className="text-sm">Recording</span>
-              </Button>
+              </Button> */}
               
-              <Button 
+              {/* <Button 
                 variant="outline" 
                 onClick={() => onViewAINotes(consultation.id)}
                 className="group flex items-center gap-2 px-4 py-2 border-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400 transition-all duration-200 font-medium"
@@ -228,7 +245,7 @@ const UpcomingConsultationCard = memo(({
                   <FileText className="h-3 w-3" />
                 </div>
                 <span className="text-sm">AI Notes</span>
-              </Button>
+              </Button> */}
             </div>
           ) : (
             <div className="flex flex-wrap gap-3">
@@ -266,7 +283,7 @@ const UpcomingConsultationCard = memo(({
           
           {/* Additional Actions */}
           <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-100">
-            <Button 
+            {/* <Button 
               variant="outline" 
               onClick={() => onRescheduleWithGoogleCalendar(consultation.id)}
               disabled={isRescheduleLoading}
@@ -280,23 +297,9 @@ const UpcomingConsultationCard = memo(({
                 </div>
               )}
               <span className="text-sm">Reschedule</span>
-            </Button>
+            </Button> */}
             
-            <Button 
-              variant="outline" 
-              onClick={() => onUploadDocument(consultation.id)}
-              disabled={isUploading}
-              className="group flex items-center gap-2 px-4 py-2 border-2 border-teal-200 text-teal-700 hover:bg-teal-50 hover:border-teal-400 transition-all duration-200 font-medium"
-            >
-              {isUploading ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <div className="p-1 bg-teal-100 rounded-full group-hover:bg-teal-200 transition-colors">
-                  <Upload className="h-3 w-3" />
-                </div>
-              )}
-              <span className="text-sm">Upload Document</span>
-            </Button>
+            
           </div>
           
           <StudentResearchSummaryModal 

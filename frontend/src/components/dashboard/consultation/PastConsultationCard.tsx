@@ -155,29 +155,29 @@ const PastConsultationCard = ({
         <div className="flex flex-col sm:flex-row gap-3 w-full">
           <div className="flex flex-wrap gap-2 flex-1">
             {consultation.hasRecording && (
-              <Button 
-                variant="outline" 
-                onClick={() => onViewRecording(consultation.id)}
-                className="group flex items-center gap-2 px-4 py-2 border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-400 transition-all duration-200 font-medium"
-              >
-                <div className="p-1 bg-green-100 rounded-full group-hover:bg-green-200 transition-colors">
-                  <Play className="h-3 w-3" />
-                </div>
-                <span className="text-sm">Recording</span>
-              </Button>
+              // <Button 
+              //   variant="outline" 
+              //   onClick={() => onViewRecording(consultation.id)}
+              //   className="group flex items-center gap-2 px-4 py-2 border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-400 transition-all duration-200 font-medium"
+              // >
+              //   <div className="p-1 bg-green-100 rounded-full group-hover:bg-green-200 transition-colors">
+              //     <Play className="h-3 w-3" />
+              //   </div>
+              //   <span className="text-sm">Recording</span>
+              // </Button>
             )}
             
             {consultation.hasAINotes && (
-              <Button 
-                variant="outline" 
-                onClick={() => onViewAINotes(consultation.id)}
-                className="group flex items-center gap-2 px-4 py-2 border-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-400 transition-all duration-200 font-medium"
-              >
-                <div className="p-1 bg-blue-100 rounded-full group-hover:bg-blue-200 transition-colors">
-                  <FileText className="h-3 w-3" />
-                </div>
-                <span className="text-sm">AI Notes</span>
-              </Button>
+              // <Button 
+              //   variant="outline" 
+              //   onClick={() => onViewAINotes(consultation.id)}
+              //   className="group flex items-center gap-2 px-4 py-2 border-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-400 transition-all duration-200 font-medium"
+              // >
+              //   <div className="p-1 bg-blue-100 rounded-full group-hover:bg-blue-200 transition-colors">
+              //     <FileText className="h-3 w-3" />
+              //   </div>
+              //   <span className="text-sm">AI Notes</span>
+              // </Button>
             )}
             
             <Button 

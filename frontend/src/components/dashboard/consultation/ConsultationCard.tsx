@@ -156,7 +156,7 @@ const ConsultationCard = ({
             )}
             <span className="truncate">Upload Document</span>
           </Button>
-
+{/* 
           {userType === "student" && (
             <div className="w-full sm:w-auto">
               <LiveDocumentReviewDialog
@@ -164,7 +164,7 @@ const ConsultationCard = ({
                 onSubmitDocumentLink={onSubmitDocumentLink}
               />
             </div>
-          )}
+          )} */}
 
           <Button
             variant="outline"

@@ -268,11 +268,11 @@ const VerificationTab = ({ researcherId }: VerificationTabProps) => {
                     {t(`researchAids.verification.${item.type}`)}
                   </CardTitle>
                 </div>
-                <VerificationBadge 
+                {/* <VerificationBadge 
                   type={item.type} 
                   status={item.status}
                   size="md"
-                />
+                /> */}
               </div>
             </CardHeader>
             
