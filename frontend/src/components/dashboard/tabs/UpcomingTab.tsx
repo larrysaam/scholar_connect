@@ -29,10 +29,29 @@ const UpcomingTab = ({ userRole }: UpcomingTabProps) => {
   const [consultations, setConsultations] = useState<any[]>([]);
   const [isUploading, setIsUploading] = useState<{ [key: string]: boolean }>({});
   const [currentPage, setCurrentPage] = useState(1);
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
 
   useEffect(() => {
     setConsultations(bookings);
   }, [bookings]);
+
+  // Refetch bookings when refetchTrigger changes
+  useEffect(() => {
+    if (refetchTrigger > 0 && user) {
+      const refetchBookings = async () => {
+        const { data, error } = await supabase
+          .from('service_bookings')
+          .select(`*, client:users!service_bookings_client_id_fkey(name, email, avatar_url), provider:users!service_bookings_provider_id_fkey(name, email, avatar_url), service:consultation_services(title, category)`)
+          .eq(userRole === 'student' ? 'client_id' : 'provider_id', user.id)
+          .order('scheduled_date', { ascending: true });
+
+        if (!error && data) {
+          setConsultations(data);
+        }
+      };
+      refetchBookings();
+    }
+  }, [refetchTrigger, user, userRole]);
 
   const {
     isLoading: actionLoading,
@@ -69,22 +88,40 @@ const UpcomingTab = ({ userRole }: UpcomingTabProps) => {
 
         const { data: urlData } = supabase.storage
           .from('lovable-uploads')
-          .getPublicUrl(filePath);
-
-        if (!urlData.publicUrl) {
+          .getPublicUrl(filePath);        if (!urlData.publicUrl) {
           throw new Error("Could not get public URL for the uploaded file.");
-        }        // For now, just show success message - database schema needs to be updated
-        const newDoc = { name: file.name, url: urlData.publicUrl };
-        
-        // Update local state (simplified)
-        setConsultations(prev => prev.map(c =>
-          c.id === consultationId ? { 
-            ...c, 
-            sharedDocuments: [...(c.sharedDocuments || []), newDoc] 
-          } : c
-        ));
+        }
 
-        toast({ title: "Success", description: "Document uploaded successfully." });      } catch (err: any) {
+        // Create new document object
+        const newDoc = { 
+          name: file.name, 
+          url: urlData.publicUrl,
+          size: file.size,
+          uploadedAt: new Date().toISOString()
+        };
+
+        // Fetch current shared_documents from database
+        const { data: currentBooking, error: fetchError } = await supabase
+          .from('service_bookings')
+          .select('shared_documents')
+          .eq('id', consultationId)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        // Append new document to existing documents
+        const updatedDocuments = [...(currentBooking?.shared_documents || []), newDoc];
+
+        // Update database with new document
+        const { error: updateError } = await supabase
+          .from('service_bookings')
+          .update({ shared_documents: updatedDocuments })
+          .eq('id', consultationId);        if (updateError) throw updateError;
+        
+        // Trigger refetch to update UI immediately
+        setRefetchTrigger(prev => prev + 1);
+
+        toast({ title: "Success", description: "Document uploaded and shared successfully." });} catch (err: any) {
         console.error("Error uploading document:", err);
         toast({ title: "Upload Failed", description: err?.message || "Upload failed", variant: "destructive" });
       } finally {
@@ -92,16 +129,30 @@ const UpcomingTab = ({ userRole }: UpcomingTabProps) => {
       }
     };
     input.click();
-  };
-  const handleDeleteDocument = async (consultationId: string, documentUrl: string) => {
+  };  const handleDeleteDocument = async (consultationId: string, documentUrl: string) => {
     try {
-      // Update local state (simplified)
-      setConsultations(prev => prev.map(c =>
-        c.id === consultationId ? { 
-          ...c, 
-          sharedDocuments: (c.sharedDocuments || []).filter((doc: any) => doc.url !== documentUrl) 
-        } : c
-      ));
+      // Fetch current shared_documents from database
+      const { data: currentBooking, error: fetchError } = await supabase
+        .from('service_bookings')
+        .select('shared_documents')
+        .eq('id', consultationId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Filter out the document to be deleted
+      const updatedDocuments = (currentBooking?.shared_documents || []).filter(
+        (doc: any) => doc.url !== documentUrl
+      );
+
+      // Update database with filtered documents
+      const { error: updateError } = await supabase
+        .from('service_bookings')
+        .update({ shared_documents: updatedDocuments })
+        .eq('id', consultationId);      if (updateError) throw updateError;
+
+      // Trigger refetch to update UI immediately
+      setRefetchTrigger(prev => prev + 1);
 
       toast({ title: "Success", description: "Document deleted successfully." });
 
