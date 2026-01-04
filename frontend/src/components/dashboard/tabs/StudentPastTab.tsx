@@ -33,9 +33,7 @@ const StudentPastTab = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    if (!user) return;
-
-    const fetchPastConsultations = async () => {
+    if (!user) return;    const fetchPastConsultations = async () => {
       setLoading(true);
       setError(null);
       try {
@@ -45,34 +43,80 @@ const StudentPastTab = () => {
           .select(`
             id, status, scheduled_date, scheduled_time, project_description, meeting_link,
             provider:users!service_bookings_provider_id_fkey(id, name, topic_title, avatar_url),
-            service:consultation_services(title),
-            researcher_reviews(rating, comment)
+            service:consultation_services(title)
           `)
           .eq('client_id', user.id)
           .eq('status', 'completed')
-          .order('scheduled_date', { ascending: false });
+          .order('scheduled_date', { ascending: false });        if (error) throw error;
 
-        if (error) throw error;
+        // Get unique provider IDs from completed bookings
+        const providerIds = [...new Set((data || []).map((c: any) => c.provider?.id).filter(Boolean))];
 
-        // Map to PastConsultation[]
-        const mappedConsultations: PastConsultation[] = (data || []).map((c: any) => ({
-          id: c.id,
-          researcher: {
-            id: c.provider?.id || 'N/A',
-            name: c.provider?.name || 'N/A',
-            field: c.provider?.topic_title || 'Researcher',
-            imageUrl: c.provider?.avatar_url || '/placeholder.svg',
-          },
-          date: c.scheduled_date,
-          time: c.scheduled_time,
-          topic: c.project_description || c.service?.title || 'No topic provided',
-          status: 'completed',
-          rating: c.researcher_reviews?.[0]?.rating || 0,
-          reviewText: c.researcher_reviews?.[0]?.comment || undefined,
-          hasRecording: !!c.meeting_link, // If meeting_link exists, assume recording is possible
-          hasAINotes: false, // Set to false or fetch if available
-        }));
+        console.log('Student PastTab - Provider IDs:', providerIds);        // Fetch reviews from researcher_profiles table
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('researcher_profiles')
+          .select('user_id, reviews')
+          .in('user_id', providerIds);
 
+        if (profilesError) {
+          console.error('Error fetching researcher profiles:', profilesError);
+        }
+
+        console.log('Student PastTab - Profiles with reviews fetched:', profilesData);
+
+        // Create a map of user_id to reviews array
+        const profileReviewsMap = new Map();
+        (profilesData || []).forEach((profile: any) => {
+          console.log(`Profile ${profile.user_id} reviews data:`, profile.reviews);
+          if (profile.reviews && Array.isArray(profile.reviews)) {
+            profileReviewsMap.set(profile.user_id, profile.reviews);
+          }
+        });
+
+        console.log('User ID to Reviews Map:', Array.from(profileReviewsMap.entries()));
+
+        // Create a map of booking_id to review for easy lookup
+        const reviewsMap = new Map();
+        (data || []).forEach((consultation: any) => {
+          const researcherReviews = profileReviewsMap.get(consultation.provider?.id) || [];
+          console.log(`Consultation ${consultation.id} - Provider ${consultation.provider?.id} - Reviews found:`, researcherReviews);
+          // Find the review for this specific booking
+          const bookingReview = researcherReviews.find((r: any) => r.booking_id === consultation.id);
+          console.log(`Consultation ${consultation.id} - Matching review:`, bookingReview);
+          if (bookingReview) {
+            reviewsMap.set(consultation.id, bookingReview);
+          }
+        });
+
+        console.log('Student PastTab - Reviews mapped to bookings:', Array.from(reviewsMap.entries()));// Map to PastConsultation[]
+        const mappedConsultations: PastConsultation[] = (data || []).map((c: any) => {
+          const review = reviewsMap.get(c.id);
+          console.log(`Consultation ${c.id} - Review:`, review, `Rating: ${review?.rating || 0}`);
+          return {
+            id: c.id,
+            researcher: {
+              id: c.provider?.id || 'N/A',
+              name: c.provider?.name || 'N/A',
+              field: c.provider?.topic_title || 'Researcher',
+              imageUrl: c.provider?.avatar_url || '/placeholder.svg',
+            },            date: c.scheduled_date,
+            time: c.scheduled_time,
+            topic: c.project_description || c.service?.title || 'No topic provided',
+            status: 'completed' as const,
+            rating: review?.rating || 0,
+            reviewText: review?.comment || undefined,
+            hasRecording: !!c.meeting_link,
+            hasAINotes: false,
+          };
+        })
+        .sort((a, b) => {
+          // Sort by date descending (newest first)
+          const dateA = new Date(a.date);
+          const dateB = new Date(b.date);
+          return dateB.getTime() - dateA.getTime();
+        });
+
+        console.log('Mapped consultations with ratings:', mappedConsultations.map(c => ({ id: c.id, rating: c.rating, date: c.date })));
         setConsultations(mappedConsultations);
       } catch (err: any) {
         setError(err.message);
