@@ -118,7 +118,7 @@ const Dashboard = () => {
       case "performance":
         return <StudentPerformanceTab />;
       case "upcoming":
-        return <StudentUpcomingTab />;
+        return <StudentUpcomingTab setActiveTab={handleTabChange}/>;
       case "past":
         return <StudentPastTab />;
       case "full-thesis-support":

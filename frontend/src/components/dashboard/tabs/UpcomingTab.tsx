@@ -70,18 +70,21 @@ const UpcomingTab = ({ userRole }: UpcomingTabProps) => {
     input.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.txt';
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file || !user) return;
-
-      setIsUploading(prev => ({ ...prev, [consultationId]: true }));
+      if (!file || !user) return;      setIsUploading(prev => ({ ...prev, [consultationId]: true }));
 
       try {
-        const filePath = `consultation_documents/${consultationId}/${user.id}/${file.name}`;
+        // Add timestamp to filename to ensure uniqueness and avoid conflicts
+        const timestamp = Date.now();
+        const fileExtension = file.name.split('.').pop();
+        const fileNameWithoutExt = file.name.replace(`.${fileExtension}`, '');
+        const uniqueFileName = `${fileNameWithoutExt}_${timestamp}.${fileExtension}`;
+        const filePath = `consultation_documents/${consultationId}/${user.id}/${uniqueFileName}`;
         
         const { error: uploadError } = await supabase.storage
           .from('lovable-uploads')
           .upload(filePath, file, {
             cacheControl: '3600',
-            upsert: true,
+            upsert: false, // Changed to false to avoid RLS issues
           });
 
         if (uploadError) throw uploadError;
@@ -131,6 +134,22 @@ const UpcomingTab = ({ userRole }: UpcomingTabProps) => {
     input.click();
   };  const handleDeleteDocument = async (consultationId: string, documentUrl: string) => {
     try {
+      // Extract file path from URL to delete from storage
+      const urlParts = documentUrl.split('/lovable-uploads/');
+      const filePath = urlParts.length > 1 ? urlParts[1] : null;
+
+      // Delete from Supabase storage first
+      if (filePath) {
+        const { error: storageError } = await supabase.storage
+          .from('lovable-uploads')
+          .remove([filePath]);
+
+        if (storageError) {
+          console.warn('Storage deletion warning:', storageError);
+          // Continue even if storage deletion fails (file might not exist)
+        }
+      }
+
       // Fetch current shared_documents from database
       const { data: currentBooking, error: fetchError } = await supabase
         .from('service_bookings')
@@ -222,140 +241,99 @@ const UpcomingTab = ({ userRole }: UpcomingTabProps) => {
       </div>
     );
   }  return (
-    <div className="space-y-6 sm:space-y-8 p-1 sm:p-0">
-      {/* Modern Header */}
-      <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-            Upcoming Consultations
-          </h2>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">
-            Prepare for your scheduled sessions and manage documents
-          </p>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-            <span>{upcomingConsultations.length} Scheduled</span>
-          </div>
-        </div>
+    <div className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-bold truncate">Upcoming Consultations</h2>
       </div>
-
-      {paginatedConsultations.length > 0 ? (
+      
+      {paginatedConsultations.length === 0 ? (
+        <div className="text-center py-8 sm:py-12">
+          <p className="text-sm sm:text-base text-gray-500">You have no upcoming consultations scheduled.</p>
+        </div>
+      ) : (
         <>
-          <div className="space-y-6">
+          <div className="space-y-3 sm:space-y-4 max-w-full">
             {paginatedConsultations.map((consultation) => (
-              <div key={consultation.id} className="group">
-                <div className="bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 overflow-hidden">
-                  <UpcomingConsultationCard
-                    consultation={consultation}
-                    uploadedDocuments={consultation.sharedDocuments}
-                    isUploading={isUploading[consultation.id] || false}
-                    actionLoading={actionLoading}
-                    onUploadDocument={() => handleUploadDocument(consultation.id)}
-                    onJoinWithGoogleMeet={() => handleJoinWithGoogleMeet(consultation.id, consultation.meetingLink)}
-                    onLiveDocumentReview={() => handleLiveDocumentReview(consultation.id)}
-                    onViewRecording={() => handleViewRecording(consultation.id)}
-                    onViewAINotes={() => handleViewAINotes(consultation.id)}
-                    onAcceptConsultation={(comment) => handleAcceptConsultation(consultation.id, comment)}
-                    onDeclineConsultation={(comment) => handleDeclineConsultation(consultation.id, comment)}
-                    onRescheduleWithGoogleCalendar={() => handleRescheduleWithGoogleCalendar(consultation.id)}
-                    onDeleteDocument={handleDeleteDocument}
-                  />
-                  
-                  {/* Enhanced Mark as Complete Section */}
-                  <div className="px-6 pb-6">
-                    <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-100">
-                      {!consultation.researcher_completed && (
-                        <Button
-                          size="sm"
-                          onClick={() => handleMarkAsComplete(consultation)}
-                          className="group w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-lg shadow-green-200 hover:shadow-green-300 transition-all duration-200 font-medium px-6"
-                        >
-                          <div className="flex items-center gap-2">
-                            <div className="p-1 bg-white/20 rounded-full group-hover:bg-white/30 transition-colors">
-                              <Loader2 className="h-3 w-3" />
-                            </div>
-                            <span className="text-sm">Mark as Complete</span>
-                          </div>
-                        </Button>
-                      )}
-                      
-                      {consultation.researcher_completed && !consultation.student_completed && (
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          disabled 
-                          className="w-full sm:w-auto border-2 border-orange-200 text-orange-700 bg-orange-50 px-6"
-                        >
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-                            <span className="text-sm font-medium">Waiting for Student</span>
-                          </div>
-                        </Button>
-                      )}
-                      
-                      {consultation.student_completed && consultation.researcher_completed && (
-                        <Button 
-                          size="sm" 
-                          disabled 
-                          className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6"
-                        >
-                          <div className="flex items-center gap-2">
-                            <div className="p-1 bg-white/20 rounded-full">
-                              <Loader2 className="h-3 w-3" />
-                            </div>
-                            <span className="text-sm font-medium">Completed</span>
-                          </div>
-                        </Button>
-                      )}
-                    </div>
-                  </div>
+              <div key={consultation.id} className="overflow-hidden">
+                <UpcomingConsultationCard
+                  consultation={consultation}
+                  uploadedDocuments={consultation.sharedDocuments}
+                  isUploading={isUploading[consultation.id] || false}
+                  actionLoading={actionLoading}
+                  onUploadDocument={() => handleUploadDocument(consultation.id)}
+                  onJoinWithGoogleMeet={() => handleJoinWithGoogleMeet(consultation.id, consultation.meetingLink)}
+                  onLiveDocumentReview={() => handleLiveDocumentReview(consultation.id)}
+                  onViewRecording={() => handleViewRecording(consultation.id)}
+                  onViewAINotes={() => handleViewAINotes(consultation.id)}
+                  onAcceptConsultation={(comment) => handleAcceptConsultation(consultation.id, comment)}
+                  onDeclineConsultation={(comment) => handleDeclineConsultation(consultation.id, comment)}
+                  onRescheduleWithGoogleCalendar={() => handleRescheduleWithGoogleCalendar(consultation.id)}
+                  onDeleteDocument={handleDeleteDocument}
+                />
+                {/* Mark as Complete Button for researcher */}
+                <div className="flex flex-col sm:flex-row justify-end gap-2 mt-2 px-2 sm:px-0">
+                  {!consultation.researcher_completed && (
+                    <Button 
+                      size="sm" 
+                      variant="destructive" 
+                      onClick={() => handleMarkAsComplete(consultation)}
+                      className="w-full sm:w-auto text-xs sm:text-sm"
+                    >
+                      Mark as Complete
+                    </Button>
+                  )}
+                  {consultation.researcher_completed && !consultation.student_completed && (
+                    <Button 
+                      size="sm" 
+                      variant="secondary" 
+                      disabled
+                      className="w-full sm:w-auto text-xs sm:text-sm"
+                    >
+                      Waiting for Student
+                    </Button>
+                  )}
+                  {consultation.student_completed && consultation.researcher_completed && (
+                    <Button 
+                      size="sm" 
+                      variant="default" 
+                      disabled
+                      className="w-full sm:w-auto text-xs sm:text-sm"
+                    >
+                      Completed
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
-          
           {totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mt-8">
-              <Button 
-                variant="outline"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="group w-full sm:w-auto px-6 py-2 border-2 border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200"
-              >
-                <span className="text-sm font-medium">Previous</span>
-              </Button>
-              
+            <div className="flex flex-col sm:flex-row justify-center sm:justify-end items-center gap-2 sm:gap-0 mt-4 sm:mt-6">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-600">
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="text-xs sm:text-sm px-3 sm:px-4"
+                >
+                  Previous
+                </Button>
+                <span className="text-xs sm:text-sm text-gray-600 px-2">
                   Page {currentPage} of {totalPages}
                 </span>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="text-xs sm:text-sm px-3 sm:px-4"
+                >
+                  Next
+                </Button>
               </div>
-              
-              <Button 
-                variant="outline"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="group w-full sm:w-auto px-6 py-2 border-2 border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200"
-              >
-                <span className="text-sm font-medium">Next</span>
-              </Button>
             </div>
           )}
         </>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full flex items-center justify-center mb-6">
-            <Loader2 className="h-10 w-10 text-blue-600" />
-          </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            No Upcoming Consultations
-          </h3>
-          <p className="text-gray-500 max-w-md">
-            Your scheduled sessions will appear here. Book a consultation to get started!
-          </p>
-        </div>
       )}
     </div>
   );

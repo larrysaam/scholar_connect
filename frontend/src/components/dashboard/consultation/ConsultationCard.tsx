@@ -33,6 +33,7 @@ interface ConsultationCardProps {
   onContactStudent?: (studentId: string, consultationId: string) => void;
   onAccessDocument?: (documentLink: string) => void;
   onDeleteDocument?: (consultationId: string, documentUrl: string) => void;
+  setActiveTab: (tab: string) => void;
   isUploading?: boolean;
 }
 
@@ -46,6 +47,7 @@ const ConsultationCard = ({
   onContactStudent,
   onAccessDocument,
   onDeleteDocument,
+  setActiveTab,
   isUploading = false,
 }: ConsultationCardProps) => {
   const person = userType === "student" ? consultation.researcher : consultation.student;
@@ -168,9 +170,7 @@ const ConsultationCard = ({
 
           <Button
             variant="outline"
-            onClick={() => userType === "student"
-              ? onContactResearcher(person.id, consultation.id)
-              : onContactStudent?.(person.id, consultation.id)
+            onClick={() => setActiveTab("messages")
             }
             className="w-full sm:w-auto text-xs sm:text-sm px-3 sm:px-4 py-2"
           >

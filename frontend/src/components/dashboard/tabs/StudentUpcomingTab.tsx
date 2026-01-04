@@ -25,7 +25,7 @@ export interface Consultation {
 
 const ITEMS_PER_PAGE = 5;
 
-const StudentUpcomingTab = () => {
+const StudentUpcomingTab = ({ setActiveTab }) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [consultations, setConsultations] = useState<Consultation[]>([]);
@@ -115,18 +115,21 @@ const StudentUpcomingTab = () => {
     input.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.txt';
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file || !user) return;
-
-      setIsUploading(prev => ({ ...prev, [consultationId]: true }));
+      if (!file || !user) return;      setIsUploading(prev => ({ ...prev, [consultationId]: true }));
 
       try {
-        const filePath = `consultation_documents/${consultationId}/${user.id}/${file.name}`;
+        // Add timestamp to filename to ensure uniqueness and avoid conflicts
+        const timestamp = Date.now();
+        const fileExtension = file.name.split('.').pop();
+        const fileNameWithoutExt = file.name.replace(`.${fileExtension}`, '');
+        const uniqueFileName = `${fileNameWithoutExt}_${timestamp}.${fileExtension}`;
+        const filePath = `consultation_documents/${consultationId}/${user.id}/${uniqueFileName}`;
         
         const { error: uploadError } = await supabase.storage
           .from('lovable-uploads')
           .upload(filePath, file, {
             cacheControl: '3600',
-            upsert: true,
+            upsert: false, // Changed to false to avoid RLS issues
           });
 
         if (uploadError) throw uploadError;
@@ -211,9 +214,23 @@ const StudentUpcomingTab = () => {
       toast({ title: "Sharing Failed", description: err.message, variant: "destructive" });
     }
   };
-
   const handleDeleteDocument = async (consultationId: string, documentUrl: string) => {
     try {
+      // First, delete the file from storage if it's a storage URL
+      if (documentUrl.includes('lovable-uploads')) {
+        const bucketBaseUrl = supabase.storage.from('lovable-uploads').getPublicUrl('').data.publicUrl;
+        const filePath = documentUrl.replace(bucketBaseUrl, '').replace(/^\//, '');
+        
+        const { error: deleteFileError } = await supabase.storage
+          .from('lovable-uploads')
+          .remove([filePath]);
+
+        if (deleteFileError) {
+          console.error("Error deleting file from storage:", deleteFileError);
+        }
+      }
+
+      // Then update the database
       const { data: currentBooking, error: fetchError } = await supabase
         .from('service_bookings')
         .select('shared_documents')
@@ -324,6 +341,7 @@ const StudentUpcomingTab = () => {
                 onSubmitDocumentLink={handleSubmitDocumentLink}
                 onDeleteDocument={handleDeleteDocument}
                 onAccessDocument={handleAccessDocument}
+                setActiveTab={setActiveTab}
               />
               {/* Mark as Complete Button for student */}
               <div className="flex flex-col sm:flex-row justify-end gap-2 mt-2 px-2 sm:px-0">
