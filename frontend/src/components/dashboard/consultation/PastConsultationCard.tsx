@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, Play, FileText, Upload, CalendarPlus } from "lucide-react";
+import { Calendar, Clock, Play, FileText, Upload, CalendarPlus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import StarRating from "./StarRating";
@@ -38,6 +38,7 @@ interface PastConsultationCardProps {
   onViewRecording: (consultationId: string) => void;
   onViewAINotes: (consultationId: string) => void;
   onUploadResources: (consultationId: string) => void;
+  onDeleteResource?: (consultationId: string, resourceName: string) => void;
   onSendMessage: (consultationId: string, message: string) => void;
   onOpenChat: (personId: string, consultationId: string) => void;
   onFollowUpSession?: (consultationId: string) => void;
@@ -50,6 +51,7 @@ const PastConsultationCard = ({
   onViewRecording,
   onViewAINotes,
   onUploadResources,
+  onDeleteResource,
   onSendMessage,
   onOpenChat,
   onFollowUpSession
@@ -135,17 +137,29 @@ const PastConsultationCard = ({
             <p className="text-gray-800 italic leading-relaxed">"{consultation.reviewText}"</p>
           </div>
         )}
-        
-        {/* Shared Resources */}
+          {/* Shared Resources */}
         {uploadedResources.length > 0 && (
           <div className="mb-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200">
             <p className="text-xs font-medium text-emerald-800 uppercase tracking-wide mb-3">{resourceLabel}</p>
             <div className="flex flex-wrap gap-2">
               {uploadedResources.map((resource, index) => (
-                <Badge key={index} className="bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200 transition-colors px-3 py-1">
-                  <FileText className="h-3 w-3 mr-1" />
-                  {resource}
-                </Badge>
+                <div key={index} className="flex items-center gap-1">
+                  <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200 transition-colors px-3 py-1">
+                    <FileText className="h-3 w-3 mr-1" />
+                    {resource}
+                  </Badge>
+                  {onDeleteResource && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5 hover:bg-red-100 hover:text-red-600 transition-colors"
+                      onClick={() => onDeleteResource(consultation.id, resource)}
+                      title="Delete resource"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
               ))}
             </div>
           </div>

@@ -1,12 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import PastConsultationCard from "../consultation/PastConsultationCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 // This interface matches the props expected by PastConsultationCard
 export interface PastConsultation {
@@ -20,34 +22,38 @@ export interface PastConsultation {
   reviewText?: string;
   hasRecording: boolean;
   hasAINotes: boolean;
+  uploadedResources?: string[];
 }
 
 const ITEMS_PER_PAGE = 5;
 
 const StudentPastTab = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [consultations, setConsultations] = useState<PastConsultation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [uploadedResources, setUploadedResources] = useState<{[key: string]: string[]}>({});
   const [currentPage, setCurrentPage] = useState(1);
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
 
   useEffect(() => {
-    if (!user) return;    const fetchPastConsultations = async () => {
+    if (!user) return;
+
+    const fetchPastConsultations = async () => {
       setLoading(true);
       setError(null);
-      try {
-        // Fetch completed consultations/appointments for the student
+      try {        // Fetch completed consultations/appointments for the student
         const { data, error } = await supabase
           .from('service_bookings')
           .select(`
-            id, status, scheduled_date, scheduled_time, project_description, meeting_link,
+            id, status, scheduled_date, scheduled_time, project_description, meeting_link, shared_documents,
             provider:users!service_bookings_provider_id_fkey(id, name, topic_title, avatar_url),
             service:consultation_services(title)
           `)
           .eq('client_id', user.id)
           .eq('status', 'completed')
-          .order('scheduled_date', { ascending: false });        if (error) throw error;
+          .order('scheduled_date', { ascending: false });if (error) throw error;
 
         // Get unique provider IDs from completed bookings
         const providerIds = [...new Set((data || []).map((c: any) => c.provider?.id).filter(Boolean))];
@@ -88,10 +94,15 @@ const StudentPastTab = () => {
           }
         });
 
-        console.log('Student PastTab - Reviews mapped to bookings:', Array.from(reviewsMap.entries()));// Map to PastConsultation[]
+        console.log('Student PastTab - Reviews mapped to bookings:', Array.from(reviewsMap.entries()));        // Map to PastConsultation[]
         const mappedConsultations: PastConsultation[] = (data || []).map((c: any) => {
           const review = reviewsMap.get(c.id);
           console.log(`Consultation ${c.id} - Review:`, review, `Rating: ${review?.rating || 0}`);
+          
+          // Extract shared document names from the booking
+          const sharedDocs = c.shared_documents || [];
+          const documentNames = sharedDocs.map((doc: any) => doc.name || 'Unnamed Document');
+          
           return {
             id: c.id,
             researcher: {
@@ -99,7 +110,8 @@ const StudentPastTab = () => {
               name: c.provider?.name || 'N/A',
               field: c.provider?.topic_title || 'Researcher',
               imageUrl: c.provider?.avatar_url || '/placeholder.svg',
-            },            date: c.scheduled_date,
+            },
+            date: c.scheduled_date,
             time: c.scheduled_time,
             topic: c.project_description || c.service?.title || 'No topic provided',
             status: 'completed' as const,
@@ -107,6 +119,7 @@ const StudentPastTab = () => {
             reviewText: review?.comment || undefined,
             hasRecording: !!c.meeting_link,
             hasAINotes: false,
+            uploadedResources: documentNames, // Add shared documents to consultation object
           };
         })
         .sort((a, b) => {
@@ -123,26 +136,192 @@ const StudentPastTab = () => {
         console.error('Error fetching past consultations:', err);
       } finally {
         setLoading(false);
-      }
-    };
+      }    };
 
     fetchPastConsultations();
-  }, [user]);
+  }, [user, refetchTrigger]);
 
   const paginatedConsultations = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return consultations.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [consultations, currentPage]);
-
   const totalPages = Math.ceil(consultations.length / ITEMS_PER_PAGE);
 
-  // Handlers remain the same, but would need real logic
-  const handleViewRecording = (consultationId: string) => console.log("Viewing recording for:", consultationId);
-  const handleViewAINotes = (consultationId: string) => console.log("Viewing AI notes for:", consultationId);
-  const handleUploadResources = (consultationId: string) => console.log("Uploading resources for:", consultationId);
-  const handleSendMessage = (consultationId: string, message: string) => console.log("Sending message for:", consultationId, message);
-  const handleOpenChat = (researcherId: string, consultationId: string) => console.log("Opening chat for:", consultationId);
-  const handleFollowUpSession = (consultationId: string) => console.log("Booking follow-up for:", consultationId);
+  // Handlers
+  const handleViewRecording = (consultationId: string) => {
+    console.log("Viewing recording for:", consultationId);
+    toast({ title: "Feature Coming Soon", description: "Recording playback will be available soon." });
+  };
+
+  const handleViewAINotes = (consultationId: string) => {
+    console.log("Viewing AI notes for:", consultationId);
+    toast({ title: "Feature Coming Soon", description: "AI-generated notes will be available soon." });
+  };
+  const handleUploadResources = async (consultationId: string) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    input.accept = '.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip';
+    input.onchange = async (e) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (!files || files.length === 0 || !user) return;
+
+      try {
+        const uploadedFiles: string[] = [];
+        const newDocs: any[] = [];
+
+        for (const file of Array.from(files)) {
+          const timestamp = Date.now();
+          const fileExtension = file.name.split('.').pop();
+          const fileNameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.'));
+          const uniqueFileName = `${fileNameWithoutExt}_${timestamp}.${fileExtension}`;
+          const filePath = `consultation_resources/${consultationId}/${user.id}/${uniqueFileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('lovable-uploads')
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: false,
+            });
+
+          if (uploadError) throw uploadError;
+
+          const { data: urlData } = supabase.storage
+            .from('lovable-uploads')
+            .getPublicUrl(filePath);
+
+          if (urlData.publicUrl) {
+            uploadedFiles.push(file.name);
+            newDocs.push({
+              name: file.name,
+              url: urlData.publicUrl,
+              size: file.size,
+              uploadedAt: new Date().toISOString()
+            });
+          }
+        }
+
+        // Fetch current shared_documents from database
+        const { data: currentBooking, error: fetchError } = await supabase
+          .from('service_bookings')
+          .select('shared_documents')
+          .eq('id', consultationId)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        // Append new documents to existing documents
+        const updatedDocuments = [...(currentBooking?.shared_documents || []), ...newDocs];
+
+        // Update database with new documents
+        const { error: updateError } = await supabase
+          .from('service_bookings')
+          .update({ shared_documents: updatedDocuments })
+          .eq('id', consultationId);        if (updateError) throw updateError;
+
+        // Trigger refetch to update UI immediately
+        setRefetchTrigger(prev => prev + 1);
+
+        toast({ 
+          title: "Success", 
+          description: `${uploadedFiles.length} resource(s) uploaded and shared successfully.` 
+        });
+      } catch (err: any) {
+        console.error("Error uploading resources:", err);
+        toast({ 
+          title: "Upload Failed", 
+          description: err.message, 
+          variant: "destructive" 
+        });
+      }
+    };
+    input.click();
+  };
+
+  const handleSendMessage = (consultationId: string, message: string) => {
+    console.log("Sending message for:", consultationId, message);
+    toast({ title: "Feature Coming Soon", description: "In-app messaging will be available soon." });
+  };
+
+  const handleOpenChat = (researcherId: string, consultationId: string) => {
+    console.log("Opening chat for:", consultationId);
+    toast({ title: "Feature Coming Soon", description: "Chat functionality will be available soon." });
+  };
+
+  const handleFollowUpSession = (consultationId: string) => {
+    // Find the consultation to get researcher ID
+    const consultation = consultations.find(c => c.id === consultationId);
+    if (consultation && consultation.researcher.id) {
+      navigate(`/researcher/${consultation.researcher.id}`);
+    }
+  };
+
+  const handleDeleteResource = async (consultationId: string, resourceName: string) => {
+    try {
+      // Fetch current shared_documents from database to get the full document object
+      const { data: currentBooking, error: fetchError } = await supabase
+        .from('service_bookings')
+        .select('shared_documents')
+        .eq('id', consultationId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Find the document to delete by name
+      const docToDelete = (currentBooking?.shared_documents || []).find(
+        (doc: any) => doc.name === resourceName
+      );
+
+      if (!docToDelete) {
+        throw new Error('Document not found');
+      }
+
+      // Extract file path from URL to delete from storage
+      const urlParts = docToDelete.url.split('/lovable-uploads/');
+      const filePath = urlParts.length > 1 ? urlParts[1] : null;
+
+      // Delete from Supabase storage first
+      if (filePath) {
+        const { error: storageError } = await supabase.storage
+          .from('lovable-uploads')
+          .remove([filePath]);
+
+        if (storageError) {
+          console.warn('Storage deletion warning:', storageError);
+          // Continue even if storage deletion fails (file might not exist)
+        }
+      }
+
+      // Filter out the document to be deleted
+      const updatedDocuments = (currentBooking?.shared_documents || []).filter(
+        (doc: any) => doc.name !== resourceName
+      );
+
+      // Update database with filtered documents
+      const { error: updateError } = await supabase
+        .from('service_bookings')
+        .update({ shared_documents: updatedDocuments })
+        .eq('id', consultationId);
+
+      if (updateError) throw updateError;
+
+      // Trigger refetch to update UI immediately
+      setRefetchTrigger(prev => prev + 1);
+
+      toast({ 
+        title: "Success", 
+        description: "Resource deleted successfully." 
+      });
+
+    } catch (err: any) {
+      console.error("Error deleting resource:", err);
+      toast({ 
+        title: "Deletion Failed", 
+        description: err?.message || "Delete failed", 
+        variant: "destructive" 
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -166,16 +345,16 @@ const StudentPastTab = () => {
       
       {paginatedConsultations.length > 0 ? (
         <>
-          <div className="space-y-3 sm:space-y-6 max-w-full">
-            {paginatedConsultations.map((consultation) => (
+          <div className="space-y-3 sm:space-y-6 max-w-full">            {paginatedConsultations.map((consultation) => (
               <div key={consultation.id} className="overflow-hidden">
                 <PastConsultationCard
                   consultation={consultation}
-                  uploadedResources={uploadedResources[consultation.id] || []}
+                  uploadedResources={consultation.uploadedResources || []}
                   userRole="student"
                   onViewRecording={handleViewRecording}
                   onViewAINotes={handleViewAINotes}
                   onUploadResources={handleUploadResources}
+                  onDeleteResource={handleDeleteResource}
                   onSendMessage={handleSendMessage}
                   onOpenChat={handleOpenChat}
                   onFollowUpSession={handleFollowUpSession}

@@ -57,10 +57,10 @@ const FindResearcherTab = () => {
     let displayTitle = researcher.title || '';
     let prefix = '';
     if (displayTitle === 'PhD Holder') prefix = 'Prof.';
-    else if (displayTitle === 'Senior Research Officer') prefix = 'Dr.';
+    else if (displayTitle === '') prefix = 'Dr.';
     else if (displayTitle) prefix = displayTitle;
     // Compose display name
-    const displayName = prefix ? `${prefix} ${researcher.name}` : researcher.name;
+    const displayName = prefix ? `${researcher.subtitle} ${researcher.name}` : researcher.name;
     
     return (
       <Card className="group hover:shadow-lg transition-all duration-300 border border-gray-200 hover:border-gray-300 bg-white overflow-hidden">
