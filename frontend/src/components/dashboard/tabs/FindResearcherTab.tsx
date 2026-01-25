@@ -95,12 +95,12 @@ const FindResearcherTab = () => {
                 </div>
               </div>
               
-              {/* Featured Badge */}
+              {/* Featured Badge
               {researcher.featured && (
                 <Badge className="bg-yellow-500 text-white border-0 shadow-sm flex-shrink-0">
                   ⭐ Featured
                 </Badge>
-              )}
+              )} */}
             </div>
 
             {/* Field & Verification Row */}

@@ -47,7 +47,7 @@ export const useCoauthorNotifications = () => {
                 message: `${inviterData?.name || 'Someone'} invited you to collaborate on "${projectData?.title || 'a research project'}"`,
                 type: 'info',
                 category: 'collaboration',
-                actionUrl: `/dashboard?tab=collaborations&invitation=${invitation.id}`,
+                actionUrl: `/researcher-dashboard?tab=co-author-invitations&invitation=${invitation.id}`,
                 actionLabel: 'View Invitation',
                 metadata: {
                   invitation_id: invitation.id,

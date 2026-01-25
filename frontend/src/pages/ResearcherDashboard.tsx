@@ -30,13 +30,21 @@ const ResearcherDashboard = () => {  const [searchParams, setSearchParams] = use
   const [activeTab, setActiveTab] = useState(() => searchParams.get("tab") || "overview");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { unreadCount } = useNotifications();
-
   const handleTabChange = (tab: string) => {
     console.log("Researcher Dashboard tab change requested:", tab);
     setActiveTab(tab);
     // Update URL parameters to reflect the current tab
     setSearchParams({ tab });
   };
+
+  // Sync activeTab with URL parameter changes
+  useEffect(() => {
+    const tabFromUrl = searchParams.get("tab");
+    if (tabFromUrl && tabFromUrl !== activeTab) {
+      console.log("URL tab changed to:", tabFromUrl);
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const hasCompletedOnboarding = localStorage.getItem('researcher_onboarding_complete');

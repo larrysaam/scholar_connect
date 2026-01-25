@@ -192,7 +192,7 @@ export class NotificationService {
       message: `${inviterName} has invited you to collaborate on "${projectTitle}".`,
       type: 'info',
       category: 'collaboration',
-      actionUrl: invitationId ? `/dashboard?tab=collaborations&invitation=${invitationId}` : '/dashboard?tab=collaborations',
+      actionUrl: invitationId ? `/researcher-dashboard?tab=co-author-invitations&invitation=${invitationId}` : '/researcher-dashboard?tab=co-author-invitations',
       actionLabel: 'View Invitation',
       metadata: {
         invitation_id: invitationId,

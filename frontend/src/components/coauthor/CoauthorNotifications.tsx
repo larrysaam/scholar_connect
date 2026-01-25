@@ -19,6 +19,7 @@ interface CoauthorNotification {
   created_at: string;
   responded_at?: string;
   message?: string;
+  response_reason?: string;
   project?: {
     title: string;
     description?: string;
@@ -101,16 +102,14 @@ const CoauthorNotifications = () => {
           project_id: invitation.project_id,
           user_id: user?.id,
           role: 'coauthor'
-        });
-
-        // Notify the inviter
+        });        // Notify the inviter
         await NotificationService.createNotification({
           userId: invitation.inviter_id,
           title: 'Collaboration Invitation Accepted',
           message: `${user?.user_metadata?.name || 'Someone'} accepted your invitation to collaborate on "${invitation.project?.title || 'the project'}"`,
           type: 'success',
           category: 'collaboration',
-          actionUrl: `/dashboard?tab=collaborations&project=${invitation.project_id}`,
+          actionUrl: `/dashboard?tab=co-author-invitations&project=${invitation.project_id}`,
           actionLabel: 'View Project'
         });
       }
@@ -145,9 +144,7 @@ const CoauthorNotifications = () => {
         })
         .eq('id', invitationId);
 
-      if (error) throw error;
-
-      // Find the invitation to get details
+      if (error) throw error;      // Find the invitation to get details
       const invitation = invitations.find(inv => inv.id === invitationId);
       if (invitation) {
         // Notify the inviter
@@ -157,7 +154,7 @@ const CoauthorNotifications = () => {
           message: `${user?.user_metadata?.name || 'Someone'} declined your invitation to collaborate on "${invitation.project?.title || 'the project'}"`,
           type: 'info',
           category: 'collaboration',
-          actionUrl: `/dashboard?tab=collaborations&project=${invitation.project_id}`,
+          actionUrl: `/dashboard?tab=co-author-invitations&project=${invitation.project_id}`,
           actionLabel: 'View Project'
         });
       }
@@ -365,11 +362,30 @@ const CoauthorNotifications = () => {
                     </div>
                     {getStatusBadge(invitation.status)}
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
+                </CardHeader>                <CardContent className="space-y-4">
                   {invitation.message && (
                     <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm font-medium text-gray-700 mb-1">Your Message:</p>
                       <p className="text-sm">{invitation.message}</p>
+                    </div>
+                  )}
+                  {invitation.response_reason && (invitation.status === 'accepted' || invitation.status === 'declined') && (
+                    <div className={`p-3 rounded-lg border-l-4 ${
+                      invitation.status === 'accepted' 
+                        ? 'bg-green-50 border-green-500' 
+                        : 'bg-red-50 border-red-500'
+                    }`}>
+                      <p className={`text-sm font-medium mb-1 ${
+                        invitation.status === 'accepted' ? 'text-green-800' : 'text-red-800'
+                      }`}>
+                        Response from {invitation.invitee?.name || invitation.invitee_email}:
+                      </p>
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{invitation.response_reason}</p>
+                      {invitation.responded_at && (
+                        <p className="text-xs text-gray-500 mt-2">
+                          Responded on {new Date(invitation.responded_at).toLocaleDateString()} at {new Date(invitation.responded_at).toLocaleTimeString()}
+                        </p>
+                      )}
                     </div>
                   )}
                   {invitation.status === 'pending' && (

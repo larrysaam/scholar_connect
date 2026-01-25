@@ -136,7 +136,7 @@ export const useNotificationTriggers = () => {
           message: `${inviter?.name || 'Someone'} invited you to collaborate on "${project?.title}"`,
           type: 'info',
           category: 'collaboration',
-          action_url: '/dashboard?tab=collaborations',
+          action_url: '/researcher-dashboard?tab=co-author-invitations',
           action_label: 'View Invitation'
         };
       }

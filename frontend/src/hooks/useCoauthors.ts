@@ -138,7 +138,7 @@ export function useCoauthors(projectId: string) {
             message: `${inviterData?.name || 'Someone'} invited you to collaborate on "${projectData?.title || 'a research project'}"`,
             type: 'info',
             category: 'collaboration',
-            actionUrl: `/dashboard?tab=collaborations&invitation=${data.id}`,
+            actionUrl: `/researcher-dashboard?tab=co-author-invitations&invitation=${data.id}`,
             actionLabel: 'View Invitation',
             metadata: {
               invitation_id: data.id,
