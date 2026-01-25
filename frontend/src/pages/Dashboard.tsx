@@ -170,10 +170,9 @@ const Dashboard = () => {
           
           {/* Show onboarding for new users */}
           {/* {showOnboarding && (
-            <div className="mb-4 sm:mb-6 lg:mb-8">
-              <Card className="border-0 shadow-md">
+            <div className="mb-4 sm:mb-6 lg:mb-8">              <Card className="border-0 shadow-md">
                 <CardContent className="p-4 sm:p-6">
-                  <h3 className="text-base sm:text-lg font-semibold mb-2">Welcome to ResearchTandem!</h3>
+                  <h3 className="text-base sm:text-lg font-semibold mb-2">Welcome to <span className="notranslate">ResearchTandem</span>!</h3>
                   <p className="text-sm sm:text-base text-gray-600 mb-4">
                     Complete your profile to start connecting with researchers.
                   </p>

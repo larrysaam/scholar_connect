@@ -220,8 +220,7 @@ const NotificationsTab = ({ setActiveTab }: NotificationsTabProps) => {
       message: "New login detected from a new device/location.",
       type: "warning",
       category: "system"
-    });
-    await trigger({
+    });    await trigger({
       title: "Welcome to ResearchTandem!",
       message: "Explore features and connect with others.",
       type: "info",

@@ -68,10 +68,9 @@ const UserOnboarding = () => {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
+    <Card className="w-full max-w-2xl mx-auto">      <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>Welcome to ResearchTandem!</span>
+          <span>Welcome to <span className="notranslate">ResearchTandem</span>!</span>
           <Badge variant="secondary">
             {completedSteps}/{steps.length} Complete
           </Badge>

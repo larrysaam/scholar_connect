@@ -108,10 +108,9 @@ const ResearcherDashboard = () => {  const [searchParams, setSearchParams] = use
           <DashboardHeader userRole="researcher" />
           
           {showOnboarding && (
-            <div className="mb-4 sm:mb-6 md:mb-8">
-              <Card>
+            <div className="mb-4 sm:mb-6 md:mb-8">              <Card>
                 <CardContent className="p-4 sm:p-6">
-                  <h3 className="text-base sm:text-lg font-semibold mb-2">Welcome to ResearchTandem!</h3>
+                  <h3 className="text-base sm:text-lg font-semibold mb-2">Welcome to <span className="notranslate">ResearchTandem</span>!</h3>
                   <p className="text-sm sm:text-base text-gray-600 mb-4">Complete your profile to start connecting with students.</p>
                   <button 
                     onClick={handleOnboardingComplete}

@@ -115,10 +115,9 @@ const StudentDashboard = () => {
           <p className="text-gray-600 mb-8">Manage your research consultations and learning journey</p>
           
           {showOnboarding && (
-            <div className="mb-8">
-              <Card>
+            <div className="mb-8">              <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-2">Welcome to ResearchTandem!</h3>
+                  <h3 className="text-lg font-semibold mb-2">Welcome to <span className="notranslate">ResearchTandem</span>!</h3>
                   <p className="text-gray-600 mb-4">Complete your profile to start connecting with expert researchers.</p>
                   <button 
                     onClick={handleOnboardingComplete}

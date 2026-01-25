@@ -30,7 +30,6 @@ const CoAuthorInvitationsTab = () => {
   const [acceptReason, setAcceptReason] = useState("");
   const [declineReason, setDeclineReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   useEffect(() => {
     const fetchUserInvitations = async () => {
       if (!user?.id) return;
@@ -40,7 +39,8 @@ const CoAuthorInvitationsTab = () => {
         .from("coauthor_invitations")
         .select("*")
         .eq("invitee_id", user.id)
-        .eq("status", "pending");
+        .eq("status", "pending")
+        .order("created_at", { ascending: false }); // Newest first
       if (error) {
         setError(error.message);
       } else {

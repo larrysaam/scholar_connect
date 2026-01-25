@@ -48,15 +48,13 @@ export class GoogleTranslateService {
       console.error('Failed to load Google Translate script');
     };
 
-    document.body.appendChild(script);
-
-    // Define global callback for Google Translate
+    document.body.appendChild(script);    // Define global callback for Google Translate
     (window as any).googleTranslateElementInit = () => {
       console.log('Google Translate Element Init called');
       if ((window as any).google?.translate?.TranslateElement) {
         new (window as any).google.translate.TranslateElement(
           {
-            pageLanguage: 'en',
+            pageLanguage: 'auto', // Changed from 'en' to 'auto' to support bidirectional translation
             includedLanguages: 'en,fr',
             layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE,
             autoDisplay: false,
@@ -74,17 +72,17 @@ export class GoogleTranslateService {
       }
     };
   }
-
   // Get language from Google Translate cookie
   private getCookieLanguage(): 'en' | 'fr' {
     const cookies = document.cookie.split(';');
     for (const cookie of cookies) {
       const [name, value] = cookie.trim().split('=');
       if (name === 'googtrans') {
-        // Cookie format: /en/fr means translating from en to fr
-        const match = value.match(/\/en\/(\w+)/);
-        if (match && match[1] === 'fr') {
-          return 'fr';
+        // Cookie format: /auto/fr or /auto/en
+        const match = value.match(/\/auto\/(\w+)/);
+        if (match) {
+          if (match[1] === 'fr') return 'fr';
+          if (match[1] === 'en') return 'en';
         }
       }
     }
@@ -93,7 +91,12 @@ export class GoogleTranslateService {
 
   // Set Google Translate cookie
   private setCookie(lang: 'en' | 'fr') {
-    const value = lang === 'en' ? '/en/en' : '/en/fr';
+    // Use /auto/ to allow bidirectional translation
+    const value = `/auto/${lang}`;
+    // Clear old cookies first
+    document.cookie = `googtrans=; path=/; max-age=0`;
+    document.cookie = `googtrans=; domain=${window.location.hostname}; path=/; max-age=0`;
+    // Set new cookies
     document.cookie = `googtrans=${value}; path=/; max-age=31536000`; // 1 year
     document.cookie = `googtrans=${value}; domain=${window.location.hostname}; path=/; max-age=31536000`;
     this.currentLang = lang;

@@ -21,8 +21,7 @@ const ResearchWhoaLogo = ({ size = 'md', showText = true, className = '', color=
     md: 'text-xl',
     lg: 'text-2xl', 
     xl: 'text-3xl'
-  };
-  return (
+  };  return (
     <div className={`flex items-center space-x-2 ${className}`}>
       <img 
         src="/researchwahoo.jpg" 
@@ -30,7 +29,7 @@ const ResearchWhoaLogo = ({ size = 'md', showText = true, className = '', color=
         className={`${sizeClasses[size]} rounded-lg shadow-lg object-contain`}
       />
       {showText && (
-        <span className={`font-bold text-gray-900 ${textSizeClasses[size]}`}>
+        <span className={`font-bold text-gray-900 ${textSizeClasses[size]} notranslate`}>
           {color==='white'? <span className='text-white'>Research</span> : <span className="text-black-600">Research</span>}
           <span className="text-blue-600">Tandem</span>
         </span>
