@@ -48,10 +48,22 @@ const ServiceManagement = ({
     duration_minutes: 60,
     pricing: [{ academic_level: 'Undergraduate', price: 0, currency: 'XAF' }],
     addons: []
-  });
-  const [currentPage, setCurrentPage] = useState(1);
+  });  const [currentPage, setCurrentPage] = useState(1);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const servicesPerPage = 5;
+
+  // Helper to safely close all Select dropdowns before Dialog closes
+  const closeAllSelectDropdowns = () => {
+    // Dispatch Escape key to close any open Select dropdowns
+    document.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'Escape',
+      code: 'Escape',
+      keyCode: 27,
+      bubbles: true,
+      cancelable: true
+    }));
+  };
 
   // Helper function to format duration in a user-friendly way
   const formatDuration = (minutes: number) => {
@@ -99,13 +111,28 @@ const ServiceManagement = ({
     });
     setShowCreateDialog(true);
   };
-
   const handleCreateService = async () => {
+    if (isProcessing) return; // Prevent double-clicks
+    
+    setIsProcessing(true);
+    
+    // Step 1: Close all Select dropdowns to cleanup Portals
+    closeAllSelectDropdowns();
+    
+    // Step 2: Wait for Portal cleanup
+    await new Promise(resolve => setTimeout(resolve, 150));
+    
+    // Step 3: Execute the service creation
     const success = await onCreateService(formData);
+    
     if (success) {
+      // Step 4: Wait before closing Dialog to ensure all cleanup is complete
+      await new Promise(resolve => setTimeout(resolve, 500));
       setShowCreateDialog(false);
       resetForm();
     }
+    
+    setIsProcessing(false);
   };
   const handleEditService = (service: ConsultationService) => {
     setEditingService(service);
@@ -129,15 +156,28 @@ const ServiceManagement = ({
       }))
     });
   };
-
   const handleUpdateService = async () => {
-    if (!editingService) return;
+    if (!editingService || isProcessing) return; // Prevent double-clicks
     
+    setIsProcessing(true);
+    
+    // Step 1: Close all Select dropdowns to cleanup Portals
+    closeAllSelectDropdowns();
+    
+    // Step 2: Wait for Portal cleanup
+    await new Promise(resolve => setTimeout(resolve, 150));
+    
+    // Step 3: Execute the service update
     const success = await onUpdateService(editingService.id, formData);
+    
     if (success) {
+      // Step 4: Wait before closing Dialog to ensure all cleanup is complete
+      await new Promise(resolve => setTimeout(resolve, 500));
       setEditingService(null);
       resetForm();
     }
+    
+    setIsProcessing(false);
   };
 
   const handleFormDataChange = (newFormData: CreateServiceData) => {
@@ -182,29 +222,34 @@ const ServiceManagement = ({
               formData={formData} 
               onFormDataChange={handleFormDataChange}
               serviceType={serviceType}
-            /><DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 pt-4">
+            />            <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 pt-4">
               <Button 
                 variant="outline" 
-                onClick={() => setShowCreateDialog(false)}
+                onClick={() => {
+                  if (!isProcessing) {
+                    setShowCreateDialog(false);
+                  }
+                }}
+                disabled={isProcessing}
                 className="w-full sm:w-auto text-sm order-2 sm:order-1"
               >
                 Cancel
               </Button>
               <Button 
                 onClick={handleCreateService} 
-                disabled={creating}
+                disabled={creating || isProcessing}
                 className="w-full sm:w-auto text-sm order-1 sm:order-2"
               >
-                {creating ? (
+                {creating || isProcessing ? (
                   <>
                     <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
-                    Creating...
+                    {isProcessing ? 'Processing...' : 'Creating...'}
                   </>
                 ) : (
                   'Create Service'
                 )}
               </Button>
-            </DialogFooter>          </DialogContent>
+            </DialogFooter></DialogContent>
         </Dialog>
         </div>
       </div>
@@ -363,24 +408,28 @@ const ServiceManagement = ({
                             formData={formData} 
                             onFormDataChange={handleFormDataChange}
                             serviceType={serviceType}
-                          />
-                          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 pt-4">
+                          />                          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 pt-4">
                             <Button 
                               variant="outline" 
-                              onClick={() => setEditingService(null)}
+                              onClick={() => {
+                                if (!isProcessing) {
+                                  setEditingService(null);
+                                }
+                              }}
+                              disabled={isProcessing}
                               className="w-full sm:w-auto text-sm order-2 sm:order-1"
                             >
                               Cancel
                             </Button>
                             <Button 
                               onClick={handleUpdateService} 
-                              disabled={updating}
+                              disabled={updating || isProcessing}
                               className="w-full sm:w-auto text-sm order-1 sm:order-2"
                             >
-                              {updating ? (
+                              {updating || isProcessing ? (
                                 <>
                                   <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
-                                  Updating...
+                                  {isProcessing ? 'Processing...' : 'Updating...'}
                                 </>
                               ) : (
                                 'Update Service'

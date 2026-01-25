@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import ProfileTabHeader from "@/components/dashboard/profile/ProfileTabHeader";
 import PersonalInformationSection from "@/components/dashboard/profile/PersonalInformationSection";
 import ProfessionalBioSection from "@/components/dashboard/profile/ProfessionalBioSection";
@@ -17,7 +18,7 @@ import { ProfileFormData, defaultProfileFormData } from "@/components/dashboard/
 import { createProfileFormHandlers } from "@/components/dashboard/profile/ProfileFormHandlers";
 import { useUserStatistics } from "@/hooks/useUserStatistics";
 
-const ProfileTab = () => {
+const ProfileTabContent = () => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<ProfileFormData>(defaultProfileFormData);
@@ -233,5 +234,11 @@ const ProfileTab = () => {
     </div>
   );
 };
+
+const ProfileTab = () => (
+  <ErrorBoundary>
+    <ProfileTabContent />
+  </ErrorBoundary>
+);
 
 export default ProfileTab;
