@@ -32,12 +32,11 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
     return googleTranslate.getCurrentLanguage();
   });
   const [isTranslating, setIsTranslating] = useState(false);
-
   // Initialize Google Translate on mount
   useEffect(() => {
     googleTranslate.initialize(() => {
       console.log('Google Translate initialized');
-      // Hide the Google Translate widget (we control it programmatically)
+      // Hide the Google Translate widget and protect brand names
       const style = document.createElement('style');
       style.innerHTML = `
         #google_translate_element {
@@ -60,6 +59,11 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
         }
         .goog-te-gadget {
           display: none !important;
+        }
+        /* Protect brand names from translation */
+        .notranslate,
+        .notranslate * {
+          translate: no !important;
         }
       `;
       document.head.appendChild(style);

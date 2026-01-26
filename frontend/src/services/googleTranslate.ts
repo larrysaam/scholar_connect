@@ -5,10 +5,14 @@ export class GoogleTranslateService {
   private static instance: GoogleTranslateService;
   private initialized = false;
   private currentLang: 'en' | 'fr' = 'en';
+  private translationTimeout: NodeJS.Timeout | null = null;
 
   private constructor() {
     // Check if there's a language in cookie
     this.currentLang = this.getCookieLanguage();
+    
+    // Protect brand names from translation
+    this.protectBrandNames();
   }
 
   static getInstance(): GoogleTranslateService {
@@ -16,6 +20,78 @@ export class GoogleTranslateService {
       GoogleTranslateService.instance = new GoogleTranslateService();
     }
     return GoogleTranslateService.instance;
+  }
+
+  // Protect brand names and key terms from translation
+  private protectBrandNames() {
+    // Add notranslate class to brand names dynamically
+    const observer = new MutationObserver(() => {
+      this.markBrandNames();
+    });
+
+    // Start observing the document
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+
+    // Initial marking
+    setTimeout(() => this.markBrandNames(), 500);
+  }
+  // Mark brand names with notranslate class
+  private markBrandNames() {
+    const brandNames = [
+      'Research Tandem',
+      'ResearchTandem',
+      'Scholar Consult Connect'
+    ];
+
+    // Use TreeWalker to find all text nodes
+    const walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+      null
+    );
+
+    const textNodes: Node[] = [];
+    let node;
+    while (node = walker.nextNode()) {
+      textNodes.push(node);
+    }
+
+    textNodes.forEach(textNode => {
+      const nodeValue = textNode.nodeValue || '';
+      const parent = textNode.parentElement;
+
+      // Skip if already protected or no parent
+      if (!parent || parent.classList.contains('notranslate')) {
+        return;
+      }
+
+      brandNames.forEach(brandName => {
+        if (nodeValue.includes(brandName)) {
+          // Wrap brand name in notranslate span
+          const regex = new RegExp(`(${brandName})`, 'gi');
+          const newHTML = nodeValue.replace(regex, '<span class="notranslate">$1</span>');
+          
+          if (newHTML !== nodeValue) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = newHTML;
+            
+            // Insert all children before the text node
+            while (tempDiv.firstChild) {
+              parent.insertBefore(tempDiv.firstChild, textNode);
+            }
+            
+            // Remove the original text node using parentNode.removeChild
+            if (textNode.parentNode) {
+              textNode.parentNode.removeChild(textNode);
+            }
+          }
+        }
+      });
+    });
   }
 
   // Initialize Google Translate Widget
@@ -71,40 +147,72 @@ export class GoogleTranslateService {
         }, 1000);
       }
     };
-  }
-  // Get language from Google Translate cookie
+  }  // Get language from Google Translate cookie
   private getCookieLanguage(): 'en' | 'fr' {
     const cookies = document.cookie.split(';');
     for (const cookie of cookies) {
       const [name, value] = cookie.trim().split('=');
       if (name === 'googtrans') {
-        // Cookie format: /auto/fr or /auto/en
-        const match = value.match(/\/auto\/(\w+)/);
+        // Cookie format: /auto/fr or /auto/en or /en/fr
+        const match = value.match(/\/(?:auto|en|fr)\/(\w+)/);
         if (match) {
-          if (match[1] === 'fr') return 'fr';
-          if (match[1] === 'en') return 'en';
+          const lang = match[1];
+          if (lang === 'fr') return 'fr';
+          if (lang === 'en') return 'en';
         }
       }
     }
+    
+    // Check if page is already translated
+    if (document.documentElement.classList.contains('translated-ltr') || 
+        document.documentElement.classList.contains('translated-rtl')) {
+      // Try to detect from HTML lang attribute or other indicators
+      const htmlLang = document.documentElement.lang;
+      if (htmlLang === 'fr') return 'fr';
+    }
+    
     return 'en';
   }
-
   // Set Google Translate cookie
   private setCookie(lang: 'en' | 'fr') {
     // Use /auto/ to allow bidirectional translation
     const value = `/auto/${lang}`;
-    // Clear old cookies first
-    document.cookie = `googtrans=; path=/; max-age=0`;
-    document.cookie = `googtrans=; domain=${window.location.hostname}; path=/; max-age=0`;
-    // Set new cookies
-    document.cookie = `googtrans=${value}; path=/; max-age=31536000`; // 1 year
-    document.cookie = `googtrans=${value}; domain=${window.location.hostname}; path=/; max-age=31536000`;
+    const domain = window.location.hostname;
+    const path = '/';
+    const maxAge = 31536000; // 1 year
+    
+    // Clear old cookies first (try multiple variations)
+    const clearOptions = [
+      `googtrans=; path=${path}; max-age=0`,
+      `googtrans=; domain=${domain}; path=${path}; max-age=0`,
+      `googtrans=; domain=.${domain}; path=${path}; max-age=0`,
+    ];
+    
+    clearOptions.forEach(option => {
+      document.cookie = option;
+    });
+    
+    // Set new cookies with multiple variations for better VPS compatibility
+    const setOptions = [
+      `googtrans=${value}; path=${path}; max-age=${maxAge}; SameSite=Lax`,
+      `googtrans=${value}; domain=${domain}; path=${path}; max-age=${maxAge}; SameSite=Lax`,
+    ];
+    
+    // Add domain with leading dot for subdomains (if not localhost)
+    if (!domain.includes('localhost') && !domain.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+      setOptions.push(`googtrans=${value}; domain=.${domain}; path=${path}; max-age=${maxAge}; SameSite=Lax`);
+    }
+    
+    setOptions.forEach(option => {
+      document.cookie = option;
+    });
+    
     this.currentLang = lang;
+    console.log(`Cookie set for ${lang}:`, document.cookie);
   }
-
   // Change language using cookie method and reload
   changeLanguage(targetLang: 'en' | 'fr') {
-    console.log(`Changing language to: ${targetLang}`);
+    console.log(`Changing language to: ${targetLang}, current: ${this.currentLang}`);
     
     // If switching to same language, do nothing
     if (this.currentLang === targetLang) {
@@ -112,7 +220,7 @@ export class GoogleTranslateService {
       return;
     }
 
-    // Set the cookie
+    // Set the cookie first
     this.setCookie(targetLang);
     
     // Try to trigger translation through widget
@@ -123,10 +231,17 @@ export class GoogleTranslateService {
       selectElement.value = targetLang;
       selectElement.dispatchEvent(new Event('change', { bubbles: true }));
       
-      // Wait a bit and check if translation happened
+      // Wait and check if translation happened
       setTimeout(() => {
-        if (!this.isTranslated() && targetLang !== 'en') {
+        const isNowTranslated = this.isTranslated();
+        const needsTranslation = targetLang !== 'en';
+        
+        if (!isNowTranslated && needsTranslation) {
           console.log('Translation did not happen, reloading page');
+          window.location.reload();
+        } else if (isNowTranslated && !needsTranslation) {
+          // Switching back to English but page is still translated
+          console.log('Need to reload to show English');
           window.location.reload();
         }
       }, 1500);
@@ -166,10 +281,26 @@ export class GoogleTranslateService {
   isTranslating(): boolean {
     return this.isTranslated();
   }
-
   // Get current language
   getCurrentLanguage(): 'en' | 'fr' {
     return this.currentLang;
+  }
+
+  // Public method to protect specific elements from translation
+  protectElement(element: HTMLElement) {
+    if (!element.classList.contains('notranslate')) {
+      element.classList.add('notranslate');
+    }
+  }
+
+  // Public method to protect elements by selector
+  protectElementsBySelector(selector: string) {
+    const elements = document.querySelectorAll(selector);
+    elements.forEach(el => {
+      if (el instanceof HTMLElement) {
+        this.protectElement(el);
+      }
+    });
   }
 }
 
