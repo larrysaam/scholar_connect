@@ -222,9 +222,7 @@ const SettingsTab = ({setActiveTab}) => {
     setTimeout(() => {
       window.location.href = "/";
     }, 1000);
-  };
-
-  const handleDeleteAccount = async () => {
+  };  const handleDeleteAccount = async () => {
     if (deleteConfirmation !== "DELETE") {
       toast({
         title: "Error",
@@ -234,46 +232,103 @@ const SettingsTab = ({setActiveTab}) => {
       return;
     }
 
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to delete your account",
+        variant: "destructive"
+      });
+      return;
+    }    try {
+      // Show loading toast
+      console.log('=== Starting Account Deletion ===');
+      console.log('User ID:', user.id);
+      console.log('User Email:', user.email);
       
-      if (!session?.access_token) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to delete your account",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const response = await supabase.functions.invoke('delete-account', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+      toast({
+        title: "Deleting Account",
+        description: "Please wait while we delete your account and all associated data...",
       });
 
-      if (response.error) {
-        throw response.error;
+      // Call the database function to delete all user data
+      console.log('Calling delete_user_account RPC...');
+      const { data, error: rpcError } = await supabase.rpc('delete_user_account', {
+        target_user_id: user.id
+      });
+
+      console.log('=== RPC Response ===');
+      console.log('Data:', JSON.stringify(data, null, 2));
+      console.log('Error:', rpcError);
+
+      // Handle RPC-level errors (network, permission, etc.)
+      if (rpcError) {
+        console.error('RPC Error Details:', {
+          message: rpcError.message,
+          details: rpcError.details,
+          hint: rpcError.hint,
+          code: rpcError.code
+        });
+        
+        throw new Error(
+          rpcError.message || 
+          rpcError.details || 
+          'Failed to connect to database. Please try again.'
+        );
+      }
+
+      // Handle function-level errors (returned in data)
+      if (data && typeof data === 'object') {
+        if ('success' in data && data.success === false) {
+          console.error('Function Error:', {
+            error: data.error,
+            detail: data.detail,
+            hint: data.hint
+          });
+          
+          const errorMessage = data.error || 'Failed to delete account';
+          const errorDetail = data.detail ? ` (${data.detail})` : '';
+          throw new Error(errorMessage + errorDetail);
+        }
+        
+        // Success case
+        if ('success' in data && data.success === true) {
+          console.log('✅ Account deletion successful!');
+        }
+      } else {
+        console.warn('Unexpected data format:', data);
+      }
+
+      // Sign out the user (auth.users will be deleted by trigger)
+      console.log('Signing out user...');
+      const { error: signOutError } = await supabase.auth.signOut();
+      
+      if (signOutError) {
+        console.warn('Sign out warning (may be expected):', signOutError.message);
+        // Continue anyway as the account is deleted
       }
 
       toast({
         title: "Account Deleted",
         description: "Your account has been permanently deleted. You will be redirected shortly.",
-        variant: "destructive"
       });
 
       // Clear local storage and redirect after a delay
       setTimeout(() => {
+        console.log('Clearing storage and redirecting...');
         localStorage.clear();
         sessionStorage.clear();
         window.location.href = "/";
-      }, 3000);
+      }, 2000);
 
     } catch (error: any) {
-      console.error('Error deleting account:', error);
+      console.error('=== Account Deletion Failed ===');
+      console.error('Error:', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete account. Please try again.",
+        title: "Error Deleting Account",
+        description: error.message || "An unexpected error occurred. Please contact support.",
         variant: "destructive"
       });
     } finally {
